@@ -1,6 +1,4 @@
 /target
-.claude
-
-*.md
-
-!README.md
+Cargo.lock
+dist/
+*.wasm

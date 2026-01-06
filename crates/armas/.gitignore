@@ -1,0 +1,6 @@
+/target
+.claude
+
+*.md
+
+!README.md

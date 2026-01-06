@@ -1,0 +1,24 @@
+[package]
+name = "armas-web"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "armas_web"
+path = "src/main.rs"
+
+[dependencies]
+armas = { path = "../armas" }
+eframe = { workspace = true, features = ["default", "wgpu"] }
+egui = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# WASM dependencies
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlCanvasElement"] }
+console_error_panic_hook = "0.1"
