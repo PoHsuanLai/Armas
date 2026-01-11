@@ -18,7 +18,7 @@ pub struct Date {
 impl Date {
     /// Create a new date
     pub fn new(year: i32, month: u32, day: u32) -> Option<Self> {
-        if month < 1 || month > 12 {
+        if !(1..=12).contains(&month) {
             return None;
         }
         let days_in_month = Self::days_in_month(year, month);
@@ -197,11 +197,7 @@ impl DatePicker {
     }
 
     /// Show the date picker
-    pub fn show(
-        &mut self,
-        ui: &mut Ui,
-        selected_date: &mut Option<Date>,
-    ) -> DatePickerResponse {
+    pub fn show(&mut self, ui: &mut Ui, selected_date: &mut Option<Date>) -> DatePickerResponse {
         let theme = ui.ctx().armas_theme();
         let mut response = DatePickerResponse { changed: false };
 
@@ -256,28 +252,25 @@ impl DatePicker {
         // Set popover open state externally
         self.popover.set_open(self.is_open);
 
-        self.popover
-            .show(ui.ctx(), &theme, input_rect, |ui| {
-                ui.vertical(|ui| {
-                    ui.spacing_mut().item_spacing.y = 8.0;
-                    ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+        self.popover.show(ui.ctx(), &theme, input_rect, |ui| {
+            ui.vertical(|ui| {
+                ui.spacing_mut().item_spacing.y = 8.0;
+                ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                     // Header with month/year navigation
                     ui.horizontal(|ui| {
                         ui.spacing_mut().item_spacing.x = 8.0;
                         // Previous month button
                         let prev_size = vec2(32.0, 32.0);
-                        let (prev_rect, prev_response) = ui.allocate_exact_size(prev_size, Sense::click());
+                        let (prev_rect, prev_response) =
+                            ui.allocate_exact_size(prev_size, Sense::click());
 
                         if ui.is_rect_visible(prev_rect) {
                             let hovered = prev_response.hovered();
 
                             // Background on hover
                             if hovered {
-                                ui.painter().rect_filled(
-                                    prev_rect,
-                                    6.0,
-                                    theme.surface_variant(),
-                                );
+                                ui.painter()
+                                    .rect_filled(prev_rect, 6.0, theme.surface_variant());
                             }
 
                             // Chevron icon
@@ -286,7 +279,11 @@ impl DatePicker {
                                 egui::Align2::CENTER_CENTER,
                                 "‹",
                                 egui::FontId::proportional(20.0),
-                                if hovered { theme.on_surface() } else { theme.on_surface_variant() },
+                                if hovered {
+                                    theme.on_surface()
+                                } else {
+                                    theme.on_surface_variant()
+                                },
                             );
                         }
 
@@ -315,18 +312,16 @@ impl DatePicker {
 
                         // Next month button
                         let next_size = vec2(32.0, 32.0);
-                        let (next_rect, next_response) = ui.allocate_exact_size(next_size, Sense::click());
+                        let (next_rect, next_response) =
+                            ui.allocate_exact_size(next_size, Sense::click());
 
                         if ui.is_rect_visible(next_rect) {
                             let hovered = next_response.hovered();
 
                             // Background on hover
                             if hovered {
-                                ui.painter().rect_filled(
-                                    next_rect,
-                                    6.0,
-                                    theme.surface_variant(),
-                                );
+                                ui.painter()
+                                    .rect_filled(next_rect, 6.0, theme.surface_variant());
                             }
 
                             // Chevron icon
@@ -335,7 +330,11 @@ impl DatePicker {
                                 egui::Align2::CENTER_CENTER,
                                 "›",
                                 egui::FontId::proportional(20.0),
-                                if hovered { theme.on_surface() } else { theme.on_surface_variant() },
+                                if hovered {
+                                    theme.on_surface()
+                                } else {
+                                    theme.on_surface_variant()
+                                },
                             );
                         }
 
@@ -355,7 +354,10 @@ impl DatePicker {
                                     ui.label(
                                         egui::RichText::new(*day)
                                             .size(12.0)
-                                            .font(egui::FontId::new(12.0, egui::FontFamily::Name("Inter".into())))
+                                            .font(egui::FontId::new(
+                                                12.0,
+                                                egui::FontFamily::Name("Inter".into()),
+                                            ))
                                             .color(theme.on_surface_variant()),
                                     );
                                 });
@@ -397,21 +399,23 @@ impl DatePicker {
                                 let cell_index = row * 7 + col;
 
                                 // Determine which day to show
-                                let (day, is_current_month, actual_year, actual_month) = if cell_index < first_weekday {
-                                    // Previous month
-                                    let day = prev_month_days - (first_weekday - cell_index - 1);
-                                    (day, false, prev_year, prev_month)
-                                } else if day_counter <= days_in_month {
-                                    // Current month
-                                    let day = day_counter;
-                                    day_counter += 1;
-                                    (day, true, viewing_year, viewing_month)
-                                } else {
-                                    // Next month
-                                    let day = day_counter - days_in_month;
-                                    day_counter += 1;
-                                    (day, false, next_year, next_month)
-                                };
+                                let (day, is_current_month, actual_year, actual_month) =
+                                    if cell_index < first_weekday {
+                                        // Previous month
+                                        let day =
+                                            prev_month_days - (first_weekday - cell_index - 1);
+                                        (day, false, prev_year, prev_month)
+                                    } else if day_counter <= days_in_month {
+                                        // Current month
+                                        let day = day_counter;
+                                        day_counter += 1;
+                                        (day, true, viewing_year, viewing_month)
+                                    } else {
+                                        // Next month
+                                        let day = day_counter - days_in_month;
+                                        day_counter += 1;
+                                        (day, false, next_year, next_month)
+                                    };
 
                                 if is_current_month {
                                     // Current month day - full interactivity
@@ -419,7 +423,8 @@ impl DatePicker {
                                     let is_today = date == today;
                                     let is_selected = *selected_date == Some(date);
 
-                                    let (rect, response) = ui.allocate_exact_size(cell_size, Sense::click());
+                                    let (rect, response) =
+                                        ui.allocate_exact_size(cell_size, Sense::click());
 
                                     if ui.is_rect_visible(rect) {
                                         let hovered = response.hovered();
@@ -447,11 +452,7 @@ impl DatePicker {
                                                 (surface.g() as f32 * 0.975) as u8,
                                                 (surface.b() as f32 * 0.975) as u8,
                                             );
-                                            (
-                                                Some(darkened),
-                                                theme.on_surface(),
-                                                false,
-                                            )
+                                            (Some(darkened), theme.on_surface(), false)
                                         } else {
                                             // Normal: transparent
                                             (None, theme.on_surface(), false)
@@ -460,17 +461,22 @@ impl DatePicker {
                                         // Background
                                         if let Some(bg) = bg_color {
                                             ui.painter().rect_filled(
-                                                rect,
-                                                4.0, // 4px border radius like Flowbite
+                                                rect, 4.0, // 4px border radius like Flowbite
                                                 bg,
                                             );
                                         }
 
                                         // Day number with optional bold using Inter font
                                         let font_id = if font_weight {
-                                            egui::FontId::new(14.0, egui::FontFamily::Name("Inter".into()))
+                                            egui::FontId::new(
+                                                14.0,
+                                                egui::FontFamily::Name("Inter".into()),
+                                            )
                                         } else {
-                                            egui::FontId::new(13.0, egui::FontFamily::Name("Inter".into()))
+                                            egui::FontId::new(
+                                                13.0,
+                                                egui::FontFamily::Name("Inter".into()),
+                                            )
                                         };
 
                                         let galley = ui.painter().layout_no_wrap(
@@ -491,7 +497,8 @@ impl DatePicker {
                                     }
                                 } else {
                                     // Previous/next month day - grey and non-interactive
-                                    let (rect, _response) = ui.allocate_exact_size(cell_size, Sense::hover());
+                                    let (rect, _response) =
+                                        ui.allocate_exact_size(cell_size, Sense::hover());
 
                                     if ui.is_rect_visible(rect) {
                                         // Day number in grey using Inter font
@@ -499,7 +506,10 @@ impl DatePicker {
                                             rect.center(),
                                             egui::Align2::CENTER_CENTER,
                                             day.to_string(),
-                                            egui::FontId::new(13.0, egui::FontFamily::Name("Inter".into())),
+                                            egui::FontId::new(
+                                                13.0,
+                                                egui::FontFamily::Name("Inter".into()),
+                                            ),
                                             theme.on_surface_variant().linear_multiply(0.5), // Very muted grey
                                         );
                                     }
@@ -538,15 +548,17 @@ impl DatePicker {
                     let available_width = ui.available_width();
                     let start_x = (available_width - total_button_width) / 2.0;
 
-                    let (footer_rect, _) = ui.allocate_exact_size(vec2(available_width, button_height), Sense::hover());
+                    let (footer_rect, _) = ui
+                        .allocate_exact_size(vec2(available_width, button_height), Sense::hover());
 
                     // Today button - outlined style
                     let today_text = "Today";
                     let today_rect = egui::Rect::from_min_size(
                         footer_rect.min + vec2(start_x, 0.0),
-                        vec2(button_width, button_height)
+                        vec2(button_width, button_height),
                     );
-                    let today_response = ui.interact(today_rect, ui.id().with("today_btn"), Sense::click());
+                    let today_response =
+                        ui.interact(today_rect, ui.id().with("today_btn"), Sense::click());
 
                     if ui.is_rect_visible(today_rect) {
                         let hovered = today_response.hovered();
@@ -557,7 +569,11 @@ impl DatePicker {
                             4.0,
                             egui::Stroke::new(
                                 1.0,
-                                if hovered { theme.primary() } else { theme.outline() }
+                                if hovered {
+                                    theme.primary()
+                                } else {
+                                    theme.outline()
+                                },
                             ),
                             egui::StrokeKind::Outside,
                         );
@@ -577,7 +593,11 @@ impl DatePicker {
                             egui::Align2::CENTER_CENTER,
                             today_text,
                             egui::FontId::new(13.0, egui::FontFamily::Name("Inter".into())),
-                            if hovered { theme.primary() } else { theme.on_surface() },
+                            if hovered {
+                                theme.primary()
+                            } else {
+                                theme.on_surface()
+                            },
                         );
                     }
 
@@ -589,9 +609,10 @@ impl DatePicker {
                     let clear_text = "Clear";
                     let clear_rect = egui::Rect::from_min_size(
                         footer_rect.min + vec2(start_x + button_width + button_spacing, 0.0),
-                        vec2(button_width, button_height)
+                        vec2(button_width, button_height),
                     );
-                    let clear_response = ui.interact(clear_rect, ui.id().with("clear_btn"), Sense::click());
+                    let clear_response =
+                        ui.interact(clear_rect, ui.id().with("clear_btn"), Sense::click());
 
                     if ui.is_rect_visible(clear_rect) {
                         let hovered = clear_response.hovered();
@@ -602,7 +623,11 @@ impl DatePicker {
                             4.0,
                             egui::Stroke::new(
                                 1.0,
-                                if hovered { theme.error() } else { theme.outline() }
+                                if hovered {
+                                    theme.error()
+                                } else {
+                                    theme.outline()
+                                },
                             ),
                             egui::StrokeKind::Outside,
                         );
@@ -622,7 +647,11 @@ impl DatePicker {
                             egui::Align2::CENTER_CENTER,
                             clear_text,
                             egui::FontId::new(13.0, egui::FontFamily::Name("Inter".into())),
-                            if hovered { theme.error() } else { theme.on_surface() },
+                            if hovered {
+                                theme.error()
+                            } else {
+                                theme.on_surface()
+                            },
                         );
                     }
 

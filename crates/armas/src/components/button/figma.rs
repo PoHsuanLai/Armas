@@ -80,10 +80,7 @@ impl FigmaButton {
                 );
 
                 // Figma uses font-bold (700 weight)
-                let font_id = egui::FontId::new(
-                    14.0,
-                    egui::FontFamily::Name("InterBold".into()),
-                );
+                let font_id = egui::FontId::new(14.0, egui::FontFamily::Name("InterBold".into()));
                 painter.text(
                     lifted_rect.center(),
                     egui::Align2::CENTER_CENTER,
@@ -96,10 +93,7 @@ impl FigmaButton {
                 painter.rect_filled(lifted_rect, corner_radius, Color32::BLACK);
 
                 // Figma uses font-bold (700 weight)
-                let font_id = egui::FontId::new(
-                    14.0,
-                    egui::FontFamily::Name("InterBold".into()),
-                );
+                let font_id = egui::FontId::new(14.0, egui::FontFamily::Name("InterBold".into()));
                 painter.text(
                     lifted_rect.center(),
                     egui::Align2::CENTER_CENTER,

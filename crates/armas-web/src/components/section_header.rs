@@ -1,5 +1,7 @@
 //! Section header component for organizing showcase pages
 
+#![allow(dead_code)]
+
 use armas::*;
 use eframe::egui;
 
@@ -158,30 +160,29 @@ pub struct RelatedComponentCard {
 
 impl RelatedComponentCard {
     pub fn new(name: impl Into<String>) -> Self {
-        Self {
-            name: name.into(),
-        }
+        Self { name: name.into() }
     }
 
     pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
         let theme = ui.ctx().armas_theme();
-        let card_response = Card::new()
-            .corner_radius(8.0)
-            .hover_effect(true)
-            .show(ui, &theme, |ui| {
-                ui.set_min_size(egui::vec2(150.0, 80.0));
+        let card_response =
+            Card::new()
+                .corner_radius(8.0)
+                .hover_effect(true)
+                .show(ui, &theme, |ui| {
+                    ui.set_min_size(egui::vec2(150.0, 80.0));
 
-                ui.vertical_centered(|ui| {
-                    ui.add_space(20.0);
-                    ui.strong(&self.name);
-                    ui.add_space(4.0);
-                    ui.label(
-                        egui::RichText::new("View →")
-                            .size(12.0)
-                            .color(theme.primary()),
-                    );
+                    ui.vertical_centered(|ui| {
+                        ui.add_space(20.0);
+                        ui.strong(&self.name);
+                        ui.add_space(4.0);
+                        ui.label(
+                            egui::RichText::new("View →")
+                                .size(12.0)
+                                .color(theme.primary()),
+                        );
+                    });
                 });
-            });
 
         card_response.response
     }

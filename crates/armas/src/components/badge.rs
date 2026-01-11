@@ -112,11 +112,9 @@ impl Badge {
 
         // Calculate size
         let font_id = egui::FontId::proportional(self.size);
-        let text_galley = ui.painter().layout_no_wrap(
-            self.text.clone(),
-            font_id.clone(),
-            text_color,
-        );
+        let text_galley =
+            ui.painter()
+                .layout_no_wrap(self.text.clone(), font_id.clone(), text_color);
         let text_width = text_galley.rect.width();
 
         let dot_space = if self.show_dot { theme.spacing.md } else { 0.0 };
@@ -130,7 +128,8 @@ impl Badge {
         let width = text_width + dot_space + remove_space + padding;
         let height = self.size + theme.spacing.md;
 
-        let (rect, response) = ui.allocate_exact_size(Vec2::new(width, height), egui::Sense::hover());
+        let (rect, response) =
+            ui.allocate_exact_size(Vec2::new(width, height), egui::Sense::hover());
 
         // Background
         match self.variant {

@@ -148,7 +148,7 @@ impl ScrollingBanner {
         let dt = ui.input(|i| i.stable_dt);
         let is_hovered = response.hovered();
 
-        if !self.paused && !(self.pause_on_hover && is_hovered) {
+        if !self.paused && (!self.pause_on_hover || !is_hovered) {
             self.offset += self.speed * dt;
         }
 
@@ -167,7 +167,7 @@ impl ScrollingBanner {
 
         // Wrap offset to create infinite loop
         if repeat_distance > 0.0 {
-            self.offset = self.offset % repeat_distance;
+            self.offset %= repeat_distance;
         }
 
         // Calculate number of repetitions needed (always at least 2 for seamless loop)
@@ -217,7 +217,7 @@ impl ScrollingBanner {
         }
 
         // Request repaint for animation
-        if !self.paused && !(self.pause_on_hover && is_hovered) {
+        if !self.paused && (!self.pause_on_hover || !is_hovered) {
             ui.ctx().request_repaint();
         }
 
@@ -308,11 +308,7 @@ impl ScrollingBanner {
                 rect.max.x - (i + 1) as f32 * step_width
             };
 
-            let alpha = if fade_left {
-                ((steps - i) as f32 / steps as f32 * 255.0) as u8
-            } else {
-                ((steps - i) as f32 / steps as f32 * 255.0) as u8
-            };
+            let alpha = ((steps - i) as f32 / steps as f32 * 255.0) as u8;
 
             let fade_color =
                 egui::Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
@@ -345,11 +341,7 @@ impl ScrollingBanner {
                 rect.max.y - (i + 1) as f32 * step_height
             };
 
-            let alpha = if fade_top {
-                ((steps - i) as f32 / steps as f32 * 255.0) as u8
-            } else {
-                ((steps - i) as f32 / steps as f32 * 255.0) as u8
-            };
+            let alpha = ((steps - i) as f32 / steps as f32 * 255.0) as u8;
 
             let fade_color =
                 egui::Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);

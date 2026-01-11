@@ -1,5 +1,7 @@
 //! Hero section for landing page with animated background
 
+#![allow(dead_code)]
+
 use armas::*;
 use eframe::egui;
 

@@ -3,8 +3,8 @@
 //! Temporary notification messages with auto-dismiss
 //! Built on top of Card component for consistency
 
-use crate::ext::ArmasContextExt;
 use crate::animation::SpringAnimation;
+use crate::ext::ArmasContextExt;
 use crate::{Badge, BadgeColor, Button, ButtonVariant, Card, Theme};
 use egui::{vec2, Align2, Id, Sense, Vec2};
 use std::collections::VecDeque;
@@ -338,15 +338,14 @@ impl ToastManager {
                             });
 
                             // Close button
-                            if toast.dismissible {
-                                if Button::new("✕")
+                            if toast.dismissible
+                                && Button::new("✕")
                                     .variant(ButtonVariant::Text)
                                     .min_size(vec2(24.0, 24.0))
                                     .show(ui)
                                     .clicked()
-                                {
-                                    dismissed = true;
-                                }
+                            {
+                                dismissed = true;
                             }
                         });
 

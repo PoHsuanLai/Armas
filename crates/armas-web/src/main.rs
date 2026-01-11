@@ -1,7 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod components;
-mod examples;
 mod markdown;
 mod showcase_gen;
 pub mod syntax;
@@ -10,41 +9,65 @@ use armas::*;
 use components::*;
 use eframe::egui;
 
+// Type aliases for complex types
+type PageShowFn = fn(&mut egui::Ui);
+type Page = (&'static str, PageShowFn);
+
 // Layout constants for the showcase website
 mod layout {
     /// Sidebar width when expanded
     pub const SIDEBAR_WIDTH_EXPANDED: f32 = 240.0;
     /// Sidebar width when collapsed (icon-only)
+    #[allow(dead_code)]
     pub const SIDEBAR_WIDTH_COLLAPSED: f32 = 70.0;
     /// Maximum content width for optimal reading
     pub const CONTENT_MAX_WIDTH: f32 = 1200.0;
     /// Minimum content width before layout breaks
+    #[allow(dead_code)]
     pub const CONTENT_MIN_WIDTH: f32 = 600.0;
     /// Mobile breakpoint - collapse sidebar, single column
+    #[allow(dead_code)]
     pub const MOBILE_BREAKPOINT: f32 = 768.0;
     /// Tablet breakpoint - 2 column grids
+    #[allow(dead_code)]
     pub const TABLET_BREAKPOINT: f32 = 1024.0;
     /// Desktop breakpoint - 3 column grids
+    #[allow(dead_code)]
     pub const DESKTOP_BREAKPOINT: f32 = 1280.0;
 }
 
 // Showcase-specific component sizes
 mod showcase_sizes {
     /// Standard demo card height
+    #[allow(dead_code)]
     pub const DEMO_CARD_HEIGHT: f32 = 300.0;
     /// Tall demo card for complex examples
+    #[allow(dead_code)]
     pub const DEMO_CARD_HEIGHT_TALL: f32 = 400.0;
     /// Grid gap between variant cards
+    #[allow(dead_code)]
     pub const VARIANT_GRID_GAP: f32 = 16.0;
     /// Spacing between major sections
+    #[allow(dead_code)]
     pub const SECTION_SPACING: f32 = 48.0;
     /// Minimum card width in grids
+    #[allow(dead_code)]
     pub const CARD_MIN_WIDTH: f32 = 280.0;
     /// Header height
+    #[allow(dead_code)]
     pub const HEADER_HEIGHT: f32 = 51.0;
     /// Search box min/max widths
+    #[allow(dead_code)]
     pub const SEARCH_WIDTH_MIN: f32 = 150.0;
+    #[allow(dead_code)]
     pub const SEARCH_WIDTH_MAX: f32 = 250.0;
+    /// Glass panel blur amount
+    pub const GLASS_BLUR: f32 = 10.0;
+    /// Glass panel opacity
+    pub const GLASS_OPACITY: f32 = 0.03;
+    /// Content vertical spacing
+    pub const CONTENT_SPACING_TOP: f32 = 32.0;
+    pub const CONTENT_SPACING_BOTTOM: f32 = 64.0;
 }
 
 fn main() -> eframe::Result<()> {
@@ -80,7 +103,7 @@ fn main() -> eframe::Result<()> {
     {
         let native_options = eframe::NativeOptions {
             viewport: egui::ViewportBuilder::default()
-                .with_inner_size([1200.0, 800.0])
+                .with_inner_size([layout::CONTENT_MAX_WIDTH, 800.0])
                 .with_title("Armas - Component Library Showcase"),
             ..Default::default()
         };
@@ -101,7 +124,7 @@ struct ShowcaseApp {
     selected_page_index: usize,
 
     // Available pages from markdown
-    pages: Vec<(&'static str, fn(&mut egui::Ui))>,
+    pages: Vec<Page>,
 
     // UI Components
     sidebar: Sidebar,
@@ -235,8 +258,8 @@ impl ShowcaseApp {
 
         // Wrap sidebar in GlassPanel
         GlassPanel::new()
-            .blur(10.0)
-            .opacity(0.03)
+            .blur(showcase_sizes::GLASS_BLUR)
+            .opacity(showcase_sizes::GLASS_OPACITY)
             .show(ui, &theme, |ui| {
                 let response = self.sidebar.show(ui);
 
@@ -259,11 +282,10 @@ impl ShowcaseApp {
     }
 
     fn show_content(&mut self, ui: &mut egui::Ui) {
-
         // Clean background with scroll area
         egui::ScrollArea::vertical().show(ui, |ui| {
             // Max width container for optimal reading
-            let max_width = 1200.0;
+            let max_width = layout::CONTENT_MAX_WIDTH;
             let available_width = ui.available_width();
             let content_width = available_width.min(max_width);
             let margin = (available_width - content_width) / 2.0;
@@ -272,14 +294,14 @@ impl ShowcaseApp {
 
             ui.vertical(|ui| {
                 ui.set_max_width(content_width);
-                ui.add_space(32.0);
+                ui.add_space(showcase_sizes::CONTENT_SPACING_TOP);
 
                 // Show selected page content
                 if let Some((_, show_fn)) = self.pages.get(self.selected_page_index) {
                     show_fn(ui);
                 }
 
-                ui.add_space(64.0);
+                ui.add_space(showcase_sizes::CONTENT_SPACING_BOTTOM);
             });
         });
     }

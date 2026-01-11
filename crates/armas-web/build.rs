@@ -12,12 +12,7 @@ fn main() {
     }
 
     // Define section order
-    let section_order = vec![
-        "getting_started",
-        "components",
-        "effects",
-        "examples",
-    ];
+    let section_order = vec!["getting_started", "components", "effects", "examples"];
 
     let mut sections: Vec<(String, Vec<(String, PathBuf)>)> = Vec::new();
 
@@ -58,6 +53,10 @@ fn main() {
     code.push_str("use armas::*;\n");
     code.push_str("use armas_showcase_macros::showcase_page;\n");
     code.push_str("use eframe::egui;\n\n");
+    code.push_str("// Type aliases for complex types\n");
+    code.push_str("type PageShowFn = fn(&mut egui::Ui);\n");
+    code.push_str("type Page = (&'static str, PageShowFn);\n");
+    code.push_str("type Section = (&'static str, Vec<Page>);\n\n");
 
     // Generate modules for each file
     for (section_name, files) in &sections {
@@ -66,15 +65,17 @@ fn main() {
             code.push_str(&format!("pub mod {} {{\n", module_name));
             code.push_str("    use super::*;\n");
             // Add crates/armas-web/ prefix for workspace-relative path
-            let workspace_path = format!("crates/armas-web/{}",
-                file_path.to_str().unwrap().replace("\\", "/"));
+            let workspace_path = format!(
+                "crates/armas-web/{}",
+                file_path.to_str().unwrap().replace("\\", "/")
+            );
             code.push_str(&format!("    showcase_page!(\"{}\");\n", workspace_path));
             code.push_str("}\n\n");
         }
     }
 
     // Generate the get_pages function (flat list)
-    code.push_str("pub fn get_pages() -> Vec<(&'static str, fn(&mut egui::Ui))> {\n");
+    code.push_str("pub fn get_pages() -> Vec<Page> {\n");
     code.push_str("    vec![\n");
 
     for (section_name, files) in &sections {
@@ -93,8 +94,10 @@ fn main() {
                 .collect::<Vec<_>>()
                 .join(" ");
 
-            code.push_str(&format!("        (\"{}\", {}::show as fn(&mut egui::Ui)),\n",
-                display_name, module_name));
+            code.push_str(&format!(
+                "        (\"{}\", {}::show as fn(&mut egui::Ui)),\n",
+                display_name, module_name
+            ));
         }
     }
 
@@ -102,7 +105,7 @@ fn main() {
     code.push_str("}\n\n");
 
     // Generate get_sections function (grouped by section)
-    code.push_str("pub fn get_sections() -> Vec<(&'static str, Vec<(&'static str, fn(&mut egui::Ui))>)> {\n");
+    code.push_str("pub fn get_sections() -> Vec<Section> {\n");
     code.push_str("    vec![\n");
 
     for (section_name, files) in &sections {
@@ -136,8 +139,10 @@ fn main() {
                 .collect::<Vec<_>>()
                 .join(" ");
 
-            code.push_str(&format!("            (\"{}\", {}::show as fn(&mut egui::Ui)),\n",
-                display_name, module_name));
+            code.push_str(&format!(
+                "            (\"{}\", {}::show as fn(&mut egui::Ui)),\n",
+                display_name, module_name
+            ));
         }
 
         code.push_str("        ]),\n");

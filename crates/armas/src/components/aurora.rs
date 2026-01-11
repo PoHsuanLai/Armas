@@ -29,16 +29,13 @@ struct AuroraBlob {
 impl AuroraBlob {
     fn new(pos: Pos2, radius: f32, colors: Vec<Color32>, speed: f32) -> Self {
         use std::collections::hash_map::RandomState;
-        use std::hash::{BuildHasher, Hash, Hasher};
+        use std::hash::BuildHasher;
 
         // Generate pseudo-random values based on position
-        let mut hasher = RandomState::new().build_hasher();
-        pos.x.to_bits().hash(&mut hasher);
-        let hash1 = hasher.finish();
 
-        let mut hasher = RandomState::new().build_hasher();
-        pos.y.to_bits().hash(&mut hasher);
-        let hash2 = hasher.finish();
+        let hash1 = RandomState::new().hash_one(pos.x.to_bits());
+
+        let hash2 = RandomState::new().hash_one(pos.y.to_bits());
 
         Self {
             pos,

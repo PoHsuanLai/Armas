@@ -74,11 +74,7 @@ impl SimpleButton {
             // Draw shadow on hover
             if response.hovered() {
                 let shadow_rect = rect.translate(Vec2::new(0.0, 2.0));
-                painter.rect_filled(
-                    shadow_rect,
-                    corner_radius,
-                    Color32::from_black_alpha(20),
-                );
+                painter.rect_filled(shadow_rect, corner_radius, Color32::from_black_alpha(20));
             }
 
             // Draw background
@@ -93,10 +89,7 @@ impl SimpleButton {
             );
 
             // Draw text - Simple uses regular weight
-            let font_id = egui::FontId::new(
-                14.0,
-                egui::FontFamily::Name("Inter".into()),
-            );
+            let font_id = egui::FontId::new(14.0, egui::FontFamily::Name("Inter".into()));
             painter.text(
                 lifted_rect.center(),
                 egui::Align2::CENTER_CENTER,

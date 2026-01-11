@@ -131,7 +131,7 @@ impl GradientText {
 
                     // Draw character
                     let char_pos = rect.min + Vec2::new(x_offset, 0.0);
-                    ui.painter().galley(char_pos, char_galley.into(), color);
+                    ui.painter().galley(char_pos, char_galley, color);
                 }
             } else {
                 // Smooth gradient across the entire text
@@ -143,7 +143,7 @@ impl GradientText {
                 let galley =
                     ui.painter()
                         .layout_no_wrap(self.text.clone(), font_id.clone(), Color32::WHITE);
-                ui.painter().galley(rect.min, galley.into(), color);
+                ui.painter().galley(rect.min, galley, color);
             }
         }
 

@@ -205,9 +205,7 @@ impl Stepper {
                     vec2(120.0, 40.0),
                     egui::Layout::top_down(egui::Align::Center),
                     |ui| {
-                        let label_color = if is_current {
-                            theme.on_surface()
-                        } else if is_completed {
+                        let label_color = if is_current || is_completed {
                             theme.on_surface()
                         } else {
                             theme.on_surface_variant().linear_multiply(0.7)
@@ -327,9 +325,7 @@ impl Stepper {
 
                 // Label and description
                 ui.vertical(|ui| {
-                    let label_color = if is_current {
-                        theme.on_surface()
-                    } else if is_completed {
+                    let label_color = if is_current || is_completed {
                         theme.on_surface()
                     } else {
                         theme.on_surface_variant().linear_multiply(0.7)

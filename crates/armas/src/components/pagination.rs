@@ -79,7 +79,10 @@ impl Pagination {
 
         // Load previous state from egui memory (if current_page is the default)
         if self.current_page == 1 {
-            if let Some(stored_page) = ui.ctx().data_mut(|d| d.get_persisted::<usize>(pagination_id)) {
+            if let Some(stored_page) = ui
+                .ctx()
+                .data_mut(|d| d.get_persisted::<usize>(pagination_id))
+            {
                 self.current_page = stored_page;
             }
         }
@@ -126,7 +129,7 @@ impl Pagination {
             let pages = self.calculate_visible_pages();
 
             // Page number buttons
-            for (_idx, page) in pages.iter().enumerate() {
+            for page in pages.iter() {
                 if let Some(page_num) = page {
                     let is_current = *page_num == self.current_page;
                     let variant = if is_current {
@@ -135,7 +138,7 @@ impl Pagination {
                         ButtonVariant::Outlined
                     };
 
-                    if Button::new(&page_num.to_string())
+                    if Button::new(page_num.to_string())
                         .variant(variant)
                         .min_size(egui::vec2(32.0, 32.0))
                         .show(ui)

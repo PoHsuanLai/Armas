@@ -75,10 +75,7 @@ impl BrutalButton {
             );
 
             // Draw text - Brutal uses regular weight, uppercase, smaller size
-            let font_id = egui::FontId::new(
-                13.0,
-                egui::FontFamily::Name("Inter".into()),
-            );
+            let font_id = egui::FontId::new(13.0, egui::FontFamily::Name("Inter".into()));
             painter.text(
                 rect.center(),
                 egui::Align2::CENTER_CENTER,

@@ -184,7 +184,11 @@ impl TiltCard {
 
         // Draw content in a child UI
         let content_rect = tilted_rect.shrink(16.0);
-        let mut child_ui = ui.new_child(egui::UiBuilder::new().max_rect(content_rect).layout(*ui.layout()));
+        let mut child_ui = ui.new_child(
+            egui::UiBuilder::new()
+                .max_rect(content_rect)
+                .layout(*ui.layout()),
+        );
         content(&mut child_ui);
 
         // Request repaint for smooth animation (while springs are settling)

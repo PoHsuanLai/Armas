@@ -170,13 +170,21 @@ impl HoverCard {
 
         // Draw base content
         let base_rect = scaled_rect.shrink(16.0);
-        let mut base_ui = ui.new_child(egui::UiBuilder::new().max_rect(base_rect).layout(*ui.layout()));
+        let mut base_ui = ui.new_child(
+            egui::UiBuilder::new()
+                .max_rect(base_rect)
+                .layout(*ui.layout()),
+        );
         base_content(&mut base_ui, 1.0 - t);
 
         // Draw hover content with fade-in
         if t > 0.01 {
             let hover_rect = scaled_rect.shrink(16.0);
-            let mut hover_ui = ui.new_child(egui::UiBuilder::new().max_rect(hover_rect).layout(*ui.layout()));
+            let mut hover_ui = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(hover_rect)
+                    .layout(*ui.layout()),
+            );
             hover_content(&mut hover_ui, t);
         }
 

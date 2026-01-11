@@ -176,7 +176,11 @@ impl CardStack {
             // Draw content for active card
             if is_active {
                 let text_rect = card_rect.shrink(20.0);
-                let mut child_ui = ui.new_child(egui::UiBuilder::new().max_rect(text_rect).layout(*ui.layout()));
+                let mut child_ui = ui.new_child(
+                    egui::UiBuilder::new()
+                        .max_rect(text_rect)
+                        .layout(*ui.layout()),
+                );
 
                 child_ui.vertical(|ui| {
                     ui.heading(&card.title);

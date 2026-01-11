@@ -122,169 +122,165 @@ impl Input {
         // Load state from memory if ID is set
         if let Some(id) = self.id {
             let state_id = id.with("input_state");
-            let stored_text: String = ui.ctx().data_mut(|d| {
-                d.get_temp(state_id).unwrap_or_else(|| text.clone())
-            });
+            let stored_text: String = ui
+                .ctx()
+                .data_mut(|d| d.get_temp(state_id).unwrap_or_else(|| text.clone()));
             *text = stored_text;
         }
 
         ui.vertical(|ui| {
             ui.spacing_mut().item_spacing.y = 4.0;
-                // Label
-                if let Some(label) = &self.label {
-                    ui.label(
-                        egui::RichText::new(label)
-                            .size(14.0)
-                            .color(theme.on_surface()),
-                    );
-                }
+            // Label
+            if let Some(label) = &self.label {
+                ui.label(
+                    egui::RichText::new(label)
+                        .size(14.0)
+                        .color(theme.on_surface()),
+                );
+            }
 
-                // Input container
-                let desired_size = vec2(width, 40.0);
-                let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click());
+            // Input container
+            let desired_size = vec2(width, 40.0);
+            let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click());
 
-                if ui.is_rect_visible(rect) {
-                    let _visuals = ui.style().interact(&response);
+            if ui.is_rect_visible(rect) {
+                let _visuals = ui.style().interact(&response);
 
-                    // Determine colors based on state and variant
-                    let (bg_color, border_color) = match self.state {
-                        InputState::Normal => match self.variant {
-                            InputVariant::Default => (
-                                Color32::from_rgba_unmultiplied(40, 40, 40, 180),
-                                theme.primary(),
+                // Determine colors based on state and variant
+                let (bg_color, border_color) = match self.state {
+                    InputState::Normal => match self.variant {
+                        InputVariant::Default => (
+                            Color32::from_rgba_unmultiplied(40, 40, 40, 180),
+                            theme.primary(),
+                        ),
+                        InputVariant::Outlined => (
+                            Color32::TRANSPARENT,
+                            if response.has_focus() {
+                                theme.primary()
+                            } else {
+                                Color32::from_gray(100)
+                            },
+                        ),
+                        InputVariant::Filled => {
+                            let surface = theme.surface_variant();
+                            (surface, theme.primary())
+                        }
+                    },
+                    InputState::Success => {
+                        let success = theme.success();
+                        (
+                            Color32::from_rgba_unmultiplied(
+                                success.r(),
+                                success.g(),
+                                success.b(),
+                                40,
                             ),
-                            InputVariant::Outlined => (
-                                Color32::TRANSPARENT,
-                                if response.has_focus() {
-                                    theme.primary()
-                                } else {
-                                    Color32::from_gray(100)
-                                },
+                            success,
+                        )
+                    }
+                    InputState::Error => {
+                        let error = theme.error();
+                        (
+                            Color32::from_rgba_unmultiplied(error.r(), error.g(), error.b(), 40),
+                            error,
+                        )
+                    }
+                    InputState::Warning => {
+                        let warning = theme.warning();
+                        (
+                            Color32::from_rgba_unmultiplied(
+                                warning.r(),
+                                warning.g(),
+                                warning.b(),
+                                40,
                             ),
-                            InputVariant::Filled => {
-                                let surface = theme.surface_variant();
-                                (surface, theme.primary())
-                            }
-                        },
-                        InputState::Success => {
-                            let success = theme.success();
-                            (
-                                Color32::from_rgba_unmultiplied(
-                                    success.r(),
-                                    success.g(),
-                                    success.b(),
-                                    40,
-                                ),
-                                success,
-                            )
-                        }
-                        InputState::Error => {
-                            let error = theme.error();
-                            (
-                                Color32::from_rgba_unmultiplied(
-                                    error.r(),
-                                    error.g(),
-                                    error.b(),
-                                    40,
-                                ),
-                                error,
-                            )
-                        }
-                        InputState::Warning => {
-                            let warning = theme.warning();
-                            (
-                                Color32::from_rgba_unmultiplied(
-                                    warning.r(),
-                                    warning.g(),
-                                    warning.b(),
-                                    40,
-                                ),
-                                warning,
-                            )
-                        }
-                    };
+                            warning,
+                        )
+                    }
+                };
 
-                    // Background
-                    ui.painter().rect_filled(
-                        rect,
-                        CornerRadius::same(theme.spacing.corner_radius_small as u8),
-                        bg_color,
+                // Background
+                ui.painter().rect_filled(
+                    rect,
+                    CornerRadius::same(theme.spacing.corner_radius_small as u8),
+                    bg_color,
+                );
+
+                // Border (stronger on focus)
+                let border_width = if response.has_focus() { 2.0 } else { 1.0 };
+                ui.painter().rect_stroke(
+                    rect,
+                    CornerRadius::same(theme.spacing.corner_radius_small as u8),
+                    Stroke::new(border_width, border_color),
+                    egui::StrokeKind::Outside,
+                );
+
+                // Calculate text area considering icons
+                let mut text_rect = rect.shrink2(vec2(12.0, 8.0));
+
+                // Left icon
+                if let Some(icon) = &self.left_icon {
+                    let icon_pos = rect.left_center() + vec2(12.0, 0.0);
+                    ui.painter().text(
+                        icon_pos,
+                        egui::Align2::LEFT_CENTER,
+                        icon,
+                        egui::FontId::proportional(18.0),
+                        theme.on_surface(),
                     );
+                    text_rect.min.x += 30.0;
+                }
 
-                    // Border (stronger on focus)
-                    let border_width = if response.has_focus() { 2.0 } else { 1.0 };
-                    ui.painter().rect_stroke(
-                        rect,
-                        CornerRadius::same(theme.spacing.corner_radius_small as u8),
-                        Stroke::new(border_width, border_color),
-                        egui::StrokeKind::Outside,
+                // Right icon
+                if let Some(icon) = &self.right_icon {
+                    let icon_pos = rect.right_center() - vec2(12.0, 0.0);
+                    ui.painter().text(
+                        icon_pos,
+                        egui::Align2::RIGHT_CENTER,
+                        icon,
+                        egui::FontId::proportional(18.0),
+                        theme.on_surface(),
                     );
-
-                    // Calculate text area considering icons
-                    let mut text_rect = rect.shrink2(vec2(12.0, 8.0));
-
-                    // Left icon
-                    if let Some(icon) = &self.left_icon {
-                        let icon_pos = rect.left_center() + vec2(12.0, 0.0);
-                        ui.painter().text(
-                            icon_pos,
-                            egui::Align2::LEFT_CENTER,
-                            icon,
-                            egui::FontId::proportional(18.0),
-                            theme.on_surface(),
-                        );
-                        text_rect.min.x += 30.0;
-                    }
-
-                    // Right icon
-                    if let Some(icon) = &self.right_icon {
-                        let icon_pos = rect.right_center() - vec2(12.0, 0.0);
-                        ui.painter().text(
-                            icon_pos,
-                            egui::Align2::RIGHT_CENTER,
-                            icon,
-                            egui::FontId::proportional(18.0),
-                            theme.on_surface(),
-                        );
-                        text_rect.max.x -= 30.0;
-                    }
-
-                    // Text input
-                    let mut text_edit = TextEdit::singleline(text)
-                        .hint_text(&self.placeholder)
-                        .desired_width(text_rect.width())
-                        .frame(false);
-
-                    if self.password {
-                        text_edit = text_edit.password(true);
-                    }
-
-                    let text_response = ui.put(text_rect, text_edit);
-                    response = response.union(text_response);
+                    text_rect.max.x -= 30.0;
                 }
 
-                // Helper text
-                if let Some(helper) = &self.helper_text {
-                    ui.add_space(4.0);
-                    let helper_color = match self.state {
-                        InputState::Normal => theme.on_surface_variant(),
-                        InputState::Success => theme.success(),
-                        InputState::Error => theme.error(),
-                        InputState::Warning => theme.warning(),
-                    };
-                    ui.label(egui::RichText::new(helper).size(12.0).color(helper_color));
+                // Text input
+                let mut text_edit = TextEdit::singleline(text)
+                    .hint_text(&self.placeholder)
+                    .desired_width(text_rect.width())
+                    .frame(false);
+
+                if self.password {
+                    text_edit = text_edit.password(true);
                 }
 
-                // Save state to memory if ID is set
-                if let Some(id) = self.id {
-                    let state_id = id.with("input_state");
-                    ui.ctx().data_mut(|d| {
-                        d.insert_temp(state_id, text.clone());
-                    });
-                }
+                let text_response = ui.put(text_rect, text_edit);
+                response = response.union(text_response);
+            }
 
-                response
-        }).inner
+            // Helper text
+            if let Some(helper) = &self.helper_text {
+                ui.add_space(4.0);
+                let helper_color = match self.state {
+                    InputState::Normal => theme.on_surface_variant(),
+                    InputState::Success => theme.success(),
+                    InputState::Error => theme.error(),
+                    InputState::Warning => theme.warning(),
+                };
+                ui.label(egui::RichText::new(helper).size(12.0).color(helper_color));
+            }
+
+            // Save state to memory if ID is set
+            if let Some(id) = self.id {
+                let state_id = id.with("input_state");
+                ui.ctx().data_mut(|d| {
+                    d.insert_temp(state_id, text.clone());
+                });
+            }
+
+            response
+        })
+        .inner
     }
 }
 

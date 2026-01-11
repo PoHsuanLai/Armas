@@ -98,7 +98,7 @@ impl ShimmerButton {
                 let grad_pos = gradient_x / gradient_width;
 
                 // Apply gradient stops: dark at edges (0%, 100%), light in middle (45%-55%)
-                let color = if grad_pos < 0.0 || grad_pos > 1.0 {
+                let color = if !(0.0..=1.0).contains(&grad_pos) {
                     color_dark
                 } else if grad_pos < 0.45 {
                     // Fade from dark to light (0% to 45%)
@@ -131,10 +131,7 @@ impl ShimmerButton {
             );
 
             // Draw text - Shimmer uses font-medium (500 weight)
-            let font_id = egui::FontId::new(
-                14.0,
-                egui::FontFamily::Name("InterMedium".into()),
-            );
+            let font_id = egui::FontId::new(14.0, egui::FontFamily::Name("InterMedium".into()));
             painter.text(
                 rect.center(),
                 egui::Align2::CENTER_CENTER,

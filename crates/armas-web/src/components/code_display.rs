@@ -1,5 +1,7 @@
 //! Code display component with syntax highlighting and copy functionality
 
+#![allow(dead_code)]
+
 use armas::*;
 use eframe::egui;
 
@@ -10,27 +12,35 @@ impl RustHighlighter {
     /// Highlight a line of Rust code
     pub fn highlight_line(line: &str) -> Vec<(String, egui::Color32)> {
         let keywords = [
-            "fn", "let", "mut", "pub", "impl", "struct", "enum", "use", "mod",
-            "const", "static", "match", "if", "else", "for", "while", "loop",
-            "return", "break", "continue", "self", "Self", "super", "crate",
+            "fn", "let", "mut", "pub", "impl", "struct", "enum", "use", "mod", "const", "static",
+            "match", "if", "else", "for", "while", "loop", "return", "break", "continue", "self",
+            "Self", "super", "crate",
         ];
         let types = [
-            "String", "Vec2", "bool", "f32", "u32", "i32", "f64", "i64",
-            "usize", "isize", "Vec", "Option", "Result", "Box", "Rc", "Arc",
-            "Ui", "Response", "Color32", "Theme",
+            "String", "Vec2", "bool", "f32", "u32", "i32", "f64", "i64", "usize", "isize", "Vec",
+            "Option", "Result", "Box", "Rc", "Arc", "Ui", "Response", "Color32", "Theme",
         ];
         let functions = [
-            "new", "show", "variant", "min_size", "width", "height",
-            "into", "to_string", "clone", "unwrap", "expect",
+            "new",
+            "show",
+            "variant",
+            "min_size",
+            "width",
+            "height",
+            "into",
+            "to_string",
+            "clone",
+            "unwrap",
+            "expect",
         ];
 
         // Colors (Nord-inspired palette)
         let keyword_color = egui::Color32::from_rgb(129, 161, 193); // Blue
-        let type_color = egui::Color32::from_rgb(143, 188, 187);    // Cyan
-        let string_color = egui::Color32::from_rgb(163, 190, 140);  // Green
-        let comment_color = egui::Color32::from_rgb(76, 86, 106);   // Gray
+        let type_color = egui::Color32::from_rgb(143, 188, 187); // Cyan
+        let string_color = egui::Color32::from_rgb(163, 190, 140); // Green
+        let comment_color = egui::Color32::from_rgb(76, 86, 106); // Gray
         let function_color = egui::Color32::from_rgb(136, 192, 208); // Teal
-        let number_color = egui::Color32::from_rgb(180, 142, 173);  // Purple
+        let number_color = egui::Color32::from_rgb(180, 142, 173); // Purple
         let default_color = egui::Color32::from_rgb(216, 222, 233); // Light gray
 
         let mut result = Vec::new();
@@ -43,7 +53,7 @@ impl RustHighlighter {
                 current_token.push(ch);
                 current_token.push(chars.next().unwrap());
                 // Consume rest of line
-                while let Some(ch) = chars.next() {
+                for ch in chars.by_ref() {
                     current_token.push(ch);
                 }
                 result.push((current_token.clone(), comment_color));
@@ -163,111 +173,100 @@ impl CodeDisplayCard {
         let theme = ui.ctx().armas_theme();
         let mut response = ui.label("");
 
-        Card::new()
-            .corner_radius(12.0)
-            .show(ui, &theme, |ui| {
-                // Header with language badge, GitHub link, and copy button
+        Card::new().corner_radius(12.0).show(ui, &theme, |ui| {
+            // Header with language badge, GitHub link, and copy button
+            ui.horizontal(|ui| {
+                Badge::new(self.language.to_uppercase())
+                    .color(BadgeColor::Info)
+                    .show(ui);
+
+                ui.allocate_space(ui.available_size());
+
+                // GitHub link button
+                if let Some(github_url) = &self.github_url {
+                    if Button::new("</> GitHub")
+                        .variant(ButtonVariant::Text)
+                        .show(ui)
+                        .on_hover_text("View source on GitHub")
+                        .clicked()
+                    {
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            if let Some(window) = web_sys::window() {
+                                let _ = window.open_with_url(github_url);
+                            }
+                        }
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _ = open::that(github_url);
+                        }
+                    }
+                }
+
+                if self.show_copy_button
+                    && Button::new("📋 Copy")
+                        .variant(ButtonVariant::Text)
+                        .show(ui)
+                        .clicked()
+                {
+                    ui.ctx().copy_text(self.code.clone());
+                }
+            });
+
+            ui.add_space(8.0);
+            ui.separator();
+            ui.add_space(8.0);
+
+            // Code area with scroll
+            egui::ScrollArea::both().max_height(600.0).show(ui, |ui| {
                 ui.horizontal(|ui| {
-                    Badge::new(&self.language.to_uppercase())
-                        .color(BadgeColor::Info)
-                        .show(ui);
+                    ui.spacing_mut().item_spacing.x = 16.0;
 
-                    ui.allocate_space(ui.available_size());
-
-                    // GitHub link button
-                    if let Some(github_url) = &self.github_url {
-                        if Button::new("</> GitHub")
-                            .variant(ButtonVariant::Text)
-                            .show(ui)
-                            .on_hover_text("View source on GitHub")
-                            .clicked()
-                        {
-                            #[cfg(target_arch = "wasm32")]
-                            {
-                                if let Some(window) = web_sys::window() {
-                                    let _ = window.open_with_url(github_url);
-                                }
+                    // Line numbers
+                    if self.show_line_numbers {
+                        ui.vertical(|ui| {
+                            ui.spacing_mut().item_spacing.y = 0.0;
+                            for (i, _) in self.code.lines().enumerate() {
+                                ui.label(
+                                    egui::RichText::new(format!("{:>3}", i + 1))
+                                        .monospace()
+                                        .color(theme.on_surface_variant()),
+                                );
                             }
-                            #[cfg(not(target_arch = "wasm32"))]
-                            {
-                                let _ = open::that(github_url);
-                            }
-                        }
+                        });
                     }
 
-                    if self.show_copy_button {
-                        if Button::new("📋 Copy")
-                            .variant(ButtonVariant::Text)
-                            .show(ui)
-                            .clicked()
-                        {
-                            ui.ctx().copy_text(self.code.clone());
-                        }
-                    }
-                });
+                    // Code content
+                    ui.vertical(|ui| {
+                        ui.spacing_mut().item_spacing.y = 0.0;
 
-                ui.add_space(8.0);
-                ui.separator();
-                ui.add_space(8.0);
+                        for line in self.code.lines() {
+                            ui.horizontal(|ui| {
+                                ui.spacing_mut().item_spacing.x = 0.0;
 
-                // Code area with scroll
-                egui::ScrollArea::both()
-                    .max_height(600.0)
-                    .show(ui, |ui| {
-                        ui.horizontal(|ui| {
-                            ui.spacing_mut().item_spacing.x = 16.0;
-
-                            // Line numbers
-                            if self.show_line_numbers {
-                                ui.vertical(|ui| {
-                                    ui.spacing_mut().item_spacing.y = 0.0;
-                                    for (i, _) in self.code.lines().enumerate() {
+                                if self.language == "rust" {
+                                    let tokens = RustHighlighter::highlight_line(line);
+                                    for (token, color) in tokens {
                                         ui.label(
-                                            egui::RichText::new(format!("{:>3}", i + 1))
-                                                .monospace()
-                                                .color(theme.on_surface_variant()),
+                                            egui::RichText::new(token).monospace().color(color),
                                         );
                                     }
-                                });
-                            }
-
-                            // Code content
-                            ui.vertical(|ui| {
-                                ui.spacing_mut().item_spacing.y = 0.0;
-
-                                for line in self.code.lines() {
-                                    ui.horizontal(|ui| {
-                                        ui.spacing_mut().item_spacing.x = 0.0;
-
-                                        if self.language == "rust" {
-                                            let tokens = RustHighlighter::highlight_line(line);
-                                            for (token, color) in tokens {
-                                                ui.label(
-                                                    egui::RichText::new(token)
-                                                        .monospace()
-                                                        .color(color),
-                                                );
-                                            }
-                                        } else {
-                                            // Fallback for other languages
-                                            ui.label(
-                                                egui::RichText::new(line)
-                                                    .monospace()
-                                                    .color(theme.on_surface()),
-                                            );
-                                        }
-                                    });
+                                } else {
+                                    // Fallback for other languages
+                                    ui.label(
+                                        egui::RichText::new(line)
+                                            .monospace()
+                                            .color(theme.on_surface()),
+                                    );
                                 }
                             });
-                        });
-
-                        response = ui.interact(
-                            ui.min_rect(),
-                            ui.id(),
-                            egui::Sense::hover(),
-                        );
+                        }
                     });
+                });
+
+                response = ui.interact(ui.min_rect(), ui.id(), egui::Sense::hover());
             });
+        });
 
         response
     }

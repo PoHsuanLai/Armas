@@ -271,16 +271,15 @@ impl Drawer {
 
                                 ui.allocate_space(ui.available_size());
 
-                                if self.closable {
-                                    if Button::new("✕")
+                                if self.closable
+                                    && Button::new("✕")
                                         .variant(ButtonVariant::Text)
                                         .min_size(vec2(32.0, 32.0))
                                         .show(ui)
                                         .clicked()
-                                    {
-                                        is_open = false;
-                                        response.closed = true;
-                                    }
+                                {
+                                    is_open = false;
+                                    response.closed = true;
                                 }
                             });
 

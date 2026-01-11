@@ -85,9 +85,9 @@ pub struct Sidebar {
     is_expanded: bool,
     collapsed_width: f32,
     expanded_width: f32,
-    collapsible: bool, // Whether the sidebar can be collapsed
-    show_icons: bool,  // Whether to show icons
-    use_buttons: bool, // Whether to use Button components
+    collapsible: bool,             // Whether the sidebar can be collapsed
+    show_icons: bool,              // Whether to show icons
+    use_buttons: bool,             // Whether to use Button components
     button_variant: ButtonVariant, // Button variant to use
 
     // Animation state
@@ -107,9 +107,9 @@ impl Sidebar {
             is_expanded: true,
             collapsed_width: 70.0,
             expanded_width: 240.0,
-            collapsible: true, // Default: collapsible
-            show_icons: true,  // Default: show icons
-            use_buttons: false, // Default: custom rendering
+            collapsible: true,                   // Default: collapsible
+            show_icons: true,                    // Default: show icons
+            use_buttons: false,                  // Default: custom rendering
             button_variant: ButtonVariant::Text, // Default variant for button mode
             width_animation: Animation::new(240.0, 240.0, 0.3).with_easing(EasingFunction::EaseOut),
             active_position_animation: Animation::new(0.0, 0.0, 0.3)
@@ -203,59 +203,59 @@ impl Sidebar {
                     ui.style_mut().spacing.item_spacing.y = 4.0;
 
                     for (index, item) in self.items.iter_mut().enumerate() {
-                // Parent button
-                let button_text = if self.show_icons && !item.icon.is_empty() {
-                    format!("{} {}", item.icon, item.label)
-                } else {
-                    item.label.clone()
-                };
+                        // Parent button
+                        let button_text = if self.show_icons && !item.icon.is_empty() {
+                            format!("{} {}", item.icon, item.label)
+                        } else {
+                            item.label.clone()
+                        };
 
-                let button = Button::new(&button_text)
-                    .variant(self.button_variant)
-                    .min_size(egui::vec2(ui.available_width(), 40.0))
-                    .text_align(egui::Align2::LEFT_CENTER)
-                    .text_color(egui::Color32::WHITE)
-                    .hover_text_color(egui::Color32::WHITE);
+                        let button = Button::new(&button_text)
+                            .variant(self.button_variant)
+                            .min_size(egui::vec2(ui.available_width(), 40.0))
+                            .text_align(egui::Align2::LEFT_CENTER)
+                            .text_color(egui::Color32::WHITE)
+                            .hover_text_color(egui::Color32::WHITE);
 
-                if button.show(ui).clicked() {
-                    if !item.children.is_empty() {
-                        item.expanded = !item.expanded;
-                    } else {
-                        clicked_index = Some(index);
-                    }
-                }
-
-                // Child buttons
-                if item.expanded && !item.children.is_empty() {
-                    ui.indent(ui.id().with(index), |ui| {
-                        for (child_idx, child) in item.children.iter().enumerate() {
-                            let child_text = if self.show_icons && !child.icon.is_empty() {
-                                format!("{} {}", child.icon, child.label)
+                        if button.show(ui).clicked() {
+                            if !item.children.is_empty() {
+                                item.expanded = !item.expanded;
                             } else {
-                                child.label.clone()
-                            };
-
-                            let child_button = Button::new(&child_text)
-                                .variant(self.button_variant)
-                                .min_size(egui::vec2(ui.available_width(), 36.0))
-                                .text_align(egui::Align2::LEFT_CENTER)
-                                .text_color(egui::Color32::from_gray(160))
-                                .hover_text_color(egui::Color32::WHITE);
-
-                            if child_button.show(ui).clicked() {
-                                clicked_child = Some((index, child_idx));
+                                clicked_index = Some(index);
                             }
                         }
-                    });
+
+                        // Child buttons
+                        if item.expanded && !item.children.is_empty() {
+                            ui.indent(ui.id().with(index), |ui| {
+                                for (child_idx, child) in item.children.iter().enumerate() {
+                                    let child_text = if self.show_icons && !child.icon.is_empty() {
+                                        format!("{} {}", child.icon, child.label)
+                                    } else {
+                                        child.label.clone()
+                                    };
+
+                                    let child_button = Button::new(&child_text)
+                                        .variant(self.button_variant)
+                                        .min_size(egui::vec2(ui.available_width(), 36.0))
+                                        .text_align(egui::Align2::LEFT_CENTER)
+                                        .text_color(egui::Color32::from_gray(160))
+                                        .hover_text_color(egui::Color32::WHITE);
+
+                                    if child_button.show(ui).clicked() {
+                                        clicked_child = Some((index, child_idx));
+                                    }
+                                }
+                            });
+                        }
                     }
-                }
+                });
             });
-        });
 
         let response = ui.interact(
             ui.min_rect(),
             ui.id().with("sidebar_button_mode"),
-            Sense::hover()
+            Sense::hover(),
         );
 
         SidebarResponse {
@@ -339,7 +339,7 @@ impl Sidebar {
                 );
 
                 // Draw toggle icon
-                let toggle_icon = if self.is_expanded { "☰" } else { "☰" };
+                let toggle_icon = "☰";
                 painter.text(
                     Pos2::new(
                         toggle_rect.left() + (self.collapsed_width - padding * 2.0) / 2.0,
@@ -514,7 +514,10 @@ impl Sidebar {
                 }
 
                 // Draw chevron for expandable items
-                if !item.children.is_empty() && self.is_expanded && current_width > self.collapsed_width + 20.0 {
+                if !item.children.is_empty()
+                    && self.is_expanded
+                    && current_width > self.collapsed_width + 20.0
+                {
                     let chevron = if item.expanded { "▼" } else { "▶" };
                     painter.text(
                         Pos2::new(item_rect.right() - 16.0, item_rect.center().y),
@@ -569,10 +572,7 @@ impl Sidebar {
                         // Draw child icon if present and enabled
                         if self.show_icons && !child.icon.is_empty() {
                             painter.text(
-                                Pos2::new(
-                                    child_rect.left() + 8.0,
-                                    child_rect.center().y,
-                                ),
+                                Pos2::new(child_rect.left() + 8.0, child_rect.center().y),
                                 egui::Align2::LEFT_CENTER,
                                 &child.icon,
                                 egui::FontId::proportional(16.0),

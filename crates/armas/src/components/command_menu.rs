@@ -240,16 +240,14 @@ impl CommandMenu {
                 should_close = true;
             }
 
-            if i.key_pressed(Key::ArrowDown) {
-                if self.selected_index < self.filtered_commands.len().saturating_sub(1) {
-                    self.selected_index += 1;
-                }
+            if i.key_pressed(Key::ArrowDown)
+                && self.selected_index < self.filtered_commands.len().saturating_sub(1)
+            {
+                self.selected_index += 1;
             }
 
-            if i.key_pressed(Key::ArrowUp) {
-                if self.selected_index > 0 {
-                    self.selected_index -= 1;
-                }
+            if i.key_pressed(Key::ArrowUp) && self.selected_index > 0 {
+                self.selected_index -= 1;
             }
 
             if i.key_pressed(Key::Enter) && !self.filtered_commands.is_empty() {

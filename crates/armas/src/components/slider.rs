@@ -84,9 +84,9 @@ impl Slider {
         // Load state from memory if ID is set
         if let Some(id) = self.id {
             let state_id = id.with("slider_state");
-            let stored_value: f32 = ui.ctx().data_mut(|d| {
-                d.get_temp(state_id).unwrap_or(*value)
-            });
+            let stored_value: f32 = ui
+                .ctx()
+                .data_mut(|d| d.get_temp(state_id).unwrap_or(*value));
             *value = stored_value;
         }
 

@@ -80,7 +80,7 @@ impl Typewriter {
 
     /// Show the typewriter text
     pub fn show(&mut self, ui: &mut Ui) -> Response {
-        self.show_styled(ui, |text| RichText::new(text))
+        self.show_styled(ui, RichText::new)
     }
 
     /// Show the typewriter text with custom styling
@@ -120,9 +120,7 @@ impl Typewriter {
             false
         };
 
-        let display_text = if cursor_visible && !self.is_complete() {
-            format!("{}|", visible_text)
-        } else if cursor_visible && self.loop_mode {
+        let display_text = if cursor_visible && (!self.is_complete() || self.loop_mode) {
             format!("{}|", visible_text)
         } else {
             visible_text
@@ -197,7 +195,7 @@ impl WordTypewriter {
 
     /// Show the word typewriter
     pub fn show(&mut self, ui: &mut Ui) -> Response {
-        self.show_styled(ui, |text| RichText::new(text))
+        self.show_styled(ui, RichText::new)
     }
 
     /// Show with custom styling

@@ -134,7 +134,7 @@ impl WobbleCard {
             if rotation.abs() > 0.001 {
                 // For rotation, we need to draw the card as a rotated shape
                 let half_size = rect.size() / 2.0;
-                let corners = vec![
+                let corners = [
                     Vec2::new(-half_size.x, -half_size.y),
                     Vec2::new(half_size.x, -half_size.y),
                     Vec2::new(half_size.x, half_size.y),

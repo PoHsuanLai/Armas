@@ -111,7 +111,7 @@ impl FocusCards {
         let dt = ui.input(|i| i.stable_dt);
 
         // Calculate grid dimensions
-        let rows = (self.cards.len() + self.columns - 1) / self.columns;
+        let rows = self.cards.len().div_ceil(self.columns);
         let grid_width =
             self.columns as f32 * self.card_width + (self.columns - 1) as f32 * self.spacing;
         let grid_height = rows as f32 * self.card_height + (rows - 1) as f32 * self.spacing;

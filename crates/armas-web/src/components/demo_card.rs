@@ -1,5 +1,7 @@
 //! Component demo card with glowing border and glass effect
 
+#![allow(dead_code)]
+
 use armas::*;
 use eframe::egui;
 
@@ -34,21 +36,13 @@ impl ComponentDemoCard {
         self
     }
 
-    pub fn show<R>(
-        self,
-        ui: &mut egui::Ui,
-        content: impl FnOnce(&mut egui::Ui) -> R,
-    ) -> R {
+    pub fn show<R>(self, ui: &mut egui::Ui, content: impl FnOnce(&mut egui::Ui) -> R) -> R {
         // For now, skip the glowing border since it complicates the return type
         // TODO: Fix GlowingBorder to return inner result
         self.show_inner(ui, content)
     }
 
-    fn show_inner<R>(
-        &self,
-        ui: &mut egui::Ui,
-        content: impl FnOnce(&mut egui::Ui) -> R,
-    ) -> R {
+    fn show_inner<R>(&self, ui: &mut egui::Ui, content: impl FnOnce(&mut egui::Ui) -> R) -> R {
         let theme = ui.ctx().armas_theme();
         let panel_result = GlassPanel::new()
             .blur(10.0)

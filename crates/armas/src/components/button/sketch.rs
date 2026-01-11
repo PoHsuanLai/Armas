@@ -75,10 +75,7 @@ impl SketchButton {
             );
 
             // Draw text - Sketch uses regular weight
-            let font_id = egui::FontId::new(
-                14.0,
-                egui::FontFamily::Name("Inter".into()),
-            );
+            let font_id = egui::FontId::new(14.0, egui::FontFamily::Name("Inter".into()));
             painter.text(
                 rect.center(),
                 egui::Align2::CENTER_CENTER,

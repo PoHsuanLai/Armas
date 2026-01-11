@@ -167,7 +167,7 @@ impl InfiniteMovingCards {
         let single_set_width = self.cards.len() as f32 * (self.card_width + self.spacing);
 
         // Wrap the offset to create infinite loop
-        self.scroll_offset = self.scroll_offset % single_set_width;
+        self.scroll_offset %= single_set_width;
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();

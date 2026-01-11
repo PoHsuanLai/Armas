@@ -228,49 +228,64 @@ impl Popover {
             PopoverColor::Surface => (theme.surface(), theme.outline()),
             PopoverColor::Primary => {
                 let base = theme.primary();
-                (egui::Color32::from_rgba_premultiplied(
-                    (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                    (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                    (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
-                    255,
-                ), base)
-            },
+                (
+                    egui::Color32::from_rgba_premultiplied(
+                        (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
+                        (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
+                        (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
+                        255,
+                    ),
+                    base,
+                )
+            }
             PopoverColor::Success => {
                 let base = theme.success();
-                (egui::Color32::from_rgba_premultiplied(
-                    (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                    (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                    (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
-                    255,
-                ), base)
-            },
+                (
+                    egui::Color32::from_rgba_premultiplied(
+                        (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
+                        (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
+                        (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
+                        255,
+                    ),
+                    base,
+                )
+            }
             PopoverColor::Warning => {
                 let base = theme.warning();
-                (egui::Color32::from_rgba_premultiplied(
-                    (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                    (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                    (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
-                    255,
-                ), base)
-            },
+                (
+                    egui::Color32::from_rgba_premultiplied(
+                        (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
+                        (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
+                        (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
+                        255,
+                    ),
+                    base,
+                )
+            }
             PopoverColor::Error => {
                 let base = theme.error();
-                (egui::Color32::from_rgba_premultiplied(
-                    (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                    (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                    (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
-                    255,
-                ), base)
-            },
+                (
+                    egui::Color32::from_rgba_premultiplied(
+                        (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
+                        (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
+                        (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
+                        255,
+                    ),
+                    base,
+                )
+            }
             PopoverColor::Info => {
                 let base = theme.info();
-                (egui::Color32::from_rgba_premultiplied(
-                    (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                    (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                    (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
-                    255,
-                ), base)
-            },
+                (
+                    egui::Color32::from_rgba_premultiplied(
+                        (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
+                        (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
+                        (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
+                        255,
+                    ),
+                    base,
+                )
+            }
         };
 
         // Get style parameters

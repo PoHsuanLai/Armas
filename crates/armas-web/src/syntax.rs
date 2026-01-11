@@ -1,5 +1,5 @@
-use egui::text::{LayoutJob, TextFormat};
 use armas::Theme;
+use egui::text::{LayoutJob, TextFormat};
 
 pub fn highlight_code(ui: &mut egui::Ui, code: &str, language: &str, theme: &Theme) {
     match language {
@@ -13,26 +13,25 @@ pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
     let mut job = LayoutJob::default();
 
     // Define color scheme using theme colors only
-    let keyword_color = theme.primary();                         // Primary color for keywords
-    let string_color = egui::Color32::from_rgb(206, 145, 120);   // Orange/peach
-    let comment_color = egui::Color32::from_rgb(106, 153, 85);   // Green (muted)
-    let function_color = theme.on_surface_variant();             // Use theme color instead of yellow
-    let number_color = egui::Color32::from_rgb(181, 206, 168);   // Light green
-    let type_color = theme.secondary();                          // Secondary color for types
-    let default_color = theme.on_surface();                      // Theme's text color
+    let keyword_color = theme.primary(); // Primary color for keywords
+    let string_color = egui::Color32::from_rgb(206, 145, 120); // Orange/peach
+    let comment_color = egui::Color32::from_rgb(106, 153, 85); // Green (muted)
+    let function_color = theme.on_surface_variant(); // Use theme color instead of yellow
+    let number_color = egui::Color32::from_rgb(181, 206, 168); // Light green
+    let type_color = theme.secondary(); // Secondary color for types
+    let default_color = theme.on_surface(); // Theme's text color
 
     let keywords = [
-        "let", "mut", "fn", "if", "else", "for", "while", "loop", "match", "return",
-        "struct", "enum", "impl", "trait", "pub", "use", "mod", "const", "static",
-        "async", "await", "unsafe", "extern", "as", "break", "continue", "crate",
-        "super", "self", "Self", "where", "type", "ref", "move", "true", "false",
+        "let", "mut", "fn", "if", "else", "for", "while", "loop", "match", "return", "struct",
+        "enum", "impl", "trait", "pub", "use", "mod", "const", "static", "async", "await",
+        "unsafe", "extern", "as", "break", "continue", "crate", "super", "self", "Self", "where",
+        "type", "ref", "move", "true", "false",
     ];
 
     let types = [
-        "i8", "i16", "i32", "i64", "i128", "isize",
-        "u8", "u16", "u32", "u64", "u128", "usize",
-        "f32", "f64", "bool", "char", "str",
-        "String", "Vec", "Option", "Result", "Some", "None", "Ok", "Err",
+        "i8", "i16", "i32", "i64", "i128", "isize", "u8", "u16", "u32", "u64", "u128", "usize",
+        "f32", "f64", "bool", "char", "str", "String", "Vec", "Option", "Result", "Some", "None",
+        "Ok", "Err",
     ];
 
     // Process line by line
@@ -102,7 +101,9 @@ pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
             // Numbers
             if chars[pos].is_numeric() {
                 let start = pos;
-                while pos < chars.len() && (chars[pos].is_numeric() || chars[pos] == '.' || chars[pos] == '_') {
+                while pos < chars.len()
+                    && (chars[pos].is_numeric() || chars[pos] == '.' || chars[pos] == '_')
+                {
                     pos += 1;
                 }
                 job.append(
@@ -184,13 +185,13 @@ pub fn highlight_toml_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
     let mut job = LayoutJob::default();
 
     // Define color scheme using theme colors
-    let key_color = egui::Color32::from_rgb(156, 220, 254);      // Light blue
-    let string_color = egui::Color32::from_rgb(206, 145, 120);   // Orange/peach
-    let comment_color = egui::Color32::from_rgb(106, 153, 85);   // Green
-    let section_color = theme.primary();                         // Primary for sections
-    let boolean_color = theme.secondary();                       // Secondary for booleans
-    let number_color = egui::Color32::from_rgb(181, 206, 168);   // Light green
-    let default_color = theme.on_surface();                      // Theme's text color
+    let key_color = egui::Color32::from_rgb(156, 220, 254); // Light blue
+    let string_color = egui::Color32::from_rgb(206, 145, 120); // Orange/peach
+    let comment_color = egui::Color32::from_rgb(106, 153, 85); // Green
+    let section_color = theme.primary(); // Primary for sections
+    let boolean_color = theme.secondary(); // Secondary for booleans
+    let number_color = egui::Color32::from_rgb(181, 206, 168); // Light green
+    let default_color = theme.on_surface(); // Theme's text color
 
     for (line_idx, line) in code.lines().enumerate() {
         let trimmed = line.trim_start();
@@ -249,7 +250,12 @@ pub fn highlight_toml_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                 string_color
             } else if value == "true" || value == "false" {
                 boolean_color
-            } else if value.chars().next().map(|c| c.is_numeric()).unwrap_or(false) {
+            } else if value
+                .chars()
+                .next()
+                .map(|c| c.is_numeric())
+                .unwrap_or(false)
+            {
                 number_color
             } else {
                 default_color

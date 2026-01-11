@@ -57,11 +57,7 @@ impl AccordionItem {
     }
 
     /// Show the accordion item
-    pub fn show<R>(
-        &mut self,
-        ui: &mut Ui,
-        content: impl FnOnce(&mut Ui) -> R,
-    ) -> (bool, R) {
+    pub fn show<R>(&mut self, ui: &mut Ui, content: impl FnOnce(&mut Ui) -> R) -> (bool, R) {
         let theme = ui.ctx().armas_theme();
 
         // Load state from memory if ID is set

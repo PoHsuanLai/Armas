@@ -23,15 +23,13 @@ impl<'a> SectionHeader<'a> {
         let arrow = if self.collapsed { "▶" } else { "▼" };
         let text = format!("{} {}", self.label, arrow);
 
-        let response = ui.add(
+        ui.add(
             egui::Label::new(
                 egui::RichText::new(text)
                     .size(font_size * 0.9)
                     .color(theme.primary()),
             )
             .sense(egui::Sense::click()),
-        );
-
-        response
+        )
     }
 }

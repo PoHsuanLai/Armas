@@ -83,7 +83,7 @@ fn parse_showcase_markdown(markdown: &str) -> Result<proc_macro2::TokenStream, S
                 if code_block_lang == "demo" {
                     code_blocks.push(CodeBlock::Demo(
                         code_block_content.clone(),
-                        "rust".to_string() // Demo blocks are always Rust
+                        "rust".to_string(), // Demo blocks are always Rust
                     ));
                     // Demo now handles its own code display via tabs, no need to add markdown
                 } else {
@@ -160,7 +160,7 @@ fn parse_showcase_markdown(markdown: &str) -> Result<proc_macro2::TokenStream, S
             }
             Event::End(TagEnd::TableHead) => {
                 // Add separator row after header
-                current_text.push('\n');  // Newline to end the header row first
+                current_text.push('\n'); // Newline to end the header row first
                 current_text.push('|');
                 for _ in 0..table_column_count {
                     current_text.push_str("--------|");
@@ -226,9 +226,12 @@ fn generate_show_function(blocks: &[CodeBlock]) -> Result<proc_macro2::TokenStre
                 let wrapped_code = wrap_demo_with_persistence(code);
 
                 // Parse the wrapped demo code as Rust statements
-                let demo_code: proc_macro2::TokenStream = wrapped_code
-                    .parse()
-                    .map_err(|e| format!("Failed to parse demo code: {}\n\nCode:\n{}", e, wrapped_code))?;
+                let demo_code: proc_macro2::TokenStream = wrapped_code.parse().map_err(|e| {
+                    format!(
+                        "Failed to parse demo code: {}\n\nCode:\n{}",
+                        e, wrapped_code
+                    )
+                })?;
 
                 let code_string = code.to_string();
                 let lang_string = lang.to_string();
@@ -276,7 +279,10 @@ fn generate_show_function(blocks: &[CodeBlock]) -> Result<proc_macro2::TokenStre
 
                                                 // Execute demo code in a unique scope
                                                 let _ = ui.push_id(demo_id.with("preview"), |ui| {
-                                                    #demo_code
+                                                    #[allow(unused_must_use)]
+                                                    {
+                                                        #demo_code
+                                                    }
                                                 });
                                             }
                                         );

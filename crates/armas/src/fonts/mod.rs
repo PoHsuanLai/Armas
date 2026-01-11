@@ -182,10 +182,8 @@ impl FontFamilyBuilder {
         // Load bold weight if provided
         if let Some(bold_data) = bold {
             let bold_key = format!("{}_bold", family_name.to_lowercase());
-            self.font_data.insert(
-                bold_key.clone(),
-                Arc::new(FontData::from_static(bold_data)),
-            );
+            self.font_data
+                .insert(bold_key.clone(), Arc::new(FontData::from_static(bold_data)));
 
             self.families.insert(
                 FontFamily::Name(format!("{}Bold", family_name).into()),
@@ -264,43 +262,41 @@ impl Default for FontFamilyBuilder {
 ///
 /// These fonts are commonly used in modern UI design and pair well
 /// with the Armas component library.
-pub mod recommended {
-    //! Recommended fonts for Aceternity-style UIs
-    //!
-    //! ## Inter
-    //! - **Best for**: General UI, buttons, labels
-    //! - **Download**: <https://fonts.google.com/specimen/Inter>
-    //! - **Weights**: 100-900 (use 400, 500, 600, 700)
-    //!
-    //! ## Geist
-    //! - **Best for**: Modern tech UIs
-    //! - **Download**: <https://vercel.com/font>
-    //! - **Weights**: Regular, Medium, SemiBold, Bold
-    //!
-    //! ## JetBrains Mono
-    //! - **Best for**: Code, monospace needs
-    //! - **Download**: <https://www.jetbrains.com/lp/mono/>
-    //! - **Weights**: 100-800
-    //!
-    //! ## Example: Loading Inter
-    //!
-    //! ```rust,no_run
-    //! # let ctx = &egui::Context::default();
-    //! let inter_regular = include_bytes!("../fonts/Inter-Regular.ttf");
-    //! let inter_medium = include_bytes!("../fonts/Inter-Medium.ttf");
-    //! let inter_semibold = include_bytes!("../fonts/Inter-SemiBold.ttf");
-    //! let inter_bold = include_bytes!("../fonts/Inter-Bold.ttf");
-    //!
-    //! armas::fonts::load_font_family(
-    //!     ctx,
-    //!     "Inter",
-    //!     inter_regular,
-    //!     Some(inter_medium),
-    //!     Some(inter_semibold),
-    //!     Some(inter_bold),
-    //! );
-    //!
-    //! // Set as default
-    //! armas::fonts::set_default_font(ctx, "Inter");
-    //! ```
-}
+///
+/// ## Inter
+/// - **Best for**: General UI, buttons, labels
+/// - **Download**: <https://fonts.google.com/specimen/Inter>
+/// - **Weights**: 100-900 (use 400, 500, 600, 700)
+///
+/// ## Geist
+/// - **Best for**: Modern tech UIs
+/// - **Download**: <https://vercel.com/font>
+/// - **Weights**: Regular, Medium, SemiBold, Bold
+///
+/// ## JetBrains Mono
+/// - **Best for**: Code, monospace needs
+/// - **Download**: <https://www.jetbrains.com/lp/mono/>
+/// - **Weights**: 100-800
+///
+/// ## Example: Loading Inter
+///
+/// ```rust,no_run
+/// # let ctx = &egui::Context::default();
+/// let inter_regular = include_bytes!("../fonts/Inter-Regular.ttf");
+/// let inter_medium = include_bytes!("../fonts/Inter-Medium.ttf");
+/// let inter_semibold = include_bytes!("../fonts/Inter-SemiBold.ttf");
+/// let inter_bold = include_bytes!("../fonts/Inter-Bold.ttf");
+///
+/// armas::fonts::load_font_family(
+///     ctx,
+///     "Inter",
+///     inter_regular,
+///     Some(inter_medium),
+///     Some(inter_semibold),
+///     Some(inter_bold),
+/// );
+///
+/// // Set as default
+/// armas::fonts::set_default_font(ctx, "Inter");
+/// ```
+pub mod recommended {}

@@ -1,5 +1,7 @@
 //! Variant card for displaying component variants in a grid
 
+#![allow(dead_code)]
+
 use armas::*;
 use eframe::egui;
 
@@ -47,12 +49,14 @@ impl VariantCard {
                     ui.spacing_mut().item_spacing.y = 16.0;
 
                     // Demo area (centered)
-                    let result = ui.vertical_centered(|ui| {
-                        ui.add_space(20.0);
-                        let result = content(ui);
-                        ui.add_space(20.0);
-                        result
-                    }).inner;
+                    let result = ui
+                        .vertical_centered(|ui| {
+                            ui.add_space(20.0);
+                            let result = content(ui);
+                            ui.add_space(20.0);
+                            result
+                        })
+                        .inner;
 
                     ui.separator();
 
@@ -72,7 +76,8 @@ impl VariantCard {
                     });
 
                     result
-                }).inner
+                })
+                .inner
             });
 
         (card_result.response, card_result.inner)

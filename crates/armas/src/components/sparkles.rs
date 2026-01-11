@@ -250,7 +250,7 @@ impl Sparkles {
             for sparkle in &self.sparkles {
                 let mut adjusted_sparkle = sparkle.clone();
                 adjusted_sparkle.position = rect.min + sparkle.position.to_vec2();
-                adjusted_sparkle.draw(&painter);
+                adjusted_sparkle.draw(painter);
             }
         }
 

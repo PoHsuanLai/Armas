@@ -150,12 +150,7 @@ impl Menu {
     }
 
     /// Show the menu anchored to a button/element
-    pub fn show(
-        &mut self,
-        ctx: &egui::Context,
-        theme: &Theme,
-        anchor_rect: Rect,
-    ) -> MenuResponse {
+    pub fn show(&mut self, ctx: &egui::Context, theme: &Theme, anchor_rect: Rect) -> MenuResponse {
         let mut response = MenuResponse {
             selected: None,
             clicked_outside: false,

@@ -98,36 +98,37 @@ impl Textarea {
         // Load state from memory if ID is set
         if let Some(id) = self.id {
             let state_id = id.with("textarea_state");
-            let stored_text: String = ui.ctx().data_mut(|d| {
-                d.get_temp(state_id).unwrap_or_else(|| text.clone())
-            });
+            let stored_text: String = ui
+                .ctx()
+                .data_mut(|d| d.get_temp(state_id).unwrap_or_else(|| text.clone()));
             *text = stored_text;
         }
 
-        let response = ui.vertical(|ui| {
-            ui.spacing_mut().item_spacing.y = 4.0;
-            // Label
-            if let Some(label) = &self.label {
-                ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing.x = 8.0;
-                    ui.label(label);
+        let response = ui
+            .vertical(|ui| {
+                ui.spacing_mut().item_spacing.y = 4.0;
+                // Label
+                if let Some(label) = &self.label {
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = 8.0;
+                        ui.label(label);
 
-                    // Character count
-                    if let Some(max) = self.max_chars {
-                        ui.allocate_space(ui.available_size());
+                        // Character count
+                        if let Some(max) = self.max_chars {
+                            ui.allocate_space(ui.available_size());
 
-                        let count_color = if text.len() > max {
-                            theme.error()
-                        } else if text.len() as f32 / max as f32 > 0.9 {
-                            theme.warning()
-                        } else {
-                            theme.on_surface_variant()
-                        };
+                            let count_color = if text.len() > max {
+                                theme.error()
+                            } else if text.len() as f32 / max as f32 > 0.9 {
+                                theme.warning()
+                            } else {
+                                theme.on_surface_variant()
+                            };
 
-                        ui.colored_label(count_color, format!("{}/{}", text.len(), max));
-                    }
-                });
-            }
+                            ui.colored_label(count_color, format!("{}/{}", text.len(), max));
+                        }
+                    });
+                }
 
                 let width = self.width.unwrap_or_else(|| ui.available_width());
 
@@ -195,7 +196,8 @@ impl Textarea {
                 }
 
                 response.inner
-        }).inner;
+            })
+            .inner;
 
         // Save state to memory if ID is set
         if let Some(id) = self.id {

@@ -198,134 +198,138 @@ impl Select {
 
         ui.vertical(|ui| {
             ui.spacing_mut().item_spacing.y = 4.0;
-                // Label
-                if let Some(label) = &self.label {
-                    ui.label(
-                        egui::RichText::new(label)
-                            .size(14.0)
-                            .color(theme.on_surface()),
-                    );
-                }
+            // Label
+            if let Some(label) = &self.label {
+                ui.label(
+                    egui::RichText::new(label)
+                        .size(14.0)
+                        .color(theme.on_surface()),
+                );
+            }
 
-                // Select button
-                let button_height = 40.0;
-                let desired_size = vec2(width, button_height);
-                let (button_rect, response) = ui.allocate_exact_size(desired_size, Sense::click());
+            // Select button
+            let button_height = 40.0;
+            let desired_size = vec2(width, button_height);
+            let (button_rect, response) = ui.allocate_exact_size(desired_size, Sense::click());
 
-                if ui.is_rect_visible(button_rect) {
-                    let hovered = response.hovered();
-                    let bg_color = if hovered {
-                        let hover = theme.hover();
-                        Color32::from_rgba_unmultiplied(hover.r(), hover.g(), hover.b(), 200)
-                    } else {
-                        let surface = theme.surface_variant();
-                        Color32::from_rgba_unmultiplied(surface.r(), surface.g(), surface.b(), 180)
-                    };
+            if ui.is_rect_visible(button_rect) {
+                let hovered = response.hovered();
+                let bg_color = if hovered {
+                    let hover = theme.hover();
+                    Color32::from_rgba_unmultiplied(hover.r(), hover.g(), hover.b(), 200)
+                } else {
+                    let surface = theme.surface_variant();
+                    Color32::from_rgba_unmultiplied(surface.r(), surface.g(), surface.b(), 180)
+                };
 
-                    // Background
-                    ui.painter().rect_filled(
-                        button_rect,
-                        CornerRadius::same(theme.spacing.corner_radius_small as u8),
-                        bg_color,
-                    );
+                // Background
+                ui.painter().rect_filled(
+                    button_rect,
+                    CornerRadius::same(theme.spacing.corner_radius_small as u8),
+                    bg_color,
+                );
 
-                    // Border
-                    let border_color = if self.is_open {
-                        theme.primary()
-                    } else if hovered {
-                        Color32::from_gray(120)
-                    } else {
-                        Color32::from_gray(80)
-                    };
+                // Border
+                let border_color = if self.is_open {
+                    theme.primary()
+                } else if hovered {
+                    Color32::from_gray(120)
+                } else {
+                    Color32::from_gray(80)
+                };
 
-                    ui.painter().rect_stroke(
-                        button_rect,
-                        CornerRadius::same(theme.spacing.corner_radius_small as u8),
-                        Stroke::new(1.0, border_color),
-                        egui::StrokeKind::Outside,
-                    );
+                ui.painter().rect_stroke(
+                    button_rect,
+                    CornerRadius::same(theme.spacing.corner_radius_small as u8),
+                    Stroke::new(1.0, border_color),
+                    egui::StrokeKind::Outside,
+                );
 
-                    // Display text
-                    let display_text = if let Some(selected) = &self.selected_value {
-                        self.options
-                            .iter()
-                            .find(|opt| opt.value == *selected)
-                            .map(|opt| opt.label.as_str())
-                            .unwrap_or(&self.placeholder)
-                    } else {
-                        &self.placeholder
-                    };
+                // Display text
+                let display_text = if let Some(selected) = &self.selected_value {
+                    self.options
+                        .iter()
+                        .find(|opt| opt.value == *selected)
+                        .map(|opt| opt.label.as_str())
+                        .unwrap_or(&self.placeholder)
+                } else {
+                    &self.placeholder
+                };
 
-                    let text_color = if self.selected_value.is_some() {
-                        theme.on_surface()
-                    } else {
-                        Color32::from_gray(150)
-                    };
+                let text_color = if self.selected_value.is_some() {
+                    theme.on_surface()
+                } else {
+                    Color32::from_gray(150)
+                };
 
-                    let text_pos = button_rect.left_center() + vec2(12.0, 0.0);
-                    ui.painter().text(
-                        text_pos,
-                        egui::Align2::LEFT_CENTER,
-                        display_text,
-                        egui::FontId::proportional(14.0),
-                        text_color,
-                    );
+                let text_pos = button_rect.left_center() + vec2(12.0, 0.0);
+                ui.painter().text(
+                    text_pos,
+                    egui::Align2::LEFT_CENTER,
+                    display_text,
+                    egui::FontId::proportional(14.0),
+                    text_color,
+                );
 
-                    // Dropdown arrow
-                    let arrow = if self.is_open { "▲" } else { "▼" };
-                    let arrow_pos = button_rect.right_center() - vec2(12.0, 0.0);
-                    ui.painter().text(
-                        arrow_pos,
-                        egui::Align2::RIGHT_CENTER,
-                        arrow,
-                        egui::FontId::proportional(12.0),
-                        Color32::from_gray(150),
-                    );
-                }
+                // Dropdown arrow
+                let arrow = if self.is_open { "▲" } else { "▼" };
+                let arrow_pos = button_rect.right_center() - vec2(12.0, 0.0);
+                ui.painter().text(
+                    arrow_pos,
+                    egui::Align2::RIGHT_CENTER,
+                    arrow,
+                    egui::FontId::proportional(12.0),
+                    Color32::from_gray(150),
+                );
+            }
 
-                // Toggle dropdown on click
-                if response.clicked() {
-                    self.is_open = !self.is_open;
-                    if self.is_open {
-                        self.search_text.clear();
-                        self.update_filter();
-                        self.highlighted_index = self.filtered_indices.first().copied();
-                    }
-                }
-
-                // Show dropdown if open
+            // Toggle dropdown on click
+            if response.clicked() {
+                self.is_open = !self.is_open;
                 if self.is_open {
-                    let dropdown_response = self.show_dropdown(ui, &theme, button_rect, width);
-                    if let Some(selected_value) = dropdown_response.selected_value {
-                        self.selected_value = Some(selected_value.clone());
-                        new_value = Some(selected_value);
-                        changed = true;
-                        self.is_open = false;
-                    }
-                    if dropdown_response.should_close {
-                        self.is_open = false;
-                    }
+                    self.search_text.clear();
+                    self.update_filter();
+                    self.highlighted_index = self.filtered_indices.first().copied();
                 }
+            }
 
-                // Save state to memory if ID is set
-                if let Some(id) = self.id {
-                    let state_id = id.with("select_state");
-                    ui.ctx().data_mut(|d| {
-                        d.insert_temp(state_id, (
+            // Show dropdown if open
+            if self.is_open {
+                let dropdown_response = self.show_dropdown(ui, &theme, button_rect, width);
+                if let Some(selected_value) = dropdown_response.selected_value {
+                    self.selected_value = Some(selected_value.clone());
+                    new_value = Some(selected_value);
+                    changed = true;
+                    self.is_open = false;
+                }
+                if dropdown_response.should_close {
+                    self.is_open = false;
+                }
+            }
+
+            // Save state to memory if ID is set
+            if let Some(id) = self.id {
+                let state_id = id.with("select_state");
+                ui.ctx().data_mut(|d| {
+                    d.insert_temp(
+                        state_id,
+                        (
                             self.selected_value.clone(),
                             self.is_open,
                             self.search_text.clone(),
                             self.highlighted_index,
-                        ));
-                    });
-                }
+                        ),
+                    );
+                });
+            }
 
-                SelectResponse {
-                    response,
-                    changed,
-                    selected_value: new_value,
-                }
-        }).inner
+            SelectResponse {
+                response,
+                changed,
+                selected_value: new_value,
+            }
+        })
+        .inner
     }
 
     /// Show the dropdown menu
@@ -391,9 +395,7 @@ impl Select {
                                             .size(14.0),
                                     );
                                 } else {
-                                    for (_display_idx, &option_idx) in
-                                        self.filtered_indices.iter().enumerate()
-                                    {
+                                    for &option_idx in self.filtered_indices.iter() {
                                         let option = &self.options[option_idx];
 
                                         if option.disabled {

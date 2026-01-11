@@ -246,30 +246,32 @@ impl GradientCard {
             // Use a mesh for proper gradient rendering
             use egui::epaint::{Mesh, Vertex};
 
-            let mut mesh = Mesh::default();
-            mesh.vertices = vec![
-                Vertex {
-                    pos: outer1,
-                    uv: Pos2::ZERO,
-                    color: color1,
-                },
-                Vertex {
-                    pos: outer2,
-                    uv: Pos2::ZERO,
-                    color: color2,
-                },
-                Vertex {
-                    pos: inner2,
-                    uv: Pos2::ZERO,
-                    color: color2,
-                },
-                Vertex {
-                    pos: inner1,
-                    uv: Pos2::ZERO,
-                    color: color1,
-                },
-            ];
-            mesh.indices = vec![0, 1, 2, 0, 2, 3]; // Two triangles forming a quad
+            let mesh = Mesh {
+                vertices: vec![
+                    Vertex {
+                        pos: outer1,
+                        uv: Pos2::ZERO,
+                        color: color1,
+                    },
+                    Vertex {
+                        pos: outer2,
+                        uv: Pos2::ZERO,
+                        color: color2,
+                    },
+                    Vertex {
+                        pos: inner2,
+                        uv: Pos2::ZERO,
+                        color: color2,
+                    },
+                    Vertex {
+                        pos: inner1,
+                        uv: Pos2::ZERO,
+                        color: color1,
+                    },
+                ],
+                indices: vec![0, 1, 2, 0, 2, 3], // Two triangles forming a quad
+                ..Default::default()
+            };
 
             painter.add(mesh);
         }

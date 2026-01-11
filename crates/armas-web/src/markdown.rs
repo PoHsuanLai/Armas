@@ -121,7 +121,14 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
                 }
                 TagEnd::Table => {
                     if in_table {
-                        render_table(ui, &table_headers, &table_rows, theme, base_id, element_counter);
+                        render_table(
+                            ui,
+                            &table_headers,
+                            &table_rows,
+                            theme,
+                            base_id,
+                            element_counter,
+                        );
                         element_counter += 1;
                         in_table = false;
                     }
@@ -227,9 +234,9 @@ fn render_paragraph(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
     let mut segments = Vec::new();
     let mut current = String::new();
     let mut in_code = false;
-    let mut chars = text.chars().peekable();
+    let chars = text.chars().peekable();
 
-    while let Some(c) = chars.next() {
+    for c in chars {
         if c == '`' {
             if !current.is_empty() {
                 segments.push((current.clone(), in_code));
@@ -298,20 +305,16 @@ fn render_code_block(ui: &mut egui::Ui, code: &str, theme: &Theme, base_id: u64,
 fn render_list_item(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, id: usize) {
     ui.push_id((base_id, id), |ui| {
         ui.horizontal(|ui| {
-            ui.label(
-                egui::RichText::new("•")
-                    .size(14.0)
-                    .color(theme.primary()),
-            );
+            ui.label(egui::RichText::new("•").size(14.0).color(theme.primary()));
             ui.add_space(8.0);
 
             // Parse inline code
             let mut segments = Vec::new();
             let mut current = String::new();
             let mut in_code = false;
-            let mut chars = text.chars().peekable();
+            let chars = text.chars().peekable();
 
-            while let Some(c) = chars.next() {
+            for c in chars {
                 if c == '`' {
                     if !current.is_empty() {
                         segments.push((current.clone(), in_code));
@@ -362,67 +365,67 @@ fn render_table(
     ui.push_id((base_id, id), |ui| {
         use armas::{Table, TableStyle};
 
-        Table::new()
-            .style(TableStyle::Lined)
-            .show(ui, |table| {
-                // Render headers
-                table.header_row(|row| {
-                    for header in headers {
-                        row.cell(header);
-                    }
-                });
-
-                // Render rows
-                for data_row in rows {
-                    table.row(|row| {
-                        for cell in data_row {
-                            // Parse inline code in cells
-                            let mut segments = Vec::new();
-                            let mut current = String::new();
-                            let mut in_code = false;
-                            let mut chars = cell.chars().peekable();
-
-                            while let Some(c) = chars.next() {
-                                if c == '`' {
-                                    if !current.is_empty() {
-                                        segments.push((current.clone(), in_code));
-                                        current.clear();
-                                    }
-                                    in_code = !in_code;
-                                } else {
-                                    current.push(c);
-                                }
-                            }
-
-                            if !current.is_empty() {
-                                segments.push((current, in_code));
-                            }
-
-                            // Render cell with inline formatting
-                            row.cell_ui(|ui| {
-                                ui.horizontal_wrapped(|ui| {
-                                    for (text, is_code) in segments {
-                                        if is_code {
-                                            ui.label(
-                                                egui::RichText::new(&text)
-                                                    .monospace()
-                                                    .background_color(egui::Color32::from_rgb(25, 25, 25))
-                                                    .color(theme.primary()),
-                                            );
-                                        } else {
-                                            ui.label(
-                                                egui::RichText::new(&text)
-                                                    .size(14.0)
-                                                    .color(theme.on_surface_variant()),
-                                            );
-                                        }
-                                    }
-                                });
-                            });
-                        }
-                    });
+        Table::new().style(TableStyle::Lined).show(ui, |table| {
+            // Render headers
+            table.header_row(|row| {
+                for header in headers {
+                    row.cell(header);
                 }
             });
+
+            // Render rows
+            for data_row in rows {
+                table.row(|row| {
+                    for cell in data_row {
+                        // Parse inline code in cells
+                        let mut segments = Vec::new();
+                        let mut current = String::new();
+                        let mut in_code = false;
+                        let chars = cell.chars().peekable();
+
+                        for c in chars {
+                            if c == '`' {
+                                if !current.is_empty() {
+                                    segments.push((current.clone(), in_code));
+                                    current.clear();
+                                }
+                                in_code = !in_code;
+                            } else {
+                                current.push(c);
+                            }
+                        }
+
+                        if !current.is_empty() {
+                            segments.push((current, in_code));
+                        }
+
+                        // Render cell with inline formatting
+                        row.cell_ui(|ui| {
+                            ui.horizontal_wrapped(|ui| {
+                                for (text, is_code) in segments {
+                                    if is_code {
+                                        ui.label(
+                                            egui::RichText::new(&text)
+                                                .monospace()
+                                                .background_color(egui::Color32::from_rgb(
+                                                    25, 25, 25,
+                                                ))
+                                                .color(theme.primary()),
+                                        );
+                                    } else {
+                                        ui.label(
+                                            egui::RichText::new(&text)
+                                                .size(14.0)
+                                                .color(theme.on_surface_variant()),
+                                        );
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+            }
+        });
     });
 
     ui.add_space(12.0);

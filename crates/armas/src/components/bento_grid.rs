@@ -3,7 +3,7 @@
 //! Modern grid layout with variable-sized tiles, inspired by macOS and Japanese bento boxes
 
 use crate::Theme;
-use egui::{Color32, CornerRadius, Response, Stroke, Ui, Vec2};
+use egui::{Color32, CornerRadius, Stroke, Ui, Vec2};
 
 /// Grid item span configuration
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -139,12 +139,7 @@ impl BentoGrid {
     }
 
     /// Show the bento grid with items
-    pub fn show(
-        &self,
-        ui: &mut Ui,
-        _theme: &Theme,
-        items: impl IntoIterator<Item = BentoItem>,
-    ) {
+    pub fn show(&self, ui: &mut Ui, _theme: &Theme, items: impl IntoIterator<Item = BentoItem>) {
         let mut current_col = 0;
         let mut current_row = 0;
         let mut max_row = 0;

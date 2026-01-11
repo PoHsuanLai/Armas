@@ -103,7 +103,7 @@ impl ScrambleText {
 
     /// Update and show the scramble text
     pub fn show(&mut self, ui: &mut Ui) -> Response {
-        self.show_styled(ui, |text| RichText::new(text))
+        self.show_styled(ui, RichText::new)
     }
 
     /// Update and show with custom styling

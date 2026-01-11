@@ -31,12 +31,18 @@ pub struct Spinner {
     pub bar_width: f32,
 }
 
+impl Default for Spinner {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Spinner {
     /// Create a new spinner with default settings
     pub fn new() -> Self {
         Self {
             size: 40.0,
-            speed: 2.0 * PI, // One rotation per second
+            speed: 2.0 * PI,                        // One rotation per second
             color: Color32::from_rgb(99, 102, 241), // Default primary blue
             rotation: 0.0,
             bar_count: 12,
@@ -149,6 +155,12 @@ pub struct LoadingDots {
     pub speed: f32,
     /// Number of dots
     pub dot_count: usize,
+}
+
+impl Default for LoadingDots {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl LoadingDots {
@@ -415,6 +427,12 @@ pub struct CircularProgress {
     arc_length: f32,
     /// Animation phase
     phase: f32,
+}
+
+impl Default for CircularProgress {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl CircularProgress {

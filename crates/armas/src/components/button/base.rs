@@ -176,14 +176,12 @@ impl Button {
                         Color32::TRANSPARENT,
                         false,
                     ),
-                    ButtonVariant::Speaker => {
-                        (
-                            theme.surface_variant(),
-                            theme.on_surface_variant(),
-                            theme.outline_variant(),
-                            false,
-                        )
-                    }
+                    ButtonVariant::Speaker => (
+                        theme.surface_variant(),
+                        theme.on_surface_variant(),
+                        theme.outline_variant(),
+                        false,
+                    ),
                 }
             };
 
@@ -309,13 +307,8 @@ impl Button {
                 egui::Align2::RIGHT_CENTER => egui::pos2(rect.right() - 12.0, rect.center().y),
                 _ => rect.center(),
             };
-            ui.painter().text(
-                text_pos,
-                text_align,
-                text,
-                font_id,
-                text_color,
-            );
+            ui.painter()
+                .text(text_pos, text_align, text, font_id, text_color);
         }
 
         response

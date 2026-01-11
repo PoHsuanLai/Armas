@@ -5,7 +5,6 @@
 use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Stroke, Ui, Vec2};
 use std::f32::consts::PI;
-use std::hash::Hash;
 
 /// A single meteor/shooting star
 #[derive(Clone, Debug)]
@@ -152,12 +151,11 @@ impl MeteorShower {
 
     fn spawn_meteor(&mut self, bounds: Rect) {
         use std::collections::hash_map::RandomState;
-        use std::hash::{BuildHasher, Hasher};
+        use std::hash::BuildHasher;
 
         // Generate pseudo-random values
-        let mut hasher = RandomState::new().build_hasher();
-        self.spawn_timer.to_bits().hash(&mut hasher);
-        let hash = hasher.finish();
+
+        let hash = RandomState::new().hash_one(self.spawn_timer.to_bits());
 
         // Random position along spawn edge
         let spawn_t = (hash % 1000) as f32 / 1000.0;

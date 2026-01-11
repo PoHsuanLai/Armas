@@ -97,11 +97,7 @@ impl Table {
     }
 
     /// Show the table with the given content
-    pub fn show<R>(
-        self,
-        ui: &mut egui::Ui,
-        content: impl FnOnce(&mut TableBuilder) -> R,
-    ) -> R {
+    pub fn show<R>(self, ui: &mut egui::Ui, content: impl FnOnce(&mut TableBuilder) -> R) -> R {
         let theme = ui.ctx().data(|d| {
             d.get_temp::<Theme>(egui::Id::new("armas_theme"))
                 .unwrap_or_else(Theme::dark)
@@ -186,7 +182,10 @@ impl<'a> TableBuilder<'a> {
     pub fn row<R>(&mut self, content: impl FnOnce(&mut RowBuilder) -> R) -> R {
         // Calculate column width if we know the number of columns
         let col_width = if self.num_columns > 0 {
-            Some((self.available_width - (self.num_columns - 1) as f32 * 12.0) / self.num_columns as f32)
+            Some(
+                (self.available_width - (self.num_columns - 1) as f32 * 12.0)
+                    / self.num_columns as f32,
+            )
         } else {
             None
         };
@@ -241,35 +240,37 @@ impl<'a> RowBuilder<'a> {
 
         let response = if let Some(width) = self.col_width {
             // Use vertical layout to allow height to expand
-            self.ui.vertical(|ui| {
-                ui.set_width(width);
+            self.ui
+                .vertical(|ui| {
+                    ui.set_width(width);
 
-                let label = if self.is_header {
-                    egui::Label::new(
-                        egui::RichText::new(&text)
-                            .strong()
-                            .color(self.theme.on_surface())
-                    ).wrap()
-                } else {
-                    egui::Label::new(
-                        egui::RichText::new(&text)
-                            .color(self.theme.on_surface_variant())
-                    ).wrap()
-                };
-                ui.add(label)
-            }).inner
+                    let label = if self.is_header {
+                        egui::Label::new(
+                            egui::RichText::new(&text)
+                                .strong()
+                                .color(self.theme.on_surface()),
+                        )
+                        .wrap()
+                    } else {
+                        egui::Label::new(
+                            egui::RichText::new(&text).color(self.theme.on_surface_variant()),
+                        )
+                        .wrap()
+                    };
+                    ui.add(label)
+                })
+                .inner
         } else {
             let label = if self.is_header {
                 egui::Label::new(
                     egui::RichText::new(&text)
                         .strong()
-                        .color(self.theme.on_surface())
-                ).wrap()
+                        .color(self.theme.on_surface()),
+                )
+                .wrap()
             } else {
-                egui::Label::new(
-                    egui::RichText::new(&text)
-                        .color(self.theme.on_surface_variant())
-                ).wrap()
+                egui::Label::new(egui::RichText::new(&text).color(self.theme.on_surface_variant()))
+                    .wrap()
             };
             self.ui.add(label)
         };
@@ -286,10 +287,12 @@ impl<'a> RowBuilder<'a> {
         }
 
         let result = if let Some(width) = self.col_width {
-            self.ui.vertical(|ui| {
-                ui.set_width(width);
-                content(ui)
-            }).inner
+            self.ui
+                .vertical(|ui| {
+                    ui.set_width(width);
+                    content(ui)
+                })
+                .inner
         } else {
             content(self.ui)
         };
