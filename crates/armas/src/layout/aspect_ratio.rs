@@ -113,7 +113,7 @@ impl AspectRatio {
 
         let (rect, response) = ui.allocate_exact_size(size, egui::Sense::hover());
 
-        ui.allocate_ui_at_rect(rect, |ui| content(ui));
+        ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| content(ui));
 
         response
     }

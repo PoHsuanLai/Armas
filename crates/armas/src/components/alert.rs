@@ -4,7 +4,6 @@
 //! Built on top of Card component and layout system for consistency
 
 use crate::ext::ArmasContextExt;
-use crate::layout::{HStack, Spacer, VStack};
 use crate::{Badge, BadgeColor, Button, ButtonVariant, Card, Theme};
 use egui::{vec2, Color32, Ui};
 
@@ -145,7 +144,7 @@ impl Alert {
         let mut card = Card::new()
             .fill(self.variant.background_color(&theme))
             .stroke(self.variant.border_color(&theme))
-            .rounding(8.0)
+            .corner_radius(8.0)
             .inner_margin(12.0)
             .elevation(0); // No elevation shadow for alerts
 
@@ -155,7 +154,8 @@ impl Alert {
 
         // Show the card with alert content using layout system
         card.show(ui, &theme, |ui| {
-            HStack::new(12.0).show(ui, |ui| {
+            ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = 12.0;
                 // Icon badge
                 if self.show_icon {
                     Badge::new(self.variant.icon())
@@ -164,7 +164,8 @@ impl Alert {
                 }
 
                 // Content
-                VStack::new(4.0).show(ui, |ui| {
+                ui.vertical(|ui| {
+                    ui.spacing_mut().item_spacing.y = 4.0;
                     if let Some(title) = &self.title {
                         ui.strong(title);
                     }
@@ -174,7 +175,7 @@ impl Alert {
 
                 // Spacer pushes close button to the right
                 if self.dismissible {
-                    Spacer::new().show(ui);
+                    ui.allocate_space(ui.available_size());
 
                     // Close button
                     if Button::new("✕")

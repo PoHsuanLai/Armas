@@ -5,7 +5,6 @@
 
 use crate::ext::ArmasContextExt;
 use crate::animation::SpringAnimation;
-use crate::layout::{HStack, VStack};
 use crate::{Badge, BadgeColor, Button, ButtonVariant, Card, Theme};
 use egui::{vec2, Align2, Id, Sense, Vec2};
 use std::collections::VecDeque;
@@ -122,16 +121,19 @@ impl Toast {
         }
     }
 
+    #[allow(dead_code)]
     fn with_title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
+    #[allow(dead_code)]
     fn with_duration(mut self, duration: Duration) -> Self {
         self.duration = duration;
         self
     }
 
+    #[allow(dead_code)]
     fn with_dismissible(mut self, dismissible: bool) -> Self {
         self.dismissible = dismissible;
         self
@@ -147,6 +149,7 @@ impl Toast {
 }
 
 /// Toast notification manager
+#[derive(Clone)]
 pub struct ToastManager {
     toasts: VecDeque<Toast>,
     position: ToastPosition,
@@ -207,7 +210,7 @@ impl ToastManager {
     }
 
     /// Add a custom toast with builder pattern
-    pub fn custom(&mut self) -> ToastBuilder {
+    pub fn custom(&mut self) -> ToastBuilder<'_> {
         ToastBuilder {
             manager: self,
             toast: None,
@@ -312,18 +315,20 @@ impl ToastManager {
                 Card::new()
                     .width(width)
                     .stroke(theme.outline().linear_multiply(0.3))
-                    .rounding(8.0)
+                    .corner_radius(8.0)
                     .inner_margin(12.0)
                     .elevation(2) // Add elevation for floating effect
                     .show(ui, theme, |ui| {
-                        HStack::new(8.0).show(ui, |ui| {
+                        ui.horizontal(|ui| {
+                            ui.spacing_mut().item_spacing.x = 8.0;
                             // Icon badge
                             Badge::new(toast.variant.icon())
                                 .color(toast.variant.badge_color())
                                 .show(ui);
 
                             // Content
-                            VStack::new(0.0).show(ui, |ui| {
+                            ui.vertical(|ui| {
+                                ui.spacing_mut().item_spacing.y = 0.0;
                                 ui.set_width(width - 100.0);
 
                                 if let Some(title) = &toast.title {

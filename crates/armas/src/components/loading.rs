@@ -1,5 +1,3 @@
-use crate::ext::ArmasContextExt;
-use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Ui, Vec2};
 use std::f32::consts::PI;
 
@@ -74,10 +72,9 @@ impl Spinner {
     pub fn show(&mut self, ui: &mut Ui) -> Response {
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 
-        // Update rotation
-        let dt = ui.input(|i| i.stable_dt);
-        self.rotation += self.speed * dt;
-        self.rotation %= 2.0 * PI;
+        // Calculate rotation from time for stateless animation
+        let time = ui.input(|i| i.time) as f32;
+        self.rotation = (time * self.speed) % (2.0 * PI);
 
         // Draw the spinner
         self.draw_spinner(ui, rect);
@@ -205,10 +202,9 @@ impl LoadingDots {
         let (rect, response) =
             ui.allocate_exact_size(Vec2::new(width, height), egui::Sense::hover());
 
-        // Update animation phase
-        let dt = ui.input(|i| i.stable_dt);
-        self.phase += self.speed * dt;
-        self.phase %= 1.0;
+        // Calculate animation phase from time for stateless animation
+        let time = ui.input(|i| i.time) as f32;
+        self.phase = (time * self.speed) % 1.0;
 
         // Draw the dots
         self.draw_dots(ui, rect);
@@ -331,10 +327,9 @@ impl Skeleton {
         let (rect, response) =
             ui.allocate_exact_size(Vec2::new(self.width, self.height), egui::Sense::hover());
 
-        // Update shimmer position
-        let dt = ui.input(|i| i.stable_dt);
-        self.shimmer_pos += self.speed * dt;
-        self.shimmer_pos %= 1.0;
+        // Calculate shimmer position from time for stateless animation
+        let time = ui.input(|i| i.time) as f32;
+        self.shimmer_pos = (time * self.speed) % 1.0;
 
         // Draw the skeleton
         self.draw_skeleton(ui, rect);
@@ -457,10 +452,10 @@ impl CircularProgress {
     pub fn show(&mut self, ui: &mut Ui) -> Response {
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 
-        // Update animation
-        let dt = ui.input(|i| i.stable_dt);
-        self.rotation += 3.0 * dt; // Rotate
-        self.phase += 2.0 * dt; // Phase for arc length animation
+        // Calculate animation from time for stateless animation
+        let time = ui.input(|i| i.time) as f32;
+        self.rotation = time * 3.0; // Rotate
+        self.phase = time * 2.0; // Phase for arc length animation
 
         // Animate arc length (breathing effect)
         self.arc_length = 0.1 + 0.6 * ((self.phase * PI).sin().abs());

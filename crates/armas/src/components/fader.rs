@@ -5,7 +5,6 @@
 //! - `FaderStrip`: Complete fader with housing and optional LED (batteries included)
 
 use crate::ext::ArmasContextExt;
-use crate::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 // Fader (minimal) default dimensions - just the track
@@ -368,7 +367,7 @@ impl FaderStrip {
 
     /// Show the fader strip and return the new value
     pub fn show(mut self, ui: &mut Ui) -> (Response, f32) {
-        let theme = ui.ctx().armas_theme();
+        let _theme = ui.ctx().armas_theme();
         let desired_size = Vec2::new(self.width, self.height);
         let (rect, response) = ui.allocate_exact_size(desired_size, Sense::hover());
 

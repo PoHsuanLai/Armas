@@ -33,20 +33,20 @@ impl Header {
                 );
 
                 // Render left side
-                ui.allocate_new_ui(egui::UiBuilder::new().max_rect(left_rect), |ui| {
+                let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(left_rect), |ui| {
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                         ui.add_space(16.0);
                         ui.label(
                             egui::RichText::new("Armas")
                                 .size(20.0)
                                 .family(egui::FontFamily::Name("InterBold".into()))
-                                .color(egui::Color32::WHITE)
+                                .color(egui::Color32::WHITE),
                         );
                     });
                 });
 
                 // Render right side
-                ui.allocate_new_ui(egui::UiBuilder::new().max_rect(right_rect), |ui| {
+                let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(right_rect), |ui| {
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                         ui.label(
                             egui::RichText::new("Components")
@@ -66,13 +66,13 @@ impl Header {
                             #[cfg(target_arch = "wasm32")]
                             {
                                 if let Some(window) = web_sys::window() {
-                                    let _ = window
-                                        .open_with_url("https://github.com/yourusername/armas");
+                                    let _ =
+                                        window.open_with_url("https://github.com/PoHsuanLai/Armas");
                                 }
                             }
                             #[cfg(not(target_arch = "wasm32"))]
                             {
-                                let _ = open::that("https://github.com/yourusername/armas");
+                                let _ = open::that("https://github.com/PoHsuanLai/Armas");
                             }
                         }
 
@@ -89,6 +89,6 @@ impl Header {
                 });
             });
 
-        Divider::horizontal().show(ui);
+        ui.separator();
     }
 }

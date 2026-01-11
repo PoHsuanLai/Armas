@@ -3,8 +3,6 @@
 //! Animated text that cycles through a list of words with flip transitions
 
 use crate::animation::{Animation, EasingFunction};
-use crate::ext::ArmasContextExt;
-use crate::Theme;
 use egui::{Align2, Color32, FontId, Pos2, Response, Ui, Vec2};
 
 /// Flip transition style
@@ -216,7 +214,7 @@ impl FlipWords {
                     if t > 0.0 {
                         if t < 0.5 {
                             // Current word scales down horizontally
-                            let scale_x = 1.0 - (t * 2.0);
+                            let _scale_x = 1.0 - (t * 2.0);
                             let alpha = (255.0 * (1.0 - t * 2.0)) as u8;
                             let text_color = self.highlight_color.unwrap_or(self.color);
                             let faded_color = Color32::from_rgba_unmultiplied(

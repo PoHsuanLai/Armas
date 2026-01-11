@@ -2,9 +2,8 @@
 //!
 //! Slide-out side panels for navigation, settings, or additional content
 
-use crate::layout::{HStack, Spacer, VStack};
 use crate::{Animation, Button, ButtonVariant, EasingFunction, Theme};
-use egui::{vec2, Align2, Color32, Key, Rect, Sense, Ui, Vec2};
+use egui::{vec2, Color32, Key, Rect, Sense, Ui};
 
 /// Drawer position
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -72,6 +71,8 @@ pub struct Drawer {
     show_backdrop: bool,
     animation: Animation<f32>,
     is_animating: bool,
+    // Internal state management
+    is_open: Option<bool>, // None = use internal state, Some = external control
 }
 
 impl Drawer {
@@ -86,7 +87,14 @@ impl Drawer {
             show_backdrop: true,
             animation: Animation::new(0.0, 1.0, 0.3).with_easing(EasingFunction::CubicOut),
             is_animating: false,
+            is_open: None, // Use internal state by default
         }
+    }
+
+    /// Set the drawer to be open (for external control)
+    pub fn open(mut self, is_open: bool) -> Self {
+        self.is_open = Some(is_open);
+        self
     }
 
     /// Set the drawer position
@@ -124,23 +132,30 @@ impl Drawer {
         &mut self,
         ctx: &egui::Context,
         theme: &Theme,
-        is_open: &mut bool,
         content: impl FnOnce(&mut Ui),
     ) -> DrawerResponse {
         let mut response = DrawerResponse { closed: false };
 
+        // Load state from egui memory if not externally controlled
+        let state_id = self.id.with("drawer_state");
+        let mut is_open = if let Some(external_open) = self.is_open {
+            external_open
+        } else {
+            ctx.data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false))
+        };
+
         // Handle animation state
-        if *is_open && !self.is_animating && self.animation.value() < 1.0 {
+        if is_open && !self.is_animating && self.animation.value() < 1.0 {
             self.animation.reset();
             self.animation.start();
             self.is_animating = true;
-        } else if !*is_open && self.animation.value() > 0.0 {
+        } else if !is_open && self.animation.value() > 0.0 {
             self.is_animating = true;
         }
 
         // Update animation
         if self.is_animating {
-            let target = if *is_open { 1.0 } else { 0.0 };
+            let target = if is_open { 1.0 } else { 0.0 };
 
             if self.animation.is_running() {
                 self.animation.update(ctx.input(|i| i.unstable_dt));
@@ -164,7 +179,7 @@ impl Drawer {
             return response;
         }
 
-        let screen_rect = ctx.screen_rect();
+        let screen_rect = ctx.content_rect();
 
         // Calculate drawer dimensions
         let drawer_size = match self.size {
@@ -187,15 +202,15 @@ impl Drawer {
                     let backdrop = ui.allocate_response(screen_rect.size(), Sense::click());
                     ui.painter().rect_filled(screen_rect, 0.0, backdrop_color);
 
-                    if backdrop.clicked() && self.closable && *is_open {
-                        *is_open = false;
+                    if backdrop.clicked() && self.closable && is_open {
+                        is_open = false;
                         response.closed = true;
                     }
                 });
         }
 
         // Calculate drawer position based on animation progress
-        let (drawer_rect, offset) = match self.position {
+        let (drawer_rect, _offset) = match self.position {
             DrawerPosition::Left => {
                 let x_offset = -drawer_size * (1.0 - progress);
                 let rect = Rect::from_min_size(
@@ -238,21 +253,23 @@ impl Drawer {
                 ui.set_clip_rect(drawer_rect);
 
                 // Background
-                let frame = egui::Frame::none().fill(theme.surface()).inner_margin(0.0);
+                let frame = egui::Frame::NONE.fill(theme.surface()).inner_margin(0.0);
 
                 frame.show(ui, |ui| {
                     ui.set_min_size(drawer_rect.size());
                     ui.set_max_size(drawer_rect.size());
 
-                    VStack::new(8.0).show(ui, |ui| {
+                    ui.vertical(|ui| {
+                        ui.spacing_mut().item_spacing.y = 8.0;
                         // Title bar
                         if self.title.is_some() || self.closable {
-                            HStack::new(16.0).show(ui, |ui| {
+                            ui.horizontal(|ui| {
+                                ui.spacing_mut().item_spacing.x = 16.0;
                                 if let Some(title) = &self.title {
                                     ui.heading(title);
                                 }
 
-                                Spacer::new().show(ui);
+                                ui.allocate_space(ui.available_size());
 
                                 if self.closable {
                                     if Button::new("✕")
@@ -261,7 +278,7 @@ impl Drawer {
                                         .show(ui)
                                         .clicked()
                                     {
-                                        *is_open = false;
+                                        is_open = false;
                                         response.closed = true;
                                     }
                                 }
@@ -271,9 +288,11 @@ impl Drawer {
                         }
 
                         // Content area with padding
-                        HStack::new(0.0).show(ui, |ui| {
+                        ui.horizontal(|ui| {
+                            ui.spacing_mut().item_spacing.x = 0.0;
                             ui.add_space(16.0);
-                            VStack::new(0.0).show(ui, |ui| {
+                            ui.vertical(|ui| {
+                                ui.spacing_mut().item_spacing.y = 0.0;
                                 content(ui);
                             });
                             ui.add_space(16.0);
@@ -318,9 +337,14 @@ impl Drawer {
             });
 
         // Handle ESC key to close
-        if self.closable && *is_open && ctx.input(|i| i.key_pressed(Key::Escape)) {
-            *is_open = false;
+        if self.closable && is_open && ctx.input(|i| i.key_pressed(Key::Escape)) {
+            is_open = false;
             response.closed = true;
+        }
+
+        // Persist state if not externally controlled
+        if self.is_open.is_none() {
+            ctx.data_mut(|d| d.insert_temp(state_id, is_open));
         }
 
         response

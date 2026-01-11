@@ -3,7 +3,6 @@
 //! Card with content reveal on hover with smooth transitions
 
 use crate::animation::{Interpolate, SpringAnimation};
-use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
@@ -171,13 +170,13 @@ impl HoverCard {
 
         // Draw base content
         let base_rect = scaled_rect.shrink(16.0);
-        let mut base_ui = ui.child_ui(base_rect, *ui.layout(), None);
+        let mut base_ui = ui.new_child(egui::UiBuilder::new().max_rect(base_rect).layout(*ui.layout()));
         base_content(&mut base_ui, 1.0 - t);
 
         // Draw hover content with fade-in
         if t > 0.01 {
             let hover_rect = scaled_rect.shrink(16.0);
-            let mut hover_ui = ui.child_ui(hover_rect, *ui.layout(), None);
+            let mut hover_ui = ui.new_child(egui::UiBuilder::new().max_rect(hover_rect).layout(*ui.layout()));
             hover_content(&mut hover_ui, t);
         }
 

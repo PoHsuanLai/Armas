@@ -4,6 +4,7 @@ mod components;
 mod examples;
 mod markdown;
 mod showcase_gen;
+pub mod syntax;
 
 use armas::*;
 use components::*;
@@ -135,13 +136,25 @@ impl ShowcaseApp {
         // Set theme in context
         cc.egui_ctx.set_armas_theme(theme.clone());
 
-        // Get all pages from generated code
+        // Get all pages (flat list for index mapping)
         let pages = showcase_gen::get_pages();
 
-        // Build sidebar items from pages
-        let sidebar_items: Vec<SidebarItem> = pages
+        // Get sections (grouped for sidebar)
+        let sections = showcase_gen::get_sections();
+
+        // Build sidebar items with sections as parents and pages as children
+        let sidebar_items: Vec<SidebarItem> = sections
             .iter()
-            .map(|(name, _)| SidebarItem::new("", *name))
+            .map(|(section_name, section_pages)| {
+                let children: Vec<SidebarItem> = section_pages
+                    .iter()
+                    .map(|(page_name, _)| SidebarItem::new("", *page_name))
+                    .collect();
+
+                SidebarItem::new("", *section_name)
+                    .with_children(children)
+                    .expanded(true) // Expand sections by default
+            })
             .collect();
 
         Self {
@@ -169,7 +182,8 @@ impl eframe::App for ShowcaseApp {
         ctx.set_style(style);
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            VStack::new(0.0).show(ui, |ui| {
+            ui.vertical(|ui| {
+                ui.spacing_mut().item_spacing.y = 0.0;
                 // Header (fixed height)
                 self.show_header(ui);
 
@@ -206,12 +220,12 @@ impl ShowcaseApp {
         );
 
         // Render sidebar
-        ui.allocate_new_ui(egui::UiBuilder::new().max_rect(sidebar_rect), |ui| {
+        let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(sidebar_rect), |ui| {
             self.show_sidebar(ui);
         });
 
         // Render content
-        ui.allocate_new_ui(egui::UiBuilder::new().max_rect(content_rect), |ui| {
+        let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(content_rect), |ui| {
             self.show_content(ui);
         });
     }
@@ -226,34 +240,47 @@ impl ShowcaseApp {
             .show(ui, &theme, |ui| {
                 let response = self.sidebar.show(ui);
 
-                // Handle sidebar clicks
-                if let Some(clicked_idx) = response.clicked {
-                    self.selected_page_index = clicked_idx;
+                // Handle sidebar clicks (child items only, parents are just sections)
+                if let Some((parent_idx, child_idx)) = response.clicked_child {
+                    // Calculate flat index from parent/child indices
+                    let sections = showcase_gen::get_sections();
+                    let mut flat_index = 0;
+                    for (i, (_, section_pages)) in sections.iter().enumerate() {
+                        if i < parent_idx {
+                            flat_index += section_pages.len();
+                        } else if i == parent_idx {
+                            flat_index += child_idx;
+                            break;
+                        }
+                    }
+                    self.selected_page_index = flat_index;
                 }
             });
     }
 
     fn show_content(&mut self, ui: &mut egui::Ui) {
-        let theme = self.theme.clone();
 
-        // Wrap content in GlassPanel with scroll area
-        GlassPanel::new()
-            .blur(10.0)
-            .opacity(0.02)
-            .inner_margin(24.0)
-            .show(ui, &theme, |ui| {
-                egui::ScrollArea::vertical().show(ui, |ui| {
-                    VStack::new(16.0).show(ui, |ui| {
-                        Spacer::fixed(16.0).show(ui);
+        // Clean background with scroll area
+        egui::ScrollArea::vertical().show(ui, |ui| {
+            // Max width container for optimal reading
+            let max_width = 1200.0;
+            let available_width = ui.available_width();
+            let content_width = available_width.min(max_width);
+            let margin = (available_width - content_width) / 2.0;
 
-                        // Show selected page content
-                        if let Some((_, show_fn)) = self.pages.get(self.selected_page_index) {
-                            show_fn(ui);
-                        }
+            ui.add_space(margin);
 
-                        Spacer::fixed(32.0).show(ui);
-                    });
-                });
+            ui.vertical(|ui| {
+                ui.set_max_width(content_width);
+                ui.add_space(32.0);
+
+                // Show selected page content
+                if let Some((_, show_fn)) = self.pages.get(self.selected_page_index) {
+                    show_fn(ui);
+                }
+
+                ui.add_space(64.0);
             });
+        });
     }
 }

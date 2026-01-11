@@ -146,7 +146,7 @@ impl Avatar {
         let (rect, response) = ui.allocate_exact_size(vec2(size, size), sense);
 
         if ui.is_rect_visible(rect) {
-            let visuals = ui.style().interact(&response);
+            let _visuals = ui.style().interact(&response);
 
             // Background color
             let bg_color = self.background_color.unwrap_or_else(|| {
@@ -157,9 +157,9 @@ impl Avatar {
                     .fold(0u32, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u32));
                 let hue = (hash % 360) as f32;
                 Color32::from_rgb(
-                    ((hue.to_radians().sin() * 127.0 + 128.0) as u8),
-                    (((hue + 120.0).to_radians().sin() * 127.0 + 128.0) as u8),
-                    (((hue + 240.0).to_radians().sin() * 127.0 + 128.0) as u8),
+                    (hue.to_radians().sin() * 127.0 + 128.0) as u8,
+                    ((hue + 120.0).to_radians().sin() * 127.0 + 128.0) as u8,
+                    ((hue + 240.0).to_radians().sin() * 127.0 + 128.0) as u8,
                 )
             });
 

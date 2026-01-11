@@ -159,7 +159,7 @@ impl FloatingDock {
         let mut current_x = dock_pos.x + self.spacing;
         let base_y = dock_pos.y + max_height - base_height + self.spacing;
 
-        for (idx, item) in self.items.iter().enumerate() {
+        for (idx, _item) in self.items.iter().enumerate() {
             // Calculate scale based on mouse distance
             let scale = if let Some(mouse_pos) = mouse_pos {
                 let item_center_x = current_x + self.item_size / 2.0;

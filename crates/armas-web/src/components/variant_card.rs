@@ -54,7 +54,7 @@ impl VariantCard {
                         result
                     }).inner;
 
-                    Divider::horizontal().show(ui);
+                    ui.separator();
 
                     // Info section
                     ui.vertical(|ui| {
@@ -86,6 +86,7 @@ pub fn variant_grid<R>(
     gap: f32,
     content: impl FnOnce(&mut egui::Ui) -> R,
 ) -> R {
+    let _ = columns; // Reserved for future grid layout implementation
     ui.vertical(|ui| {
         ui.spacing_mut().item_spacing.y = gap;
         content(ui)

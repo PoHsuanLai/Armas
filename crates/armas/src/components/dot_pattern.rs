@@ -2,7 +2,6 @@
 //!
 //! Creates a simple dot grid pattern background effect
 
-use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 
@@ -27,7 +26,7 @@ pub struct DotPattern {
 
 impl DotPattern {
     /// Create a new dot pattern with theme-based defaults
-    pub fn new(width: f32, height: f32, theme: &Theme) -> Self {
+    pub fn new(width: f32, height: f32, _theme: &Theme) -> Self {
         Self {
             spacing: 20.0,
             dot_radius: 1.5,

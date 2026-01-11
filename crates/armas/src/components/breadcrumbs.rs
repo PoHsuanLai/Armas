@@ -3,8 +3,7 @@
 //! Navigation path indicator showing the current location in a hierarchy
 
 use crate::ext::ArmasContextExt;
-use crate::layout::HStack;
-use crate::{Button, ButtonVariant, Theme};
+use crate::{Button, ButtonVariant};
 use egui::Ui;
 
 /// A single breadcrumb item
@@ -113,7 +112,8 @@ impl Breadcrumbs {
         let theme = ui.ctx().armas_theme();
         let mut clicked = None;
 
-        HStack::new(self.spacing).show(ui, |ui| {
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = self.spacing;
             // Optional home icon
             if self.show_home_icon {
                 if Button::new("🏠")

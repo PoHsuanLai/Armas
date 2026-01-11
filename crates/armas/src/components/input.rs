@@ -2,10 +2,8 @@
 //!
 //! Modern text input fields with icons, validation, and animations
 
-use crate::layout::VStack;
 use crate::ext::ArmasContextExt;
-use crate::Theme;
-use egui::{vec2, Color32, CornerRadius, Response, Sense, Stroke, TextEdit, Ui, Vec2};
+use egui::{vec2, Color32, CornerRadius, Response, Sense, Stroke, TextEdit, Ui};
 
 /// Input field variant
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -33,6 +31,7 @@ pub enum InputState {
 
 /// Enhanced text input field
 pub struct Input {
+    id: Option<egui::Id>,
     variant: InputVariant,
     state: InputState,
     label: Option<String>,
@@ -48,6 +47,7 @@ impl Input {
     /// Create a new input field
     pub fn new(placeholder: impl Into<String>) -> Self {
         Self {
+            id: None,
             variant: InputVariant::Default,
             state: InputState::Normal,
             label: None,
@@ -58,6 +58,12 @@ impl Input {
             width: None,
             password: false,
         }
+    }
+
+    /// Set ID for state persistence (useful for demos where input is recreated each frame)
+    pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
+        self.id = Some(id.into());
+        self
     }
 
     /// Set the variant
@@ -113,8 +119,17 @@ impl Input {
         let theme = ui.ctx().armas_theme();
         let width = self.width.unwrap_or(200.0);
 
-        VStack::new(4.0)
-            .show_with_inner(ui, |ui| {
+        // Load state from memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("input_state");
+            let stored_text: String = ui.ctx().data_mut(|d| {
+                d.get_temp(state_id).unwrap_or_else(|| text.clone())
+            });
+            *text = stored_text;
+        }
+
+        ui.vertical(|ui| {
+            ui.spacing_mut().item_spacing.y = 4.0;
                 // Label
                 if let Some(label) = &self.label {
                     ui.label(
@@ -129,7 +144,7 @@ impl Input {
                 let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click());
 
                 if ui.is_rect_visible(rect) {
-                    let visuals = ui.style().interact(&response);
+                    let _visuals = ui.style().interact(&response);
 
                     // Determine colors based on state and variant
                     let (bg_color, border_color) = match self.state {
@@ -260,14 +275,22 @@ impl Input {
                     ui.label(egui::RichText::new(helper).size(12.0).color(helper_color));
                 }
 
+                // Save state to memory if ID is set
+                if let Some(id) = self.id {
+                    let state_id = id.with("input_state");
+                    ui.ctx().data_mut(|d| {
+                        d.insert_temp(state_id, text.clone());
+                    });
+                }
+
                 response
-            })
-            .inner
+        }).inner
     }
 }
 
 /// Search input with built-in search icon
 pub struct SearchInput {
+    id: Option<egui::Id>,
     placeholder: String,
     width: Option<f32>,
 }
@@ -276,9 +299,16 @@ impl SearchInput {
     /// Create a new search input
     pub fn new() -> Self {
         Self {
+            id: None,
             placeholder: "Search...".to_string(),
             width: None,
         }
+    }
+
+    /// Set ID for state persistence
+    pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
+        self.id = Some(id.into());
+        self
     }
 
     /// Set placeholder text
@@ -295,11 +325,16 @@ impl SearchInput {
 
     /// Show the search input
     pub fn show(self, ui: &mut Ui, text: &mut String) -> Response {
-        Input::new(&self.placeholder)
+        let mut input = Input::new(&self.placeholder)
             .variant(InputVariant::Filled)
             .with_left_icon("🔍")
-            .with_width(self.width.unwrap_or(300.0))
-            .show(ui, text)
+            .with_width(self.width.unwrap_or(300.0));
+
+        if let Some(id) = self.id {
+            input = input.id(id);
+        }
+
+        input.show(ui, text)
     }
 }
 

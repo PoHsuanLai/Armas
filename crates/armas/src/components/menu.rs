@@ -2,8 +2,7 @@
 //!
 //! Dropdown and context menus
 
-use crate::layout::HStack;
-use crate::{Badge, BadgeColor, Popover, PopoverPosition, Theme};
+use crate::{Badge, BadgeColor, Popover, PopoverColor, PopoverPosition, PopoverStyle, Theme};
 use egui::{vec2, Id, Key, Rect, Sense};
 
 /// Menu item
@@ -79,11 +78,14 @@ impl MenuItem {
 }
 
 /// Menu component
+#[derive(Clone)]
 pub struct Menu {
     id: Id,
     items: Vec<MenuItem>,
     popover: Popover,
     selected_index: Option<usize>,
+    // Internal state management
+    is_open: Option<bool>, // None = use internal state, Some = external control
 }
 
 impl Menu {
@@ -97,7 +99,14 @@ impl Menu {
                 .position(PopoverPosition::Bottom)
                 .width(220.0),
             selected_index: None,
+            is_open: None, // Use internal state by default
         }
+    }
+
+    /// Set the menu to be open (for external control)
+    pub fn open(mut self, is_open: bool) -> Self {
+        self.is_open = Some(is_open);
+        self
     }
 
     /// Add an item to the menu
@@ -128,21 +137,40 @@ impl Menu {
         self
     }
 
+    /// Set the menu color
+    pub fn color(mut self, color: PopoverColor) -> Self {
+        self.popover = self.popover.color(color);
+        self
+    }
+
+    /// Set the menu style
+    pub fn style(mut self, style: PopoverStyle) -> Self {
+        self.popover = self.popover.style(style);
+        self
+    }
+
     /// Show the menu anchored to a button/element
     pub fn show(
         &mut self,
         ctx: &egui::Context,
         theme: &Theme,
         anchor_rect: Rect,
-        is_open: &mut bool,
     ) -> MenuResponse {
         let mut response = MenuResponse {
             selected: None,
             clicked_outside: false,
         };
 
+        // Load state from egui memory if not externally controlled
+        let state_id = self.id.with("menu_state");
+        let mut is_open = if let Some(external_open) = self.is_open {
+            external_open
+        } else {
+            ctx.data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false))
+        };
+
         // Handle keyboard navigation
-        if *is_open {
+        if is_open {
             ctx.input(|i| {
                 if i.key_pressed(Key::ArrowDown) {
                     self.navigate_down();
@@ -155,12 +183,12 @@ impl Menu {
                             && !self.items[idx].is_separator
                         {
                             response.selected = Some(idx);
-                            *is_open = false;
+                            is_open = false;
                             self.selected_index = None;
                         }
                     }
                 } else if i.key_pressed(Key::Escape) {
-                    *is_open = false;
+                    is_open = false;
                     self.selected_index = None;
                 }
             });
@@ -169,7 +197,11 @@ impl Menu {
         }
 
         let mut should_close = false;
-        let popover_response = self.popover.show(ctx, theme, anchor_rect, is_open, |ui| {
+
+        // Set popover open state externally
+        self.popover.set_open(is_open);
+
+        let popover_response = self.popover.show(ctx, theme, anchor_rect, |ui| {
             ui.spacing_mut().item_spacing = vec2(0.0, 2.0);
 
             for (idx, item) in self.items.iter().enumerate() {
@@ -202,8 +234,9 @@ impl Menu {
                 }
 
                 // Draw content
-                ui.allocate_ui_at_rect(rect, |ui| {
-                    HStack::new(8.0).show(ui, |ui| {
+                ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = 8.0;
                         ui.add_space(12.0);
 
                         // Icon
@@ -252,11 +285,16 @@ impl Menu {
         });
 
         if should_close {
-            *is_open = false;
+            is_open = false;
         }
 
         if popover_response.clicked_outside {
             response.clicked_outside = true;
+        }
+
+        // Persist state if not externally controlled
+        if self.is_open.is_none() {
+            ctx.data_mut(|d| d.insert_temp(state_id, is_open));
         }
 
         response

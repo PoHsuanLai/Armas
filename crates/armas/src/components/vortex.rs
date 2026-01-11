@@ -2,8 +2,6 @@
 //!
 //! Creates a swirling vortex effect with rotating particles and circular patterns
 
-use crate::ext::ArmasContextExt;
-use crate::Theme;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 use std::f32::consts::PI;
 

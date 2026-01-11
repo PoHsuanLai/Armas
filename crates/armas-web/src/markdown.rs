@@ -18,9 +18,12 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
     let mut code_block_text = String::new();
     let mut in_list = false;
     let mut list_item_text = String::new();
-    let mut in_emphasis = false;
-    let mut in_strong = false;
-    let mut in_strikethrough = false;
+    let mut in_table = false;
+    let mut in_table_head = false;
+    let mut table_headers: Vec<String> = Vec::new();
+    let mut table_rows: Vec<Vec<String>> = Vec::new();
+    let mut current_row: Vec<String> = Vec::new();
+    let mut current_cell = String::new();
 
     // Use hash of markdown content as base ID to ensure uniqueness across multiple render_markdown calls
     let base_id = {
@@ -49,13 +52,28 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
                     list_item_text.clear();
                 }
                 Tag::Emphasis => {
-                    in_emphasis = true;
+                    // Emphasis tracking not currently used
                 }
                 Tag::Strong => {
-                    in_strong = true;
+                    // Strong tracking not currently used
                 }
                 Tag::Strikethrough => {
-                    in_strikethrough = true;
+                    // Strikethrough tracking not currently used
+                }
+                Tag::Table(_) => {
+                    in_table = true;
+                    table_headers.clear();
+                    table_rows.clear();
+                }
+                Tag::TableHead => {
+                    in_table_head = true;
+                    current_row.clear();
+                }
+                Tag::TableRow => {
+                    current_row.clear();
+                }
+                Tag::TableCell => {
+                    current_cell.clear();
                 }
                 _ => {}
             },
@@ -75,7 +93,7 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
                     in_code_block = false;
                 }
                 TagEnd::Paragraph => {
-                    if !current_text.is_empty() && !in_list {
+                    if !current_text.is_empty() && !in_list && !in_table {
                         render_paragraph(ui, &current_text, theme, base_id, element_counter);
                         element_counter += 1;
                         current_text.clear();
@@ -93,13 +111,37 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
                     }
                 }
                 TagEnd::Emphasis => {
-                    in_emphasis = false;
+                    // Emphasis tracking not currently used
                 }
                 TagEnd::Strong => {
-                    in_strong = false;
+                    // Strong tracking not currently used
                 }
                 TagEnd::Strikethrough => {
-                    in_strikethrough = false;
+                    // Strikethrough tracking not currently used
+                }
+                TagEnd::Table => {
+                    if in_table {
+                        render_table(ui, &table_headers, &table_rows, theme, base_id, element_counter);
+                        element_counter += 1;
+                        in_table = false;
+                    }
+                }
+                TagEnd::TableHead => {
+                    if in_table_head {
+                        table_headers = current_row.clone();
+                        current_row.clear();
+                        in_table_head = false;
+                    }
+                }
+                TagEnd::TableRow => {
+                    if in_table && !in_table_head {
+                        table_rows.push(current_row.clone());
+                        current_row.clear();
+                    }
+                }
+                TagEnd::TableCell => {
+                    current_row.push(current_cell.clone());
+                    current_cell.clear();
                 }
                 _ => {}
             },
@@ -107,6 +149,8 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
             Event::Text(text) => {
                 if in_code_block {
                     code_block_text.push_str(&text);
+                } else if in_table {
+                    current_cell.push_str(&text);
                 } else if in_list {
                     list_item_text.push_str(&text);
                 } else {
@@ -115,7 +159,11 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
             }
 
             Event::Code(code) => {
-                if in_list {
+                if in_table {
+                    current_cell.push('`');
+                    current_cell.push_str(&code);
+                    current_cell.push('`');
+                } else if in_list {
                     list_item_text.push('`');
                     list_item_text.push_str(&code);
                     list_item_text.push('`');
@@ -127,7 +175,9 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
             }
 
             Event::SoftBreak | Event::HardBreak => {
-                if in_list {
+                if in_table {
+                    current_cell.push(' ');
+                } else if in_list {
                     list_item_text.push(' ');
                 } else {
                     current_text.push(' ');
@@ -136,7 +186,7 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
 
             Event::Rule => {
                 ui.add_space(8.0);
-                Divider::horizontal().show(ui);
+                ui.separator();
                 ui.add_space(8.0);
             }
 
@@ -202,8 +252,8 @@ fn render_paragraph(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
                 if is_code {
                     ui.label(
                         egui::RichText::new(&text)
-                            .code()
-                            .background_color(theme.surface_variant())
+                            .monospace()
+                            .background_color(egui::Color32::from_rgb(25, 25, 25))
                             .color(theme.primary()),
                     );
                 } else {
@@ -223,9 +273,9 @@ fn render_paragraph(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
 fn render_code_block(ui: &mut egui::Ui, code: &str, theme: &Theme, base_id: u64, id: usize) {
     ui.add_space(8.0);
 
-    let frame = egui::Frame::none()
-        .fill(theme.surface_variant())
-        .rounding(4.0)
+    let frame = egui::Frame::NONE
+        .fill(egui::Color32::from_rgb(25, 25, 25))
+        .corner_radius(4.0)
         .inner_margin(12.0);
 
     frame.show(ui, |ui| {
@@ -282,8 +332,8 @@ fn render_list_item(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
                     if is_code {
                         ui.label(
                             egui::RichText::new(&text)
-                                .code()
-                                .background_color(theme.surface_variant())
+                                .monospace()
+                                .background_color(egui::Color32::from_rgb(25, 25, 25))
                                 .color(theme.primary()),
                         );
                     } else {
@@ -297,4 +347,83 @@ fn render_list_item(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
             });
         });
     });
+}
+
+fn render_table(
+    ui: &mut egui::Ui,
+    headers: &[String],
+    rows: &[Vec<String>],
+    theme: &Theme,
+    base_id: u64,
+    id: usize,
+) {
+    ui.add_space(12.0);
+
+    ui.push_id((base_id, id), |ui| {
+        use armas::{Table, TableStyle};
+
+        Table::new()
+            .style(TableStyle::Lined)
+            .show(ui, |table| {
+                // Render headers
+                table.header_row(|row| {
+                    for header in headers {
+                        row.cell(header);
+                    }
+                });
+
+                // Render rows
+                for data_row in rows {
+                    table.row(|row| {
+                        for cell in data_row {
+                            // Parse inline code in cells
+                            let mut segments = Vec::new();
+                            let mut current = String::new();
+                            let mut in_code = false;
+                            let mut chars = cell.chars().peekable();
+
+                            while let Some(c) = chars.next() {
+                                if c == '`' {
+                                    if !current.is_empty() {
+                                        segments.push((current.clone(), in_code));
+                                        current.clear();
+                                    }
+                                    in_code = !in_code;
+                                } else {
+                                    current.push(c);
+                                }
+                            }
+
+                            if !current.is_empty() {
+                                segments.push((current, in_code));
+                            }
+
+                            // Render cell with inline formatting
+                            row.cell_ui(|ui| {
+                                ui.horizontal_wrapped(|ui| {
+                                    for (text, is_code) in segments {
+                                        if is_code {
+                                            ui.label(
+                                                egui::RichText::new(&text)
+                                                    .monospace()
+                                                    .background_color(egui::Color32::from_rgb(25, 25, 25))
+                                                    .color(theme.primary()),
+                                            );
+                                        } else {
+                                            ui.label(
+                                                egui::RichText::new(&text)
+                                                    .size(14.0)
+                                                    .color(theme.on_surface_variant()),
+                                            );
+                                        }
+                                    }
+                                });
+                            });
+                        }
+                    });
+                }
+            });
+    });
+
+    ui.add_space(12.0);
 }

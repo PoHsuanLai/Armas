@@ -172,7 +172,7 @@ impl CodeDisplayCard {
                         .color(BadgeColor::Info)
                         .show(ui);
 
-                    Spacer::new().show(ui);
+                    ui.allocate_space(ui.available_size());
 
                     // GitHub link button
                     if let Some(github_url) = &self.github_url {
@@ -207,7 +207,7 @@ impl CodeDisplayCard {
                 });
 
                 ui.add_space(8.0);
-                Divider::horizontal().show(ui);
+                ui.separator();
                 ui.add_space(8.0);
 
                 // Code area with scroll

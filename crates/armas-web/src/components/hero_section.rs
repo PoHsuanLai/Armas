@@ -58,8 +58,9 @@ impl HeroSection {
         }
 
         // Content overlay
-        ui.allocate_ui_at_rect(rect, |ui| {
-            VStack::new(48.0).show(ui, |ui| {
+        let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
+            ui.vertical(|ui| {
+                ui.spacing_mut().item_spacing.y = 48.0;
                 ui.add_space(available_height * 0.25);
 
                 // Title with gradient effect
@@ -175,7 +176,8 @@ impl FeatureShowcase {
 
     pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
         let theme = ui.ctx().armas_theme();
-        VStack::new(32.0).show(ui, |ui| {
+        ui.vertical(|ui| {
+            ui.spacing_mut().item_spacing.y = 32.0;
             ui.vertical_centered(|ui| {
                 ui.label(
                     egui::RichText::new("Features")
@@ -186,29 +188,35 @@ impl FeatureShowcase {
 
                 ui.add_space(16.0);
 
-                // Feature grid
-                Grid::new(3)
-                    .gap(24.0)
-                    .id_source("feature_showcase_grid")
-                    .show(ui, |grid| {
+                // Feature grid using egui::Grid
+                egui::Grid::new("feature_showcase_grid")
+                    .spacing([24.0, 24.0])
+                    .show(ui, |ui| {
+                        let mut col_count = 0;
                         for feature in self.features {
-                            grid.cell(|ui| {
-                                Card::new().hover_effect(true).show(ui, &theme, |ui| {
-                                    ui.set_min_size(egui::vec2(200.0, 160.0));
+                            if col_count >= 3 {
+                                ui.end_row();
+                                col_count = 0;
+                            }
 
-                                    VStack::new(12.0).show(ui, |ui| {
-                                        ui.label(egui::RichText::new(&feature.icon).size(36.0));
+                            Card::new().hover_effect(true).show(ui, &theme, |ui| {
+                                ui.set_min_size(egui::vec2(200.0, 160.0));
 
-                                        ui.strong(&feature.title);
+                                ui.vertical(|ui| {
+                                    ui.spacing_mut().item_spacing.y = 12.0;
+                                    ui.label(egui::RichText::new(&feature.icon).size(36.0));
 
-                                        ui.label(
-                                            egui::RichText::new(&feature.description)
-                                                .size(13.0)
-                                                .color(theme.on_surface_variant()),
-                                        );
-                                    });
+                                    ui.strong(&feature.title);
+
+                                    ui.label(
+                                        egui::RichText::new(&feature.description)
+                                            .size(13.0)
+                                            .color(theme.on_surface_variant()),
+                                    );
                                 });
                             });
+
+                            col_count += 1;
                         }
                     });
             });

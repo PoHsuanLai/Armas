@@ -103,7 +103,7 @@ impl<'a> Card<'a> {
     }
 
     /// Set stroke width (overrides elevation-based width)
-    pub fn stroke_width(mut self, width: f32) -> Self {
+    pub fn stroke_width(mut self, _width: f32) -> Self {
         self.elevation = 0; // Custom width overrides elevation
         self.stroke_color = self.stroke_color.or(Some(Color32::TRANSPARENT));
         self

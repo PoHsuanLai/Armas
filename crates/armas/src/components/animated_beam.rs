@@ -2,7 +2,6 @@
 //!
 //! Creates animated beams that follow paths with glow effects
 
-use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Response, Stroke, Ui, Vec2};
 
 /// A path point with optional curve control

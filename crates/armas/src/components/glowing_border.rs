@@ -2,7 +2,6 @@
 //!
 //! Container with a pulsing glow border effect
 
-use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, CornerRadius, Response, Sense, Stroke, Ui, Vec2};
 
@@ -176,7 +175,7 @@ impl GlowingBorder {
 
             // Render content inside
             let content_rect = rect.shrink(16.0); // Padding
-            ui.allocate_ui_at_rect(content_rect, |ui| {
+            ui.scope_builder(egui::UiBuilder::new().max_rect(content_rect), |ui| {
                 content(ui);
             });
         }

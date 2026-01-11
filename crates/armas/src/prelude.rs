@@ -17,19 +17,8 @@ pub use crate::ext::ArmasContextExt;
 // Color utilities
 pub use crate::color::{Gradient, ColorStop, BlendMode};
 
-// Layout primitives
-pub use crate::layout::{
-    Alignment,
-    VStack, HStack, ZStack,
-    Container, ContainerSize,
-    Grid, GridTemplate,
-    FormLayout,
-    Table,
-    ScrollView,
-    AspectRatio,
-    Divider,
-    Spacer,
-};
+// Layout helpers
+pub use crate::layout::{AspectRatio, ContentMode, Table, TableStyle};
 
 // Common component enums
 pub use crate::components::{

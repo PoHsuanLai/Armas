@@ -4,7 +4,6 @@
 //! Matches Studio One's I/O display.
 
 use crate::ext::ArmasContextExt;
-use crate::theme::Theme;
 use egui;
 
 /// Routing button component

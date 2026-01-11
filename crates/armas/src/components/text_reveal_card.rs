@@ -3,8 +3,6 @@
 //! Card component that reveals text on mouse hover with clip-path effect
 
 use crate::animation::{Animation, EasingFunction};
-use crate::ext::ArmasContextExt;
-use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Text reveal card component

@@ -2,10 +2,7 @@
 //!
 //! Continuous scrolling card carousel with infinite loop
 
-use crate::components::scrolling_banner::ScrollDirection;
-use crate::ext::ArmasContextExt;
-use crate::Theme;
-use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
+use egui::{Color32, Direction, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Speed of the scroll animation
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -84,7 +81,7 @@ pub struct InfiniteMovingCards {
     card_width: f32,
     card_height: f32,
     spacing: f32,
-    direction: ScrollDirection,
+    direction: Direction,
     speed: ScrollSpeed,
     pause_on_hover: bool,
 
@@ -101,7 +98,7 @@ impl InfiniteMovingCards {
             card_width: 350.0,
             card_height: 200.0,
             spacing: 20.0,
-            direction: ScrollDirection::Left,
+            direction: Direction::LeftToRight,
             speed: ScrollSpeed::Normal,
             pause_on_hover: true,
             scroll_offset: 0.0,
@@ -123,7 +120,7 @@ impl InfiniteMovingCards {
     }
 
     /// Set the scroll direction
-    pub fn direction(mut self, direction: ScrollDirection) -> Self {
+    pub fn direction(mut self, direction: Direction) -> Self {
         self.direction = direction;
         self
     }
@@ -157,10 +154,10 @@ impl InfiniteMovingCards {
         // Update scroll offset
         if !self.is_paused {
             let direction_multiplier = match self.direction {
-                ScrollDirection::Left => 1.0,
-                ScrollDirection::Right => -1.0,
+                Direction::LeftToRight => 1.0,
+                Direction::RightToLeft => -1.0,
                 // Horizontal scrolling only, but we need to handle all enum variants
-                ScrollDirection::Up | ScrollDirection::Down => 0.0,
+                Direction::TopDown | Direction::BottomUp => 0.0,
             };
 
             self.scroll_offset += self.speed.pixels_per_second() * dt * direction_multiplier;
@@ -278,7 +275,7 @@ mod tests {
         ];
         let carousel = InfiniteMovingCards::new(cards);
         assert_eq!(carousel.cards.len(), 2);
-        assert_eq!(carousel.direction, ScrollDirection::Left);
+        assert_eq!(carousel.direction, Direction::LeftToRight);
         assert_eq!(carousel.speed, ScrollSpeed::Normal);
     }
 
@@ -288,14 +285,14 @@ mod tests {
         let carousel = InfiniteMovingCards::new(cards)
             .card_size(300.0, 180.0)
             .spacing(15.0)
-            .direction(ScrollDirection::Right)
+            .direction(Direction::RightToLeft)
             .speed(ScrollSpeed::Fast)
             .pause_on_hover(false);
 
         assert_eq!(carousel.card_width, 300.0);
         assert_eq!(carousel.card_height, 180.0);
         assert_eq!(carousel.spacing, 15.0);
-        assert_eq!(carousel.direction, ScrollDirection::Right);
+        assert_eq!(carousel.direction, Direction::RightToLeft);
         assert_eq!(carousel.speed, ScrollSpeed::Fast);
         assert!(!carousel.pause_on_hover);
     }

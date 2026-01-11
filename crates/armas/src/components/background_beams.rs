@@ -2,7 +2,6 @@
 //!
 //! Creates diagonal light beams across the background with subtle animation
 
-use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 use std::f32::consts::PI;
 

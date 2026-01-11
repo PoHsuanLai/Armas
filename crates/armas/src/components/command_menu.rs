@@ -3,7 +3,6 @@
 //! macOS/VS Code style command palette with fuzzy search
 
 use crate::ext::ArmasContextExt;
-use crate::Theme;
 use egui::{
     vec2, Align, Color32, CornerRadius, Key, Layout, Modifiers, Sense, Stroke, StrokeKind,
     TextEdit, Ui,

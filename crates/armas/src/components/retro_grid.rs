@@ -2,8 +2,6 @@
 //!
 //! Cyberpunk-style perspective grid with animated lines
 
-use crate::ext::ArmasContextExt;
-use crate::Theme;
 use egui::{Color32, Pos2, Response, Stroke, Ui, Vec2};
 
 /// Retro grid background component

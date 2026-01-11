@@ -4,8 +4,7 @@
 
 use crate::animation::{Animation, EasingFunction};
 use crate::ext::ArmasContextExt;
-use crate::Theme;
-use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
+use egui::{Color32, Pos2, Rect, Response, Sense, Vec2};
 
 /// Individual navigation item
 #[derive(Clone)]
@@ -162,7 +161,7 @@ impl FloatingNavbar {
                     let item_width = (content_width - total_spacing) / item_count as f32;
 
                     // Draw active indicator background (morphing pill)
-                    if let Some(active_idx) = self.current_active {
+                    if let Some(_active_idx) = self.current_active {
                         let indicator_x = self.active_position_animation.value();
                         let indicator_width = self.active_width_animation.value();
 

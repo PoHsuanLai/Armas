@@ -2,7 +2,6 @@
 //!
 //! Creates shooting stars across the screen with trail effects
 
-use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Stroke, Ui, Vec2};
 use std::f32::consts::PI;

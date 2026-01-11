@@ -1,4 +1,3 @@
-use crate::layout::HStack;
 use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Ui, Vec2};
@@ -45,6 +44,8 @@ pub struct AnimatedTabs {
     indicator_pos: f32,
     /// Indicator width multiplier
     indicator_width: f32,
+    /// Whether to persist state internally (disable when state is managed externally)
+    persist_state: bool,
 }
 
 impl AnimatedTabs {
@@ -57,6 +58,7 @@ impl AnimatedTabs {
             animate: true,
             indicator_pos: 0.0,
             indicator_width: 1.0,
+            persist_state: true, // Enable by default
         }
     }
 
@@ -64,6 +66,7 @@ impl AnimatedTabs {
     pub fn active(mut self, index: usize) -> Self {
         self.active_index = index.min(self.labels.len().saturating_sub(1));
         self.indicator_pos = self.active_index as f32;
+        self.persist_state = false; // Disable internal persistence when externally managed
         self
     }
 
@@ -86,6 +89,22 @@ impl AnimatedTabs {
             return None;
         }
 
+        // Load previous state from egui memory only if internal persistence is enabled
+        if self.persist_state {
+            let tabs_id = ui.id().with("tabs_state");
+
+            let (stored_active, stored_indicator): (usize, f32) = ui.ctx().data_mut(|d| {
+                d.get_persisted(tabs_id)
+                    .unwrap_or((self.active_index, self.active_index as f32))
+            });
+
+            // Use stored state if no explicit active was set
+            if self.active_index == 0 && stored_active > 0 {
+                self.active_index = stored_active;
+            }
+            self.indicator_pos = stored_indicator;
+        }
+
         // Update animation
         let dt = ui.input(|i| i.stable_dt);
         if self.animate {
@@ -100,11 +119,26 @@ impl AnimatedTabs {
             self.indicator_pos = self.active_index as f32;
         }
 
-        match self.style {
+        let result = match self.style {
             TabStyle::Underline => self.show_underline(ui, &theme),
             TabStyle::Pill => self.show_pill(ui, &theme),
             TabStyle::Segment => self.show_segment(ui, &theme),
+        };
+
+        // Store state if changed
+        if let Some(new_index) = result {
+            self.active_index = new_index;
         }
+
+        // Persist state to egui memory only if internal persistence is enabled
+        if self.persist_state {
+            let tabs_id = ui.id().with("tabs_state");
+            ui.ctx().data_mut(|d| {
+                d.insert_persisted(tabs_id, (self.active_index, self.indicator_pos));
+            });
+        }
+
+        result
     }
 
     /// Show underline style tabs
@@ -177,7 +211,8 @@ impl AnimatedTabs {
     fn show_pill(&mut self, ui: &mut Ui, theme: &Theme) -> Option<usize> {
         let mut selected = None;
 
-        HStack::new(8.0).show(ui, |ui| {
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 8.0;
             for (index, label) in self.labels.iter().enumerate() {
                 let is_active = index == self.active_index;
 
@@ -272,7 +307,7 @@ impl AnimatedTabs {
                     .rect_filled(segment_rect.shrink(2.0), 3.0, theme.hover());
             }
 
-            // Divider (except for last segment)
+            // Divider (except for last segment) - drawn manually
             if index < num_tabs - 1 {
                 let divider_x = segment_rect.max.x;
                 ui.painter().line_segment(

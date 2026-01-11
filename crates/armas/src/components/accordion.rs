@@ -6,6 +6,8 @@ use egui::{Pos2, Response, Ui, Vec2};
 pub struct AccordionItem {
     /// Item title
     title: String,
+    /// Optional ID for state persistence
+    id: Option<egui::Id>,
     /// Whether the item is open
     is_open: bool,
     /// Show chevron icon
@@ -21,11 +23,18 @@ impl AccordionItem {
     pub fn new(title: impl Into<String>) -> Self {
         Self {
             title: title.into(),
+            id: None,
             is_open: false,
             show_icon: true,
             animate: true,
             animation_t: 0.0,
         }
+    }
+
+    /// Set ID for state persistence (useful for demos where item is recreated each frame)
+    pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
+        self.id = Some(id.into());
+        self
     }
 
     /// Set initial open state
@@ -54,6 +63,18 @@ impl AccordionItem {
         content: impl FnOnce(&mut Ui) -> R,
     ) -> (bool, R) {
         let theme = ui.ctx().armas_theme();
+
+        // Load state from memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("accordion_state");
+            let (stored_open, stored_anim): (bool, f32) = ui.ctx().data_mut(|d| {
+                d.get_temp(state_id)
+                    .unwrap_or((self.is_open, self.animation_t))
+            });
+            self.is_open = stored_open;
+            self.animation_t = stored_anim;
+        }
+
         let header_response = self.show_header(ui, &theme);
 
         // Toggle on click
@@ -113,6 +134,14 @@ impl AccordionItem {
         // Request repaint if animating
         if (self.animation_t - target).abs() > 0.01 {
             ui.ctx().request_repaint();
+        }
+
+        // Save state to memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("accordion_state");
+            ui.ctx().data_mut(|d| {
+                d.insert_temp(state_id, (self.is_open, self.animation_t));
+            });
         }
 
         (header_response.clicked(), content_result)

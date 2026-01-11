@@ -17,6 +17,7 @@ egui = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 pulldown-cmark = "0.11"
+regex = "1.10"
 
 # For opening URLs on native platforms
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

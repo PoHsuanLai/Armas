@@ -4,7 +4,6 @@
 //! that move smoothly using perlin-like motion patterns.
 
 use crate::color::{ColorStop, Gradient};
-use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Rect, Response, Ui, Vec2};
 use std::f32::consts::PI;
 

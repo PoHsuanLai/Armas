@@ -1,4 +1,3 @@
-use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Ui};
 

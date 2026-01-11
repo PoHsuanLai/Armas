@@ -4,9 +4,8 @@
 //! Modern design inspired by shadcn/ui with refined styling
 
 use crate::ext::ArmasContextExt;
-use crate::layout::{HStack, VStack};
 use crate::{Input, Popover, PopoverPosition};
-use egui::{vec2, Color32, Id, Sense, Stroke, Ui};
+use egui::{vec2, Color32, Id, Sense, Ui};
 
 /// A date value (year, month, day)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -156,7 +155,7 @@ impl Date {
 /// date_picker.show(ui, &mut selected_date);
 /// ```
 pub struct DatePicker {
-    id: Id,
+    _id: Id,
     popover: Popover,
     viewing_year: i32,
     viewing_month: u32,
@@ -172,7 +171,7 @@ impl DatePicker {
         let today = Date::today();
         let id = id.into();
         Self {
-            id,
+            _id: id,
             popover: Popover::new(id.with("popover"))
                 .position(PopoverPosition::Bottom)
                 .width(280.0), // Smaller, tighter width (7 * 36px cells + 6 * 2px gaps + padding)
@@ -254,13 +253,17 @@ impl DatePicker {
         let viewing_year = self.viewing_year;
         let viewing_month = self.viewing_month;
 
+        // Set popover open state externally
+        self.popover.set_open(self.is_open);
+
         self.popover
-            .show(ui.ctx(), &theme, input_rect, &mut self.is_open, |ui| {
-                VStack::new(8.0)
-                    .alignment(crate::layout::Alignment::Center)
-                    .show(ui, |ui| {
+            .show(ui.ctx(), &theme, input_rect, |ui| {
+                ui.vertical(|ui| {
+                    ui.spacing_mut().item_spacing.y = 8.0;
+                    ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                     // Header with month/year navigation
-                    HStack::new(8.0).show(ui, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.spacing_mut().item_spacing.x = 8.0;
                         // Previous month button
                         let prev_size = vec2(32.0, 32.0);
                         let (prev_rect, prev_response) = ui.allocate_exact_size(prev_size, Sense::click());
@@ -382,7 +385,7 @@ impl DatePicker {
 
                     let cell_size = vec2(36.0, 36.0);
                     let mut day_counter = 1;
-                    let total_cells = 42; // 6 weeks * 7 days
+                    let _total_cells = 42; // 6 weeks * 7 days
 
                     // Render 6 rows
                     for row in 0..6 {
@@ -628,6 +631,7 @@ impl DatePicker {
                     }
                 });
             });
+        });
 
         // Handle month navigation
         if prev_month {

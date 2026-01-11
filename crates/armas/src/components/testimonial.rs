@@ -1,6 +1,4 @@
-use crate::layout::HStack;
 use crate::ext::ArmasContextExt;
-use crate::Theme;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 
 /// A testimonial item with quote, author, and optional avatar
@@ -337,7 +335,7 @@ impl TestimonialGrid {
 
     /// Show the testimonial grid
     pub fn show(&self, ui: &mut Ui) {
-        let theme = ui.ctx().armas_theme();
+        let _theme = ui.ctx().armas_theme();
         let available_width = ui.available_width();
 
         // Calculate columns
@@ -352,7 +350,8 @@ impl TestimonialGrid {
         let chunks: Vec<_> = self.items.chunks(columns).collect();
 
         for (row_idx, row) in chunks.iter().enumerate() {
-            HStack::new(self.gap).show(ui, |ui| {
+            ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = self.gap;
                 for item in row.iter() {
                     TestimonialCard::new(item.clone())
                         .width(card_width)

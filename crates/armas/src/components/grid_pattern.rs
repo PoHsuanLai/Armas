@@ -2,7 +2,6 @@
 //!
 //! Creates an infinite grid with optional perspective and fade effects
 
-use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Stroke, Ui, Vec2};
 

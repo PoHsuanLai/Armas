@@ -4,7 +4,6 @@
 //! Matches Studio One's "Sends ▼" style headers.
 
 use crate::ext::ArmasContextExt;
-use crate::theme::Theme;
 use egui;
 
 /// Collapsible section header component

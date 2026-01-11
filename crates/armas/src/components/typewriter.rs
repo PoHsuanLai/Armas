@@ -140,7 +140,7 @@ impl Typewriter {
 
 /// Typewriter with word-by-word reveal
 pub struct WordTypewriter {
-    text: String,
+    _text: String,
     words: Vec<String>,
     word_index: f32,
     speed: f32, // words per second
@@ -156,7 +156,7 @@ impl WordTypewriter {
         let words: Vec<String> = text.split_whitespace().map(String::from).collect();
 
         Self {
-            text,
+            _text: text,
             words,
             word_index: 0.0,
             speed: 4.0,

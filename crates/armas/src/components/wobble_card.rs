@@ -2,10 +2,8 @@
 //!
 //! Card that wobbles and jiggles on hover for playful interactions
 
-use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, CornerRadius, Pos2, Response, Sense, Stroke, Ui, Vec2};
-use std::f32::consts::PI;
 
 /// Wobble card component
 ///
@@ -192,7 +190,7 @@ impl WobbleCard {
 
             // Render content
             let content_rect = rect.translate(offset).shrink(16.0);
-            ui.allocate_ui_at_rect(content_rect, |ui| {
+            ui.scope_builder(egui::UiBuilder::new().max_rect(content_rect), |ui| {
                 content(ui);
             });
 

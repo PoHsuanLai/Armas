@@ -3,7 +3,6 @@
 //! Animated toggle switches and checkboxes
 
 use crate::animation::SpringAnimation;
-use crate::layout::VStack;
 use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{pos2, vec2, Color32, CornerRadius, Response, Sense, Stroke, Ui, Vec2};
@@ -44,6 +43,7 @@ impl ToggleSize {
 
 /// Animated toggle switch component
 pub struct Toggle {
+    id: Option<egui::Id>,
     variant: ToggleVariant,
     size: ToggleSize,
     label: Option<String>,
@@ -57,14 +57,21 @@ impl Toggle {
     /// Create a new toggle
     pub fn new() -> Self {
         Self {
+            id: None,
             variant: ToggleVariant::Switch,
             size: ToggleSize::Medium,
             label: None,
             description: None,
             disabled: false,
             // Smooth spring animation for natural toggle feel
-            toggle_spring: SpringAnimation::new(0.0, 0.0).with_params(300.0, 30.0),
+            toggle_spring: SpringAnimation::new(0.0, 0.0).with_params(800.0, 30.0),
         }
+    }
+
+    /// Set ID for state persistence (useful for demos where toggle is recreated each frame)
+    pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
+        self.id = Some(id.into());
+        self
     }
 
     /// Set the variant
@@ -100,6 +107,18 @@ impl Toggle {
     /// Show the toggle and return whether it changed
     pub fn show(&mut self, ui: &mut Ui, checked: &mut bool) -> ToggleResponse {
         let theme = ui.ctx().armas_theme();
+
+        // Load state from memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("toggle_state");
+            let (stored_checked, stored_anim): (bool, f32) = ui.ctx().data_mut(|d| {
+                d.get_temp(state_id)
+                    .unwrap_or((*checked, if *checked { 1.0 } else { 0.0 }))
+            });
+            *checked = stored_checked;
+            self.toggle_spring.value = stored_anim;
+        }
+
         let old_checked = *checked;
 
         // Update spring animation to match checked state
@@ -147,7 +166,8 @@ impl Toggle {
                 // Label and description
                 if self.label.is_some() || self.description.is_some() {
                     ui.add_space(theme.spacing.sm);
-                    VStack::new(2.0).show(ui, |ui| {
+                    ui.vertical(|ui| {
+                        ui.spacing_mut().item_spacing.y = 2.0;
                         if let Some(label) = &self.label {
                             let label_color = if self.disabled {
                                 Color32::from_gray(100)
@@ -171,6 +191,14 @@ impl Toggle {
                 response
             })
             .inner;
+
+        // Save state to memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("toggle_state");
+            ui.ctx().data_mut(|d| {
+                d.insert_temp(state_id, (*checked, self.toggle_spring.value));
+            });
+        }
 
         ToggleResponse {
             response,
@@ -358,7 +386,8 @@ impl ToggleGroup {
         let theme = ui.ctx().armas_theme();
         let mut changed = Vec::new();
 
-        VStack::new(theme.spacing.sm).show(ui, |ui| {
+        ui.vertical(|ui| {
+            ui.spacing_mut().item_spacing.y = theme.spacing.sm;
             // Group label
             if let Some(label) = &self.label {
                 ui.label(

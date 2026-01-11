@@ -4,7 +4,6 @@
 
 use crate::animation::{Animation, EasingFunction};
 use crate::ext::ArmasContextExt;
-use crate::Theme;
 use egui::{Color32, Image, Pos2, Rect, Response, Sense, TextureHandle, Ui, Vec2};
 
 /// Individual card in a focus cards grid

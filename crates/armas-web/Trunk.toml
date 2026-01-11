@@ -1,0 +1,16 @@
+[build]
+# Output directory for the built application
+dist = "../../dist"
+# Public URL path for GitHub Pages
+# https://pohusuanlai.github.io/Armas/
+public_url = "/Armas/"
+
+[watch]
+# Watch the content directory for changes
+watch = ["content/"]
+
+[serve]
+# Port for local development server
+port = 8080
+# Open browser automatically
+open = false

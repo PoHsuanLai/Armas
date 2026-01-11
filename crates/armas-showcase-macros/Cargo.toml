@@ -14,3 +14,4 @@ proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["full", "parsing"] }
 pulldown-cmark = "0.11"
+regex = "1.10"

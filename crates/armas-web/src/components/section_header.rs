@@ -64,7 +64,8 @@ impl ShowcaseSectionHeader {
             SectionHeaderSize::Small => (18.0, 6.0),
         };
 
-        VStack::new(spacing).show(ui, |ui| {
+        ui.vertical(|ui| {
+            ui.spacing_mut().item_spacing.y = spacing;
             // Title and badge
             ui.horizontal(|ui| {
                 ui.label(

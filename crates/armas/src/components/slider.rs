@@ -2,14 +2,12 @@
 //!
 //! Horizontal slider for value selection
 
-use crate::layout::{HStack, Spacer, VStack};
 use crate::ext::ArmasContextExt;
-use crate::Theme;
-use egui::{pos2, vec2, Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
+use egui::{pos2, vec2, Color32, Rect, Sense, Stroke, Ui};
 
 /// Slider component
 pub struct Slider {
-    value: f32,
+    id: Option<egui::Id>,
     min: f32,
     max: f32,
     width: f32,
@@ -22,9 +20,9 @@ pub struct Slider {
 
 impl Slider {
     /// Create a new slider
-    pub fn new(value: f32, min: f32, max: f32) -> Self {
+    pub fn new(min: f32, max: f32) -> Self {
         Self {
-            value: value.clamp(min, max),
+            id: None,
             min,
             max,
             width: 200.0,
@@ -34,6 +32,12 @@ impl Slider {
             suffix: None,
             step: None,
         }
+    }
+
+    /// Set ID for state persistence (useful for demos where slider is recreated each frame)
+    pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
+        self.id = Some(id.into());
+        self
     }
 
     /// Set the slider width
@@ -73,23 +77,37 @@ impl Slider {
     }
 
     /// Show the slider
-    pub fn show(mut self, ui: &mut Ui) -> SliderResponse {
+    pub fn show(self, ui: &mut Ui, value: &mut f32) -> SliderResponse {
         let theme = ui.ctx().armas_theme();
         let mut changed = false;
 
-        VStack::new(4.0).show(ui, |ui| {
+        // Load state from memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("slider_state");
+            let stored_value: f32 = ui.ctx().data_mut(|d| {
+                d.get_temp(state_id).unwrap_or(*value)
+            });
+            *value = stored_value;
+        }
+
+        // Clamp value to range
+        *value = value.clamp(self.min, self.max);
+
+        ui.vertical(|ui| {
+            ui.spacing_mut().item_spacing.y = 4.0;
             // Label
             if let Some(label) = &self.label {
-                HStack::new(8.0).show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = 8.0;
                     ui.label(label);
 
                     if self.show_value {
-                        Spacer::new().show(ui);
+                        ui.allocate_space(ui.available_size());
 
                         let value_text = if let Some(suffix) = &self.suffix {
-                            format!("{:.1}{}", self.value, suffix)
+                            format!("{:.1}{}", value, suffix)
                         } else {
-                            format!("{:.1}", self.value)
+                            format!("{:.1}", value)
                         };
                         ui.label(value_text);
                     }
@@ -110,8 +128,8 @@ impl Slider {
                         new_value = (new_value / step).round() * step;
                     }
 
-                    if (new_value - self.value).abs() > 0.001 {
-                        self.value = new_value.clamp(self.min, self.max);
+                    if (new_value - *value).abs() > 0.001 {
+                        *value = new_value.clamp(self.min, self.max);
                         changed = true;
                     }
                 }
@@ -126,7 +144,7 @@ impl Slider {
                 painter.rect_filled(track_rect, 2.0, theme.surface_variant());
 
                 // Filled track (progress)
-                let t = (self.value - self.min) / (self.max - self.min);
+                let t = (*value - self.min) / (self.max - self.min);
                 let fill_width = track_rect.width() * t;
                 let fill_rect = Rect::from_min_size(track_rect.min, vec2(fill_width, 4.0));
 
@@ -162,8 +180,16 @@ impl Slider {
             }
         });
 
+        // Save state to memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("slider_state");
+            ui.ctx().data_mut(|d| {
+                d.insert_temp(state_id, *value);
+            });
+        }
+
         SliderResponse {
-            value: self.value,
+            value: *value,
             changed,
         }
     }

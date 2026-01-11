@@ -2,7 +2,6 @@
 //!
 //! Button with animated gradient border that travels around the edges
 
-use crate::{PainterExt, Theme};
 use egui::{Color32, CornerRadius, Pos2, Response, Sense, Stroke, Ui, Vec2};
 use std::f32::consts::PI;
 
@@ -119,7 +118,7 @@ impl MovingBorder {
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
-            let visuals = ui.style().interact(&response);
+            let _visuals = ui.style().interact(&response);
 
             // Draw background
             painter.rect_filled(
@@ -195,7 +194,7 @@ impl MovingBorder {
     }
 
     /// Calculate position along perimeter
-    fn perimeter_position(&self, rect: egui::Rect, distance: f32, total_perimeter: f32) -> Pos2 {
+    fn perimeter_position(&self, rect: egui::Rect, distance: f32, _total_perimeter: f32) -> Pos2 {
         let width = rect.width();
         let height = rect.height();
 

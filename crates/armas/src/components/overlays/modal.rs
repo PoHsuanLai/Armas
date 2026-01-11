@@ -160,7 +160,7 @@ impl Modal {
                     // Use Card for consistent styling with elevated appearance
                     Card::new()
                         .stroke(theme.outline().linear_multiply(0.3))
-                        .rounding(8.0)
+                        .corner_radius(8.0)
                         .inner_margin(0.0) // We'll handle margins manually for title bar
                         .elevation(3) // Higher elevation for modal
                         .show(ui, &theme, |ui| {

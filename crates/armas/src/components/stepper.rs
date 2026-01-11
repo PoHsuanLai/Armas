@@ -3,9 +3,8 @@
 //! Step-by-step progress indicator for multi-step workflows
 
 use crate::ext::ArmasContextExt;
-use crate::layout::HStack;
-use crate::{Badge, BadgeColor, Theme};
-use egui::{vec2, Color32, Pos2, Rect, Stroke, Ui, Vec2};
+use crate::Theme;
+use egui::{vec2, Color32, Pos2, Stroke, Ui};
 
 /// A single step in the stepper
 #[derive(Clone)]
@@ -131,11 +130,12 @@ impl Stepper {
         current_step: usize,
         response: &mut StepperResponse,
     ) {
-        HStack::new(0.0).show(ui, |ui| {
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 0.0;
             for (idx, step) in self.steps.iter().enumerate() {
                 let is_completed = idx < current_step;
                 let is_current = idx == current_step;
-                let is_future = idx > current_step;
+                let _is_future = idx > current_step;
 
                 // Step circle
                 let circle_size = 40.0;
@@ -260,7 +260,7 @@ impl Stepper {
         for (idx, step) in self.steps.iter().enumerate() {
             let is_completed = idx < current_step;
             let is_current = idx == current_step;
-            let is_future = idx > current_step;
+            let _is_future = idx > current_step;
 
             ui.horizontal(|ui| {
                 // Step circle

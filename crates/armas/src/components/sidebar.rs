@@ -191,11 +191,12 @@ impl Sidebar {
 
     /// Show sidebar using Button components
     fn show_with_buttons(&mut self, ui: &mut Ui) -> SidebarResponse {
-        let theme = ui.ctx().armas_theme();
+        let _theme = ui.ctx().armas_theme();
         let mut clicked_index: Option<usize> = None;
+        let mut clicked_child: Option<(usize, usize)> = None;
 
         egui::ScrollArea::vertical()
-            .id_source("sidebar_scroll")
+            .id_salt("sidebar_scroll")
             .auto_shrink([false, false])
             .show(ui, |ui| {
                 ui.vertical(|ui| {
@@ -242,7 +243,7 @@ impl Sidebar {
                                 .hover_text_color(egui::Color32::WHITE);
 
                             if child_button.show(ui).clicked() {
-                                clicked_index = Some(index);
+                                clicked_child = Some((index, child_idx));
                             }
                         }
                     });
@@ -260,7 +261,7 @@ impl Sidebar {
         SidebarResponse {
             response,
             clicked: clicked_index,
-            clicked_child: None,
+            clicked_child,
             hovered: None,
             is_expanded: self.is_expanded,
         }

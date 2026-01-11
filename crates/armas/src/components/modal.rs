@@ -4,7 +4,6 @@
 //! Built on top of Card component for consistency
 
 use crate::animation::{Animation, EasingFunction};
-use crate::layout::{HStack, Spacer, VStack};
 use crate::{Button, ButtonVariant, Card, Theme};
 use egui::{vec2, Align2, Color32, Key, Sense, Ui, Vec2};
 
@@ -37,25 +36,36 @@ impl ModalSize {
 
 /// Modal dialog component
 pub struct Modal {
+    id: egui::Id,
     title: Option<String>,
     size: ModalSize,
     closable: bool,
     backdrop_blur: bool,
     // Use animation system for smooth fade-in
     fade_animation: Animation<f32>,
+    // Internal state management
+    is_open: Option<bool>, // None = use internal state, Some = external control
 }
 
 impl Modal {
-    /// Create a new modal dialog
-    pub fn new() -> Self {
+    /// Create a new modal dialog with a unique ID
+    pub fn new(id: impl Into<egui::Id>) -> Self {
         Self {
+            id: id.into(),
             title: None,
             size: ModalSize::Medium,
             closable: true,
             backdrop_blur: true,
             // Smooth fade-in animation with cubic easing
             fade_animation: Animation::new(0.0, 1.0, 0.15).with_easing(EasingFunction::CubicOut),
+            is_open: None, // Use internal state by default
         }
+    }
+
+    /// Set the modal to be open (for external control)
+    pub fn open(mut self, is_open: bool) -> Self {
+        self.is_open = Some(is_open);
+        self
     }
 
     /// Set the modal title
@@ -89,7 +99,6 @@ impl Modal {
         &mut self,
         ctx: &egui::Context,
         theme: &Theme,
-        is_open: &mut bool,
         content: impl FnOnce(&mut Ui),
     ) -> ModalResponse {
         let mut response = ModalResponse {
@@ -97,7 +106,15 @@ impl Modal {
             backdrop_clicked: false,
         };
 
-        if !*is_open {
+        // Load state from egui memory if not externally controlled
+        let state_id = self.id.with("modal_state");
+        let mut is_open = if let Some(external_open) = self.is_open {
+            external_open
+        } else {
+            ctx.data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false))
+        };
+
+        if !is_open {
             self.fade_animation.reset();
             return response;
         }
@@ -115,7 +132,7 @@ impl Modal {
             ctx.request_repaint();
         }
 
-        let screen_rect = ctx.screen_rect();
+        let screen_rect = ctx.content_rect();
         let modal_size = self.size.dimensions(screen_rect.size());
 
         // Get eased animation value
@@ -125,7 +142,8 @@ impl Modal {
         let backdrop_alpha = (eased * 180.0) as u8;
         let backdrop_color = Color32::from_rgba_unmultiplied(0, 0, 0, backdrop_alpha);
 
-        egui::Area::new(egui::Id::new("modal_backdrop"))
+        let backdrop_id = self.id.with("modal_backdrop");
+        egui::Area::new(backdrop_id)
             .order(egui::Order::Foreground)
             .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
             .show(ctx, |ui| {
@@ -135,7 +153,7 @@ impl Modal {
 
                 // Check for backdrop click
                 if self.closable && backdrop_response.clicked() {
-                    *is_open = false;
+                    is_open = false;
                     response.closed = true;
                     response.backdrop_clicked = true;
                     self.fade_animation.reset();
@@ -143,7 +161,8 @@ impl Modal {
             });
 
         // Draw modal
-        egui::Area::new(egui::Id::new("modal_content"))
+        let content_id = self.id.with("modal_content");
+        egui::Area::new(content_id)
             .order(egui::Order::Foreground)
             .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
             .show(ctx, |ui| {
@@ -151,22 +170,24 @@ impl Modal {
                 // Only animate opacity instead of scale
                 let modal_rect = egui::Rect::from_center_size(screen_rect.center(), modal_size);
 
-                ui.allocate_ui_at_rect(modal_rect, |ui| {
+                ui.scope_builder(egui::UiBuilder::new().max_rect(modal_rect), |ui| {
                     // Use Card for consistent styling with elevated appearance
                     Card::new()
                         .stroke(theme.outline().linear_multiply(0.3))
-                        .rounding(8.0)
+                        .corner_radius(8.0)
                         .inner_margin(0.0) // We'll handle margins manually for title bar
                         .elevation(3) // Higher elevation for modal
                         .show(ui, theme, |ui| {
                             // Layout: title bar + content
-                            VStack::new(8.0).show(ui, |ui| {
+                            ui.vertical(|ui| {
+                                ui.spacing_mut().item_spacing.y = 8.0;
                                 // Title bar
                                 if let Some(title) = &self.title {
-                                    HStack::new(16.0).show(ui, |ui| {
+                                    ui.horizontal(|ui| {
+                                        ui.spacing_mut().item_spacing.x = 16.0;
                                         ui.heading(title);
 
-                                        Spacer::new().show(ui);
+                                        ui.allocate_space(ui.available_size());
 
                                         if self.closable {
                                             if Button::new("✕")
@@ -175,7 +196,7 @@ impl Modal {
                                                 .show(ui)
                                                 .clicked()
                                             {
-                                                *is_open = false;
+                                                is_open = false;
                                                 response.closed = true;
                                                 self.fade_animation.reset();
                                             }
@@ -185,9 +206,11 @@ impl Modal {
                                 }
 
                                 // Content area with padding
-                                HStack::new(0.0).show(ui, |ui| {
+                                ui.horizontal(|ui| {
+                                    ui.spacing_mut().item_spacing.x = 0.0;
                                     ui.add_space(16.0);
-                                    VStack::new(0.0).show(ui, |ui| {
+                                    ui.vertical(|ui| {
+                                        ui.spacing_mut().item_spacing.y = 0.0;
                                         content(ui);
                                     });
                                     ui.add_space(16.0);
@@ -199,9 +222,14 @@ impl Modal {
 
         // Handle ESC key to close
         if self.closable && ctx.input(|i| i.key_pressed(Key::Escape)) {
-            *is_open = false;
+            is_open = false;
             response.closed = true;
             self.fade_animation.reset();
+        }
+
+        // Persist state if not externally controlled
+        if self.is_open.is_none() {
+            ctx.data_mut(|d| d.insert_temp(state_id, is_open));
         }
 
         response
@@ -210,7 +238,7 @@ impl Modal {
 
 impl Default for Modal {
     fn default() -> Self {
-        Self::new()
+        Self::new("modal")
     }
 }
 
@@ -231,8 +259,10 @@ pub fn dialog(
     title: impl Into<String>,
     content: impl FnOnce(&mut Ui),
 ) -> ModalResponse {
-    let mut modal = Modal::new().title(title);
-    modal.show(ctx, theme, is_open, content)
+    let mut modal = Modal::new("dialog").title(title).open(*is_open);
+    let response = modal.show(ctx, theme, content);
+    *is_open = !response.closed && *is_open;
+    response
 }
 
 /// Confirmation dialog with Yes/No buttons
@@ -247,16 +277,18 @@ pub fn confirm_dialog(
     let mut result = ConfirmResponse::None;
     let mut should_close = false;
 
-    let mut modal = Modal::new()
+    let mut modal = Modal::new("confirm_dialog")
         .title(title)
         .size(ModalSize::Small)
-        .closable(false);
+        .closable(false)
+        .open(*is_open);
 
-    modal.show(ctx, theme, is_open, |ui| {
+    modal.show(ctx, theme, |ui| {
         ui.label(&message);
         ui.add_space(20.0);
 
-        HStack::new(8.0).show(ui, |ui| {
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 8.0;
             if Button::new("Cancel")
                 .variant(ButtonVariant::Outlined)
                 .show(ui)
@@ -266,7 +298,7 @@ pub fn confirm_dialog(
                 should_close = true;
             }
 
-            Spacer::new().show(ui);
+            ui.allocate_space(ui.available_size());
 
             if Button::new("Confirm")
                 .variant(ButtonVariant::Filled)

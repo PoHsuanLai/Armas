@@ -2,10 +2,9 @@
 //!
 //! Searchable dropdown menus with keyboard navigation
 
-use crate::layout::{HStack, VStack};
 use crate::ext::ArmasContextExt;
 use crate::Theme;
-use egui::{vec2, Color32, CornerRadius, Key, Response, Sense, Stroke, TextEdit, Ui, Vec2};
+use egui::{vec2, Color32, CornerRadius, Key, Response, Sense, Stroke, TextEdit, Ui};
 
 /// A selectable option in a dropdown
 #[derive(Clone, Debug)]
@@ -55,6 +54,7 @@ impl SelectOption {
 
 /// Searchable dropdown select component
 pub struct Select {
+    id: Option<egui::Id>,
     options: Vec<SelectOption>,
     selected_value: Option<String>,
     is_open: bool,
@@ -73,6 +73,7 @@ impl Select {
     pub fn new(options: Vec<SelectOption>) -> Self {
         let filtered_indices: Vec<usize> = (0..options.len()).collect();
         Self {
+            id: None,
             options,
             selected_value: None,
             is_open: false,
@@ -85,6 +86,12 @@ impl Select {
             max_height: 300.0,
             searchable: true,
         }
+    }
+
+    /// Set ID for state persistence (useful for demos where select is recreated each frame)
+    pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
+        self.id = Some(id.into());
+        self
     }
 
     /// Set the selected value
@@ -171,8 +178,26 @@ impl Select {
         let mut changed = false;
         let mut new_value = None;
 
-        VStack::new(4.0)
-            .show_with_inner(ui, |ui| {
+        // Load state from memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("select_state");
+            let stored_state: Option<(Option<String>, bool, String, Option<usize>)> =
+                ui.ctx().data_mut(|d| d.get_temp(state_id));
+
+            if let Some((selected_value, is_open, search_text, highlighted_index)) = stored_state {
+                self.selected_value = selected_value;
+                self.is_open = is_open;
+                self.search_text = search_text;
+                self.highlighted_index = highlighted_index;
+                // Update filter based on loaded search text
+                if !self.search_text.is_empty() {
+                    self.update_filter();
+                }
+            }
+        }
+
+        ui.vertical(|ui| {
+            ui.spacing_mut().item_spacing.y = 4.0;
                 // Label
                 if let Some(label) = &self.label {
                     ui.label(
@@ -272,6 +297,7 @@ impl Select {
                 if self.is_open {
                     let dropdown_response = self.show_dropdown(ui, &theme, button_rect, width);
                     if let Some(selected_value) = dropdown_response.selected_value {
+                        self.selected_value = Some(selected_value.clone());
                         new_value = Some(selected_value);
                         changed = true;
                         self.is_open = false;
@@ -281,13 +307,25 @@ impl Select {
                     }
                 }
 
+                // Save state to memory if ID is set
+                if let Some(id) = self.id {
+                    let state_id = id.with("select_state");
+                    ui.ctx().data_mut(|d| {
+                        d.insert_temp(state_id, (
+                            self.selected_value.clone(),
+                            self.is_open,
+                            self.search_text.clone(),
+                            self.highlighted_index,
+                        ));
+                    });
+                }
+
                 SelectResponse {
                     response,
                     changed,
                     selected_value: new_value,
                 }
-            })
-            .inner
+        }).inner
     }
 
     /// Show the dropdown menu
@@ -353,14 +391,15 @@ impl Select {
                                             .size(14.0),
                                     );
                                 } else {
-                                    for (display_idx, &option_idx) in
+                                    for (_display_idx, &option_idx) in
                                         self.filtered_indices.iter().enumerate()
                                     {
                                         let option = &self.options[option_idx];
 
                                         if option.disabled {
                                             // Show disabled option
-                                            HStack::new(8.0).show(ui, |ui| {
+                                            ui.horizontal(|ui| {
+                                                ui.spacing_mut().item_spacing.x = 8.0;
                                                 if let Some(icon) = &option.icon {
                                                     ui.label(
                                                         egui::RichText::new(icon)

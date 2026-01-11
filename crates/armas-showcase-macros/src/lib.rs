@@ -57,6 +57,8 @@ fn parse_showcase_markdown(markdown: &str) -> Result<proc_macro2::TokenStream, S
     let mut in_code_block = false;
     let mut code_block_lang = String::new();
     let mut code_block_content = String::new();
+    let mut in_table_head = false;
+    let mut table_column_count = 0;
 
     for event in parser {
         match event {
@@ -79,12 +81,11 @@ fn parse_showcase_markdown(markdown: &str) -> Result<proc_macro2::TokenStream, S
 
                 // Check if this is a demo block
                 if code_block_lang == "demo" {
-                    code_blocks.push(CodeBlock::Demo(code_block_content.clone()));
-                    // Also add the code as a rust code block for display
-                    code_blocks.push(CodeBlock::Markdown(format!(
-                        "```rust\n{}\n```",
-                        code_block_content
-                    )));
+                    code_blocks.push(CodeBlock::Demo(
+                        code_block_content.clone(),
+                        "rust".to_string() // Demo blocks are always Rust
+                    ));
+                    // Demo now handles its own code display via tabs, no need to add markdown
                 } else {
                     // Regular code block, add to markdown
                     code_blocks.push(CodeBlock::Markdown(format!(
@@ -115,15 +116,25 @@ fn parse_showcase_markdown(markdown: &str) -> Result<proc_macro2::TokenStream, S
                     current_text.push('\n');
                 }
             }
-            Event::Start(Tag::Heading { .. }) => {
+            Event::Start(Tag::Heading { level, .. }) => {
                 if !current_text.is_empty() {
                     code_blocks.push(CodeBlock::Markdown(current_text.clone()));
                     current_text.clear();
                 }
-                current_text.push_str("\n");
+                // Preserve the heading markdown syntax
+                let hashes = match level {
+                    pulldown_cmark::HeadingLevel::H1 => "#",
+                    pulldown_cmark::HeadingLevel::H2 => "##",
+                    pulldown_cmark::HeadingLevel::H3 => "###",
+                    pulldown_cmark::HeadingLevel::H4 => "####",
+                    pulldown_cmark::HeadingLevel::H5 => "#####",
+                    pulldown_cmark::HeadingLevel::H6 => "######",
+                };
+                current_text.push_str(hashes);
+                current_text.push(' ');
             }
             Event::End(TagEnd::Heading(_)) => {
-                current_text.push_str("\n");
+                current_text.push_str("\n\n");
             }
             Event::Start(Tag::Paragraph) => {}
             Event::End(TagEnd::Paragraph) => {
@@ -135,6 +146,42 @@ fn parse_showcase_markdown(markdown: &str) -> Result<proc_macro2::TokenStream, S
             Event::End(TagEnd::Emphasis) => current_text.push('*'),
             Event::Rule => {
                 current_text.push_str("\n---\n");
+            }
+            Event::Start(Tag::Table(_)) => {
+                current_text.push('\n');
+                table_column_count = 0;
+            }
+            Event::End(TagEnd::Table) => {
+                current_text.push_str("\n\n");
+            }
+            Event::Start(Tag::TableHead) => {
+                in_table_head = true;
+                table_column_count = 0;
+            }
+            Event::End(TagEnd::TableHead) => {
+                // Add separator row after header
+                current_text.push('\n');  // Newline to end the header row first
+                current_text.push('|');
+                for _ in 0..table_column_count {
+                    current_text.push_str("--------|");
+                }
+                current_text.push('\n');
+                in_table_head = false;
+            }
+            Event::Start(Tag::TableRow) => {
+                current_text.push('|');
+            }
+            Event::End(TagEnd::TableRow) => {
+                current_text.push('\n');
+            }
+            Event::Start(Tag::TableCell) => {
+                current_text.push(' ');
+                if in_table_head {
+                    table_column_count += 1;
+                }
+            }
+            Event::End(TagEnd::TableCell) => {
+                current_text.push_str(" |");
             }
             _ => {}
         }
@@ -151,7 +198,13 @@ fn parse_showcase_markdown(markdown: &str) -> Result<proc_macro2::TokenStream, S
 
 enum CodeBlock {
     Markdown(String),
-    Demo(String),
+    Demo(String, String), // (code, language)
+}
+
+/// Wraps demo code to persist mutable state across frames using egui's memory system
+fn wrap_demo_with_persistence(code: &str) -> String {
+    // No wrapping needed - components now handle their own state persistence internally
+    code.to_string()
 }
 
 fn generate_show_function(blocks: &[CodeBlock]) -> Result<proc_macro2::TokenStream, String> {
@@ -168,17 +221,125 @@ fn generate_show_function(blocks: &[CodeBlock]) -> Result<proc_macro2::TokenStre
                     });
                 }
             }
-            CodeBlock::Demo(code) => {
-                // Parse the demo code as Rust statements
-                let demo_code: proc_macro2::TokenStream = code
+            CodeBlock::Demo(code, lang) => {
+                // Wrap the code to persist mutable state
+                let wrapped_code = wrap_demo_with_persistence(code);
+
+                // Parse the wrapped demo code as Rust statements
+                let demo_code: proc_macro2::TokenStream = wrapped_code
                     .parse()
-                    .map_err(|e| format!("Failed to parse demo code: {}", e))?;
+                    .map_err(|e| format!("Failed to parse demo code: {}\n\nCode:\n{}", e, wrapped_code))?;
+
+                let code_string = code.to_string();
+                let lang_string = lang.to_string();
 
                 statements.push(quote! {
-                    ui.horizontal(|ui| {
-                        #demo_code
-                    });
-                    ui.add_space(12.0);
+                    // Demo container with tabs
+                    {
+                        use armas::{AnimatedTabs, TabStyle};
+
+                        let demo_id = ui.id().with(#code_string);
+                        let mut active_tab = ui.data_mut(|d| d.get_temp::<usize>(demo_id).unwrap_or(0));
+
+                        // Container with border
+                        let container_rect = ui.available_rect_before_wrap();
+                        let mut tabs = AnimatedTabs::new(vec!["Preview", "Code"])
+                            .style(TabStyle::Underline)
+                            .active(active_tab);
+
+                        let _ = ui.vertical(|ui| {
+                            ui.set_max_width(ui.available_width());
+
+                            // Tabs at the top
+                            if let Some(new_tab) = tabs.show(ui) {
+                                active_tab = new_tab;
+                                ui.data_mut(|d| d.insert_temp(demo_id, active_tab));
+                            }
+
+                            ui.add_space(12.0);
+
+                            // Content area with border
+                            let _ = egui::Frame::NONE
+                                .fill(theme.surface())
+                                .stroke(egui::Stroke::new(1.0, theme.outline()))
+                                .corner_radius(8.0)
+                                .inner_margin(24.0)
+                                .show(ui, |ui| {
+                                    if active_tab == 0 {
+                                        // Preview - centered, expands vertically with content
+                                        // Use vertical layout with centered main axis
+                                        let _ = ui.with_layout(
+                                            egui::Layout::top_down(egui::Align::Center),
+                                            |ui| {
+                                                // Request repaint for animations
+                                                ui.ctx().request_repaint();
+
+                                                // Execute demo code in a unique scope
+                                                let _ = ui.push_id(demo_id.with("preview"), |ui| {
+                                                    #demo_code
+                                                });
+                                            }
+                                        );
+                                    } else {
+                                        // Code display with syntax highlighting
+                                        let code = #code_string;
+
+                                        ui.set_width(ui.available_width());
+
+                                        // Use a stack to overlay the copy button
+                                        let available_rect = ui.available_rect_before_wrap();
+                                        let (scroll_rect, button_rect) = {
+                                            let button_size = egui::vec2(80.0, 32.0);
+                                            let scroll_rect = egui::Rect::from_min_size(
+                                                available_rect.min,
+                                                egui::vec2(available_rect.width(), 400.0)
+                                            );
+                                            let button_rect = egui::Rect::from_min_size(
+                                                egui::pos2(
+                                                    available_rect.max.x - button_size.x - 12.0,
+                                                    available_rect.min.y + 12.0
+                                                ),
+                                                button_size
+                                            );
+                                            (scroll_rect, button_rect)
+                                        };
+
+                                        // Render scroll area with code
+                                        let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(scroll_rect), |ui| {
+                                            egui::ScrollArea::vertical()
+                                                .id_salt(demo_id.with("code_scroll"))
+                                                .max_height(400.0)
+                                                .show(ui, |ui| {
+                                                    ui.set_width(ui.available_width());
+
+                                                    egui::Frame::NONE
+                                                        .fill(egui::Color32::from_gray(20))
+                                                        .inner_margin(12.0)
+                                                        .corner_radius(4.0)
+                                                        .show(ui, |ui| {
+                                                            ui.set_width(ui.available_width());
+                                                            crate::syntax::highlight_code(ui, code, #lang_string, &theme);
+                                                        });
+                                                });
+                                        });
+
+                                        // Overlay copy button on top
+                                        let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(button_rect), |ui| {
+                                            use armas::{Button, ButtonVariant};
+                                            if Button::new("Copy")
+                                                .variant(ButtonVariant::Text)
+                                                .show(ui)
+                                                .clicked()
+                                            {
+                                                ui.ctx().copy_text(code.to_string());
+                                            }
+                                        });
+                                    }
+                                });
+                        });
+
+                        ui.add_space(16.0);
+                    }
                 });
             }
         }

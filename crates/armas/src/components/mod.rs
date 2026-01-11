@@ -112,7 +112,7 @@ pub use meteor::MeteorShower;
 pub use modal::{confirm_dialog, dialog, ConfirmResponse, Modal, ModalResponse, ModalSize};
 pub use moving_border::MovingBorder;
 pub use pagination::{Pagination, PaginationResponse};
-pub use popover::{Popover, PopoverPosition, PopoverResponse};
+pub use popover::{Popover, PopoverColor, PopoverPosition, PopoverResponse, PopoverStyle};
 pub use progress::{CircularProgressBar, LinearProgress, RingProgress};
 pub use retro_grid::RetroGrid;
 pub use routing_button::RoutingButton;

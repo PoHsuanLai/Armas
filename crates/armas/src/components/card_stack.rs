@@ -4,7 +4,6 @@
 
 use crate::animation::EasingFunction;
 use crate::ext::ArmasContextExt;
-use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// A single card in the stack
@@ -177,7 +176,7 @@ impl CardStack {
             // Draw content for active card
             if is_active {
                 let text_rect = card_rect.shrink(20.0);
-                let mut child_ui = ui.child_ui(text_rect, *ui.layout(), None);
+                let mut child_ui = ui.new_child(egui::UiBuilder::new().max_rect(text_rect).layout(*ui.layout()));
 
                 child_ui.vertical(|ui| {
                     ui.heading(&card.title);

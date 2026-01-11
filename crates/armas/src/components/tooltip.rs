@@ -152,7 +152,7 @@ impl Tooltip {
             return self.position;
         }
 
-        let screen_rect = ui.ctx().screen_rect();
+        let screen_rect = ui.ctx().content_rect();
         let spacing = 8.0 + arrow_size;
 
         // Check available space in each direction
@@ -279,7 +279,7 @@ impl Tooltip {
 /// let response = ui.button("Hover me");
 /// tooltip(ui, theme, &response, "This is a tooltip!");
 /// ```
-pub fn tooltip(ui: &mut Ui, theme: &Theme, response: &Response, text: impl Into<String>) {
+pub fn tooltip(ui: &mut Ui, _theme: &Theme, response: &Response, text: impl Into<String>) {
     let mut tooltip = Tooltip::new(text);
     tooltip.show(ui, response);
 }
@@ -287,7 +287,7 @@ pub fn tooltip(ui: &mut Ui, theme: &Theme, response: &Response, text: impl Into<
 /// Show tooltip with custom configuration
 pub fn tooltip_with(
     ui: &mut Ui,
-    theme: &Theme,
+    _theme: &Theme,
     response: &Response,
     text: impl Into<String>,
     configure: impl FnOnce(Tooltip) -> Tooltip,

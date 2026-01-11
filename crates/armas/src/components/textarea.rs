@@ -3,12 +3,12 @@
 //! Multi-line text input field
 
 use crate::ext::ArmasContextExt;
-use crate::layout::{HStack, Spacer, VStack};
-use crate::{InputState, InputVariant, Theme};
-use egui::{vec2, Color32, Response, Sense, Stroke, StrokeKind, TextEdit, Ui, Vec2};
+use crate::{InputState, InputVariant};
+use egui::{Color32, Response, TextEdit, Ui};
 
 /// Multi-line text input field
 pub struct Textarea {
+    id: Option<egui::Id>,
     variant: InputVariant,
     state: InputState,
     label: Option<String>,
@@ -24,6 +24,7 @@ impl Textarea {
     /// Create a new textarea
     pub fn new(placeholder: impl Into<String>) -> Self {
         Self {
+            id: None,
             variant: InputVariant::Outlined,
             state: InputState::Normal,
             label: None,
@@ -34,6 +35,12 @@ impl Textarea {
             max_chars: None,
             resizable: true,
         }
+    }
+
+    /// Set ID for state persistence (useful for demos where textarea is recreated each frame)
+    pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
+        self.id = Some(id.into());
+        self
     }
 
     /// Set the textarea variant
@@ -87,29 +94,40 @@ impl Textarea {
     /// Show the textarea
     pub fn show(self, ui: &mut Ui, text: &mut String) -> Response {
         let theme = ui.ctx().armas_theme();
-        VStack::new(4.0)
-            .show_with_inner(ui, |ui| {
-                // Label
-                if let Some(label) = &self.label {
-                    HStack::new(8.0).show(ui, |ui| {
-                        ui.label(label);
 
-                        // Character count
-                        if let Some(max) = self.max_chars {
-                            Spacer::new().show(ui);
+        // Load state from memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("textarea_state");
+            let stored_text: String = ui.ctx().data_mut(|d| {
+                d.get_temp(state_id).unwrap_or_else(|| text.clone())
+            });
+            *text = stored_text;
+        }
 
-                            let count_color = if text.len() > max {
-                                theme.error()
-                            } else if text.len() as f32 / max as f32 > 0.9 {
-                                theme.warning()
-                            } else {
-                                theme.on_surface_variant()
-                            };
+        let response = ui.vertical(|ui| {
+            ui.spacing_mut().item_spacing.y = 4.0;
+            // Label
+            if let Some(label) = &self.label {
+                ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = 8.0;
+                    ui.label(label);
 
-                            ui.colored_label(count_color, format!("{}/{}", text.len(), max));
-                        }
-                    });
-                }
+                    // Character count
+                    if let Some(max) = self.max_chars {
+                        ui.allocate_space(ui.available_size());
+
+                        let count_color = if text.len() > max {
+                            theme.error()
+                        } else if text.len() as f32 / max as f32 > 0.9 {
+                            theme.warning()
+                        } else {
+                            theme.on_surface_variant()
+                        };
+
+                        ui.colored_label(count_color, format!("{}/{}", text.len(), max));
+                    }
+                });
+            }
 
                 let width = self.width.unwrap_or_else(|| ui.available_width());
 
@@ -132,10 +150,10 @@ impl Textarea {
                 };
 
                 // Frame for the textarea
-                let frame = egui::Frame::none()
+                let frame = egui::Frame::NONE
                     .fill(bg_color)
-                    .stroke(Stroke::new(1.0, border_color))
-                    .rounding(4.0)
+                    .stroke(egui::Stroke::new(1.0, border_color))
+                    .corner_radius(4.0)
                     .inner_margin(8.0);
 
                 let response = frame.show(ui, |ui| {
@@ -177,7 +195,16 @@ impl Textarea {
                 }
 
                 response.inner
-            })
-            .inner
+        }).inner;
+
+        // Save state to memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("textarea_state");
+            ui.ctx().data_mut(|d| {
+                d.insert_temp(state_id, text.clone());
+            });
+        }
+
+        response
     }
 }

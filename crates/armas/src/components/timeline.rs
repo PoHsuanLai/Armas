@@ -1,5 +1,4 @@
 use crate::ext::ArmasContextExt;
-use crate::Theme;
 use egui::{Color32, Pos2, Ui, Vec2};
 
 /// Timeline item with title, description, and optional time

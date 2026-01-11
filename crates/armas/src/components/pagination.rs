@@ -3,8 +3,7 @@
 //! Page navigation for paginated content
 
 use crate::ext::ArmasContextExt;
-use crate::layout::HStack;
-use crate::{Button, ButtonVariant, Theme};
+use crate::{Button, ButtonVariant};
 use egui::Ui;
 
 /// Pagination component for navigating through pages
@@ -73,10 +72,22 @@ impl Pagination {
 
     /// Show the pagination
     pub fn show(mut self, ui: &mut Ui) -> PaginationResponse {
-        let theme = ui.ctx().armas_theme();
+        let _theme = ui.ctx().armas_theme();
+
+        // Generate a stable ID for this pagination instance based on current UI scope
+        let pagination_id = ui.id().with("pagination_state");
+
+        // Load previous state from egui memory (if current_page is the default)
+        if self.current_page == 1 {
+            if let Some(stored_page) = ui.ctx().data_mut(|d| d.get_persisted::<usize>(pagination_id)) {
+                self.current_page = stored_page;
+            }
+        }
+
         let mut page_changed = None;
 
-        HStack::new(self.spacing).show(ui, |ui| {
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = self.spacing;
             // First button
             if self.show_first_last {
                 let enabled = self.current_page > 1;
@@ -115,7 +126,7 @@ impl Pagination {
             let pages = self.calculate_visible_pages();
 
             // Page number buttons
-            for (idx, page) in pages.iter().enumerate() {
+            for (_idx, page) in pages.iter().enumerate() {
                 if let Some(page_num) = page {
                     let is_current = *page_num == self.current_page;
                     let variant = if is_current {
@@ -176,6 +187,13 @@ impl Pagination {
                 }
             }
         });
+
+        // Store current page if changed
+        if page_changed.is_some() {
+            ui.ctx().data_mut(|d| {
+                d.insert_persisted(pagination_id, self.current_page);
+            });
+        }
 
         PaginationResponse { page_changed }
     }
