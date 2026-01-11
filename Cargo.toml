@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/armas",
+    "crates/armas", "crates/armas-showcase-macros",
     "crates/armas-web",
 ]
 
@@ -9,7 +9,7 @@ members = [
 version = "0.1.0"
 edition = "2021"
 authors = ["PoHsuan Lai"]
-license = "MIT OR Apache-2.0"
+license = "MIT"
 repository = "https://github.com/PoHsuanLai/armas"
 
 [workspace.dependencies]

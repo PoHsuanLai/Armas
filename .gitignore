@@ -2,3 +2,7 @@
 Cargo.lock
 dist/
 *.wasm
+
+# Downloads
+.downloads/
+.claude
