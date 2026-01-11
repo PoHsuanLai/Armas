@@ -3,6 +3,7 @@
 //! Creates an animated lamp lighting effect with conic gradients and glow
 
 use crate::animation::{Animation, EasingFunction};
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 use std::f32::consts::PI;
@@ -98,7 +99,7 @@ impl LampEffect {
     }
 
     /// Show the lamp effect
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         // Start animation on first show
         if !self.started {
             self.width_animation.start();
@@ -197,7 +198,7 @@ impl LampEffect {
 
         // Draw lamp effect first
         ui.allocate_ui_at_rect(rect, |ui| {
-            self.show(ui, theme);
+            self.show(ui);
         });
 
         // Overlay content on top

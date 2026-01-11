@@ -2,6 +2,7 @@
 //!
 //! Cyberpunk-style perspective grid with animated lines
 
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Stroke, Ui, Vec2};
 
@@ -75,7 +76,7 @@ impl RetroGrid {
     }
 
     /// Show the retro grid
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         if self.animate {
             let dt = ui.input(|i| i.stable_dt);
             self.animation_offset += dt * self.animation_speed;

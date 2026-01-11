@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{CircularProgressBar, LinearProgress, RingProgress, Theme};
 use eframe::egui;
 
@@ -12,19 +13,20 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Progress Indicators Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(ProgressApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(ProgressApp::new()))
+        }),
     )
 }
 
 struct ProgressApp {
-    theme: Theme,
     progress: f32,
 }
 
 impl ProgressApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             progress: 0.65,
         }
     }
@@ -42,14 +44,14 @@ impl eframe::App for ProgressApp {
                 ui.add_space(10.0);
 
                 ui.label("Determinate:");
-                LinearProgress::new(self.progress).show(ui, &self.theme);
+                LinearProgress::new(self.progress).show(ui);
 
                 ui.add_space(10.0);
 
                 ui.label("With label:");
                 LinearProgress::new(self.progress)
                     .show_label()
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 ui.add_space(10.0);
 
@@ -57,12 +59,12 @@ impl eframe::App for ProgressApp {
                 LinearProgress::new(self.progress)
                     .color(egui::Color32::from_rgb(34, 197, 94))
                     .height(6.0)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 ui.add_space(10.0);
 
                 ui.label("Indeterminate (loading):");
-                LinearProgress::indeterminate().show(ui, &self.theme);
+                LinearProgress::indeterminate().show(ui);
 
                 ui.add_space(30.0);
 
@@ -75,7 +77,7 @@ impl eframe::App for ProgressApp {
                         ui.label("Basic");
                         CircularProgressBar::new(self.progress)
                             .size(80.0)
-                            .show(ui, &self.theme);
+                            .show(ui);
                     });
 
                     ui.add_space(30.0);
@@ -85,7 +87,7 @@ impl eframe::App for ProgressApp {
                         CircularProgressBar::new(self.progress)
                             .size(80.0)
                             .show_percentage(true)
-                            .show(ui, &self.theme);
+                            .show(ui);
                     });
 
                     ui.add_space(30.0);
@@ -96,7 +98,7 @@ impl eframe::App for ProgressApp {
                             .size(80.0)
                             .color(egui::Color32::from_rgb(168, 85, 247))
                             .show_percentage(true)
-                            .show(ui, &self.theme);
+                            .show(ui);
                     });
 
                     ui.add_space(30.0);
@@ -105,7 +107,7 @@ impl eframe::App for ProgressApp {
                         ui.label("Indeterminate");
                         CircularProgressBar::indeterminate()
                             .size(60.0)
-                            .show(ui, &self.theme);
+                            .show(ui);
                     });
                 });
 
@@ -119,7 +121,7 @@ impl eframe::App for ProgressApp {
                     RingProgress::new(0.75)
                         .size(120.0)
                         .label("Storage")
-                        .show(ui, &self.theme);
+                        .show(ui);
 
                     ui.add_space(30.0);
 
@@ -127,7 +129,7 @@ impl eframe::App for ProgressApp {
                         .size(120.0)
                         .label("Memory")
                         .color(egui::Color32::from_rgb(251, 191, 36))
-                        .show(ui, &self.theme);
+                        .show(ui);
 
                     ui.add_space(30.0);
 
@@ -135,7 +137,7 @@ impl eframe::App for ProgressApp {
                         .size(120.0)
                         .label("CPU")
                         .color(egui::Color32::from_rgb(239, 68, 68))
-                        .show(ui, &self.theme);
+                        .show(ui);
                 });
 
                 ui.add_space(30.0);

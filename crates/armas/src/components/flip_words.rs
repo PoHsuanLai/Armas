@@ -3,6 +3,7 @@
 //! Animated text that cycles through a list of words with flip transitions
 
 use crate::animation::{Animation, EasingFunction};
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Align2, Color32, FontId, Pos2, Response, Ui, Vec2};
 
@@ -88,7 +89,7 @@ impl FlipWords {
     }
 
     /// Show the flip words animation
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         if self.words.is_empty() {
             return ui.label("(no words)");
         }

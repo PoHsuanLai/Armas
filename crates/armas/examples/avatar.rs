@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{Avatar, AvatarShape, AvatarSize, BadgeColor, Theme};
 use eframe::egui;
 
@@ -10,19 +11,20 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Avatar Component Example",
         options,
-        Box::new(|_cc| Ok(Box::new(AvatarExample::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(AvatarExample::default()))
+        }),
     )
 }
 
 struct AvatarExample {
-    theme: Theme,
     clicked_avatar: Option<String>,
 }
 
 impl Default for AvatarExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
             clicked_avatar: None,
         }
     }
@@ -31,6 +33,8 @@ impl Default for AvatarExample {
 impl eframe::App for AvatarExample {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            let theme = ui.ctx().armas_theme();
+
             ui.heading("Avatar Component Examples");
             ui.add_space(20.0);
 
@@ -46,31 +50,31 @@ impl eframe::App for AvatarExample {
             ui.horizontal(|ui| {
                 Avatar::new("XS")
                     .size(AvatarSize::XSmall)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 ui.add_space(8.0);
 
                 Avatar::new("SM")
                     .size(AvatarSize::Small)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 ui.add_space(8.0);
 
                 Avatar::new("MD")
                     .size(AvatarSize::Medium)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 ui.add_space(8.0);
 
                 Avatar::new("LG")
                     .size(AvatarSize::Large)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 ui.add_space(8.0);
 
                 Avatar::new("XL")
                     .size(AvatarSize::XLarge)
-                    .show(ui, &self.theme);
+                    .show(ui);
             });
 
             ui.add_space(20.0);
@@ -85,21 +89,21 @@ impl eframe::App for AvatarExample {
                 Avatar::new("JD")
                     .size(AvatarSize::Large)
                     .shape(AvatarShape::Circle)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 ui.add_space(12.0);
 
                 Avatar::new("AM")
                     .size(AvatarSize::Large)
                     .shape(AvatarShape::RoundedSquare)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 ui.add_space(12.0);
 
                 Avatar::new("KL")
                     .size(AvatarSize::Large)
                     .shape(AvatarShape::Square)
-                    .show(ui, &self.theme);
+                    .show(ui);
             });
 
             ui.add_space(20.0);
@@ -114,7 +118,7 @@ impl eframe::App for AvatarExample {
                 Avatar::new("AB")
                     .size(AvatarSize::Large)
                     .with_border(true)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 ui.add_space(12.0);
 
@@ -122,7 +126,7 @@ impl eframe::App for AvatarExample {
                     .size(AvatarSize::Large)
                     .shape(AvatarShape::RoundedSquare)
                     .with_border(true)
-                    .show(ui, &self.theme);
+                    .show(ui);
             });
 
             ui.add_space(20.0);
@@ -136,29 +140,29 @@ impl eframe::App for AvatarExample {
             ui.horizontal(|ui| {
                 Avatar::new("PR")
                     .size(AvatarSize::Large)
-                    .color(self.theme.primary())
-                    .show(ui, &self.theme);
+                    .color(theme.primary())
+                    .show(ui);
 
                 ui.add_space(12.0);
 
                 Avatar::new("ER")
                     .size(AvatarSize::Large)
-                    .color(self.theme.error())
-                    .show(ui, &self.theme);
+                    .color(theme.error())
+                    .show(ui);
 
                 ui.add_space(12.0);
 
                 Avatar::new("SC")
                     .size(AvatarSize::Large)
-                    .color(self.theme.success())
-                    .show(ui, &self.theme);
+                    .color(theme.success())
+                    .show(ui);
 
                 ui.add_space(12.0);
 
                 Avatar::new("WN")
                     .size(AvatarSize::Large)
-                    .color(self.theme.warning())
-                    .show(ui, &self.theme);
+                    .color(theme.warning())
+                    .show(ui);
             });
 
             ui.add_space(20.0);
@@ -173,7 +177,7 @@ impl eframe::App for AvatarExample {
                 Avatar::new("ON")
                     .size(AvatarSize::Large)
                     .status(BadgeColor::Success)
-                    .show(ui, &self.theme);
+                    .show(ui);
                 ui.label("Online");
 
                 ui.add_space(20.0);
@@ -181,7 +185,7 @@ impl eframe::App for AvatarExample {
                 Avatar::new("AW")
                     .size(AvatarSize::Large)
                     .status(BadgeColor::Warning)
-                    .show(ui, &self.theme);
+                    .show(ui);
                 ui.label("Away");
 
                 ui.add_space(20.0);
@@ -189,7 +193,7 @@ impl eframe::App for AvatarExample {
                 Avatar::new("DND")
                     .size(AvatarSize::Large)
                     .status(BadgeColor::Error)
-                    .show(ui, &self.theme);
+                    .show(ui);
                 ui.label("Do Not Disturb");
 
                 ui.add_space(20.0);
@@ -197,7 +201,7 @@ impl eframe::App for AvatarExample {
                 Avatar::new("OF")
                     .size(AvatarSize::Large)
                     .status(BadgeColor::Neutral)
-                    .show(ui, &self.theme);
+                    .show(ui);
                 ui.label("Offline");
             });
 
@@ -214,7 +218,7 @@ impl eframe::App for AvatarExample {
                     .size(AvatarSize::Large)
                     .clickable()
                     .status(BadgeColor::Success)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.clicked_avatar = Some("John Doe".to_string());
@@ -226,7 +230,7 @@ impl eframe::App for AvatarExample {
                     .size(AvatarSize::Large)
                     .clickable()
                     .status(BadgeColor::Warning)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.clicked_avatar = Some("Alice Miller".to_string());
@@ -238,7 +242,7 @@ impl eframe::App for AvatarExample {
                     .size(AvatarSize::Large)
                     .clickable()
                     .status(BadgeColor::Success)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.clicked_avatar = Some("Bob Wilson".to_string());
@@ -267,7 +271,7 @@ impl eframe::App for AvatarExample {
                         .size(AvatarSize::Medium)
                         .clickable()
                         .status(status)
-                        .show(ui, &self.theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.clicked_avatar = Some(name.to_string());

@@ -2,6 +2,7 @@
 //!
 //! Demonstrates Phase 4 advanced text effects
 
+use armas::ext::ArmasContextExt;
 use armas::{GradientText, ScrambleText, Theme, Typewriter, WordTypewriter};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Text Effects",
         options,
-        Box::new(|_cc| Ok(Box::new(TextEffectsApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(TextEffectsApp::new()))
+        }),
     )
 }
 
 struct TextEffectsApp {
-    theme: Theme,
 
     // Typewriter effects
     typewriter1: Typewriter,
@@ -41,7 +44,6 @@ struct TextEffectsApp {
 impl TextEffectsApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
 
             // Typewriter variants
             typewriter1: Typewriter::new("Welcome to Armas UI Library")

@@ -2,6 +2,7 @@
 //!
 //! Demonstrates pulsing glow border effects
 
+use armas::ext::ArmasContextExt;
 use armas::{GlowingBorder, Theme};
 use eframe::egui;
 
@@ -16,24 +17,26 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Glowing Border",
         options,
-        Box::new(|_cc| Ok(Box::new(GlowingBorderApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(GlowingBorderApp::new()))
+        }),
     )
 }
 
 struct GlowingBorderApp {
-    theme: Theme,
 }
 
 impl GlowingBorderApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
         }
     }
 }
 
 impl eframe::App for GlowingBorderApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
@@ -51,14 +54,14 @@ impl eframe::App for GlowingBorderApp {
                     egui::RichText::new("Default Pulsing Glow")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.horizontal(|ui| {
                     ui.add_space(40.0);
                     let mut glow1 = GlowingBorder::new().width(500.0).height(150.0);
-                    glow1.show(ui, &self.theme, |ui| {
+                    glow1.show(ui, &theme, |ui| {
                         ui.vertical_centered(|ui| {
                             ui.add_space(30.0);
                             ui.label(egui::RichText::new("Featured Content").size(24.0).strong());
@@ -75,7 +78,7 @@ impl eframe::App for GlowingBorderApp {
                     egui::RichText::new("Custom Colors & Intensities")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -88,7 +91,7 @@ impl eframe::App for GlowingBorderApp {
                             .height(120.0)
                             .glow_color(egui::Color32::from_rgb(147, 51, 234))
                             .glow_intensity(1.5);
-                        glow2.show(ui, &self.theme, |ui| {
+                        glow2.show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.add_space(20.0);
                                 ui.label(egui::RichText::new("Purple Glow").size(20.0).strong());
@@ -105,7 +108,7 @@ impl eframe::App for GlowingBorderApp {
                             .glow_color(egui::Color32::from_rgb(236, 72, 153))
                             .glow_intensity(0.8)
                             .pulse_speed(2.0);
-                        glow3.show(ui, &self.theme, |ui| {
+                        glow3.show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.add_space(20.0);
                                 ui.label(egui::RichText::new("Pink Glow").size(20.0).strong());
@@ -122,7 +125,7 @@ impl eframe::App for GlowingBorderApp {
                         .height(260.0)
                         .glow_color(egui::Color32::from_rgb(34, 197, 94))
                         .background(egui::Color32::from_gray(15));
-                    glow4.show(ui, &self.theme, |ui| {
+                    glow4.show(ui, &theme, |ui| {
                         ui.vertical_centered(|ui| {
                             ui.add_space(60.0);
                             ui.label(egui::RichText::new("Success").size(28.0).strong());
@@ -140,7 +143,7 @@ impl eframe::App for GlowingBorderApp {
                     egui::RichText::new("Static Glow (No Pulse)")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -152,7 +155,7 @@ impl eframe::App for GlowingBorderApp {
                         .pulse(false)
                         .glow_color(egui::Color32::from_rgb(251, 191, 36))
                         .glow_intensity(1.2);
-                    glow5.show(ui, &self.theme, |ui| {
+                    glow5.show(ui, &theme, |ui| {
                         ui.vertical_centered(|ui| {
                             ui.add_space(30.0);
                             ui.label(egui::RichText::new("Always On").size(24.0).strong());
@@ -174,7 +177,7 @@ impl eframe::App for GlowingBorderApp {
                             egui::RichText::new("💡 Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• Use glow_color() to match your theme");

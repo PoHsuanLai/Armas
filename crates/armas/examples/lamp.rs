@@ -2,6 +2,7 @@
 //!
 //! Demonstrates animated lighting effects with conic gradients
 
+use armas::ext::ArmasContextExt;
 use armas::{LampEffect, Theme};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Lamp Effect",
         options,
-        Box::new(|_cc| Ok(Box::new(LampApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(LampApp::new()))
+        }),
     )
 }
 
 struct LampApp {
-    theme: Theme,
     lamp1: LampEffect,
     lamp2: LampEffect,
     lamp3: LampEffect,
@@ -30,7 +33,6 @@ struct LampApp {
 impl LampApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             lamp1: LampEffect::new(1150.0, 400.0),
             lamp2: LampEffect::new(1150.0, 400.0)
                 .lamp_color(egui::Color32::from_rgb(168, 85, 247)) // Purple
@@ -46,6 +48,7 @@ impl LampApp {
 impl eframe::App for LampApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            let theme = ui.ctx().armas_theme();
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
             egui::ScrollArea::vertical().show(ui, |ui| {
@@ -62,7 +65,7 @@ impl eframe::App for LampApp {
                     egui::RichText::new("Classic Cyan Lamp")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -71,7 +74,7 @@ impl eframe::App for LampApp {
                     ui.group(|ui| {
                         ui.set_min_size(egui::vec2(1150.0, 400.0));
 
-                        self.lamp1.show_with_content(ui, &self.theme, |ui| {
+                        self.lamp1.show_with_content(ui, &theme, |ui| {
                             ui.centered_and_justified(|ui| {
                                 ui.vertical_centered(|ui| {
                                     ui.label(
@@ -99,7 +102,7 @@ impl eframe::App for LampApp {
                     egui::RichText::new("Purple Glow")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -108,7 +111,7 @@ impl eframe::App for LampApp {
                     ui.group(|ui| {
                         ui.set_min_size(egui::vec2(1150.0, 400.0));
 
-                        self.lamp2.show_with_content(ui, &self.theme, |ui| {
+                        self.lamp2.show_with_content(ui, &theme, |ui| {
                             ui.centered_and_justified(|ui| {
                                 ui.vertical_centered(|ui| {
                                     ui.label(
@@ -136,7 +139,7 @@ impl eframe::App for LampApp {
                     egui::RichText::new("Green Energy")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -145,7 +148,7 @@ impl eframe::App for LampApp {
                     ui.group(|ui| {
                         ui.set_min_size(egui::vec2(1150.0, 400.0));
 
-                        self.lamp3.show_with_content(ui, &self.theme, |ui| {
+                        self.lamp3.show_with_content(ui, &theme, |ui| {
                             ui.centered_and_justified(|ui| {
                                 ui.vertical_centered(|ui| {
                                     ui.label(
@@ -178,7 +181,7 @@ impl eframe::App for LampApp {
                             egui::RichText::new("Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• lamp_color() customizes the lighting color");

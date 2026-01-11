@@ -1,4 +1,5 @@
 use crate::layout::HStack;
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 
@@ -135,7 +136,8 @@ impl TestimonialCard {
     }
 
     /// Show the testimonial card
-    pub fn show(self, ui: &mut Ui, theme: &Theme) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         let available = ui.available_size();
         let desired_width = self.width.unwrap_or(available.x);
 
@@ -334,7 +336,8 @@ impl TestimonialGrid {
     }
 
     /// Show the testimonial grid
-    pub fn show(&self, ui: &mut Ui, theme: &Theme) {
+    pub fn show(&self, ui: &mut Ui) {
+        let theme = ui.ctx().armas_theme();
         let available_width = ui.available_width();
 
         // Calculate columns
@@ -355,7 +358,7 @@ impl TestimonialGrid {
                         .width(card_width)
                         .show_quotes(self.show_quotes)
                         .hover_effect(self.hover_effect)
-                        .show(ui, theme);
+                        .show(ui);
                 }
             });
 

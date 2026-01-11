@@ -2,6 +2,7 @@
 //!
 //! Demonstrates dot pattern backgrounds with various configurations
 
+use armas::ext::ArmasContextExt;
 use armas::{DotPattern, Theme};
 use eframe::egui;
 
@@ -16,24 +17,26 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Dot Pattern",
         options,
-        Box::new(|_cc| Ok(Box::new(DotPatternApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(DotPatternApp::new()))
+        }),
     )
 }
 
 struct DotPatternApp {
-    theme: Theme,
 }
 
 impl DotPatternApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
         }
     }
 }
 
 impl eframe::App for DotPatternApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
@@ -58,11 +61,11 @@ impl eframe::App for DotPatternApp {
                             egui::RichText::new("Basic Dot Pattern")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
 
-                        DotPattern::new(480.0, 300.0, &self.theme).show(ui, &self.theme);
+                        DotPattern::new(480.0, 300.0).show(ui);
 
                         ui.add_space(30.0);
 
@@ -71,13 +74,13 @@ impl eframe::App for DotPatternApp {
                             egui::RichText::new("Dense Pattern (spacing: 15px)")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
 
-                        DotPattern::new(480.0, 300.0, &self.theme)
+                        DotPattern::new(480.0, 300.0)
                             .spacing(15.0)
-                            .show(ui, &self.theme);
+                            .show(ui);
 
                         ui.add_space(30.0);
 
@@ -86,13 +89,13 @@ impl eframe::App for DotPatternApp {
                             egui::RichText::new("Larger Dots (radius: 2.5px)")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
 
-                        DotPattern::new(480.0, 300.0, &self.theme)
+                        DotPattern::new(480.0, 300.0)
                             .dot_radius(2.5)
-                            .show(ui, &self.theme);
+                            .show(ui);
                     });
 
                     ui.add_space(40.0);
@@ -106,13 +109,13 @@ impl eframe::App for DotPatternApp {
                             egui::RichText::new("Fade from Center")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
 
-                        DotPattern::new(480.0, 300.0, &self.theme)
+                        DotPattern::new(480.0, 300.0)
                             .fade(0.7)
-                            .show(ui, &self.theme);
+                            .show(ui);
 
                         ui.add_space(30.0);
 
@@ -121,14 +124,14 @@ impl eframe::App for DotPatternApp {
                             egui::RichText::new("With Glow Effect")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
 
-                        DotPattern::new(480.0, 300.0, &self.theme)
+                        DotPattern::new(480.0, 300.0)
                             .with_glow(true)
                             .dot_radius(2.0)
-                            .show(ui, &self.theme);
+                            .show(ui);
 
                         ui.add_space(30.0);
 
@@ -137,15 +140,15 @@ impl eframe::App for DotPatternApp {
                             egui::RichText::new("Custom Color (Blue)")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
 
-                        DotPattern::new(480.0, 300.0, &self.theme)
+                        DotPattern::new(480.0, 300.0)
                             .color(egui::Color32::from_rgba_unmultiplied(59, 130, 246, 100))
                             .dot_radius(2.0)
                             .with_glow(true)
-                            .show(ui, &self.theme);
+                            .show(ui);
                     });
                 });
 
@@ -159,7 +162,7 @@ impl eframe::App for DotPatternApp {
                         egui::RichText::new("Dot Pattern as Background Layer")
                             .size(16.0)
                             .strong()
-                            .color(self.theme.on_surface()),
+                            .color(theme.on_surface()),
                     );
                     ui.add_space(20.0);
 
@@ -169,11 +172,11 @@ impl eframe::App for DotPatternApp {
 
                     ui.allocate_ui_at_rect(rect, |ui| {
                         // Background layer
-                        DotPattern::new(1000.0, 400.0, &self.theme)
+                        DotPattern::new(1000.0, 400.0)
                             .spacing(25.0)
                             .fade(0.8)
                             .with_glow(true)
-                            .show(ui, &self.theme);
+                            .show(ui);
                     });
 
                     // Content layer (on top)
@@ -199,11 +202,11 @@ impl eframe::App for DotPatternApp {
                                 ui.add_space(380.0);
                                 armas::Button::new("Get Started")
                                     .variant(armas::ButtonVariant::Filled)
-                                    .show(ui, &self.theme);
+                                    .show(ui);
                                 ui.add_space(20.0);
                                 armas::Button::new("Learn More")
                                     .variant(armas::ButtonVariant::Outlined)
-                                    .show(ui, &self.theme);
+                                    .show(ui);
                             });
                         });
                     });

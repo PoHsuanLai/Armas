@@ -2,6 +2,7 @@
 //!
 //! Page navigation for paginated content
 
+use crate::ext::ArmasContextExt;
 use crate::layout::HStack;
 use crate::{Button, ButtonVariant, Theme};
 use egui::Ui;
@@ -71,7 +72,8 @@ impl Pagination {
     }
 
     /// Show the pagination
-    pub fn show(mut self, ui: &mut Ui, theme: &Theme) -> PaginationResponse {
+    pub fn show(mut self, ui: &mut Ui) -> PaginationResponse {
+        let theme = ui.ctx().armas_theme();
         let mut page_changed = None;
 
         HStack::new(self.spacing).show(ui, |ui| {
@@ -86,7 +88,7 @@ impl Pagination {
                     button = button.enabled(false);
                 }
 
-                if button.show(ui, theme).clicked() && enabled {
+                if button.show(ui).clicked() && enabled {
                     self.current_page = 1;
                     page_changed = Some(1);
                 }
@@ -103,7 +105,7 @@ impl Pagination {
                     button = button.enabled(false);
                 }
 
-                if button.show(ui, theme).clicked() && enabled {
+                if button.show(ui).clicked() && enabled {
                     self.current_page -= 1;
                     page_changed = Some(self.current_page);
                 }
@@ -125,7 +127,7 @@ impl Pagination {
                     if Button::new(&page_num.to_string())
                         .variant(variant)
                         .min_size(egui::vec2(32.0, 32.0))
-                        .show(ui, theme)
+                        .show(ui)
                         .clicked()
                         && !is_current
                     {
@@ -151,7 +153,7 @@ impl Pagination {
                     button = button.enabled(false);
                 }
 
-                if button.show(ui, theme).clicked() && enabled {
+                if button.show(ui).clicked() && enabled {
                     self.current_page += 1;
                     page_changed = Some(self.current_page);
                 }
@@ -168,7 +170,7 @@ impl Pagination {
                     button = button.enabled(false);
                 }
 
-                if button.show(ui, theme).clicked() && enabled {
+                if button.show(ui).clicked() && enabled {
                     self.current_page = self.total_pages;
                     page_changed = Some(self.total_pages);
                 }

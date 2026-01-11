@@ -2,6 +2,7 @@
 //!
 //! Creates an infinite grid with optional perspective and fade effects
 
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Stroke, Ui, Vec2};
 
@@ -78,7 +79,7 @@ impl GridPattern {
     }
 
     /// Show the grid pattern
-    pub fn show(&self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&self, ui: &mut Ui) -> Response {
         let (response, painter) =
             ui.allocate_painter(Vec2::new(self.width, self.height), egui::Sense::hover());
 

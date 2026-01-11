@@ -2,6 +2,7 @@
 //!
 //! Animated sparkle particles that overlay content with twinkling stars
 
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 use std::f32::consts::PI;
@@ -186,7 +187,7 @@ impl Sparkles {
     }
 
     /// Show the sparkles effect
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         if !self.initialized {
             self.initialize_sparkles();
         }

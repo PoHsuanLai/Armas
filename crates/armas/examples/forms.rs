@@ -2,6 +2,7 @@
 //!
 //! Demonstrates Phase 6 form and input components
 
+use armas::ext::ArmasContextExt;
 use armas::{
     Input, InputState, InputVariant, SearchInput, Select, SelectOption, Theme, Toggle, ToggleGroup,
     ToggleSize, ToggleVariant,
@@ -19,12 +20,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Forms",
         options,
-        Box::new(|_cc| Ok(Box::new(FormsApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(FormsApp::new()))
+        }),
     )
 }
 
 struct FormsApp {
-    theme: Theme,
     // Input states
     text_input: String,
     email_input: String,
@@ -144,7 +147,6 @@ impl FormsApp {
             );
 
         Self {
-            theme: theme.clone(),
             text_input: String::new(),
             email_input: String::new(),
             password_input: String::new(),
@@ -195,6 +197,7 @@ impl FormsApp {
 
 impl eframe::App for FormsApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
@@ -223,7 +226,7 @@ impl eframe::App for FormsApp {
                         Input::new("Enter your name")
                             .with_label("Name")
                             .with_width(400.0)
-                            .show(ui, &mut self.text_input, &self.theme);
+                            .show(ui, &mut self.text_input);
                         ui.add_space(12.0);
 
                         // Email input
@@ -232,7 +235,7 @@ impl eframe::App for FormsApp {
                             .with_label("Email Address")
                             .with_left_icon("📧")
                             .with_width(400.0)
-                            .show(ui, &mut self.email_input, &self.theme);
+                            .show(ui, &mut self.email_input);
                         ui.add_space(12.0);
 
                         // Password input
@@ -242,7 +245,7 @@ impl eframe::App for FormsApp {
                             .with_left_icon("🔒")
                             .with_width(400.0)
                             .password(true)
-                            .show(ui, &mut self.password_input, &self.theme);
+                            .show(ui, &mut self.password_input);
                         ui.add_space(12.0);
 
                         // Error state input
@@ -269,7 +272,7 @@ impl eframe::App for FormsApp {
                             .state(error_state)
                             .with_helper_text(helper_text)
                             .with_width(400.0)
-                            .show(ui, &mut self.error_input, &self.theme);
+                            .show(ui, &mut self.error_input);
                         ui.add_space(12.0);
 
                         // Search input
@@ -277,7 +280,7 @@ impl eframe::App for FormsApp {
                         SearchInput::new()
                             .with_placeholder("Search components...")
                             .with_width(400.0)
-                            .show(ui, &mut self.search_input, &self.theme);
+                            .show(ui, &mut self.search_input);
 
                         ui.add_space(30.0);
 
@@ -286,7 +289,7 @@ impl eframe::App for FormsApp {
                         ui.add_space(15.0);
 
                         // Country select
-                        let country_response = self.country_select.show(ui, &self.theme);
+                        let country_response = self.country_select.show(ui);
                         if country_response.changed {
                             if let Some(value) = country_response.selected_value {
                                 println!("Selected country: {}", value);
@@ -295,7 +298,7 @@ impl eframe::App for FormsApp {
                         ui.add_space(12.0);
 
                         // Framework select
-                        let framework_response = self.framework_select.show(ui, &self.theme);
+                        let framework_response = self.framework_select.show(ui);
                         if framework_response.changed {
                             if let Some(value) = framework_response.selected_value {
                                 println!("Selected framework: {}", value);
@@ -317,12 +320,11 @@ impl eframe::App for FormsApp {
                         self.notifications_toggle.show(
                             ui,
                             &mut self.notifications_enabled,
-                            &self.theme,
                         );
                         ui.add_space(8.0);
 
                         self.dark_mode_toggle
-                            .show(ui, &mut self.dark_mode_enabled, &self.theme);
+                            .show(ui, &mut self.dark_mode_enabled);
                         ui.add_space(8.0);
 
                         // System toggles
@@ -331,18 +333,17 @@ impl eframe::App for FormsApp {
                             egui::RichText::new("System Settings")
                                 .size(14.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(8.0);
 
                         ui.horizontal(|ui| {
                             self.wifi_toggle
-                                .show(ui, &mut self.wifi_enabled, &self.theme);
+                                .show(ui, &mut self.wifi_enabled);
                             ui.add_space(40.0);
                             self.bluetooth_toggle.show(
                                 ui,
                                 &mut self.bluetooth_enabled,
-                                &self.theme,
                             );
                         });
 
@@ -353,15 +354,15 @@ impl eframe::App for FormsApp {
                         ui.add_space(15.0);
 
                         self.accept_terms_toggle
-                            .show(ui, &mut self.accept_terms, &self.theme);
+                            .show(ui, &mut self.accept_terms);
                         ui.add_space(8.0);
 
                         self.subscribe_toggle
-                            .show(ui, &mut self.subscribe_newsletter, &self.theme);
+                            .show(ui, &mut self.subscribe_newsletter);
                         ui.add_space(8.0);
 
                         self.remember_me_toggle
-                            .show(ui, &mut self.remember_me, &self.theme);
+                            .show(ui, &mut self.remember_me);
 
                         ui.add_space(30.0);
 
@@ -369,7 +370,7 @@ impl eframe::App for FormsApp {
                         ui.heading("Toggle Groups");
                         ui.add_space(15.0);
 
-                        let privacy_response = self.privacy_settings.show(ui, &self.theme);
+                        let privacy_response = self.privacy_settings.show(ui);
                         if !privacy_response.changed.is_empty() {
                             for (id, state) in privacy_response.changed {
                                 println!("Privacy setting '{}' changed to: {}", id, state);
@@ -378,7 +379,7 @@ impl eframe::App for FormsApp {
 
                         ui.add_space(20.0);
 
-                        let feature_response = self.feature_flags.show(ui, &self.theme);
+                        let feature_response = self.feature_flags.show(ui);
                         if !feature_response.changed.is_empty() {
                             for (id, state) in feature_response.changed {
                                 println!("Feature '{}' changed to: {}", id, state);

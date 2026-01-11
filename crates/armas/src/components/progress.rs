@@ -1,3 +1,4 @@
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Ui, Vec2};
 use std::f32::consts::PI;
@@ -86,7 +87,8 @@ impl LinearProgress {
     }
 
     /// Show the progress bar
-    pub fn show(mut self, ui: &mut Ui, theme: &Theme) {
+    pub fn show(mut self, ui: &mut Ui) -> egui::Response {
+        let theme = ui.ctx().armas_theme();
         let desired_width = self.width.unwrap_or(ui.available_width());
         let total_height = if self.show_label && self.progress.is_some() {
             self.height + 20.0
@@ -94,7 +96,7 @@ impl LinearProgress {
             self.height
         };
 
-        let (rect, _) =
+        let (rect, response) =
             ui.allocate_exact_size(Vec2::new(desired_width, total_height), egui::Sense::hover());
 
         let bar_rect = egui::Rect::from_min_size(rect.min, Vec2::new(desired_width, self.height));
@@ -154,6 +156,8 @@ impl LinearProgress {
 
             ui.ctx().request_repaint();
         }
+
+        response
     }
 }
 
@@ -246,7 +250,8 @@ impl CircularProgressBar {
     }
 
     /// Show the circular progress
-    pub fn show(mut self, ui: &mut Ui, theme: &Theme) {
+    pub fn show(mut self, ui: &mut Ui) {
+        let theme = ui.ctx().armas_theme();
         let (rect, _) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 
         let center = rect.center();
@@ -375,7 +380,8 @@ impl RingProgress {
     }
 
     /// Show the ring progress
-    pub fn show(self, ui: &mut Ui, theme: &Theme) {
+    pub fn show(self, ui: &mut Ui) {
+        let theme = ui.ctx().armas_theme();
         let (rect, _) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 
         let center = rect.center();

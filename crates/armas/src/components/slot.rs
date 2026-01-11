@@ -3,6 +3,7 @@
 //! Colored box showing plugin/effect with mini meter and bypass indicator.
 //! Matches Studio One's insert design.
 
+use crate::ext::ArmasContextExt;
 use crate::theme::Theme;
 use egui;
 
@@ -46,7 +47,8 @@ impl<'a> Slot<'a> {
         self
     }
 
-    pub fn show(self, ui: &mut egui::Ui, theme: &Theme) -> egui::Response {
+    pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
+        let theme = ui.ctx().armas_theme();
         let font_size = ui.spacing().interact_size.y * 0.4;
         let (rect, response) =
             ui.allocate_exact_size(egui::vec2(self.width, self.height), egui::Sense::click());
@@ -55,7 +57,7 @@ impl<'a> Slot<'a> {
 
         // Determine colors
         let (box_color, border_color, text_color) = if let Some(name) = self.name {
-            let effect_color = get_effect_color(name, theme);
+            let effect_color = get_effect_color(name, &theme);
             let border = if self.bypassed {
                 theme.on_surface_variant()
             } else {

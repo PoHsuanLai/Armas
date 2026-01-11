@@ -1,14 +1,15 @@
-//! Button component with Material Design 3 styling
+//! Base Button component with Material Design 3 styling
 //!
-//! Provides five variants following Material Design 3 guidelines:
+//! Provides variants following Material Design 3 guidelines:
 //! - Filled: Highest emphasis, solid background with primary color
 //! - FilledTonal: Medium-high emphasis, subtle background
 //! - Elevated: Filled tonal with shadow for separation
 //! - Outlined: Medium emphasis, transparent with border
 //! - Text: Lowest emphasis, minimal styling
+//! - Speaker: Modern plastic aesthetic for audio controls
 
 use crate::animation::Interpolate;
-use crate::theme::Theme;
+use crate::ext::ArmasContextExt;
 use egui::{Color32, Response, Sense, Ui, Vec2};
 
 /// Button style variant following Material Design 3
@@ -35,6 +36,9 @@ pub struct Button {
     variant: ButtonVariant,
     min_size: Vec2,
     enabled: bool,
+    text_align: egui::Align2,
+    text_color: Option<Color32>,
+    hover_text_color: Option<Color32>,
 }
 
 impl Button {
@@ -45,6 +49,9 @@ impl Button {
             variant: ButtonVariant::Filled,
             min_size: Vec2::new(80.0, 32.0),
             enabled: true,
+            text_align: egui::Align2::CENTER_CENTER,
+            text_color: None,
+            hover_text_color: None,
         }
     }
 
@@ -66,13 +73,35 @@ impl Button {
         self
     }
 
+    /// Set text alignment
+    pub fn text_align(mut self, align: egui::Align2) -> Self {
+        self.text_align = align;
+        self
+    }
+
+    /// Set custom text color (overrides default)
+    pub fn text_color(mut self, color: Color32) -> Self {
+        self.text_color = Some(color);
+        self
+    }
+
+    /// Set custom hover text color (overrides default)
+    pub fn hover_text_color(mut self, color: Color32) -> Self {
+        self.hover_text_color = Some(color);
+        self
+    }
+
     /// Show the button
-    pub fn show(self, ui: &mut Ui, theme: &Theme) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         let Button {
             text,
             variant,
             min_size,
             enabled,
+            text_align,
+            text_color: custom_text_color,
+            hover_text_color: custom_hover_text_color,
         } = self;
 
         let sense = if enabled {
@@ -81,11 +110,16 @@ impl Button {
             Sense::hover()
         };
 
-        let (rect, response) = ui.allocate_exact_size(min_size, sense);
+        let (rect, mut response) = ui.allocate_exact_size(min_size, sense);
+
+        // Change cursor to pointer on hover when enabled
+        if enabled && response.hovered() {
+            response = response.on_hover_cursor(egui::CursorIcon::PointingHand);
+        }
 
         if ui.is_rect_visible(rect) {
             // Determine colors and shadow based on variant and state
-            let (bg_color, text_color, border_color, draw_shadow) = if !enabled {
+            let (bg_color, mut text_color, border_color, draw_shadow) = if !enabled {
                 // Disabled state
                 let disabled_bg = theme.surface_variant();
                 let disabled_text = theme.on_surface_variant();
@@ -112,7 +146,6 @@ impl Button {
                         (theme.hover(), theme.primary(), Color32::TRANSPARENT, false)
                     }
                     ButtonVariant::Speaker => {
-                        // Slightly lighter on hover - uses theme surface colors
                         let hover_bg = theme.surface_variant().interpolate(&theme.hover(), 0.3);
                         (hover_bg, theme.on_surface(), theme.outline_variant(), false)
                     }
@@ -144,7 +177,6 @@ impl Button {
                         false,
                     ),
                     ButtonVariant::Speaker => {
-                        // Modern speaker button: smooth matte plastic - uses theme surface
                         (
                             theme.surface_variant(),
                             theme.on_surface_variant(),
@@ -155,13 +187,22 @@ impl Button {
                 }
             };
 
+            // Apply custom text colors if provided
+            if response.hovered() {
+                if let Some(hover_color) = custom_hover_text_color {
+                    text_color = hover_color;
+                }
+            } else if let Some(normal_color) = custom_text_color {
+                text_color = normal_color;
+            }
+
             // Special rendering for Speaker variant
             if variant == ButtonVariant::Speaker {
                 let painter = ui.painter();
-                let corner_radius = 10.0; // Softer corners for speaker style
+                let corner_radius = 10.0;
                 let is_pressed = response.is_pointer_button_down_on();
 
-                // Soft shadow (modern, diffused)
+                // Soft shadow
                 let shadow_color = Color32::from_black_alpha(50);
                 painter.rect_filled(
                     rect.translate(Vec2::new(0.0, 2.0)),
@@ -170,13 +211,11 @@ impl Button {
                 );
 
                 if is_pressed {
-                    // Pressed state: darker with subtle inset shadow - uses theme background
                     let pressed_bg = theme
                         .surface_variant()
                         .interpolate(&theme.background(), 0.5);
                     painter.rect_filled(rect, corner_radius, pressed_bg);
 
-                    // Subtle inset shadow at top
                     painter.rect_stroke(
                         rect.shrink(0.5),
                         corner_radius,
@@ -184,18 +223,16 @@ impl Button {
                         egui::StrokeKind::Middle,
                     );
                 } else {
-                    // Normal/Hover: Subtle gradient (top to bottom, very soft) derived from theme
                     let base_color = if response.hovered() {
                         theme.surface_variant().interpolate(&theme.hover(), 0.3)
                     } else {
                         theme.surface_variant()
                     };
 
-                    // Create subtle gradient by darkening bottom slightly
                     let top_color = base_color;
                     let bottom_color = base_color.interpolate(&theme.background(), 0.2);
 
-                    // Draw gradient with 8 steps (subtle enough to look smooth)
+                    // Draw gradient
                     for i in 0..8 {
                         let t = i as f32 / 7.0;
                         let color = Color32::from_rgb(
@@ -223,7 +260,7 @@ impl Button {
                         );
                     }
 
-                    // Top highlight (subtle, like light reflection)
+                    // Top highlight
                     painter.line_segment(
                         [
                             rect.min + Vec2::new(corner_radius, 1.0),
@@ -233,7 +270,6 @@ impl Button {
                     );
                 }
 
-                // Clean border (precise edge)
                 painter.rect_stroke(
                     rect,
                     corner_radius,
@@ -241,7 +277,6 @@ impl Button {
                     egui::StrokeKind::Middle,
                 );
             } else {
-                // Original rendering for other variants
                 // Draw shadow for elevated variant
                 if draw_shadow {
                     let shadow_color = Color32::from_black_alpha(60);
@@ -269,9 +304,14 @@ impl Button {
 
             // Draw text
             let font_id = egui::TextStyle::Button.resolve(ui.style());
+            let text_pos = match text_align {
+                egui::Align2::LEFT_CENTER => egui::pos2(rect.left() + 12.0, rect.center().y),
+                egui::Align2::RIGHT_CENTER => egui::pos2(rect.right() - 12.0, rect.center().y),
+                _ => rect.center(),
+            };
             ui.painter().text(
-                rect.center(),
-                egui::Align2::CENTER_CENTER,
+                text_pos,
+                text_align,
                 text,
                 font_id,
                 text_color,

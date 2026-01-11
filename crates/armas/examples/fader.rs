@@ -4,6 +4,7 @@
 //!
 //! Run with: cargo run --example fader
 
+use armas::ext::ArmasContextExt;
 use armas::{Fader, FaderStrip, Theme};
 use eframe::egui;
 
@@ -18,7 +19,10 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Fader Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(FaderDemoApp::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(FaderDemoApp::default()))
+        }),
     )
 }
 
@@ -89,7 +93,7 @@ impl eframe::App for FaderDemoApp {
                         ui.add_space(5.0);
 
                         let (response, new_value) =
-                            FaderStrip::new(*value).size(39.0, 254.0).show(ui, &theme);
+                            FaderStrip::new(*value).size(39.0, 254.0).show(ui);
 
                         if response.changed() {
                             *value = new_value;
@@ -129,7 +133,7 @@ impl eframe::App for FaderDemoApp {
                         .show(ui, |ui| {
                             let (response, new_value) = Fader::new(self.fader_values[0])
                                 .size(30.0, 240.0)
-                                .show(ui, &theme);
+                                .show(ui);
 
                             if response.changed() {
                                 self.fader_values[0] = new_value;
@@ -147,7 +151,7 @@ impl eframe::App for FaderDemoApp {
 
                     let (response, new_value) = Fader::new(self.fader_values[1])
                         .size(30.0, 240.0)
-                        .show(ui, &theme);
+                        .show(ui);
 
                     if response.changed() {
                         self.fader_values[1] = new_value;
@@ -173,7 +177,7 @@ impl eframe::App for FaderDemoApp {
 
                     let (response, new_value) = FaderStrip::new(self.fader_values[0])
                         .size(39.0, 254.0)
-                        .show(ui, &theme);
+                        .show(ui);
 
                     if response.changed() {
                         self.fader_values[0] = new_value;

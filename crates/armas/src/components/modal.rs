@@ -172,7 +172,7 @@ impl Modal {
                                             if Button::new("✕")
                                                 .variant(ButtonVariant::Text)
                                                 .min_size(vec2(32.0, 32.0))
-                                                .show(ui, theme)
+                                                .show(ui)
                                                 .clicked()
                                             {
                                                 *is_open = false;
@@ -259,7 +259,7 @@ pub fn confirm_dialog(
         HStack::new(8.0).show(ui, |ui| {
             if Button::new("Cancel")
                 .variant(ButtonVariant::Outlined)
-                .show(ui, theme)
+                .show(ui)
                 .clicked()
             {
                 result = ConfirmResponse::Cancel;
@@ -270,7 +270,7 @@ pub fn confirm_dialog(
 
             if Button::new("Confirm")
                 .variant(ButtonVariant::Filled)
-                .show(ui, theme)
+                .show(ui)
                 .clicked()
             {
                 result = ConfirmResponse::Confirm;

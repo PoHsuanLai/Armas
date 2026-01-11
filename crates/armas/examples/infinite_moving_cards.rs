@@ -2,6 +2,7 @@
 //!
 //! Demonstrates continuous scrolling card carousel
 
+use armas::ext::ArmasContextExt;
 use armas::{InfiniteMovingCards, MovingCard, ScrollDirection, ScrollSpeed, Theme};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Infinite Moving Cards",
         options,
-        Box::new(|_cc| Ok(Box::new(InfiniteMovingCardsApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(InfiniteMovingCardsApp::new()))
+        }),
     )
 }
 
 struct InfiniteMovingCardsApp {
-    theme: Theme,
     carousel1: InfiniteMovingCards,
     carousel2: InfiniteMovingCards,
     carousel3: InfiniteMovingCards,
@@ -80,7 +83,6 @@ impl InfiniteMovingCardsApp {
         ];
 
         Self {
-            theme: Theme::dark(),
             carousel1: InfiniteMovingCards::new(testimonials)
                 .speed(ScrollSpeed::Slow)
                 .pause_on_hover(true),
@@ -99,6 +101,7 @@ impl InfiniteMovingCardsApp {
 impl eframe::App for InfiniteMovingCardsApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            let theme = ui.ctx().armas_theme();
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
             egui::ScrollArea::vertical().show(ui, |ui| {
@@ -115,11 +118,11 @@ impl eframe::App for InfiniteMovingCardsApp {
                     egui::RichText::new("Classic Testimonials (Slow, Left)")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
-                self.carousel1.show(ui, &self.theme);
+                self.carousel1.show(ui);
 
                 ui.add_space(40.0);
 
@@ -128,11 +131,11 @@ impl eframe::App for InfiniteMovingCardsApp {
                     egui::RichText::new("Feature Highlights (Normal, Right)")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
-                self.carousel2.show(ui, &self.theme);
+                self.carousel2.show(ui);
 
                 ui.add_space(40.0);
 
@@ -141,11 +144,11 @@ impl eframe::App for InfiniteMovingCardsApp {
                     egui::RichText::new("Quick Facts (Fast, No Pause)")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
-                self.carousel3.show(ui, &self.theme);
+                self.carousel3.show(ui);
 
                 ui.add_space(50.0);
                 ui.separator();
@@ -159,7 +162,7 @@ impl eframe::App for InfiniteMovingCardsApp {
                             egui::RichText::new("Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• Hover over cards to pause scrolling (if enabled)");

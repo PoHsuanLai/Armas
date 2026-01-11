@@ -3,6 +3,7 @@
 //! Temporary notification messages with auto-dismiss
 //! Built on top of Card component for consistency
 
+use crate::ext::ArmasContextExt;
 use crate::animation::SpringAnimation;
 use crate::layout::{HStack, VStack};
 use crate::{Badge, BadgeColor, Button, ButtonVariant, Card, Theme};
@@ -214,7 +215,8 @@ impl ToastManager {
     }
 
     /// Show all toasts
-    pub fn show(&mut self, ctx: &egui::Context, theme: &Theme) {
+    pub fn show(&mut self, ctx: &egui::Context) {
+        let theme = ctx.armas_theme();
         // Remove expired toasts
         self.toasts.retain(|toast| !toast.is_expired());
 
@@ -265,7 +267,7 @@ impl ToastManager {
 
             let dismissed = Self::show_toast_static(
                 ctx,
-                theme,
+                &theme,
                 toast,
                 position,
                 offset + slide_offset,
@@ -318,7 +320,7 @@ impl ToastManager {
                             // Icon badge
                             Badge::new(toast.variant.icon())
                                 .color(toast.variant.badge_color())
-                                .show(ui, theme);
+                                .show(ui);
 
                             // Content
                             VStack::new(0.0).show(ui, |ui| {
@@ -335,7 +337,7 @@ impl ToastManager {
                                 if Button::new("✕")
                                     .variant(ButtonVariant::Text)
                                     .min_size(vec2(24.0, 24.0))
-                                    .show(ui, theme)
+                                    .show(ui)
                                     .clicked()
                                 {
                                     dismissed = true;

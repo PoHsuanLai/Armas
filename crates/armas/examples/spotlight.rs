@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{Spotlight, Theme};
 use eframe::egui;
 
@@ -12,12 +13,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Spotlight Effect Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(SpotlightApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(SpotlightApp::new()))
+        }),
     )
 }
 
 struct SpotlightApp {
-    theme: Theme,
     spotlight_default: Spotlight,
     spotlight_large: Spotlight,
     spotlight_small: Spotlight,
@@ -32,7 +35,6 @@ impl SpotlightApp {
     fn new() -> Self {
         let theme = Theme::dark();
         Self {
-            theme: theme.clone(),
             spotlight_default: Spotlight::new(&theme),
             spotlight_large: Spotlight::new(&theme)
                 .radius(300.0)
@@ -64,6 +66,7 @@ impl SpotlightApp {
 
 impl eframe::App for SpotlightApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("✨ Spotlight Effect Component");
             ui.add_space(10.0);
@@ -75,7 +78,7 @@ impl eframe::App for SpotlightApp {
                         ui.set_min_width(300.0);
                         ui.set_min_height(200.0);
 
-                        self.spotlight_default.show(ui, &self.theme, |ui| {
+                        self.spotlight_default.show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.add_space(60.0);
                                 ui.heading("Default Spotlight");
@@ -95,7 +98,7 @@ impl eframe::App for SpotlightApp {
                         ui.set_min_width(300.0);
                         ui.set_min_height(200.0);
 
-                        self.spotlight_large.show(ui, &self.theme, |ui| {
+                        self.spotlight_large.show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.add_space(60.0);
                                 ui.heading("Large Spotlight");
@@ -114,7 +117,7 @@ impl eframe::App for SpotlightApp {
                         ui.set_min_width(300.0);
                         ui.set_min_height(200.0);
 
-                        self.spotlight_small.show(ui, &self.theme, |ui| {
+                        self.spotlight_small.show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.add_space(60.0);
                                 ui.heading("Small Spotlight");
@@ -139,7 +142,7 @@ impl eframe::App for SpotlightApp {
                         ui.set_min_width(300.0);
                         ui.set_min_height(150.0);
 
-                        self.spotlight_red.show(ui, &self.theme, |ui| {
+                        self.spotlight_red.show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.add_space(40.0);
                                 ui.heading("🔴 Red Spotlight");
@@ -159,7 +162,7 @@ impl eframe::App for SpotlightApp {
                         ui.set_min_width(300.0);
                         ui.set_min_height(150.0);
 
-                        self.spotlight_green.show(ui, &self.theme, |ui| {
+                        self.spotlight_green.show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.add_space(40.0);
                                 ui.heading("🟢 Green Spotlight");
@@ -179,7 +182,7 @@ impl eframe::App for SpotlightApp {
                         ui.set_min_width(300.0);
                         ui.set_min_height(150.0);
 
-                        self.spotlight_purple.show(ui, &self.theme, |ui| {
+                        self.spotlight_purple.show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.add_space(40.0);
                                 ui.heading("🟣 Purple Spotlight");
@@ -205,7 +208,7 @@ impl eframe::App for SpotlightApp {
                         ui.set_min_width(480.0);
                         ui.set_min_height(150.0);
 
-                        self.spotlight_smooth.show(ui, &self.theme, |ui| {
+                        self.spotlight_smooth.show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.add_space(40.0);
                                 ui.heading("Smooth Follow (0.3)");
@@ -223,7 +226,7 @@ impl eframe::App for SpotlightApp {
                         ui.set_min_width(480.0);
                         ui.set_min_height(150.0);
 
-                        self.spotlight_instant.show(ui, &self.theme, |ui| {
+                        self.spotlight_instant.show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.add_space(40.0);
                                 ui.heading("Instant Follow (0.0)");

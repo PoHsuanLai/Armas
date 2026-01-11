@@ -2,6 +2,7 @@
 //!
 //! Multi-line text input field
 
+use crate::ext::ArmasContextExt;
 use crate::layout::{HStack, Spacer, VStack};
 use crate::{InputState, InputVariant, Theme};
 use egui::{vec2, Color32, Response, Sense, Stroke, StrokeKind, TextEdit, Ui, Vec2};
@@ -84,7 +85,8 @@ impl Textarea {
     }
 
     /// Show the textarea
-    pub fn show(self, ui: &mut Ui, theme: &Theme, text: &mut String) -> Response {
+    pub fn show(self, ui: &mut Ui, text: &mut String) -> Response {
+        let theme = ui.ctx().armas_theme();
         VStack::new(4.0)
             .show_with_inner(ui, |ui| {
                 // Label

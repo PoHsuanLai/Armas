@@ -2,6 +2,7 @@
 //!
 //! Demonstrates aurora and meteor shower effects
 
+use armas::ext::ArmasContextExt;
 use armas::{AuroraBackground, MeteorShower, Theme};
 use eframe::egui;
 use std::f32::consts::PI;
@@ -17,12 +18,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Background Effects",
         options,
-        Box::new(|_cc| Ok(Box::new(BackgroundsDemo::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(BackgroundsDemo::new()))
+        }),
     )
 }
 
 struct BackgroundsDemo {
-    theme: Theme,
     selected: usize,
 
     // Aurora variants
@@ -67,22 +70,22 @@ impl eframe::App for BackgroundsDemo {
             // Render selected background
             match self.selected {
                 0 => {
-                    self.aurora_cyberpunk.show(ui, &self.theme);
+                    self.aurora_cyberpunk.show(ui);
                 }
                 1 => {
-                    self.aurora_borealis.show(ui, &self.theme);
+                    self.aurora_borealis.show(ui);
                 }
                 2 => {
-                    self.aurora_sunset.show(ui, &self.theme);
+                    self.aurora_sunset.show(ui);
                 }
                 3 => {
-                    self.meteor_default.show(ui, &self.theme);
+                    self.meteor_default.show(ui);
                 }
                 4 => {
-                    self.meteor_fast.show(ui, &self.theme);
+                    self.meteor_fast.show(ui);
                 }
                 5 => {
-                    self.meteor_blue.show(ui, &self.theme);
+                    self.meteor_blue.show(ui);
                 }
                 _ => {}
             }
@@ -160,14 +163,14 @@ impl eframe::App for BackgroundsDemo {
                         ui.label("Aurora:");
                         ui.code("AuroraBackground::cyberpunk(w, h)");
                         ui.code("  .with_speed(1.5)");
-                        ui.code("  .show(ui, &theme);");
+                        ui.code("  .show(ui);");
                     } else {
                         ui.label("Meteor Shower:");
                         ui.code("MeteorShower::new(w, h)");
                         ui.code("  .with_spawn_rate(2.0)");
                         ui.code("  .with_angle(PI / 4.0)");
                         ui.code("  .with_color(color)");
-                        ui.code("  .show(ui, &theme);");
+                        ui.code("  .show(ui);");
                     }
 
                     ui.add_space(15.0);

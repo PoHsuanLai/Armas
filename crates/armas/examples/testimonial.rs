@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::layout::{Container, ContainerSize, VStack};
 use armas::{TestimonialGrid, TestimonialItem, Theme};
 use eframe::egui;
@@ -13,29 +14,31 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Testimonial Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(TestimonialApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(TestimonialApp::new()))
+        }),
     )
 }
 
 struct TestimonialApp {
-    theme: Theme,
 }
 
 impl TestimonialApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
         }
     }
 }
 
 impl eframe::App for TestimonialApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 Container::new(ContainerSize::Large)
                     .padding(32.0)
-                    .show(ui, &self.theme, |ui| {
+                    .show(ui, &theme, |ui| {
                         VStack::new(20.0).show(ui, |ui| {
                             ui.heading("Testimonials");
 
@@ -98,7 +101,7 @@ impl eframe::App for TestimonialApp {
                             TestimonialGrid::new(items)
                                 .columns(3)
                                 .gap(20.0)
-                                .show(ui, &self.theme);
+                                .show(ui);
                         });
                     });
             });

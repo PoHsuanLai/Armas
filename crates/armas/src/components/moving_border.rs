@@ -96,7 +96,7 @@ impl MovingBorder {
     }
 
     /// Show the button
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         // Update animation
         let dt = ui.input(|i| i.stable_dt);
         self.animation_offset += self.animation_speed * dt;

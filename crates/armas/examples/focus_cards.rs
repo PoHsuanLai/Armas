@@ -2,6 +2,7 @@
 //!
 //! Demonstrates interactive card grid with focus/blur effect
 
+use armas::ext::ArmasContextExt;
 use armas::{FocusCard, FocusCards, Theme};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Focus Cards",
         options,
-        Box::new(|_cc| Ok(Box::new(FocusCardsApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(FocusCardsApp::new()))
+        }),
     )
 }
 
 struct FocusCardsApp {
-    theme: Theme,
     focus_cards: FocusCards,
 }
 
@@ -44,7 +47,6 @@ impl FocusCardsApp {
         ];
 
         Self {
-            theme: Theme::dark(),
             focus_cards: FocusCards::new(cards)
                 .card_size(350.0, 450.0)
                 .spacing(25.0)
@@ -55,6 +57,7 @@ impl FocusCardsApp {
 
 impl eframe::App for FocusCardsApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
@@ -71,7 +74,7 @@ impl eframe::App for FocusCardsApp {
                 ui.horizontal(|ui| {
                     ui.add_space(50.0);
                     ui.vertical(|ui| {
-                        let response = self.focus_cards.show(ui, &self.theme);
+                        let response = self.focus_cards.show(ui);
 
                         if let Some(clicked_idx) = response.clicked {
                             println!("Card {} was clicked!", clicked_idx);
@@ -91,7 +94,7 @@ impl eframe::App for FocusCardsApp {
                             egui::RichText::new("Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• Hover over any card to focus it");

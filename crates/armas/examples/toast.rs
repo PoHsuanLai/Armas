@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{Button, ButtonVariant, Theme, ToastManager, ToastPosition, ToastVariant};
 use eframe::egui;
 use std::time::Duration;
@@ -11,12 +12,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Toast/Notification Example",
         options,
-        Box::new(|_cc| Ok(Box::new(ToastExample::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(ToastExample::default()))
+        }),
     )
 }
 
 struct ToastExample {
-    theme: Theme,
     toast_manager: ToastManager,
     position: ToastPosition,
 }
@@ -24,7 +27,6 @@ struct ToastExample {
 impl Default for ToastExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
             toast_manager: ToastManager::new(),
             position: ToastPosition::TopRight,
         }
@@ -44,7 +46,7 @@ impl eframe::App for ToastExample {
             ui.horizontal(|ui| {
                 if Button::new("Info Toast")
                     .variant(ButtonVariant::Filled)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.toast_manager.info("This is an informational message");
@@ -52,7 +54,7 @@ impl eframe::App for ToastExample {
 
                 if Button::new("Success Toast")
                     .variant(ButtonVariant::Filled)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.toast_manager
@@ -61,7 +63,7 @@ impl eframe::App for ToastExample {
 
                 if Button::new("Warning Toast")
                     .variant(ButtonVariant::Filled)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.toast_manager.warning("This is a warning message");
@@ -69,7 +71,7 @@ impl eframe::App for ToastExample {
 
                 if Button::new("Error Toast")
                     .variant(ButtonVariant::Filled)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.toast_manager.error("An error occurred!");
@@ -87,7 +89,7 @@ impl eframe::App for ToastExample {
             ui.horizontal(|ui| {
                 if Button::new("With Title")
                     .variant(ButtonVariant::Outlined)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.toast_manager
@@ -100,7 +102,7 @@ impl eframe::App for ToastExample {
 
                 if Button::new("Long Duration")
                     .variant(ButtonVariant::Outlined)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.toast_manager
@@ -113,7 +115,7 @@ impl eframe::App for ToastExample {
 
                 if Button::new("Non-dismissible")
                     .variant(ButtonVariant::Outlined)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.toast_manager
@@ -190,7 +192,7 @@ impl eframe::App for ToastExample {
             // Spam test
             if Button::new("Spam 5 Toasts")
                 .variant(ButtonVariant::Text)
-                .show(ui, &self.theme)
+                .show(ui)
                 .clicked()
             {
                 for i in 1..=5 {
@@ -210,6 +212,6 @@ impl eframe::App for ToastExample {
         });
 
         // Show all toasts
-        self.toast_manager.show(ctx, &self.theme);
+        self.toast_manager.show(ctx);
     }
 }

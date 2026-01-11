@@ -1,3 +1,4 @@
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Pos2, Response, Ui, Vec2};
 
@@ -50,10 +51,10 @@ impl AccordionItem {
     pub fn show<R>(
         &mut self,
         ui: &mut Ui,
-        theme: &Theme,
         content: impl FnOnce(&mut Ui) -> R,
     ) -> (bool, R) {
-        let header_response = self.show_header(ui, theme);
+        let theme = ui.ctx().armas_theme();
+        let header_response = self.show_header(ui, &theme);
 
         // Toggle on click
         if header_response.clicked() {
@@ -252,7 +253,6 @@ impl Accordion {
     pub fn show(
         &self,
         ui: &mut Ui,
-        theme: &Theme,
         items: &mut [AccordionItem],
         mut content_fn: impl FnMut(&mut Ui, usize),
     ) {
@@ -263,7 +263,7 @@ impl Accordion {
             item.show_icon = self.show_icons;
             item.animate = self.animate;
 
-            let (was_clicked, _) = item.show(ui, theme, |ui| content_fn(ui, index));
+            let (was_clicked, _) = item.show(ui, |ui| content_fn(ui, index));
 
             if was_clicked {
                 clicked_index = Some(index);

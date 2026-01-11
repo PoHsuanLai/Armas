@@ -3,6 +3,7 @@
 //! A navbar that floats above content with smooth morphing animations
 
 use crate::animation::{Animation, EasingFunction};
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
@@ -105,7 +106,8 @@ impl FloatingNavbar {
     }
 
     /// Show the floating navbar
-    pub fn show(&mut self, ctx: &egui::Context, theme: &Theme) -> NavbarResponse {
+    pub fn show(&mut self, ctx: &egui::Context) -> NavbarResponse {
+        let theme = ctx.armas_theme();
         let dt = ctx.input(|i| i.stable_dt);
 
         // Update animations

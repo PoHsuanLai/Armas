@@ -3,6 +3,7 @@
 //! Continuous scrolling card carousel with infinite loop
 
 use crate::components::scrolling_banner::ScrollDirection;
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
@@ -140,7 +141,7 @@ impl InfiniteMovingCards {
     }
 
     /// Show the infinite moving cards
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         let dt = ui.input(|i| i.stable_dt);
 
         // Allocate space for the component (full width, fixed height)

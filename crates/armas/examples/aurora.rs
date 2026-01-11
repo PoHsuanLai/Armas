@@ -2,6 +2,7 @@
 //!
 //! Demonstrates the aurora background effect with floating gradient blobs
 
+use armas::ext::ArmasContextExt;
 use armas::{AuroraBackground, Theme};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Aurora Background",
         options,
-        Box::new(|_cc| Ok(Box::new(AuroraDemo::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(AuroraDemo::new()))
+        }),
     )
 }
 
 struct AuroraDemo {
-    theme: Theme,
     aurora_cyberpunk: AuroraBackground,
     aurora_borealis: AuroraBackground,
     aurora_sunset: AuroraBackground,
@@ -31,7 +34,6 @@ struct AuroraDemo {
 impl AuroraDemo {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             aurora_cyberpunk: AuroraBackground::cyberpunk(1000.0, 700.0),
             aurora_borealis: AuroraBackground::borealis(1000.0, 700.0),
             aurora_sunset: AuroraBackground::sunset(1000.0, 700.0),
@@ -51,7 +53,7 @@ impl eframe::App for AuroraDemo {
                 _ => &mut self.aurora_cyberpunk,
             };
 
-            aurora.show(ui, &self.theme);
+            aurora.show(ui);
 
             // Overlay controls
             egui::Window::new("Aurora Controls")
@@ -85,7 +87,7 @@ impl eframe::App for AuroraDemo {
                     ui.heading("Example Usage");
                     ui.code("AuroraBackground::cyberpunk(w, h)");
                     ui.code("  .with_speed(1.5)");
-                    ui.code("  .show(ui, &theme);");
+                    ui.code("  .show(ui);");
                 });
 
             // Info overlay

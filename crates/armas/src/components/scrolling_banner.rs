@@ -1,3 +1,4 @@
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Pos2, Rect, Response, Ui, Vec2};
 
@@ -129,10 +130,11 @@ impl ScrollingBanner {
     ///
     /// The content function receives the UI and the current repetition index.
     /// The content will be rendered multiple times to create the infinite loop effect.
-    pub fn show<F>(&mut self, ui: &mut Ui, theme: &Theme, content: F) -> Response
+    pub fn show<F>(&mut self, ui: &mut Ui, content: F) -> Response
     where
         F: Fn(&mut Ui, usize),
     {
+        let theme = ui.ctx().armas_theme();
         // First, measure content size to know how much space we need
         let content_size = self.measure_content(ui, &content);
 

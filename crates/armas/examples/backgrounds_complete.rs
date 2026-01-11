@@ -2,6 +2,7 @@
 //!
 //! Demonstrates all Phase 2 background effects
 
+use armas::ext::ArmasContextExt;
 use armas::{
     AnimatedBeam, AnimatedBeams, AuroraBackground, BeamLoopMode, GridPattern, MeteorShower,
     PathPoint, Theme,
@@ -20,12 +21,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Complete Backgrounds",
         options,
-        Box::new(|_cc| Ok(Box::new(BackgroundsComplete::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(BackgroundsComplete::new()))
+        }),
     )
 }
 
 struct BackgroundsComplete {
-    theme: Theme,
     selected: usize,
 
     // Aurora variants
@@ -143,13 +146,13 @@ impl eframe::App for BackgroundsComplete {
         egui::CentralPanel::default().show(ctx, |ui| {
             // Render selected background
             match self.selected {
-                0 => { self.aurora_cyberpunk.show(ui, &self.theme); }
-                1 => { self.aurora_borealis.show(ui, &self.theme); }
-                2 => { self.meteor_fast.show(ui, &self.theme); }
-                3 => { self.grid_basic.show(ui, &self.theme); }
-                4 => { self.grid_perspective.show(ui, &self.theme); }
-                5 => { self.grid_dots.show(ui, &self.theme); }
-                6 => { self.beams_demo.show(ui, &self.theme); }
+                0 => { self.aurora_cyberpunk.show(ui); }
+                1 => { self.aurora_borealis.show(ui); }
+                2 => { self.meteor_fast.show(ui); }
+                3 => { self.grid_basic.show(ui); }
+                4 => { self.grid_perspective.show(ui); }
+                5 => { self.grid_dots.show(ui); }
+                6 => { self.beams_demo.show(ui); }
                 _ => {}
             }
 
@@ -213,10 +216,10 @@ impl eframe::App for BackgroundsComplete {
                 .default_width(300.0)
                 .show(ctx, |ui| {
                     let code = match self.selected {
-                        0 | 1 => "AuroraBackground::cyberpunk(w, h)\n  .with_speed(1.5)\n  .show(ui, &theme);",
-                        2 => "MeteorShower::new(w, h)\n  .with_spawn_rate(3.0)\n  .with_angle(PI / 4.0)\n  .show(ui, &theme);",
-                        3 | 4 | 5 => "GridPattern::new(w, h, 50.0)\n  .with_perspective(true)\n  .with_dots(color, 3.0)\n  .show(ui, &theme);",
-                        6 => "let beam = AnimatedBeam::new(path)\n  .with_color(color)\n  .with_glow(1.0);\nbeams.add_beam(beam)\n  .show(ui, &theme);",
+                        0 | 1 => "AuroraBackground::cyberpunk(w, h)\n  .with_speed(1.5)\n  .show(ui);",
+                        2 => "MeteorShower::new(w, h)\n  .with_spawn_rate(3.0)\n  .with_angle(PI / 4.0)\n  .show(ui);",
+                        3 | 4 | 5 => "GridPattern::new(w, h, 50.0)\n  .with_perspective(true)\n  .with_dots(color, 3.0)\n  .show(ui);",
+                        6 => "let beam = AnimatedBeam::new(path)\n  .with_color(color)\n  .with_glow(1.0);\nbeams.add_beam(beam)\n  .show(ui);",
                         _ => "",
                     };
 

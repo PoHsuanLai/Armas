@@ -3,6 +3,7 @@
 //! Inline alert messages with variants and icons
 //! Built on top of Card component and layout system for consistency
 
+use crate::ext::ArmasContextExt;
 use crate::layout::{HStack, Spacer, VStack};
 use crate::{Badge, BadgeColor, Button, ButtonVariant, Card, Theme};
 use egui::{vec2, Color32, Ui};
@@ -136,13 +137,14 @@ impl Alert {
     /// Show the alert using Card component
     ///
     /// Returns `AlertResponse` with information about user interaction
-    pub fn show(self, ui: &mut Ui, theme: &Theme) -> AlertResponse {
+    pub fn show(self, ui: &mut Ui) -> AlertResponse {
+        let theme = ui.ctx().armas_theme();
         let mut dismissed = false;
 
         // Build the Card with alert-specific styling
         let mut card = Card::new()
-            .fill(self.variant.background_color(theme))
-            .stroke(self.variant.border_color(theme))
+            .fill(self.variant.background_color(&theme))
+            .stroke(self.variant.border_color(&theme))
             .rounding(8.0)
             .inner_margin(12.0)
             .elevation(0); // No elevation shadow for alerts
@@ -152,13 +154,13 @@ impl Alert {
         }
 
         // Show the card with alert content using layout system
-        card.show(ui, theme, |ui| {
+        card.show(ui, &theme, |ui| {
             HStack::new(12.0).show(ui, |ui| {
                 // Icon badge
                 if self.show_icon {
                     Badge::new(self.variant.icon())
                         .color(self.variant.badge_color())
-                        .show(ui, theme);
+                        .show(ui);
                 }
 
                 // Content
@@ -178,7 +180,7 @@ impl Alert {
                     if Button::new("✕")
                         .variant(ButtonVariant::Text)
                         .min_size(vec2(24.0, 24.0))
-                        .show(ui, theme)
+                        .show(ui)
                         .clicked()
                     {
                         dismissed = true;
@@ -199,26 +201,26 @@ pub struct AlertResponse {
 }
 
 /// Simple helper to show an alert with just a message
-pub fn alert(ui: &mut Ui, theme: &Theme, message: impl Into<String>, variant: AlertVariant) {
-    Alert::new(message, variant).show(ui, theme);
+pub fn alert(ui: &mut Ui, message: impl Into<String>, variant: AlertVariant) {
+    Alert::new(message, variant).show(ui);
 }
 
 /// Show an info alert
-pub fn alert_info(ui: &mut Ui, theme: &Theme, message: impl Into<String>) {
-    Alert::info(message).show(ui, theme);
+pub fn alert_info(ui: &mut Ui, message: impl Into<String>) {
+    Alert::info(message).show(ui);
 }
 
 /// Show a success alert
-pub fn alert_success(ui: &mut Ui, theme: &Theme, message: impl Into<String>) {
-    Alert::success(message).show(ui, theme);
+pub fn alert_success(ui: &mut Ui, message: impl Into<String>) {
+    Alert::success(message).show(ui);
 }
 
 /// Show a warning alert
-pub fn alert_warning(ui: &mut Ui, theme: &Theme, message: impl Into<String>) {
-    Alert::warning(message).show(ui, theme);
+pub fn alert_warning(ui: &mut Ui, message: impl Into<String>) {
+    Alert::warning(message).show(ui);
 }
 
 /// Show an error alert
-pub fn alert_error(ui: &mut Ui, theme: &Theme, message: impl Into<String>) {
-    Alert::error(message).show(ui, theme);
+pub fn alert_error(ui: &mut Ui, message: impl Into<String>) {
+    Alert::error(message).show(ui);
 }

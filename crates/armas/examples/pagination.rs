@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{Pagination, Theme};
 use eframe::egui;
 
@@ -10,12 +11,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Pagination Component Example",
         options,
-        Box::new(|_cc| Ok(Box::new(PaginationExample::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(PaginationExample::default()))
+        }),
     )
 }
 
 struct PaginationExample {
-    theme: Theme,
     current_page_basic: usize,
     current_page_many: usize,
     current_page_compact: usize,
@@ -27,7 +30,6 @@ struct PaginationExample {
 impl Default for PaginationExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
             current_page_basic: 1,
             current_page_many: 15,
             current_page_compact: 1,
@@ -54,7 +56,7 @@ impl eframe::App for PaginationExample {
             ui.label("Basic Pagination (10 pages):");
             ui.add_space(10.0);
 
-            let response = Pagination::new(self.current_page_basic, 10).show(ui, &self.theme);
+            let response = Pagination::new(self.current_page_basic, 10).show(ui);
             if let Some(page) = response.page_changed {
                 self.current_page_basic = page;
             }
@@ -71,7 +73,7 @@ impl eframe::App for PaginationExample {
 
             let response = Pagination::new(self.current_page_many, 50)
                 .max_visible_pages(7)
-                .show(ui, &self.theme);
+                .show(ui);
             if let Some(page) = response.page_changed {
                 self.current_page_many = page;
             }
@@ -88,7 +90,7 @@ impl eframe::App for PaginationExample {
 
             let response = Pagination::new(self.current_page_compact, 10)
                 .show_first_last(false)
-                .show(ui, &self.theme);
+                .show(ui);
             if let Some(page) = response.page_changed {
                 self.current_page_compact = page;
             }
@@ -106,7 +108,7 @@ impl eframe::App for PaginationExample {
             let response = Pagination::new(self.current_page_simple, 10)
                 .show_first_last(false)
                 .max_visible_pages(1)
-                .show(ui, &self.theme);
+                .show(ui);
             if let Some(page) = response.page_changed {
                 self.current_page_simple = page;
             }
@@ -138,7 +140,7 @@ impl eframe::App for PaginationExample {
 
             let response = Pagination::new(current_page_dynamic, total_pages)
                 .max_visible_pages(9)
-                .show(ui, &self.theme);
+                .show(ui);
 
             if let Some(page) = response.page_changed {
                 current_page_dynamic = page;
@@ -163,7 +165,7 @@ impl eframe::App for PaginationExample {
             ui.label("Custom Spacing:");
             ui.add_space(10.0);
 
-            let response = Pagination::new(1, 5).spacing(12.0).show(ui, &self.theme);
+            let response = Pagination::new(1, 5).spacing(12.0).show(ui);
 
             ui.add_space(20.0);
 

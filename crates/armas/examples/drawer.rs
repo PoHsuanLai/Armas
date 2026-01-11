@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{Button, ButtonVariant, Drawer, DrawerPosition, DrawerSize, Theme};
 use eframe::egui;
 
@@ -10,12 +11,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Drawer Component Example",
         options,
-        Box::new(|_cc| Ok(Box::new(DrawerExample::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(DrawerExample::default()))
+        }),
     )
 }
 
 struct DrawerExample {
-    theme: Theme,
     left_drawer_open: bool,
     right_drawer_open: bool,
     top_drawer_open: bool,
@@ -33,7 +36,6 @@ struct DrawerExample {
 impl Default for DrawerExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
             left_drawer_open: false,
             right_drawer_open: false,
             top_drawer_open: false,
@@ -84,7 +86,7 @@ impl eframe::App for DrawerExample {
             ui.horizontal(|ui| {
                 if Button::new("Open Left")
                     .variant(ButtonVariant::Outlined)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.left_drawer_open = true;
@@ -92,7 +94,7 @@ impl eframe::App for DrawerExample {
 
                 if Button::new("Open Right")
                     .variant(ButtonVariant::Outlined)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.right_drawer_open = true;
@@ -100,7 +102,7 @@ impl eframe::App for DrawerExample {
 
                 if Button::new("Open Top")
                     .variant(ButtonVariant::Outlined)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.top_drawer_open = true;
@@ -108,7 +110,7 @@ impl eframe::App for DrawerExample {
 
                 if Button::new("Open Bottom")
                     .variant(ButtonVariant::Outlined)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.bottom_drawer_open = true;
@@ -126,7 +128,7 @@ impl eframe::App for DrawerExample {
             ui.horizontal(|ui| {
                 if Button::new("⚙ Settings")
                     .variant(ButtonVariant::Filled)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.settings_drawer_open = true;
@@ -134,7 +136,7 @@ impl eframe::App for DrawerExample {
 
                 if Button::new("☰ Navigation")
                     .variant(ButtonVariant::Filled)
-                    .show(ui, &self.theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.nav_drawer_open = true;
@@ -235,7 +237,7 @@ impl eframe::App for DrawerExample {
                 ui.horizontal(|ui| {
                     if Button::new("Save")
                         .variant(ButtonVariant::Filled)
-                        .show(ui, theme)
+                        .show(ui)
                         .clicked()
                     {
                         close_settings = true;
@@ -243,7 +245,7 @@ impl eframe::App for DrawerExample {
 
                     if Button::new("Cancel")
                         .variant(ButtonVariant::Outlined)
-                        .show(ui, theme)
+                        .show(ui)
                         .clicked()
                     {
                         close_settings = true;
@@ -276,7 +278,7 @@ impl eframe::App for DrawerExample {
                 for (icon, label) in nav_items {
                     if Button::new(format!("{} {}", icon, label))
                         .variant(ButtonVariant::Text)
-                        .show(ui, theme)
+                        .show(ui)
                         .clicked()
                     {
                         close_nav = true;
@@ -290,7 +292,7 @@ impl eframe::App for DrawerExample {
 
                 if Button::new("🚪 Logout")
                     .variant(ButtonVariant::Outlined)
-                    .show(ui, theme)
+                    .show(ui)
                     .clicked()
                 {
                     close_nav = true;

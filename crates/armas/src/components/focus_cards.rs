@@ -3,6 +3,7 @@
 //! Interactive card grid where hovering a card focuses it while blurring others
 
 use crate::animation::{Animation, EasingFunction};
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Image, Pos2, Rect, Response, Sense, TextureHandle, Ui, Vec2};
 
@@ -106,7 +107,8 @@ impl FocusCards {
     }
 
     /// Show the focus cards grid
-    pub fn show(&mut self, ui: &mut Ui, theme: &Theme) -> FocusCardResponse {
+    pub fn show(&mut self, ui: &mut Ui) -> FocusCardResponse {
+        let theme = ui.ctx().armas_theme();
         let dt = ui.input(|i| i.stable_dt);
 
         // Calculate grid dimensions

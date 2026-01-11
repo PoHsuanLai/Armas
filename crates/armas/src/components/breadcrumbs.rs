@@ -2,6 +2,7 @@
 //!
 //! Navigation path indicator showing the current location in a hierarchy
 
+use crate::ext::ArmasContextExt;
 use crate::layout::HStack;
 use crate::{Button, ButtonVariant, Theme};
 use egui::Ui;
@@ -55,7 +56,7 @@ impl BreadcrumbItem {
 ///     .add_item(BreadcrumbItem::new("Projects"))
 ///     .add_item(BreadcrumbItem::new("Armas").current());
 ///
-/// let response = breadcrumbs.show(ui, &theme);
+/// let response = breadcrumbs.show(ui);
 /// if let Some(index) = response.clicked {
 ///     println!("Clicked breadcrumb at index: {}", index);
 /// }
@@ -108,7 +109,8 @@ impl Breadcrumbs {
     }
 
     /// Show the breadcrumbs
-    pub fn show(self, ui: &mut Ui, theme: &Theme) -> BreadcrumbsResponse {
+    pub fn show(self, ui: &mut Ui) -> BreadcrumbsResponse {
+        let theme = ui.ctx().armas_theme();
         let mut clicked = None;
 
         HStack::new(self.spacing).show(ui, |ui| {
@@ -116,7 +118,7 @@ impl Breadcrumbs {
             if self.show_home_icon {
                 if Button::new("🏠")
                     .variant(ButtonVariant::Text)
-                    .show(ui, theme)
+                    .show(ui)
                     .clicked()
                 {
                     clicked = Some(0);
@@ -158,7 +160,7 @@ impl Breadcrumbs {
                     // Clickable items use text button
                     if Button::new(&label)
                         .variant(ButtonVariant::Text)
-                        .show(ui, theme)
+                        .show(ui)
                         .clicked()
                     {
                         clicked = Some(if self.show_home_icon { idx + 1 } else { idx });

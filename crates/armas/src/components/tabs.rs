@@ -1,4 +1,5 @@
 use crate::layout::HStack;
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Ui, Vec2};
 
@@ -79,7 +80,8 @@ impl AnimatedTabs {
     }
 
     /// Show the tabs and return selected index if changed
-    pub fn show(&mut self, ui: &mut Ui, theme: &Theme) -> Option<usize> {
+    pub fn show(&mut self, ui: &mut Ui) -> Option<usize> {
+        let theme = ui.ctx().armas_theme();
         if self.labels.is_empty() {
             return None;
         }
@@ -99,9 +101,9 @@ impl AnimatedTabs {
         }
 
         match self.style {
-            TabStyle::Underline => self.show_underline(ui, theme),
-            TabStyle::Pill => self.show_pill(ui, theme),
-            TabStyle::Segment => self.show_segment(ui, theme),
+            TabStyle::Underline => self.show_underline(ui, &theme),
+            TabStyle::Pill => self.show_pill(ui, &theme),
+            TabStyle::Segment => self.show_segment(ui, &theme),
         }
     }
 

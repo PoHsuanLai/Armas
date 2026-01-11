@@ -4,7 +4,7 @@
 //! that move smoothly using perlin-like motion patterns.
 
 use crate::color::{ColorStop, Gradient};
-use crate::Theme;
+use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Rect, Response, Ui, Vec2};
 use std::f32::consts::PI;
 
@@ -251,7 +251,7 @@ impl AuroraBackground {
     }
 
     /// Show the aurora background
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         let (response, _painter) =
             ui.allocate_painter(Vec2::new(self.width, self.height), egui::Sense::hover());
 

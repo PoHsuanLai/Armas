@@ -3,6 +3,7 @@
 //! Collapsible section header with arrow indicator.
 //! Matches Studio One's "Sends ▼" style headers.
 
+use crate::ext::ArmasContextExt;
 use crate::theme::Theme;
 use egui;
 
@@ -17,7 +18,8 @@ impl<'a> SectionHeader<'a> {
         Self { label, collapsed }
     }
 
-    pub fn show(self, ui: &mut egui::Ui, theme: &Theme) -> egui::Response {
+    pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
+        let theme = ui.ctx().armas_theme();
         let font_size = ui.spacing().interact_size.y * 0.45;
         let arrow = if self.collapsed { "▶" } else { "▼" };
         let text = format!("{} {}", self.label, arrow);

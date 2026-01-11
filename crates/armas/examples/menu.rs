@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{BadgeColor, Button, ButtonVariant, Menu, MenuItem, Theme};
 use eframe::egui;
 
@@ -10,12 +11,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Menu Component Example",
         options,
-        Box::new(|_cc| Ok(Box::new(MenuExample::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(MenuExample::default()))
+        }),
     )
 }
 
 struct MenuExample {
-    theme: Theme,
     basic_menu_open: bool,
     file_menu_open: bool,
     edit_menu_open: bool,
@@ -26,7 +29,6 @@ struct MenuExample {
 impl Default for MenuExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
             basic_menu_open: false,
             file_menu_open: false,
             edit_menu_open: false,
@@ -38,6 +40,7 @@ impl Default for MenuExample {
 
 impl eframe::App for MenuExample {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Menu Component Examples");
             ui.add_space(20.0);
@@ -52,7 +55,7 @@ impl eframe::App for MenuExample {
             ui.horizontal(|ui| {
                 let button = Button::new("Open Menu")
                     .variant(ButtonVariant::Filled)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 if button.clicked() {
                     self.basic_menu_open = !self.basic_menu_open;
@@ -65,7 +68,7 @@ impl eframe::App for MenuExample {
                     .separator()
                     .item("Help");
 
-                let response = menu.show(ctx, &self.theme, button.rect, &mut self.basic_menu_open);
+                let response = menu.show(ctx, &theme, button.rect, &mut self.basic_menu_open);
 
                 if let Some(idx) = response.selected {
                     let labels = vec!["Option 1", "Option 2", "Option 3", "Help"];
@@ -86,7 +89,7 @@ impl eframe::App for MenuExample {
             ui.horizontal(|ui| {
                 let button = Button::new("File")
                     .variant(ButtonVariant::Outlined)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 if button.clicked() {
                     self.file_menu_open = !self.file_menu_open;
@@ -104,7 +107,7 @@ impl eframe::App for MenuExample {
                     .separator()
                     .add_item(MenuItem::new("Close").icon("✕").shortcut("Ctrl+W"));
 
-                let response = menu.show(ctx, &self.theme, button.rect, &mut self.file_menu_open);
+                let response = menu.show(ctx, &theme, button.rect, &mut self.file_menu_open);
 
                 if let Some(idx) = response.selected {
                     let actions = vec!["New File", "Open", "Save", "Save As", "Close"];
@@ -125,7 +128,7 @@ impl eframe::App for MenuExample {
             ui.horizontal(|ui| {
                 let button = Button::new("Edit")
                     .variant(ButtonVariant::Outlined)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 if button.clicked() {
                     self.edit_menu_open = !self.edit_menu_open;
@@ -151,7 +154,7 @@ impl eframe::App for MenuExample {
                     .separator()
                     .add_item(MenuItem::new("Select All").shortcut("Ctrl+A"));
 
-                let response = menu.show(ctx, &self.theme, button.rect, &mut self.edit_menu_open);
+                let response = menu.show(ctx, &theme, button.rect, &mut self.edit_menu_open);
 
                 if let Some(idx) = response.selected {
                     let actions = vec!["Cut", "Copy", "Paste", "Select All"];
@@ -179,7 +182,7 @@ impl eframe::App for MenuExample {
             ui.horizontal(|ui| {
                 let button = Button::new("Actions")
                     .variant(ButtonVariant::Filled)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 if button.clicked() {
                     self.actions_menu_open = !self.actions_menu_open;
@@ -206,7 +209,7 @@ impl eframe::App for MenuExample {
                     .add_item(MenuItem::new("Logout").icon("🚪"));
 
                 let response =
-                    menu.show(ctx, &self.theme, button.rect, &mut self.actions_menu_open);
+                    menu.show(ctx, &theme, button.rect, &mut self.actions_menu_open);
 
                 if let Some(idx) = response.selected {
                     let actions =

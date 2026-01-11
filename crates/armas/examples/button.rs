@@ -2,6 +2,7 @@
 //!
 //! Run with: cargo run --example button_demo
 
+use armas::ext::ArmasContextExt;
 use armas::{Button, ButtonVariant, Theme};
 use eframe::egui::{self, Vec2};
 
@@ -16,7 +17,10 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Button Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(ButtonDemoApp::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(ButtonDemoApp::default()))
+        }),
     )
 }
 
@@ -46,7 +50,8 @@ const THEMES: &[(&str, fn() -> Theme)] = &[
 
 impl eframe::App for ButtonDemoApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let theme = THEMES[self.current_theme].1();
+        // Set theme in context
+        ctx.set_armas_theme(THEMES[self.current_theme].1());
 
         // Set visuals based on theme (Light vs Dark)
         ctx.set_visuals(if self.current_theme == 1 {
@@ -85,7 +90,7 @@ impl eframe::App for ButtonDemoApp {
                     if Button::new("Save")
                         .variant(ButtonVariant::Filled)
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -94,7 +99,7 @@ impl eframe::App for ButtonDemoApp {
                     if Button::new("Submit")
                         .variant(ButtonVariant::Filled)
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -109,7 +114,7 @@ impl eframe::App for ButtonDemoApp {
                     if Button::new("Next")
                         .variant(ButtonVariant::FilledTonal)
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -118,7 +123,7 @@ impl eframe::App for ButtonDemoApp {
                     if Button::new("Continue")
                         .variant(ButtonVariant::FilledTonal)
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -133,7 +138,7 @@ impl eframe::App for ButtonDemoApp {
                     if Button::new("Elevated")
                         .variant(ButtonVariant::Elevated)
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -142,7 +147,7 @@ impl eframe::App for ButtonDemoApp {
                     if Button::new("With Shadow")
                         .variant(ButtonVariant::Elevated)
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -157,7 +162,7 @@ impl eframe::App for ButtonDemoApp {
                     if Button::new("Outlined")
                         .variant(ButtonVariant::Outlined)
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -167,7 +172,7 @@ impl eframe::App for ButtonDemoApp {
                         .variant(ButtonVariant::Outlined)
                         .min_size(egui::vec2(140.0, 36.0))
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -182,7 +187,7 @@ impl eframe::App for ButtonDemoApp {
                     if Button::new("Cancel")
                         .variant(ButtonVariant::Text)
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -191,7 +196,7 @@ impl eframe::App for ButtonDemoApp {
                     if Button::new("Learn More")
                         .variant(ButtonVariant::Text)
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -206,32 +211,32 @@ impl eframe::App for ButtonDemoApp {
                     Button::new("Filled")
                         .variant(ButtonVariant::Filled)
                         .enabled(false)
-                        .show(ui, &theme);
+                        .show(ui);
 
                     Button::new("Tonal")
                         .variant(ButtonVariant::FilledTonal)
                         .enabled(false)
-                        .show(ui, &theme);
+                        .show(ui);
 
                     Button::new("Elevated")
                         .variant(ButtonVariant::Elevated)
                         .enabled(false)
-                        .show(ui, &theme);
+                        .show(ui);
 
                     Button::new("Outlined")
                         .variant(ButtonVariant::Outlined)
                         .enabled(false)
-                        .show(ui, &theme);
+                        .show(ui);
 
                     Button::new("Text")
                         .variant(ButtonVariant::Text)
                         .enabled(false)
-                        .show(ui, &theme);
+                        .show(ui);
 
                     Button::new("Speaker")
                         .variant(ButtonVariant::Speaker)
                         .enabled(false)
-                        .show(ui, &theme);
+                        .show(ui);
                 });
 
                 ui.add_space(30.0);
@@ -248,7 +253,7 @@ impl eframe::App for ButtonDemoApp {
                         .variant(ButtonVariant::Speaker)
                         .min_size(Vec2::new(100.0, 40.0))
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -258,7 +263,7 @@ impl eframe::App for ButtonDemoApp {
                         .variant(ButtonVariant::Speaker)
                         .min_size(Vec2::new(100.0, 40.0))
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -268,7 +273,7 @@ impl eframe::App for ButtonDemoApp {
                         .variant(ButtonVariant::Speaker)
                         .min_size(Vec2::new(100.0, 40.0))
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -281,7 +286,7 @@ impl eframe::App for ButtonDemoApp {
                         .variant(ButtonVariant::Speaker)
                         .min_size(Vec2::new(90.0, 36.0))
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -291,7 +296,7 @@ impl eframe::App for ButtonDemoApp {
                         .variant(ButtonVariant::Speaker)
                         .min_size(Vec2::new(90.0, 36.0))
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;
@@ -301,7 +306,7 @@ impl eframe::App for ButtonDemoApp {
                         .variant(ButtonVariant::Speaker)
                         .min_size(Vec2::new(90.0, 36.0))
                         .enabled(self.buttons_enabled)
-                        .show(ui, &theme)
+                        .show(ui)
                         .clicked()
                     {
                         self.click_count += 1;

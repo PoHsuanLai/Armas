@@ -11,10 +11,16 @@ path = "src/main.rs"
 
 [dependencies]
 armas = { path = "../armas" }
+armas-showcase-macros = { path = "../armas-showcase-macros" }
 eframe = { workspace = true, features = ["default", "wgpu"] }
 egui = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+pulldown-cmark = "0.11"
+
+# For opening URLs on native platforms
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+open = "5.0"
 
 # WASM dependencies
 [target.'cfg(target_arch = "wasm32")'.dependencies]

@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{Animation, EasingFunction, Theme};
 use eframe::egui;
 
@@ -12,12 +13,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Animation Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(AnimationDemoApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(AnimationDemoApp::new()))
+        }),
     )
 }
 
 struct AnimationDemoApp {
-    theme: Theme,
     // Position animation
     pos_anim: Animation<egui::Pos2>,
     // Color animation
@@ -33,7 +36,6 @@ struct AnimationDemoApp {
 impl AnimationDemoApp {
     fn new() -> Self {
         let mut app = Self {
-            theme: Theme::dark(),
             pos_anim: Animation::new(
                 egui::Pos2::new(100.0, 100.0),
                 egui::Pos2::new(700.0, 100.0),
@@ -193,7 +195,8 @@ impl eframe::App for AnimationDemoApp {
                     );
 
                     // Moving circle
-                    let color = self.theme.primary();
+                    let theme = ui.armas_theme();
+                    let color = theme.primary();
                     painter.circle_filled(egui::Pos2::new(current_x, y), 8.0, color);
 
                     // Label
@@ -202,7 +205,7 @@ impl eframe::App for AnimationDemoApp {
                         egui::Align2::RIGHT_CENTER,
                         name,
                         egui::FontId::proportional(12.0),
-                        self.theme.on_surface(),
+                        theme.on_surface(),
                     );
                 }
 

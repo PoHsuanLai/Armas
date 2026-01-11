@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{CircularProgress, LoadingDots, Skeleton, Spinner, Theme};
 use eframe::egui;
 
@@ -12,12 +13,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Loading Animations Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(LoadingApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(LoadingApp::new()))
+        }),
     )
 }
 
 struct LoadingApp {
-    theme: Theme,
     // Spinners
     spinner_default: Spinner,
     spinner_small: Spinner,
@@ -43,22 +46,20 @@ struct LoadingApp {
 
 impl LoadingApp {
     fn new() -> Self {
-        let theme = Theme::dark();
         Self {
-            theme: theme.clone(),
             // Spinners
-            spinner_default: Spinner::new(&theme),
-            spinner_small: Spinner::new(&theme).size(24.0),
-            spinner_large: Spinner::new(&theme).size(64.0),
-            spinner_fast: Spinner::new(&theme).speed(6.28), // 2x speed
-            spinner_colored: Spinner::new(&theme)
+            spinner_default: Spinner::new(),
+            spinner_small: Spinner::new().size(24.0),
+            spinner_large: Spinner::new().size(64.0),
+            spinner_fast: Spinner::new().speed(6.28), // 2x speed
+            spinner_colored: Spinner::new()
                 .color(egui::Color32::from_rgb(168, 85, 247))
                 .size(48.0),
             // Loading dots
-            dots_default: LoadingDots::new(&theme),
-            dots_small: LoadingDots::new(&theme).dot_size(6.0).spacing(10.0),
-            dots_many: LoadingDots::new(&theme).dot_count(5).spacing(16.0),
-            dots_colored: LoadingDots::new(&theme)
+            dots_default: LoadingDots::new(),
+            dots_small: LoadingDots::new().dot_size(6.0).spacing(10.0),
+            dots_many: LoadingDots::new().dot_count(5).spacing(16.0),
+            dots_colored: LoadingDots::new()
                 .color(egui::Color32::from_rgb(34, 197, 94))
                 .dot_size(10.0),
             // Skeletons
@@ -69,10 +70,10 @@ impl LoadingApp {
                 .corner_radius(12.0)
                 .shimmer_width(0.5),
             // Circular progress
-            circular_default: CircularProgress::new(&theme),
-            circular_small: CircularProgress::new(&theme).size(24.0).stroke_width(2.0),
-            circular_large: CircularProgress::new(&theme).size(64.0).stroke_width(4.0),
-            circular_colored: CircularProgress::new(&theme)
+            circular_default: CircularProgress::new(),
+            circular_small: CircularProgress::new().size(24.0).stroke_width(2.0),
+            circular_large: CircularProgress::new().size(64.0).stroke_width(4.0),
+            circular_colored: CircularProgress::new()
                 .color(egui::Color32::from_rgb(251, 191, 36))
                 .size(48.0),
         }
@@ -98,7 +99,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Default");
                                 ui.add_space(10.0);
-                                self.spinner_default.show(ui, &self.theme);
+                                self.spinner_default.show(ui);
                                 ui.add_space(5.0);
                                 ui.label("40px");
                             });
@@ -114,7 +115,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Small");
                                 ui.add_space(10.0);
-                                self.spinner_small.show(ui, &self.theme);
+                                self.spinner_small.show(ui);
                                 ui.add_space(5.0);
                                 ui.label("24px");
                             });
@@ -130,7 +131,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Large");
                                 ui.add_space(10.0);
-                                self.spinner_large.show(ui, &self.theme);
+                                self.spinner_large.show(ui);
                                 ui.add_space(5.0);
                                 ui.label("64px");
                             });
@@ -146,7 +147,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Fast");
                                 ui.add_space(10.0);
-                                self.spinner_fast.show(ui, &self.theme);
+                                self.spinner_fast.show(ui);
                                 ui.add_space(5.0);
                                 ui.label("2x speed");
                             });
@@ -162,7 +163,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Purple");
                                 ui.add_space(10.0);
-                                self.spinner_colored.show(ui, &self.theme);
+                                self.spinner_colored.show(ui);
                                 ui.add_space(5.0);
                                 ui.label("Custom color");
                             });
@@ -184,7 +185,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Default (3 dots)");
                                 ui.add_space(15.0);
-                                self.dots_default.show(ui, &self.theme);
+                                self.dots_default.show(ui);
                             });
                         });
                     });
@@ -198,7 +199,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Small");
                                 ui.add_space(15.0);
-                                self.dots_small.show(ui, &self.theme);
+                                self.dots_small.show(ui);
                             });
                         });
                     });
@@ -212,7 +213,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Many (5 dots)");
                                 ui.add_space(15.0);
-                                self.dots_many.show(ui, &self.theme);
+                                self.dots_many.show(ui);
                             });
                         });
                     });
@@ -226,7 +227,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Green");
                                 ui.add_space(15.0);
-                                self.dots_colored.show(ui, &self.theme);
+                                self.dots_colored.show(ui);
                             });
                         });
                     });
@@ -246,7 +247,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Default");
                                 ui.add_space(10.0);
-                                self.circular_default.show(ui, &self.theme);
+                                self.circular_default.show(ui);
                                 ui.add_space(5.0);
                                 ui.label("40px");
                             });
@@ -262,7 +263,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Small");
                                 ui.add_space(10.0);
-                                self.circular_small.show(ui, &self.theme);
+                                self.circular_small.show(ui);
                                 ui.add_space(5.0);
                                 ui.label("24px");
                             });
@@ -278,7 +279,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Large");
                                 ui.add_space(10.0);
-                                self.circular_large.show(ui, &self.theme);
+                                self.circular_large.show(ui);
                                 ui.add_space(5.0);
                                 ui.label("64px");
                             });
@@ -294,7 +295,7 @@ impl eframe::App for LoadingApp {
                             ui.vertical_centered(|ui| {
                                 ui.label("Yellow");
                                 ui.add_space(10.0);
-                                self.circular_colored.show(ui, &self.theme);
+                                self.circular_colored.show(ui);
                                 ui.add_space(5.0);
                                 ui.label("Custom color");
                             });
@@ -312,7 +313,7 @@ impl eframe::App for LoadingApp {
                     ui.vertical(|ui| {
                         ui.label("Text Line");
                         ui.add_space(10.0);
-                        self.skeleton_text.show(ui, &self.theme);
+                        self.skeleton_text.show(ui);
                     });
                 });
 
@@ -322,7 +323,7 @@ impl eframe::App for LoadingApp {
                     ui.vertical(|ui| {
                         ui.label("Title");
                         ui.add_space(10.0);
-                        self.skeleton_title.show(ui, &self.theme);
+                        self.skeleton_title.show(ui);
                     });
                 });
 
@@ -333,7 +334,7 @@ impl eframe::App for LoadingApp {
                         ui.vertical(|ui| {
                             ui.label("Card Placeholder");
                             ui.add_space(10.0);
-                            self.skeleton_card.show(ui, &self.theme);
+                            self.skeleton_card.show(ui);
                         });
                     });
 
@@ -343,7 +344,7 @@ impl eframe::App for LoadingApp {
                         ui.vertical(|ui| {
                             ui.label("Image Placeholder");
                             ui.add_space(10.0);
-                            self.skeleton_image.show(ui, &self.theme);
+                            self.skeleton_image.show(ui);
                         });
                     });
                 });
@@ -362,7 +363,7 @@ impl eframe::App for LoadingApp {
                             ui.label("Loading data...");
                             ui.add_space(10.0);
                             ui.horizontal(|ui| {
-                                self.spinner_default.show(ui, &self.theme);
+                                self.spinner_default.show(ui);
                                 ui.add_space(10.0);
                                 ui.label("Fetching users");
                             });
@@ -377,7 +378,7 @@ impl eframe::App for LoadingApp {
                             ui.label("Processing...");
                             ui.add_space(10.0);
                             ui.horizontal(|ui| {
-                                self.dots_default.show(ui, &self.theme);
+                                self.dots_default.show(ui);
                                 ui.add_space(10.0);
                                 ui.label("Please wait");
                             });
@@ -391,11 +392,11 @@ impl eframe::App for LoadingApp {
                         ui.vertical(|ui| {
                             ui.label("Content loading");
                             ui.add_space(10.0);
-                            self.skeleton_text.show(ui, &self.theme);
+                            self.skeleton_text.show(ui);
                             ui.add_space(5.0);
-                            self.skeleton_text.show(ui, &self.theme);
+                            self.skeleton_text.show(ui);
                             ui.add_space(5.0);
-                            self.skeleton_text.show(ui, &self.theme);
+                            self.skeleton_text.show(ui);
                         });
                     });
                 });

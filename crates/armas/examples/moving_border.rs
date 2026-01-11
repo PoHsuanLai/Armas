@@ -2,6 +2,7 @@
 //!
 //! Demonstrates buttons with animated gradient borders
 
+use armas::ext::ArmasContextExt;
 use armas::{MovingBorder, Theme};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Moving Border",
         options,
-        Box::new(|_cc| Ok(Box::new(MovingBorderApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(MovingBorderApp::new()))
+        }),
     )
 }
 
 struct MovingBorderApp {
-    theme: Theme,
     // Different button instances
     basic_button: MovingBorder,
     fast_button: MovingBorder,
@@ -34,7 +37,6 @@ struct MovingBorderApp {
 impl MovingBorderApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             basic_button: MovingBorder::new("Click Me"),
             fast_button: MovingBorder::new("Fast Animation").animation_speed(3.0),
             slow_button: MovingBorder::new("Slow Animation").animation_speed(0.5),
@@ -60,6 +62,7 @@ impl MovingBorderApp {
 
 impl eframe::App for MovingBorderApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
@@ -78,11 +81,11 @@ impl eframe::App for MovingBorderApp {
                         egui::RichText::new("Basic Button")
                             .size(16.0)
                             .strong()
-                            .color(self.theme.on_surface()),
+                            .color(theme.on_surface()),
                     );
                     ui.add_space(15.0);
 
-                    if self.basic_button.show(ui, &self.theme).clicked() {
+                    if self.basic_button.show(ui).clicked() {
                         println!("Basic button clicked!");
                     }
 
@@ -98,7 +101,7 @@ impl eframe::App for MovingBorderApp {
                         egui::RichText::new("Animation Speed Variations")
                             .size(16.0)
                             .strong()
-                            .color(self.theme.on_surface()),
+                            .color(theme.on_surface()),
                     );
                     ui.add_space(20.0);
 
@@ -108,7 +111,7 @@ impl eframe::App for MovingBorderApp {
                             .color(egui::Color32::from_gray(180)),
                     );
                     ui.add_space(10.0);
-                    if self.fast_button.show(ui, &self.theme).clicked() {
+                    if self.fast_button.show(ui).clicked() {
                         println!("Fast button clicked!");
                     }
 
@@ -120,7 +123,7 @@ impl eframe::App for MovingBorderApp {
                             .color(egui::Color32::from_gray(180)),
                     );
                     ui.add_space(10.0);
-                    if self.slow_button.show(ui, &self.theme).clicked() {
+                    if self.slow_button.show(ui).clicked() {
                         println!("Slow button clicked!");
                     }
 
@@ -136,7 +139,7 @@ impl eframe::App for MovingBorderApp {
                         egui::RichText::new("Style Variations")
                             .size(16.0)
                             .strong()
-                            .color(self.theme.on_surface()),
+                            .color(theme.on_surface()),
                     );
                     ui.add_space(20.0);
 
@@ -146,7 +149,7 @@ impl eframe::App for MovingBorderApp {
                             .color(egui::Color32::from_gray(180)),
                     );
                     ui.add_space(10.0);
-                    if self.thick_border.show(ui, &self.theme).clicked() {
+                    if self.thick_border.show(ui).clicked() {
                         println!("Thick border button clicked!");
                     }
 
@@ -158,7 +161,7 @@ impl eframe::App for MovingBorderApp {
                             .color(egui::Color32::from_gray(180)),
                     );
                     ui.add_space(10.0);
-                    if self.custom_colors.show(ui, &self.theme).clicked() {
+                    if self.custom_colors.show(ui).clicked() {
                         println!("Custom colors button clicked!");
                     }
 
@@ -174,7 +177,7 @@ impl eframe::App for MovingBorderApp {
                         egui::RichText::new("Hero Call-to-Action")
                             .size(16.0)
                             .strong()
-                            .color(self.theme.on_surface()),
+                            .color(theme.on_surface()),
                     );
                     ui.add_space(30.0);
 
@@ -191,7 +194,7 @@ impl eframe::App for MovingBorderApp {
                     );
                     ui.add_space(30.0);
 
-                    if self.large_button.show(ui, &self.theme).clicked() {
+                    if self.large_button.show(ui).clicked() {
                         println!("Get Started clicked!");
                     }
 
@@ -209,7 +212,7 @@ impl eframe::App for MovingBorderApp {
                             egui::RichText::new("💡 Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• Use for primary CTAs and important actions");

@@ -2,6 +2,7 @@
 //!
 //! macOS/VS Code style command palette with fuzzy search
 
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{
     vec2, Align, Color32, CornerRadius, Key, Layout, Modifiers, Sense, Stroke, StrokeKind,
@@ -161,7 +162,8 @@ impl CommandMenu {
     }
 
     /// Show the command menu
-    pub fn show(&mut self, ui: &mut Ui, theme: &Theme) -> CommandMenuResponse {
+    pub fn show(&mut self, ui: &mut Ui) -> CommandMenuResponse {
+        let theme = ui.ctx().armas_theme();
         let mut executed_command = None;
         let mut should_close = false;
 

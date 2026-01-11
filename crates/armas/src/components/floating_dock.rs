@@ -2,6 +2,7 @@
 //!
 //! macOS-style dock with icon magnification on hover
 
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{pos2, vec2, Color32, CornerRadius, CursorIcon, Rect, Response, Sense, Stroke, Ui};
 use std::f32::consts::PI;
@@ -105,7 +106,8 @@ impl FloatingDock {
     }
 
     /// Show the dock at the bottom center of the screen
-    pub fn show(&mut self, ui: &mut Ui, theme: &Theme) -> DockResponse {
+    pub fn show(&mut self, ui: &mut Ui) -> DockResponse {
+        let theme = ui.ctx().armas_theme();
         let mut clicked_item = None;
 
         // Calculate dock dimensions

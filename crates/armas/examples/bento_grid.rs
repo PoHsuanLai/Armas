@@ -2,6 +2,7 @@
 //!
 //! Demonstrates modern grid layout with variable-sized tiles
 
+use armas::ext::ArmasContextExt;
 use armas::{BentoGrid, BentoItem, GridSpan, Theme};
 use eframe::egui;
 
@@ -16,18 +17,19 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Bento Grid",
         options,
-        Box::new(|_cc| Ok(Box::new(BentoGridApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(BentoGridApp::new()))
+        }),
     )
 }
 
 struct BentoGridApp {
-    theme: Theme,
 }
 
 impl BentoGridApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
         }
     }
 }
@@ -35,6 +37,7 @@ impl BentoGridApp {
 impl eframe::App for BentoGridApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            let theme = ui.ctx().armas_theme();
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
             egui::ScrollArea::vertical().show(ui, |ui| {
@@ -53,7 +56,7 @@ impl eframe::App for BentoGridApp {
                     egui::RichText::new("Dashboard Layout")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -137,7 +140,7 @@ impl eframe::App for BentoGridApp {
                     .span(GridSpan::Tall),
                 ];
 
-                grid.show(ui, &self.theme, items);
+                grid.show(ui, &theme, items);
 
                 ui.add_space(50.0);
                 ui.separator();
@@ -148,7 +151,7 @@ impl eframe::App for BentoGridApp {
                     egui::RichText::new("Feature Showcase")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -213,7 +216,7 @@ impl eframe::App for BentoGridApp {
                     .span(GridSpan::Single),
                 ];
 
-                feature_grid.show(ui, &self.theme, features);
+                feature_grid.show(ui, &theme, features);
 
                 ui.add_space(50.0);
                 ui.separator();
@@ -227,7 +230,7 @@ impl eframe::App for BentoGridApp {
                             egui::RichText::new("💡 Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• Use GridSpan::Large for hero/featured items");

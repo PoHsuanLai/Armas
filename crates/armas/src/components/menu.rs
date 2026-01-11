@@ -227,7 +227,7 @@ impl Menu {
                             // Badge
                             if let Some(badge_text) = &item.badge {
                                 let color = item.badge_color.unwrap_or(BadgeColor::Neutral);
-                                Badge::new(badge_text).color(color).show(ui, theme);
+                                Badge::new(badge_text).color(color).show(ui);
                                 ui.add_space(4.0);
                             }
 

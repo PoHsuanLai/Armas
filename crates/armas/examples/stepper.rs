@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{Button, ButtonVariant, Step, Stepper, StepperOrientation, Theme};
 use eframe::egui;
 
@@ -10,12 +11,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Stepper Component Example",
         options,
-        Box::new(|_cc| Ok(Box::new(StepperExample::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(StepperExample::default()))
+        }),
     )
 }
 
 struct StepperExample {
-    theme: Theme,
     current_step: usize,
     vertical_step: usize,
     clickable_step: usize,
@@ -24,7 +27,6 @@ struct StepperExample {
 impl Default for StepperExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
             current_step: 1,
             vertical_step: 0,
             clickable_step: 2,
@@ -34,6 +36,7 @@ impl Default for StepperExample {
 
 impl eframe::App for StepperExample {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Stepper Component Examples");
             ui.add_space(20.0);
@@ -47,7 +50,7 @@ impl eframe::App for StepperExample {
                 .add_step(Step::new("Profile"))
                 .add_step(Step::new("Complete"));
 
-            stepper.show(ui, &self.theme, self.current_step);
+            stepper.show(ui, self.current_step);
 
             ui.add_space(10.0);
             ui.horizontal(|ui| {
@@ -75,7 +78,7 @@ impl eframe::App for StepperExample {
                 .add_step(Step::new("Payment").description("Enter payment details"))
                 .add_step(Step::new("Confirm").description("Review and confirm"));
 
-            stepper.show(ui, &self.theme, self.current_step);
+            stepper.show(ui, self.current_step);
 
             ui.add_space(20.0);
             ui.separator();
@@ -94,7 +97,7 @@ impl eframe::App for StepperExample {
                         .add_step(Step::new("Payment").description("Payment method"))
                         .add_step(Step::new("Review").description("Confirm order"));
 
-                    stepper.show(ui, &self.theme, self.vertical_step);
+                    stepper.show(ui, self.vertical_step);
                 });
 
                 ui.add_space(40.0);
@@ -132,7 +135,7 @@ impl eframe::App for StepperExample {
                     ui.horizontal(|ui| {
                         if Button::new("Back")
                             .variant(ButtonVariant::Outlined)
-                            .show(ui, &self.theme)
+                            .show(ui)
                             .clicked()
                             && self.vertical_step > 0
                         {
@@ -142,7 +145,7 @@ impl eframe::App for StepperExample {
                         if self.vertical_step < 3 {
                             if Button::new("Continue")
                                 .variant(ButtonVariant::Filled)
-                                .show(ui, &self.theme)
+                                .show(ui)
                                 .clicked()
                             {
                                 self.vertical_step += 1;
@@ -150,7 +153,7 @@ impl eframe::App for StepperExample {
                         } else {
                             if Button::new("Submit Order")
                                 .variant(ButtonVariant::Filled)
-                                .show(ui, &self.theme)
+                                .show(ui)
                                 .clicked()
                             {
                                 self.vertical_step = 0;
@@ -175,7 +178,7 @@ impl eframe::App for StepperExample {
                 .add_step(Step::new("Deploy"))
                 .add_step(Step::new("Monitor"));
 
-            let response = stepper.show(ui, &self.theme, self.clickable_step);
+            let response = stepper.show(ui, self.clickable_step);
 
             if let Some(clicked) = response.clicked_step {
                 self.clickable_step = clicked;

@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{FeatureGrid, FeatureItem, Theme};
 use eframe::egui;
 
@@ -12,18 +13,19 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Feature Grid Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(FeatureGridApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(FeatureGridApp::new()))
+        }),
     )
 }
 
 struct FeatureGridApp {
-    theme: Theme,
 }
 
 impl FeatureGridApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
         }
     }
 }
@@ -53,7 +55,7 @@ impl eframe::App for FeatureGridApp {
                     FeatureItem::new("📱", "Responsive", "Works great on any screen size"),
                 ];
 
-                FeatureGrid::new(items).show(ui, &self.theme);
+                FeatureGrid::new(items).show(ui);
 
                 ui.add_space(40.0);
 
@@ -76,7 +78,7 @@ impl eframe::App for FeatureGridApp {
                     .columns(2)
                     .gap(30.0)
                     .icon_size(40.0)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 ui.add_space(40.0);
 
@@ -94,7 +96,7 @@ impl eframe::App for FeatureGridApp {
                     .columns(3)
                     .show_borders(false)
                     .hover_effect(false)
-                    .show(ui, &self.theme);
+                    .show(ui);
             });
         });
     }

@@ -2,6 +2,7 @@
 //!
 //! Demonstrates twinkling sparkle particles
 
+use armas::ext::ArmasContextExt;
 use armas::{Sparkles, Theme};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Sparkles",
         options,
-        Box::new(|_cc| Ok(Box::new(SparklesApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(SparklesApp::new()))
+        }),
     )
 }
 
 struct SparklesApp {
-    theme: Theme,
     sparkles1: Sparkles,
     sparkles2: Sparkles,
     sparkles3: Sparkles,
@@ -30,7 +33,6 @@ struct SparklesApp {
 impl SparklesApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             sparkles1: Sparkles::new(1150.0, 250.0),
             sparkles2: Sparkles::new(1150.0, 250.0)
                 .particle_count(60)
@@ -50,6 +52,7 @@ impl SparklesApp {
 impl eframe::App for SparklesApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            let theme = ui.ctx().armas_theme();
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
             egui::ScrollArea::vertical().show(ui, |ui| {
@@ -66,7 +69,7 @@ impl eframe::App for SparklesApp {
                     egui::RichText::new("Default Sparkles")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -74,7 +77,7 @@ impl eframe::App for SparklesApp {
                     ui.add_space(25.0);
                     ui.group(|ui| {
                         ui.set_min_size(egui::vec2(1150.0, 250.0));
-                        self.sparkles1.show_with_content(ui, &self.theme, |ui| {
+                        self.sparkles1.show_with_content(ui, &theme, |ui| {
                             ui.centered_and_justified(|ui| {
                                 ui.vertical_centered(|ui| {
                                     ui.label(
@@ -101,7 +104,7 @@ impl eframe::App for SparklesApp {
                     egui::RichText::new("Dense Sparkle Field")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -109,7 +112,7 @@ impl eframe::App for SparklesApp {
                     ui.add_space(25.0);
                     ui.group(|ui| {
                         ui.set_min_size(egui::vec2(1150.0, 250.0));
-                        self.sparkles2.show_with_content(ui, &self.theme, |ui| {
+                        self.sparkles2.show_with_content(ui, &theme, |ui| {
                             ui.centered_and_justified(|ui| {
                                 ui.vertical_centered(|ui| {
                                     ui.label(egui::RichText::new("Starfield").size(42.0).strong());
@@ -132,7 +135,7 @@ impl eframe::App for SparklesApp {
                     egui::RichText::new("Custom Colors")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -140,7 +143,7 @@ impl eframe::App for SparklesApp {
                     ui.add_space(25.0);
                     ui.group(|ui| {
                         ui.set_min_size(egui::vec2(1150.0, 250.0));
-                        self.sparkles3.show_with_content(ui, &self.theme, |ui| {
+                        self.sparkles3.show_with_content(ui, &theme, |ui| {
                             ui.centered_and_justified(|ui| {
                                 ui.vertical_centered(|ui| {
                                     ui.label(
@@ -170,7 +173,7 @@ impl eframe::App for SparklesApp {
                             egui::RichText::new("💡 Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• Use show_with_content() to overlay sparkles on content");

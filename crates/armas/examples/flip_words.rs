@@ -2,6 +2,7 @@
 //!
 //! Demonstrates animated word-flipping text effects
 
+use armas::ext::ArmasContextExt;
 use armas::{FlipStyle, FlipWords, Theme};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Flip Words",
         options,
-        Box::new(|_cc| Ok(Box::new(FlipWordsApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(FlipWordsApp::new()))
+        }),
     )
 }
 
 struct FlipWordsApp {
-    theme: Theme,
     // Different flip word instances
     vertical_flip: FlipWords,
     horizontal_flip: FlipWords,
@@ -33,10 +36,7 @@ struct FlipWordsApp {
 
 impl FlipWordsApp {
     fn new() -> Self {
-        let theme = Theme::dark();
-
         Self {
-            theme: theme.clone(),
             vertical_flip: FlipWords::new(vec!["Innovative", "Modern", "Powerful", "Beautiful"])
                 .duration(2.5)
                 .font_size(32.0)
@@ -70,6 +70,7 @@ impl FlipWordsApp {
 impl eframe::App for FlipWordsApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            let theme = ui.ctx().armas_theme();
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
             egui::ScrollArea::vertical().show(ui, |ui| {
@@ -87,7 +88,7 @@ impl eframe::App for FlipWordsApp {
                         egui::RichText::new("Animation Styles")
                             .size(18.0)
                             .strong()
-                            .color(self.theme.on_surface()),
+                            .color(theme.on_surface()),
                     );
                     ui.add_space(20.0);
 
@@ -100,7 +101,7 @@ impl eframe::App for FlipWordsApp {
                                 .color(egui::Color32::from_gray(180)),
                         );
                         ui.add_space(20.0);
-                        self.vertical_flip.show(ui, &self.theme);
+                        self.vertical_flip.show(ui);
                     });
                     ui.add_space(25.0);
 
@@ -113,7 +114,7 @@ impl eframe::App for FlipWordsApp {
                                 .color(egui::Color32::from_gray(180)),
                         );
                         ui.add_space(20.0);
-                        self.horizontal_flip.show(ui, &self.theme);
+                        self.horizontal_flip.show(ui);
                     });
                     ui.add_space(25.0);
 
@@ -126,7 +127,7 @@ impl eframe::App for FlipWordsApp {
                                 .color(egui::Color32::from_gray(180)),
                         );
                         ui.add_space(20.0);
-                        self.fade_flip.show(ui, &self.theme);
+                        self.fade_flip.show(ui);
                     });
                     ui.add_space(50.0);
                 });
@@ -140,7 +141,7 @@ impl eframe::App for FlipWordsApp {
                         egui::RichText::new("Speed Variations")
                             .size(18.0)
                             .strong()
-                            .color(self.theme.on_surface()),
+                            .color(theme.on_surface()),
                     );
                     ui.add_space(20.0);
 
@@ -150,7 +151,7 @@ impl eframe::App for FlipWordsApp {
                             .color(egui::Color32::from_gray(150)),
                     );
                     ui.add_space(10.0);
-                    self.fast_flip.show(ui, &self.theme);
+                    self.fast_flip.show(ui);
                     ui.add_space(50.0);
                 });
 
@@ -163,7 +164,7 @@ impl eframe::App for FlipWordsApp {
                         egui::RichText::new("Hero Section Examples")
                             .size(18.0)
                             .strong()
-                            .color(self.theme.on_surface()),
+                            .color(theme.on_surface()),
                     );
                     ui.add_space(30.0);
 
@@ -174,7 +175,7 @@ impl eframe::App for FlipWordsApp {
                             .color(egui::Color32::WHITE),
                     );
                     ui.add_space(10.0);
-                    self.large_flip.show(ui, &self.theme);
+                    self.large_flip.show(ui);
                     ui.add_space(40.0);
 
                     // With context
@@ -186,7 +187,7 @@ impl eframe::App for FlipWordsApp {
                                 .color(egui::Color32::from_gray(200)),
                         );
                         ui.add_space(10.0);
-                        self.highlighted_flip.show(ui, &self.theme);
+                        self.highlighted_flip.show(ui);
                     });
                     ui.add_space(10.0);
                     ui.label(
@@ -208,7 +209,7 @@ impl eframe::App for FlipWordsApp {
                             egui::RichText::new("💡 Usage Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• Use vertical flip for emphasis and impact");

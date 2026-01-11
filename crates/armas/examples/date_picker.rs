@@ -1,3 +1,5 @@
+use armas::ext::ArmasContextExt;
+use armas::fonts;
 use armas::{Date, DatePicker, Theme};
 use eframe::egui;
 
@@ -10,12 +12,29 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "DatePicker Component Example",
         options,
-        Box::new(|_cc| Ok(Box::new(DatePickerExample::default()))),
+        Box::new(|cc| {
+            // Load Inter font using embedded font files
+            let inter_regular = include_bytes!("../fonts/Inter-Regular.otf");
+            let inter_medium = include_bytes!("../fonts/Inter-Medium.otf");
+            let inter_semibold = include_bytes!("../fonts/Inter-SemiBold.otf");
+            let inter_bold = include_bytes!("../fonts/Inter-Bold.otf");
+
+            fonts::load_font_family(
+                &cc.egui_ctx,
+                "Inter",
+                inter_regular,
+                Some(inter_medium),
+                Some(inter_semibold),
+                Some(inter_bold),
+            );
+
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(DatePickerExample::default()))
+        }),
     )
 }
 
 struct DatePickerExample {
-    theme: Theme,
     birthday: Option<Date>,
     appointment: Option<Date>,
     deadline: Option<Date>,
@@ -29,7 +48,6 @@ struct DatePickerExample {
 impl Default for DatePickerExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
             birthday: None,
             appointment: None,
             deadline: None,
@@ -52,6 +70,7 @@ impl Default for DatePickerExample {
 
 impl eframe::App for DatePickerExample {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("DatePicker Component Examples");
             ui.add_space(20.0);
@@ -62,7 +81,7 @@ impl eframe::App for DatePickerExample {
 
             let response = self
                 .birthday_picker
-                .show(ui, &self.theme, &mut self.birthday);
+                .show(ui, &mut self.birthday);
             if response.changed {
                 if let Some(date) = &self.birthday {
                     println!("Birthday changed to: {}", date.format());
@@ -72,7 +91,7 @@ impl eframe::App for DatePickerExample {
             if let Some(date) = &self.birthday {
                 ui.add_space(5.0);
                 ui.colored_label(
-                    self.theme.success(),
+                    theme.success(),
                     format!(
                         "Selected: {} ({}, {})",
                         date.format(),
@@ -91,7 +110,7 @@ impl eframe::App for DatePickerExample {
             ui.add_space(10.0);
 
             self.appointment_picker
-                .show(ui, &self.theme, &mut self.appointment);
+                .show(ui, &mut self.appointment);
 
             if let Some(date) = &self.appointment {
                 ui.add_space(5.0);
@@ -107,7 +126,7 @@ impl eframe::App for DatePickerExample {
             ui.add_space(10.0);
 
             self.deadline_picker
-                .show(ui, &self.theme, &mut self.deadline);
+                .show(ui, &mut self.deadline);
 
             if let Some(date) = &self.deadline {
                 ui.add_space(5.0);
@@ -116,14 +135,14 @@ impl eframe::App for DatePickerExample {
 
                 if days_diff > 0 {
                     ui.colored_label(
-                        self.theme.warning(),
+                        theme.warning(),
                         format!("⚠ Deadline in {} days", days_diff),
                     );
                 } else if days_diff == 0 {
-                    ui.colored_label(self.theme.error(), "⚠ Deadline is today!");
+                    ui.colored_label(theme.error(), "⚠ Deadline is today!");
                 } else {
                     ui.colored_label(
-                        self.theme.error(),
+                        theme.error(),
                         format!("⚠ Overdue by {} days", -days_diff),
                     );
                 }
@@ -138,7 +157,7 @@ impl eframe::App for DatePickerExample {
             ui.add_space(10.0);
 
             self.start_date_picker
-                .show(ui, &self.theme, &mut self.start_date);
+                .show(ui, &mut self.start_date);
 
             ui.add_space(20.0);
             ui.separator();

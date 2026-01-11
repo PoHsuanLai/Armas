@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{BreadcrumbItem, Breadcrumbs, Theme};
 use eframe::egui;
 
@@ -10,12 +11,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Breadcrumbs Component Example",
         options,
-        Box::new(|_cc| Ok(Box::new(BreadcrumbsExample::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(BreadcrumbsExample::default()))
+        }),
     )
 }
 
 struct BreadcrumbsExample {
-    theme: Theme,
     current_path: Vec<String>,
     status_message: String,
 }
@@ -23,7 +26,6 @@ struct BreadcrumbsExample {
 impl Default for BreadcrumbsExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
             current_path: vec![
                 "Home".to_string(),
                 "Projects".to_string(),
@@ -51,10 +53,15 @@ impl eframe::App for BreadcrumbsExample {
             let mut breadcrumbs = Breadcrumbs::new();
             for (idx, path) in self.current_path.iter().enumerate() {
                 let is_current = idx == self.current_path.len() - 1;
-                breadcrumbs = breadcrumbs.add_item(BreadcrumbItem::new(path).current(is_current));
+                let item = if is_current {
+                    BreadcrumbItem::new(path).current()
+                } else {
+                    BreadcrumbItem::new(path)
+                };
+                breadcrumbs = breadcrumbs.add_item(item);
             }
 
-            let response = breadcrumbs.show(ui, &self.theme);
+            let response = breadcrumbs.show(ui);
             if let Some(clicked) = response.clicked {
                 // Navigate to clicked breadcrumb
                 self.current_path.truncate(clicked + 1);
@@ -72,10 +79,15 @@ impl eframe::App for BreadcrumbsExample {
             let mut breadcrumbs = Breadcrumbs::new().show_home_icon(true);
             for (idx, path) in self.current_path.iter().enumerate() {
                 let is_current = idx == self.current_path.len() - 1;
-                breadcrumbs = breadcrumbs.add_item(BreadcrumbItem::new(path).current(is_current));
+                let item = if is_current {
+                    BreadcrumbItem::new(path).current()
+                } else {
+                    BreadcrumbItem::new(path)
+                };
+                breadcrumbs = breadcrumbs.add_item(item);
             }
 
-            let response = breadcrumbs.show(ui, &self.theme);
+            let response = breadcrumbs.show(ui);
             if let Some(clicked) = response.clicked {
                 if clicked == 0 {
                     // Home clicked
@@ -99,10 +111,15 @@ impl eframe::App for BreadcrumbsExample {
             let mut breadcrumbs = Breadcrumbs::new().separator("/");
             for (idx, path) in self.current_path.iter().enumerate() {
                 let is_current = idx == self.current_path.len() - 1;
-                breadcrumbs = breadcrumbs.add_item(BreadcrumbItem::new(path).current(is_current));
+                let item = if is_current {
+                    BreadcrumbItem::new(path).current()
+                } else {
+                    BreadcrumbItem::new(path)
+                };
+                breadcrumbs = breadcrumbs.add_item(item);
             }
 
-            let response = breadcrumbs.show(ui, &self.theme);
+            let response = breadcrumbs.show(ui);
             if let Some(clicked) = response.clicked {
                 self.current_path.truncate(clicked + 1);
                 self.status_message = format!("Navigated to: {}", self.current_path.join(" / "));
@@ -125,11 +142,15 @@ impl eframe::App for BreadcrumbsExample {
                 } else {
                     "📄"
                 };
-                breadcrumbs =
-                    breadcrumbs.add_item(BreadcrumbItem::new(path).icon(icon).current(is_current));
+                let item = if is_current {
+                    BreadcrumbItem::new(path).icon(icon).current()
+                } else {
+                    BreadcrumbItem::new(path).icon(icon)
+                };
+                breadcrumbs = breadcrumbs.add_item(item);
             }
 
-            let response = breadcrumbs.show(ui, &self.theme);
+            let response = breadcrumbs.show(ui);
             if let Some(clicked) = response.clicked {
                 self.current_path.truncate(clicked + 1);
                 self.status_message = format!("Navigated to: {}", self.current_path.join(" / "));

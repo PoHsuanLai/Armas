@@ -1,3 +1,4 @@
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Response, Sense, Stroke, Ui, Vec2};
 
@@ -82,7 +83,8 @@ impl Divider {
     }
 
     /// Show the divider
-    pub fn show(self, ui: &mut Ui, theme: &Theme) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         let color = self.color.unwrap_or_else(|| theme.outline());
 
         let (width, height) = match self.orientation {

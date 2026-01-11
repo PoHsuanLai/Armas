@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{InputState, InputVariant, Textarea, Theme};
 use eframe::egui;
 
@@ -10,12 +11,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Textarea Component Example",
         options,
-        Box::new(|_cc| Ok(Box::new(TextareaExample::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(TextareaExample::default()))
+        }),
     )
 }
 
 struct TextareaExample {
-    theme: Theme,
     basic_text: String,
     outlined_text: String,
     filled_text: String,
@@ -31,7 +34,6 @@ struct TextareaExample {
 impl Default for TextareaExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
             basic_text: String::new(),
             outlined_text: String::new(),
             filled_text: String::new(),
@@ -61,17 +63,17 @@ impl eframe::App for TextareaExample {
 
                 Textarea::new("Enter default textarea...")
                     .variant(InputVariant::Default)
-                    .show(ui, &self.theme, &mut self.basic_text);
+                    .show(ui,&mut self.basic_text);
                 ui.add_space(10.0);
 
                 Textarea::new("Enter outlined textarea...")
                     .variant(InputVariant::Outlined)
-                    .show(ui, &self.theme, &mut self.outlined_text);
+                    .show(ui,&mut self.outlined_text);
                 ui.add_space(10.0);
 
                 Textarea::new("Enter filled textarea...")
                     .variant(InputVariant::Filled)
-                    .show(ui, &self.theme, &mut self.filled_text);
+                    .show(ui,&mut self.filled_text);
                 ui.add_space(20.0);
 
                 ui.separator();
@@ -84,7 +86,7 @@ impl eframe::App for TextareaExample {
                 Textarea::new("Enter your description...")
                     .label("Description")
                     .variant(InputVariant::Outlined)
-                    .show(ui, &self.theme, &mut self.with_label);
+                    .show(ui,&mut self.with_label);
                 ui.add_space(20.0);
 
                 ui.separator();
@@ -98,7 +100,7 @@ impl eframe::App for TextareaExample {
                     .label("Comment")
                     .helper_text("This will be visible to other users")
                     .variant(InputVariant::Outlined)
-                    .show(ui, &self.theme, &mut self.with_helper);
+                    .show(ui,&mut self.with_helper);
                 ui.add_space(20.0);
 
                 ui.separator();
@@ -113,7 +115,7 @@ impl eframe::App for TextareaExample {
                     .helper_text("Maximum 200 characters")
                     .max_chars(200)
                     .variant(InputVariant::Outlined)
-                    .show(ui, &self.theme, &mut self.limited_text);
+                    .show(ui,&mut self.limited_text);
                 ui.add_space(20.0);
 
                 ui.separator();
@@ -128,7 +130,7 @@ impl eframe::App for TextareaExample {
                     .state(InputState::Success)
                     .helper_text("Looks good!")
                     .variant(InputVariant::Outlined)
-                    .show(ui, &self.theme, &mut self.success_text);
+                    .show(ui,&mut self.success_text);
                 ui.add_space(10.0);
 
                 Textarea::new("Error state...")
@@ -136,7 +138,7 @@ impl eframe::App for TextareaExample {
                     .state(InputState::Error)
                     .helper_text("This field has an error")
                     .variant(InputVariant::Outlined)
-                    .show(ui, &self.theme, &mut self.error_text);
+                    .show(ui,&mut self.error_text);
                 ui.add_space(10.0);
 
                 Textarea::new("Warning state...")
@@ -144,7 +146,7 @@ impl eframe::App for TextareaExample {
                     .state(InputState::Warning)
                     .helper_text("Please review this field")
                     .variant(InputVariant::Outlined)
-                    .show(ui, &self.theme, &mut self.warning_text);
+                    .show(ui,&mut self.warning_text);
                 ui.add_space(20.0);
 
                 ui.separator();
@@ -159,7 +161,7 @@ impl eframe::App for TextareaExample {
                     .label("Small")
                     .rows(2)
                     .variant(InputVariant::Outlined)
-                    .show(ui, &self.theme, &mut temp1);
+                    .show(ui,&mut temp1);
                 ui.add_space(10.0);
 
                 let mut temp2 = String::new();
@@ -167,7 +169,7 @@ impl eframe::App for TextareaExample {
                     .label("Large")
                     .rows(8)
                     .variant(InputVariant::Outlined)
-                    .show(ui, &self.theme, &mut temp2);
+                    .show(ui,&mut temp2);
                 ui.add_space(20.0);
 
                 ui.separator();
@@ -182,7 +184,7 @@ impl eframe::App for TextareaExample {
                     .rows(4)
                     .resizable(false)
                     .variant(InputVariant::Outlined)
-                    .show(ui, &self.theme, &mut self.fixed_rows);
+                    .show(ui,&mut self.fixed_rows);
                 ui.add_space(20.0);
 
                 ui.separator();
@@ -197,7 +199,7 @@ impl eframe::App for TextareaExample {
                     .label("400px Wide")
                     .width(400.0)
                     .variant(InputVariant::Outlined)
-                    .show(ui, &self.theme, &mut temp3);
+                    .show(ui,&mut temp3);
             });
         });
     }

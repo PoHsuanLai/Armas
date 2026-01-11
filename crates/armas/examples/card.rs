@@ -3,6 +3,7 @@
 //! Demonstrates Material Design card component with different elevations,
 //! clickable cards, and various content types.
 
+use armas::ext::ArmasContextExt;
 use armas::{components::Card, Theme};
 use eframe::egui;
 
@@ -17,19 +18,29 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Card Examples",
         options,
-        Box::new(|_cc| Ok(Box::new(CardExample::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(CardExample::default()))
+        }),
     )
 }
 
 struct CardExample {
-    theme: Theme,
+    current_theme: usize,
     selected_card: Option<usize>,
 }
+
+const THEMES: &[(&str, fn() -> Theme)] = &[
+    ("Dark", Theme::dark),
+    ("Light", Theme::light),
+    ("Nord", Theme::nord),
+    ("Dracula", Theme::dracula),
+];
 
 impl Default for CardExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
+            current_theme: 0,
             selected_card: None,
         }
     }
@@ -37,10 +48,14 @@ impl Default for CardExample {
 
 impl eframe::App for CardExample {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // Update theme in context
+        let theme = THEMES[self.current_theme].1();
+        ctx.set_armas_theme(theme.clone());
+
         // Apply theme colors to egui
         let mut style = (*ctx.style()).clone();
-        style.visuals.window_fill = self.theme.background();
-        style.visuals.panel_fill = self.theme.background();
+        style.visuals.window_fill = theme.background();
+        style.visuals.panel_fill = theme.background();
         ctx.set_style(style);
 
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -51,17 +66,10 @@ impl eframe::App for CardExample {
                 // Theme selector
                 ui.horizontal(|ui| {
                     ui.label("Theme:");
-                    if ui.button("Dark").clicked() {
-                        self.theme = Theme::dark();
-                    }
-                    if ui.button("Light").clicked() {
-                        self.theme = Theme::light();
-                    }
-                    if ui.button("Nord").clicked() {
-                        self.theme = Theme::nord();
-                    }
-                    if ui.button("Dracula").clicked() {
-                        self.theme = Theme::dracula();
+                    for (i, (name, _)) in THEMES.iter().enumerate() {
+                        if ui.selectable_label(self.current_theme == i, *name).clicked() {
+                            self.current_theme = i;
+                        }
                     }
                 });
 
@@ -78,7 +86,7 @@ impl eframe::App for CardExample {
                             .title(&format!("Elevation {}", elevation))
                             .elevation(elevation)
                             .width(150.0)
-                            .show(ui, &self.theme, |ui| {
+                            .show(ui, &theme, |ui| {
                                 ui.label(format!("Level: {}", elevation));
                                 ui.separator();
                                 ui.label("Border thickness increases with elevation");
@@ -93,7 +101,7 @@ impl eframe::App for CardExample {
                             .title(&format!("Elevation {}", elevation))
                             .elevation(elevation)
                             .width(150.0)
-                            .show(ui, &self.theme, |ui| {
+                            .show(ui, &theme, |ui| {
                                 ui.label(format!("Level: {}", elevation));
                                 ui.separator();
                                 ui.label("Higher elevations = thicker borders");
@@ -118,13 +126,13 @@ impl eframe::App for CardExample {
                             .elevation(if is_selected { 4 } else { 1 })
                             .clickable(true)
                             .width(180.0)
-                            .show(ui, &self.theme, |ui| {
+                            .show(ui, &theme, |ui| {
                                 ui.label("Click to select");
                                 ui.add_space(5.0);
                                 if is_selected {
                                     ui.label(
                                         egui::RichText::new("✓ Selected")
-                                            .color(self.theme.success()),
+                                            .color(theme.success()),
                                     );
                                 } else {
                                     ui.label("Not selected");
@@ -152,7 +160,7 @@ impl eframe::App for CardExample {
                         .title("User Profile")
                         .elevation(2)
                         .width(200.0)
-                        .show(ui, &self.theme, |ui| {
+                        .show(ui, &theme, |ui| {
                             ui.label(egui::RichText::new("John Doe").size(18.0).strong());
                             ui.label("Software Engineer");
                             ui.separator();
@@ -167,13 +175,13 @@ impl eframe::App for CardExample {
                         .title("Statistics")
                         .elevation(2)
                         .width(200.0)
-                        .show(ui, &self.theme, |ui| {
+                        .show(ui, &theme, |ui| {
                             ui.horizontal(|ui| {
                                 ui.vertical(|ui| {
                                     ui.label(
                                         egui::RichText::new("1,234")
                                             .size(24.0)
-                                            .color(self.theme.primary()),
+                                            .color(theme.primary()),
                                     );
                                     ui.label("Users");
                                 });
@@ -182,7 +190,7 @@ impl eframe::App for CardExample {
                                     ui.label(
                                         egui::RichText::new("5,678")
                                             .size(24.0)
-                                            .color(self.theme.success()),
+                                            .color(theme.success()),
                                     );
                                     ui.label("Active");
                                 });
@@ -194,11 +202,11 @@ impl eframe::App for CardExample {
                     // Alert card
                     Card::new().title("Alert").elevation(3).width(200.0).show(
                         ui,
-                        &self.theme,
+                        &theme,
                         |ui| {
                             ui.label(
                                 egui::RichText::new("⚠ Warning")
-                                    .color(self.theme.warning())
+                                    .color(theme.warning())
                                     .size(16.0),
                             );
                             ui.separator();
@@ -216,14 +224,14 @@ impl eframe::App for CardExample {
                 Card::new()
                     .title("Dashboard Overview")
                     .elevation(1)
-                    .show(ui, &self.theme, |ui| {
+                    .show(ui, &theme, |ui| {
                         ui.horizontal(|ui| {
                             ui.vertical(|ui| {
                                 ui.label("Total Revenue");
                                 ui.label(
                                     egui::RichText::new("$12,345")
                                         .size(20.0)
-                                        .color(self.theme.success()),
+                                        .color(theme.success()),
                                 );
                             });
                             ui.separator();
@@ -232,7 +240,7 @@ impl eframe::App for CardExample {
                                 ui.label(
                                     egui::RichText::new("89")
                                         .size(20.0)
-                                        .color(self.theme.primary()),
+                                        .color(theme.primary()),
                                 );
                             });
                             ui.separator();
@@ -241,7 +249,7 @@ impl eframe::App for CardExample {
                                 ui.label(
                                     egui::RichText::new("23")
                                         .size(20.0)
-                                        .color(self.theme.warning()),
+                                        .color(theme.warning()),
                                 );
                             });
                         });
@@ -257,7 +265,7 @@ impl eframe::App for CardExample {
                     Card::new()
                         .elevation(1)
                         .width(120.0)
-                        .show(ui, &self.theme, |ui| {
+                        .show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.label(egui::RichText::new("🎨").size(32.0));
                                 ui.label("Design");
@@ -269,7 +277,7 @@ impl eframe::App for CardExample {
                     Card::new()
                         .elevation(1)
                         .width(120.0)
-                        .show(ui, &self.theme, |ui| {
+                        .show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.label(egui::RichText::new("💻").size(32.0));
                                 ui.label("Development");
@@ -281,7 +289,7 @@ impl eframe::App for CardExample {
                     Card::new()
                         .elevation(1)
                         .width(120.0)
-                        .show(ui, &self.theme, |ui| {
+                        .show(ui, &theme, |ui| {
                             ui.vertical_centered(|ui| {
                                 ui.label(egui::RichText::new("🚀").size(32.0));
                                 ui.label("Deploy");

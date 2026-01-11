@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{Badge, BadgeColor, BadgeVariant, NotificationBadge, Theme};
 use eframe::egui;
 
@@ -12,19 +13,20 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Badge Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(BadgeApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(BadgeApp::new()))
+        }),
     )
 }
 
 struct BadgeApp {
-    theme: Theme,
     notification_count: usize,
 }
 
 impl BadgeApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             notification_count: 12,
         }
     }
@@ -44,15 +46,15 @@ impl eframe::App for BadgeApp {
                 ui.horizontal(|ui| {
                     Badge::new("Filled")
                         .variant(BadgeVariant::Filled)
-                        .show(ui, &self.theme);
+                        .show(ui);
                     ui.add_space(10.0);
                     Badge::new("Outlined")
                         .variant(BadgeVariant::Outlined)
-                        .show(ui, &self.theme);
+                        .show(ui);
                     ui.add_space(10.0);
                     Badge::new("Soft")
                         .variant(BadgeVariant::Soft)
-                        .show(ui, &self.theme);
+                        .show(ui);
                 });
 
                 ui.add_space(30.0);
@@ -64,23 +66,23 @@ impl eframe::App for BadgeApp {
                 ui.horizontal(|ui| {
                     Badge::new("Primary")
                         .color(BadgeColor::Primary)
-                        .show(ui, &self.theme);
+                        .show(ui);
                     ui.add_space(10.0);
                     Badge::new("Success")
                         .color(BadgeColor::Success)
-                        .show(ui, &self.theme);
+                        .show(ui);
                     ui.add_space(10.0);
                     Badge::new("Warning")
                         .color(BadgeColor::Warning)
-                        .show(ui, &self.theme);
+                        .show(ui);
                     ui.add_space(10.0);
                     Badge::new("Error")
                         .color(BadgeColor::Error)
-                        .show(ui, &self.theme);
+                        .show(ui);
                     ui.add_space(10.0);
                     Badge::new("Info")
                         .color(BadgeColor::Info)
-                        .show(ui, &self.theme);
+                        .show(ui);
                 });
 
                 ui.add_space(30.0);
@@ -93,17 +95,17 @@ impl eframe::App for BadgeApp {
                     Badge::new("Online")
                         .color(BadgeColor::Success)
                         .with_dot()
-                        .show(ui, &self.theme);
+                        .show(ui);
                     ui.add_space(10.0);
                     Badge::new("Away")
                         .color(BadgeColor::Warning)
                         .with_dot()
-                        .show(ui, &self.theme);
+                        .show(ui);
                     ui.add_space(10.0);
                     Badge::new("Offline")
                         .color(BadgeColor::Neutral)
                         .with_dot()
-                        .show(ui, &self.theme);
+                        .show(ui);
                 });
 
                 ui.add_space(30.0);
@@ -116,7 +118,8 @@ impl eframe::App for BadgeApp {
                     if Badge::new("React")
                         .color(BadgeColor::Info)
                         .removable()
-                        .show(ui, &self.theme)
+                        .show(ui)
+                        .removed
                     {
                         println!("Removed React");
                     }
@@ -124,7 +127,8 @@ impl eframe::App for BadgeApp {
                     if Badge::new("Rust")
                         .color(BadgeColor::Warning)
                         .removable()
-                        .show(ui, &self.theme)
+                        .show(ui)
+                        .removed
                     {
                         println!("Removed Rust");
                     }
@@ -132,7 +136,8 @@ impl eframe::App for BadgeApp {
                     if Badge::new("TypeScript")
                         .color(BadgeColor::Primary)
                         .removable()
-                        .show(ui, &self.theme)
+                        .show(ui)
+                        .removed
                     {
                         println!("Removed TypeScript");
                     }
@@ -147,13 +152,13 @@ impl eframe::App for BadgeApp {
                 ui.horizontal(|ui| {
                     ui.label("Messages");
                     ui.add_space(5.0);
-                    NotificationBadge::new(self.notification_count, &self.theme).show(ui);
+                    NotificationBadge::new(self.notification_count).show(ui);
 
                     ui.add_space(20.0);
 
                     ui.label("Alerts");
                     ui.add_space(5.0);
-                    NotificationBadge::new(3, &self.theme)
+                    NotificationBadge::new(3)
                         .color(egui::Color32::from_rgb(251, 191, 36))
                         .show(ui);
 
@@ -161,7 +166,7 @@ impl eframe::App for BadgeApp {
 
                     ui.label("Updates");
                     ui.add_space(5.0);
-                    NotificationBadge::new(156, &self.theme)
+                    NotificationBadge::new(156)
                         .color(egui::Color32::from_rgb(59, 130, 246))
                         .show(ui);
                 });
@@ -187,11 +192,11 @@ impl eframe::App for BadgeApp {
                 ui.add_space(10.0);
 
                 ui.horizontal(|ui| {
-                    Badge::new("Small").size(11.0).show(ui, &self.theme);
+                    Badge::new("Small").size(11.0).show(ui);
                     ui.add_space(10.0);
-                    Badge::new("Medium").size(13.0).show(ui, &self.theme);
+                    Badge::new("Medium").size(13.0).show(ui);
                     ui.add_space(10.0);
-                    Badge::new("Large").size(15.0).show(ui, &self.theme);
+                    Badge::new("Large").size(15.0).show(ui);
                 });
             });
         });

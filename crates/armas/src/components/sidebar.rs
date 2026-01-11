@@ -3,7 +3,8 @@
 //! Animated sidebar with icons and smooth expand/collapse
 
 use crate::animation::{Animation, EasingFunction};
-use crate::Theme;
+use crate::button::{Button, ButtonVariant};
+use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Individual sidebar item
@@ -17,6 +18,10 @@ pub struct SidebarItem {
     pub active: bool,
     /// Optional badge text (e.g., notification count)
     pub badge: Option<String>,
+    /// Optional child items (sub-menu)
+    pub children: Vec<SidebarItem>,
+    /// Whether this item's children are expanded
+    pub expanded: bool,
 }
 
 impl SidebarItem {
@@ -27,6 +32,8 @@ impl SidebarItem {
             icon: icon.into(),
             active: false,
             badge: None,
+            children: Vec::new(),
+            expanded: false,
         }
     }
 
@@ -41,14 +48,28 @@ impl SidebarItem {
         self.badge = Some(badge.into());
         self
     }
+
+    /// Add child items (sub-menu)
+    pub fn with_children(mut self, children: Vec<SidebarItem>) -> Self {
+        self.children = children;
+        self
+    }
+
+    /// Set whether children are expanded
+    pub fn expanded(mut self, expanded: bool) -> Self {
+        self.expanded = expanded;
+        self
+    }
 }
 
 /// Response from sidebar interaction
 pub struct SidebarResponse {
     /// The overall sidebar response
     pub response: Response,
-    /// Index of the clicked item, if any
+    /// Index of the clicked item, if any (parent index)
     pub clicked: Option<usize>,
+    /// Index of the clicked child item, if any (parent_index, child_index)
+    pub clicked_child: Option<(usize, usize)>,
     /// Index of the hovered item, if any
     pub hovered: Option<usize>,
     /// Whether the sidebar is currently expanded
@@ -64,6 +85,10 @@ pub struct Sidebar {
     is_expanded: bool,
     collapsed_width: f32,
     expanded_width: f32,
+    collapsible: bool, // Whether the sidebar can be collapsed
+    show_icons: bool,  // Whether to show icons
+    use_buttons: bool, // Whether to use Button components
+    button_variant: ButtonVariant, // Button variant to use
 
     // Animation state
     width_animation: Animation<f32>,
@@ -82,11 +107,39 @@ impl Sidebar {
             is_expanded: true,
             collapsed_width: 70.0,
             expanded_width: 240.0,
+            collapsible: true, // Default: collapsible
+            show_icons: true,  // Default: show icons
+            use_buttons: false, // Default: custom rendering
+            button_variant: ButtonVariant::Text, // Default variant for button mode
             width_animation: Animation::new(240.0, 240.0, 0.3).with_easing(EasingFunction::EaseOut),
             active_position_animation: Animation::new(0.0, 0.0, 0.3)
                 .with_easing(EasingFunction::EaseOut),
             current_active,
         }
+    }
+
+    /// Set whether the sidebar can be collapsed
+    pub fn collapsible(mut self, collapsible: bool) -> Self {
+        self.collapsible = collapsible;
+        self
+    }
+
+    /// Set whether to show icons
+    pub fn show_icons(mut self, show_icons: bool) -> Self {
+        self.show_icons = show_icons;
+        self
+    }
+
+    /// Set whether to use Button components (true) or custom rendering (false)
+    pub fn use_buttons(mut self, use_buttons: bool) -> Self {
+        self.use_buttons = use_buttons;
+        self
+    }
+
+    /// Set the button variant (only used when use_buttons is true)
+    pub fn button_variant(mut self, variant: ButtonVariant) -> Self {
+        self.button_variant = variant;
+        self
     }
 
     /// Set whether the sidebar starts expanded
@@ -128,7 +181,94 @@ impl Sidebar {
     }
 
     /// Show the sidebar
-    pub fn show(&mut self, ui: &mut Ui, theme: &Theme) -> SidebarResponse {
+    pub fn show(&mut self, ui: &mut Ui) -> SidebarResponse {
+        if self.use_buttons {
+            self.show_with_buttons(ui)
+        } else {
+            self.show_custom(ui)
+        }
+    }
+
+    /// Show sidebar using Button components
+    fn show_with_buttons(&mut self, ui: &mut Ui) -> SidebarResponse {
+        let theme = ui.ctx().armas_theme();
+        let mut clicked_index: Option<usize> = None;
+
+        egui::ScrollArea::vertical()
+            .id_source("sidebar_scroll")
+            .auto_shrink([false, false])
+            .show(ui, |ui| {
+                ui.vertical(|ui| {
+                    ui.style_mut().spacing.item_spacing.y = 4.0;
+
+                    for (index, item) in self.items.iter_mut().enumerate() {
+                // Parent button
+                let button_text = if self.show_icons && !item.icon.is_empty() {
+                    format!("{} {}", item.icon, item.label)
+                } else {
+                    item.label.clone()
+                };
+
+                let button = Button::new(&button_text)
+                    .variant(self.button_variant)
+                    .min_size(egui::vec2(ui.available_width(), 40.0))
+                    .text_align(egui::Align2::LEFT_CENTER)
+                    .text_color(egui::Color32::WHITE)
+                    .hover_text_color(egui::Color32::WHITE);
+
+                if button.show(ui).clicked() {
+                    if !item.children.is_empty() {
+                        item.expanded = !item.expanded;
+                    } else {
+                        clicked_index = Some(index);
+                    }
+                }
+
+                // Child buttons
+                if item.expanded && !item.children.is_empty() {
+                    ui.indent(ui.id().with(index), |ui| {
+                        for (child_idx, child) in item.children.iter().enumerate() {
+                            let child_text = if self.show_icons && !child.icon.is_empty() {
+                                format!("{} {}", child.icon, child.label)
+                            } else {
+                                child.label.clone()
+                            };
+
+                            let child_button = Button::new(&child_text)
+                                .variant(self.button_variant)
+                                .min_size(egui::vec2(ui.available_width(), 36.0))
+                                .text_align(egui::Align2::LEFT_CENTER)
+                                .text_color(egui::Color32::from_gray(160))
+                                .hover_text_color(egui::Color32::WHITE);
+
+                            if child_button.show(ui).clicked() {
+                                clicked_index = Some(index);
+                            }
+                        }
+                    });
+                    }
+                }
+            });
+        });
+
+        let response = ui.interact(
+            ui.min_rect(),
+            ui.id().with("sidebar_button_mode"),
+            Sense::hover()
+        );
+
+        SidebarResponse {
+            response,
+            clicked: clicked_index,
+            clicked_child: None,
+            hovered: None,
+            is_expanded: self.is_expanded,
+        }
+    }
+
+    /// Show sidebar with custom rendering (original implementation)
+    fn show_custom(&mut self, ui: &mut Ui) -> SidebarResponse {
+        let theme = ui.ctx().armas_theme();
         let dt = ui.input(|i| i.stable_dt);
 
         // Update animations
@@ -154,66 +294,76 @@ impl Sidebar {
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
 
-            // Draw sidebar background
-            painter.rect(
-                rect,
-                0.0,
-                Color32::from_rgb(18, 18, 22),
-                egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(255, 255, 255, 10)),
-                egui::StrokeKind::Outside,
-            );
+            // Draw sidebar background - fill entire rect to cover any grey underneath
+            painter.rect_filled(rect, 0.0, theme.surface());
 
-            // Draw toggle button at top
-            let toggle_rect = Rect::from_min_size(
-                Pos2::new(rect.left() + padding, rect.top() + padding),
-                Vec2::new(current_width - padding * 2.0, item_height),
-            );
+            // Draw border
+            // painter.rect_stroke(
+            //     rect,
+            //     0.0,
+            //     egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(255, 255, 255, 10)),
+            //     egui::StrokeKind::Outside,
+            // );
 
-            let toggle_response = ui.interact(
-                toggle_rect,
-                ui.id().with("toggle"),
-                Sense::click().union(Sense::hover()),
-            );
+            // Conditionally draw toggle button if collapsible
+            let items_start_y = if self.collapsible {
+                let toggle_rect = Rect::from_min_size(
+                    Pos2::new(rect.left() + padding, rect.top() + padding),
+                    Vec2::new(current_width - padding * 2.0, item_height),
+                );
 
-            if toggle_response.clicked() {
-                self.toggle();
-            }
+                let toggle_response = ui.interact(
+                    toggle_rect,
+                    ui.id().with("toggle"),
+                    Sense::click().union(Sense::hover()),
+                );
 
-            // Draw toggle button background
-            let toggle_bg_color = if toggle_response.hovered() {
-                Color32::from_rgba_unmultiplied(255, 255, 255, 20)
+                if toggle_response.clicked() {
+                    self.toggle();
+                }
+
+                // Draw toggle button background
+                let toggle_bg_color = if toggle_response.hovered() {
+                    Color32::from_rgba_unmultiplied(255, 255, 255, 20)
+                } else {
+                    Color32::from_rgba_unmultiplied(255, 255, 255, 8)
+                };
+
+                painter.rect(
+                    toggle_rect,
+                    8.0,
+                    toggle_bg_color,
+                    egui::Stroke::NONE,
+                    egui::StrokeKind::Outside,
+                );
+
+                // Draw toggle icon
+                let toggle_icon = if self.is_expanded { "☰" } else { "☰" };
+                painter.text(
+                    Pos2::new(
+                        toggle_rect.left() + (self.collapsed_width - padding * 2.0) / 2.0,
+                        toggle_rect.center().y,
+                    ),
+                    egui::Align2::CENTER_CENTER,
+                    toggle_icon,
+                    egui::FontId::proportional(20.0),
+                    Color32::from_gray(200),
+                );
+
+                rect.top() + padding * 2.0 + item_height + padding
             } else {
-                Color32::from_rgba_unmultiplied(255, 255, 255, 8)
+                // No toggle button, items start from top
+                rect.top() + padding
             };
 
-            painter.rect(
-                toggle_rect,
-                8.0,
-                toggle_bg_color,
-                egui::Stroke::NONE,
-                egui::StrokeKind::Outside,
-            );
+            // Draw items - track vertical position for nested items
+            let mut current_y = items_start_y;
+            let child_indent = 32.0; // Indentation for child items
 
-            // Draw toggle icon
-            let toggle_icon = if self.is_expanded { "☰" } else { "☰" };
-            painter.text(
-                Pos2::new(
-                    toggle_rect.left() + (self.collapsed_width - padding * 2.0) / 2.0,
-                    toggle_rect.center().y,
-                ),
-                egui::Align2::CENTER_CENTER,
-                toggle_icon,
-                egui::FontId::proportional(20.0),
-                Color32::from_gray(200),
-            );
-
-            // Draw items
-            let items_start_y = rect.top() + padding * 2.0 + item_height + padding;
-
-            for (index, item) in self.items.iter().enumerate() {
-                let item_y = items_start_y + index as f32 * (item_height + padding);
+            for (index, item) in self.items.iter_mut().enumerate() {
+                // Draw parent item
                 let item_rect = Rect::from_min_size(
-                    Pos2::new(rect.left() + padding, item_y),
+                    Pos2::new(rect.left() + padding, current_y),
                     Vec2::new(current_width - padding * 2.0, item_height),
                 );
 
@@ -229,12 +379,17 @@ impl Sidebar {
                 }
 
                 if item_response.clicked() {
-                    clicked_index = Some(index);
+                    // If item has children, toggle expanded state
+                    if !item.children.is_empty() {
+                        item.expanded = !item.expanded;
+                    } else {
+                        clicked_index = Some(index);
+                    }
 
                     // Update active state and trigger animation
                     self.current_active = Some(index);
                     self.active_position_animation.start = self.active_position_animation.value();
-                    self.active_position_animation.end = item_y - items_start_y;
+                    self.active_position_animation.end = current_y - items_start_y;
                     self.active_position_animation.elapsed = 0.0;
                     self.active_position_animation.start();
                 }
@@ -282,18 +437,22 @@ impl Sidebar {
                     Color32::from_gray(160)
                 };
 
-                // Draw icon
+                // Calculate icon position (needed for badge positioning)
                 let icon_pos = Pos2::new(
                     item_rect.left() + (self.collapsed_width - padding * 2.0) / 2.0,
                     item_rect.center().y,
                 );
-                painter.text(
-                    icon_pos,
-                    egui::Align2::CENTER_CENTER,
-                    &item.icon,
-                    egui::FontId::proportional(icon_size),
-                    text_color,
-                );
+
+                // Draw icon (if enabled)
+                if self.show_icons {
+                    painter.text(
+                        icon_pos,
+                        egui::Align2::CENTER_CENTER,
+                        &item.icon,
+                        egui::FontId::proportional(icon_size),
+                        text_color,
+                    );
+                }
 
                 // Draw label when expanded
                 if self.is_expanded && current_width > self.collapsed_width + 20.0 {
@@ -308,11 +467,15 @@ impl Sidebar {
                         (text_color.a() as f32 * label_opacity) as u8,
                     );
 
+                    // Position label based on whether icons are shown
+                    let label_x = if self.show_icons {
+                        item_rect.left() + self.collapsed_width - padding
+                    } else {
+                        item_rect.left() + padding
+                    };
+
                     painter.text(
-                        Pos2::new(
-                            item_rect.left() + self.collapsed_width - padding,
-                            item_rect.center().y,
-                        ),
+                        Pos2::new(label_x, item_rect.center().y),
                         egui::Align2::LEFT_CENTER,
                         &item.label,
                         egui::FontId::proportional(14.0),
@@ -348,6 +511,94 @@ impl Sidebar {
                         Color32::WHITE,
                     );
                 }
+
+                // Draw chevron for expandable items
+                if !item.children.is_empty() && self.is_expanded && current_width > self.collapsed_width + 20.0 {
+                    let chevron = if item.expanded { "▼" } else { "▶" };
+                    painter.text(
+                        Pos2::new(item_rect.right() - 16.0, item_rect.center().y),
+                        egui::Align2::CENTER_CENTER,
+                        chevron,
+                        egui::FontId::proportional(10.0),
+                        Color32::from_gray(140),
+                    );
+                }
+
+                // Move to next item position
+                current_y += item_height + padding;
+
+                // Draw children if expanded
+                if item.expanded && !item.children.is_empty() {
+                    for (child_idx, child) in item.children.iter().enumerate() {
+                        let child_rect = Rect::from_min_size(
+                            Pos2::new(rect.left() + padding + child_indent, current_y),
+                            Vec2::new(current_width - padding * 2.0 - child_indent, item_height),
+                        );
+
+                        // Child interaction
+                        let child_response = ui.interact(
+                            child_rect,
+                            ui.id().with((index, "child", child_idx)),
+                            Sense::click().union(Sense::hover()),
+                        );
+
+                        if child_response.clicked() {
+                            clicked_index = Some(index);
+                            // Store which child was clicked
+                            // clicked_child = Some((index, child_idx));
+                        }
+
+                        // Draw hover effect for child
+                        if child_response.hovered() {
+                            painter.rect(
+                                child_rect,
+                                6.0,
+                                Color32::from_rgba_unmultiplied(255, 255, 255, 10),
+                                egui::Stroke::NONE,
+                                egui::StrokeKind::Outside,
+                            );
+                        }
+
+                        let child_text_color = if child_response.hovered() {
+                            Color32::from_gray(220)
+                        } else {
+                            Color32::from_gray(140)
+                        };
+
+                        // Draw child icon if present and enabled
+                        if self.show_icons && !child.icon.is_empty() {
+                            painter.text(
+                                Pos2::new(
+                                    child_rect.left() + 8.0,
+                                    child_rect.center().y,
+                                ),
+                                egui::Align2::LEFT_CENTER,
+                                &child.icon,
+                                egui::FontId::proportional(16.0),
+                                child_text_color,
+                            );
+                        }
+
+                        // Draw child label
+                        if self.is_expanded && current_width > self.collapsed_width + 20.0 {
+                            let label_x = if self.show_icons && !child.icon.is_empty() {
+                                child_rect.left() + 28.0
+                            } else {
+                                child_rect.left() + 8.0
+                            };
+
+                            painter.text(
+                                Pos2::new(label_x, child_rect.center().y),
+                                egui::Align2::LEFT_CENTER,
+                                &child.label,
+                                egui::FontId::proportional(13.0),
+                                child_text_color,
+                            );
+                        }
+
+                        current_y += item_height + padding;
+                    }
+                }
             }
 
             // Initialize animation on first frame if there's an active item
@@ -371,6 +622,7 @@ impl Sidebar {
         SidebarResponse {
             response,
             clicked: clicked_index,
+            clicked_child: None, // Will be set when implementing child rendering
             hovered: hovered_index,
             is_expanded: self.is_expanded,
         }

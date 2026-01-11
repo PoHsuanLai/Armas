@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{alert_error, alert_info, alert_success, alert_warning, Alert, AlertVariant, Theme};
 use eframe::egui;
 
@@ -10,12 +11,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Alert Component Example",
         options,
-        Box::new(|_cc| Ok(Box::new(AlertExample::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(AlertExample::default()))
+        }),
     )
 }
 
 struct AlertExample {
-    theme: Theme,
     show_dismissible_info: bool,
     show_dismissible_success: bool,
     show_dismissible_warning: bool,
@@ -25,7 +28,6 @@ struct AlertExample {
 impl Default for AlertExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
             show_dismissible_info: true,
             show_dismissible_success: true,
             show_dismissible_warning: true,
@@ -44,16 +46,16 @@ impl eframe::App for AlertExample {
             ui.label("Basic Alerts:");
             ui.add_space(10.0);
 
-            alert_info(ui, &self.theme, "This is an informational message");
+            alert_info(ui, "This is an informational message");
             ui.add_space(10.0);
 
-            alert_success(ui, &self.theme, "Operation completed successfully!");
+            alert_success(ui, "Operation completed successfully!");
             ui.add_space(10.0);
 
-            alert_warning(ui, &self.theme, "Please review before proceeding");
+            alert_warning(ui, "Please review before proceeding");
             ui.add_space(10.0);
 
-            alert_error(ui, &self.theme, "An error occurred while processing your request");
+            alert_error(ui, "An error occurred while processing your request");
             ui.add_space(20.0);
 
             ui.separator();
@@ -65,22 +67,22 @@ impl eframe::App for AlertExample {
 
             Alert::info("Your account has been verified and is now active")
                 .title("Account Verified")
-                .show(ui, &self.theme);
+                .show(ui);
             ui.add_space(10.0);
 
             Alert::success("Your changes have been saved to the database")
                 .title("Changes Saved")
-                .show(ui, &self.theme);
+                .show(ui);
             ui.add_space(10.0);
 
             Alert::warning("This action cannot be undone. Please make sure you want to proceed.")
                 .title("Warning")
-                .show(ui, &self.theme);
+                .show(ui);
             ui.add_space(10.0);
 
             Alert::error("Failed to connect to the server. Please check your internet connection.")
                 .title("Connection Error")
-                .show(ui, &self.theme);
+                .show(ui);
             ui.add_space(20.0);
 
             ui.separator();
@@ -94,7 +96,7 @@ impl eframe::App for AlertExample {
                 let response = Alert::info("Click the X button to dismiss this alert")
                     .title("Dismissible Info")
                     .dismissible(true)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 if response.dismissed {
                     self.show_dismissible_info = false;
@@ -106,7 +108,7 @@ impl eframe::App for AlertExample {
                 let response = Alert::success("You can close this success message")
                     .title("Dismissible Success")
                     .dismissible(true)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 if response.dismissed {
                     self.show_dismissible_success = false;
@@ -118,7 +120,7 @@ impl eframe::App for AlertExample {
                 let response = Alert::warning("This warning can be dismissed")
                     .title("Dismissible Warning")
                     .dismissible(true)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 if response.dismissed {
                     self.show_dismissible_warning = false;
@@ -130,7 +132,7 @@ impl eframe::App for AlertExample {
                 let response = Alert::error("Close this error when you're ready")
                     .title("Dismissible Error")
                     .dismissible(true)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 if response.dismissed {
                     self.show_dismissible_error = false;
@@ -155,13 +157,13 @@ impl eframe::App for AlertExample {
 
             Alert::info("This alert has no icon")
                 .show_icon(false)
-                .show(ui, &self.theme);
+                .show(ui);
             ui.add_space(10.0);
 
             Alert::success("Icon-free success message")
                 .title("Success")
                 .show_icon(false)
-                .show(ui, &self.theme);
+                .show(ui);
             ui.add_space(20.0);
 
             ui.separator();
@@ -174,13 +176,13 @@ impl eframe::App for AlertExample {
             Alert::warning("This alert has a fixed width of 400px")
                 .title("Fixed Width")
                 .width(400.0)
-                .show(ui, &self.theme);
+                .show(ui);
             ui.add_space(10.0);
 
             Alert::info("This alert has a fixed width of 600px")
                 .title("Wider Alert")
                 .width(600.0)
-                .show(ui, &self.theme);
+                .show(ui);
             ui.add_space(20.0);
 
             ui.separator();
@@ -196,7 +198,7 @@ impl eframe::App for AlertExample {
             )
             .title("Trial Expiring Soon")
             .dismissible(true)
-            .show(ui, &self.theme);
+            .show(ui);
         });
     }
 }

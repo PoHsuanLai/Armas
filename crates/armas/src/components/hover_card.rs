@@ -3,6 +3,7 @@
 //! Card with content reveal on hover with smooth transitions
 
 use crate::animation::{Interpolate, SpringAnimation};
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 

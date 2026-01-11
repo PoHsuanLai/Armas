@@ -85,8 +85,20 @@ impl<'a> Card<'a> {
     }
 
     /// Set custom corner radius (overrides theme default)
+    pub fn corner_radius(mut self, radius: f32) -> Self {
+        self.corner_radius = Some(radius);
+        self
+    }
+
+    /// Alias for corner_radius for backwards compatibility
     pub fn rounding(mut self, radius: f32) -> Self {
         self.corner_radius = Some(radius);
+        self
+    }
+
+    /// Enable hover effect (same as clickable)
+    pub fn hover_effect(mut self, enable: bool) -> Self {
+        self.clickable = enable;
         self
     }
 

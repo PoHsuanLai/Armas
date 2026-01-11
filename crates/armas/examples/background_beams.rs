@@ -2,6 +2,7 @@
 //!
 //! Demonstrates diagonal light beams across backgrounds
 
+use armas::ext::ArmasContextExt;
 use armas::{BackgroundBeams, Theme};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Background Beams",
         options,
-        Box::new(|_cc| Ok(Box::new(BackgroundBeamsApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(BackgroundBeamsApp::new()))
+        }),
     )
 }
 
 struct BackgroundBeamsApp {
-    theme: Theme,
     beams1: BackgroundBeams,
     beams2: BackgroundBeams,
     beams3: BackgroundBeams,
@@ -30,7 +33,6 @@ struct BackgroundBeamsApp {
 impl BackgroundBeamsApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             beams1: BackgroundBeams::new(1200.0, 300.0),
             beams2: BackgroundBeams::new(1200.0, 300.0)
                 .beam_count(12)
@@ -54,6 +56,7 @@ impl BackgroundBeamsApp {
 impl eframe::App for BackgroundBeamsApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            let theme = ui.ctx().armas_theme();
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
             egui::ScrollArea::vertical().show(ui, |ui| {
@@ -70,13 +73,13 @@ impl eframe::App for BackgroundBeamsApp {
                     egui::RichText::new("Default Diagonal Beams")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.group(|ui| {
                     ui.set_min_size(egui::vec2(1150.0, 300.0));
-                    self.beams1.show(ui, &self.theme);
+                    self.beams1.show(ui);
 
                     // Overlay content
                     ui.centered_and_justified(|ui| {
@@ -98,13 +101,13 @@ impl eframe::App for BackgroundBeamsApp {
                     egui::RichText::new("More Beams with Custom Angle")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.group(|ui| {
                     ui.set_min_size(egui::vec2(1150.0, 300.0));
-                    self.beams2.show(ui, &self.theme);
+                    self.beams2.show(ui);
 
                     ui.centered_and_justified(|ui| {
                         ui.vertical_centered(|ui| {
@@ -125,13 +128,13 @@ impl eframe::App for BackgroundBeamsApp {
                     egui::RichText::new("Vertical Beams (No Animation)")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.group(|ui| {
                     ui.set_min_size(egui::vec2(1150.0, 300.0));
-                    self.beams3.show(ui, &self.theme);
+                    self.beams3.show(ui);
 
                     ui.centered_and_justified(|ui| {
                         ui.vertical_centered(|ui| {
@@ -157,7 +160,7 @@ impl eframe::App for BackgroundBeamsApp {
                             egui::RichText::new("💡 Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• Use beam_angle() to control the direction (0-360 degrees)");

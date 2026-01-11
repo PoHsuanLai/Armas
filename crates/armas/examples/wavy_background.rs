@@ -2,6 +2,7 @@
 //!
 //! Demonstrates animated wave effects for backgrounds and hero sections
 
+use armas::ext::ArmasContextExt;
 use armas::{Theme, WavyBackground};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Wavy Background",
         options,
-        Box::new(|_cc| Ok(Box::new(WavyBackgroundApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(WavyBackgroundApp::new()))
+        }),
     )
 }
 
 struct WavyBackgroundApp {
-    theme: Theme,
     waves1: WavyBackground,
     waves2: WavyBackground,
     waves3: WavyBackground,
@@ -30,7 +33,6 @@ struct WavyBackgroundApp {
 impl WavyBackgroundApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             waves1: WavyBackground::new(1200.0, 300.0),
             waves2: WavyBackground::new(1200.0, 300.0)
                 .wave_count(8)
@@ -55,6 +57,7 @@ impl WavyBackgroundApp {
 impl eframe::App for WavyBackgroundApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            let theme = ui.ctx().armas_theme();
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
             egui::ScrollArea::vertical().show(ui, |ui| {
@@ -71,13 +74,13 @@ impl eframe::App for WavyBackgroundApp {
                     egui::RichText::new("Default Waves")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.group(|ui| {
                     ui.set_min_size(egui::vec2(1150.0, 300.0));
-                    self.waves1.show(ui, &self.theme);
+                    self.waves1.show(ui);
                 });
 
                 ui.add_space(30.0);
@@ -87,13 +90,13 @@ impl eframe::App for WavyBackgroundApp {
                     egui::RichText::new("With Blur Effect")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.group(|ui| {
                     ui.set_min_size(egui::vec2(1150.0, 300.0));
-                    self.waves2.show(ui, &self.theme);
+                    self.waves2.show(ui);
                 });
 
                 ui.add_space(30.0);
@@ -103,13 +106,13 @@ impl eframe::App for WavyBackgroundApp {
                     egui::RichText::new("Custom Colors & High Amplitude")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.group(|ui| {
                     ui.set_min_size(egui::vec2(1150.0, 300.0));
-                    self.waves3.show(ui, &self.theme);
+                    self.waves3.show(ui);
                 });
 
                 ui.add_space(50.0);
@@ -124,7 +127,7 @@ impl eframe::App for WavyBackgroundApp {
                             egui::RichText::new("💡 Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• Use wave_count() to add more layered waves");

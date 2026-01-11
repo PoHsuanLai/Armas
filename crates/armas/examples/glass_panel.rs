@@ -3,6 +3,7 @@
 //! Demonstrates glassmorphic panels with different glow intensities
 //! and various content types.
 
+use armas::ext::ArmasContextExt;
 use armas::{components::GlassPanel, Theme};
 use eframe::egui;
 
@@ -17,19 +18,20 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Glass Panel Examples",
         options,
-        Box::new(|_cc| Ok(Box::new(GlassPanelExample::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(GlassPanelExample::default()))
+        }),
     )
 }
 
 struct GlassPanelExample {
-    theme: Theme,
     glow_intensity: f32,
 }
 
 impl Default for GlassPanelExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
             glow_intensity: 0.5,
         }
     }
@@ -37,10 +39,11 @@ impl Default for GlassPanelExample {
 
 impl eframe::App for GlassPanelExample {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         // Apply theme colors to egui
         let mut style = (*ctx.style()).clone();
-        style.visuals.window_fill = self.theme.background();
-        style.visuals.panel_fill = self.theme.background();
+        style.visuals.window_fill = theme.background();
+        style.visuals.panel_fill = theme.background();
         ctx.set_style(style);
 
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -52,19 +55,19 @@ impl eframe::App for GlassPanelExample {
                 ui.horizontal(|ui| {
                     ui.label("Theme:");
                     if ui.button("Dark").clicked() {
-                        self.theme = Theme::dark();
+                        ctx.set_armas_theme(Theme::dark());
                     }
                     if ui.button("Light").clicked() {
-                        self.theme = Theme::light();
+                        ctx.set_armas_theme(Theme::light());
                     }
                     if ui.button("Nord").clicked() {
-                        self.theme = Theme::nord();
+                        ctx.set_armas_theme(Theme::nord());
                     }
                     if ui.button("Dracula").clicked() {
-                        self.theme = Theme::dracula();
+                        ctx.set_armas_theme(Theme::dracula());
                     }
                     if ui.button("Studio").clicked() {
-                        self.theme = Theme::studio();
+                        ctx.set_armas_theme(Theme::studio());
                     }
                 });
 
@@ -89,7 +92,7 @@ impl eframe::App for GlassPanelExample {
                             .title(&format!("Glow: {:.1}", intensity))
                             .glow_intensity(intensity)
                             .width(150.0)
-                            .show(ui, &self.theme, |ui| {
+                            .show(ui, &theme, |ui| {
                                 ui.label(format!("Intensity: {:.1}", intensity));
                                 ui.separator();
                                 if intensity == 0.0 {
@@ -115,7 +118,7 @@ impl eframe::App for GlassPanelExample {
                 ui.label(
                     egui::RichText::new("Background Content")
                         .size(14.0)
-                        .color(self.theme.on_surface_variant()),
+                        .color(theme.on_surface_variant()),
                 );
                 ui.label("This content sits behind the glass panels above.");
 
@@ -127,8 +130,8 @@ impl eframe::App for GlassPanelExample {
                         .title("Notification")
                         .glow_intensity(self.glow_intensity)
                         .width(250.0)
-                        .show(ui, &self.theme, |ui| {
-                            ui.label(egui::RichText::new("✉ New Message").color(self.theme.info()));
+                        .show(ui, &theme, |ui| {
+                            ui.label(egui::RichText::new("✉ New Message").color(theme.info()));
                             ui.separator();
                             ui.label("You have 3 unread messages");
                             ui.add_space(5.0);
@@ -143,7 +146,7 @@ impl eframe::App for GlassPanelExample {
                         .title("Settings")
                         .glow_intensity(self.glow_intensity)
                         .width(250.0)
-                        .show(ui, &self.theme, |ui| {
+                        .show(ui, &theme, |ui| {
                             ui.label("Volume");
                             ui.add(egui::Slider::new(&mut 0.5f32, 0.0..=1.0));
                             ui.separator();
@@ -163,10 +166,10 @@ impl eframe::App for GlassPanelExample {
                         .title("Server Status")
                         .glow_intensity(self.glow_intensity)
                         .width(200.0)
-                        .show(ui, &self.theme, |ui| {
+                        .show(ui, &theme, |ui| {
                             ui.horizontal(|ui| {
                                 ui.label("●");
-                                ui.label(egui::RichText::new("Online").color(self.theme.success()));
+                                ui.label(egui::RichText::new("Online").color(theme.success()));
                             });
                             ui.separator();
                             ui.label("Uptime: 99.9%");
@@ -179,7 +182,7 @@ impl eframe::App for GlassPanelExample {
                         .title("Performance")
                         .glow_intensity(self.glow_intensity)
                         .width(200.0)
-                        .show(ui, &self.theme, |ui| {
+                        .show(ui, &theme, |ui| {
                             ui.label("CPU: 23%");
                             ui.label("Memory: 45%");
                             ui.label("Disk: 67%");
@@ -191,11 +194,11 @@ impl eframe::App for GlassPanelExample {
                         .title("Alerts")
                         .glow_intensity(self.glow_intensity)
                         .width(200.0)
-                        .show(ui, &self.theme, |ui| {
+                        .show(ui, &theme, |ui| {
                             ui.label(
-                                egui::RichText::new("⚠ 2 Warnings").color(self.theme.warning()),
+                                egui::RichText::new("⚠ 2 Warnings").color(theme.warning()),
                             );
-                            ui.label(egui::RichText::new("✓ 0 Errors").color(self.theme.success()));
+                            ui.label(egui::RichText::new("✓ 0 Errors").color(theme.success()));
                         });
                 });
 
@@ -208,7 +211,7 @@ impl eframe::App for GlassPanelExample {
                 GlassPanel::new()
                     .title("Player Controls")
                     .glow_intensity(self.glow_intensity)
-                    .show(ui, &self.theme, |ui| {
+                    .show(ui, &theme, |ui| {
                         ui.horizontal(|ui| {
                             if ui.button("⏮").clicked() {
                                 // Previous
@@ -236,7 +239,7 @@ impl eframe::App for GlassPanelExample {
                 GlassPanel::new()
                     .title("Settings Group")
                     .glow_intensity(self.glow_intensity * 0.7)
-                    .show(ui, &self.theme, |ui| {
+                    .show(ui, &theme, |ui| {
                         ui.label("Configure your preferences");
                         ui.add_space(10.0);
 
@@ -245,7 +248,7 @@ impl eframe::App for GlassPanelExample {
                                 .title("Audio")
                                 .glow_intensity(self.glow_intensity)
                                 .width(200.0)
-                                .show(ui, &self.theme, |ui| {
+                                .show(ui, &theme, |ui| {
                                     ui.checkbox(&mut true, "Enable sound");
                                     ui.checkbox(&mut false, "Mute on start");
                                 });
@@ -256,7 +259,7 @@ impl eframe::App for GlassPanelExample {
                                 .title("Display")
                                 .glow_intensity(self.glow_intensity)
                                 .width(200.0)
-                                .show(ui, &self.theme, |ui| {
+                                .show(ui, &theme, |ui| {
                                     ui.checkbox(&mut true, "Dark mode");
                                     ui.checkbox(&mut true, "Show tooltips");
                                 });
@@ -274,7 +277,7 @@ impl eframe::App for GlassPanelExample {
                         GlassPanel::new()
                             .glow_intensity(self.glow_intensity)
                             .width(100.0)
-                            .show(ui, &self.theme, |ui| {
+                            .show(ui, &theme, |ui| {
                                 ui.vertical_centered(|ui| {
                                     ui.label(egui::RichText::new(icon).size(32.0));
                                 });
@@ -295,11 +298,11 @@ impl eframe::App for GlassPanelExample {
                         .title("Primary")
                         .glow_intensity(0.8)
                         .width(150.0)
-                        .show(ui, &self.theme, |ui| {
+                        .show(ui, &theme, |ui| {
                             ui.label(
                                 egui::RichText::new("●")
                                     .size(24.0)
-                                    .color(self.theme.primary()),
+                                    .color(theme.primary()),
                             );
                             ui.label("Primary color");
                         });
@@ -310,11 +313,11 @@ impl eframe::App for GlassPanelExample {
                         .title("Success")
                         .glow_intensity(0.8)
                         .width(150.0)
-                        .show(ui, &self.theme, |ui| {
+                        .show(ui, &theme, |ui| {
                             ui.label(
                                 egui::RichText::new("✓")
                                     .size(24.0)
-                                    .color(self.theme.success()),
+                                    .color(theme.success()),
                             );
                             ui.label("All good!");
                         });
@@ -325,11 +328,11 @@ impl eframe::App for GlassPanelExample {
                         .title("Warning")
                         .glow_intensity(0.8)
                         .width(150.0)
-                        .show(ui, &self.theme, |ui| {
+                        .show(ui, &theme, |ui| {
                             ui.label(
                                 egui::RichText::new("⚠")
                                     .size(24.0)
-                                    .color(self.theme.warning()),
+                                    .color(theme.warning()),
                             );
                             ui.label("Caution");
                         });

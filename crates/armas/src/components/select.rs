@@ -3,6 +3,7 @@
 //! Searchable dropdown menus with keyboard navigation
 
 use crate::layout::{HStack, VStack};
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{vec2, Color32, CornerRadius, Key, Response, Sense, Stroke, TextEdit, Ui, Vec2};
 
@@ -164,7 +165,8 @@ impl Select {
     }
 
     /// Show the select component
-    pub fn show(&mut self, ui: &mut Ui, theme: &Theme) -> SelectResponse {
+    pub fn show(&mut self, ui: &mut Ui) -> SelectResponse {
+        let theme = ui.ctx().armas_theme();
         let width = self.width.unwrap_or(200.0);
         let mut changed = false;
         let mut new_value = None;
@@ -268,7 +270,7 @@ impl Select {
 
                 // Show dropdown if open
                 if self.is_open {
-                    let dropdown_response = self.show_dropdown(ui, theme, button_rect, width);
+                    let dropdown_response = self.show_dropdown(ui, &theme, button_rect, width);
                     if let Some(selected_value) = dropdown_response.selected_value {
                         new_value = Some(selected_value);
                         changed = true;

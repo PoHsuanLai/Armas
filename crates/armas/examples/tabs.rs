@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{AnimatedTabs, TabStyle, Theme};
 use eframe::egui;
 
@@ -12,26 +13,29 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Animated Tabs Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(TabsApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(TabsApp::new()))
+        }),
     )
 }
 
 struct TabsApp {
-    theme: Theme,
     underline_tabs: AnimatedTabs,
     pill_tabs: AnimatedTabs,
     segment_tabs: AnimatedTabs,
+    theme: Theme,
 }
 
 impl TabsApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             underline_tabs: AnimatedTabs::new(vec!["Home", "Products", "About", "Contact"])
                 .style(TabStyle::Underline),
             pill_tabs: AnimatedTabs::new(vec!["Overview", "Analytics", "Reports"])
                 .style(TabStyle::Pill),
             segment_tabs: AnimatedTabs::new(vec!["Day", "Week", "Month"]).style(TabStyle::Segment),
+            theme: Theme::dark(),
         }
     }
 }
@@ -47,7 +51,7 @@ impl eframe::App for TabsApp {
                 ui.heading("Underline Style");
                 ui.add_space(10.0);
 
-                if let Some(index) = self.underline_tabs.show(ui, &self.theme) {
+                if let Some(index) = self.underline_tabs.show(ui) {
                     println!("Selected underline tab: {}", index);
                 }
 
@@ -70,7 +74,7 @@ impl eframe::App for TabsApp {
                 ui.heading("Pill Style");
                 ui.add_space(10.0);
 
-                if let Some(index) = self.pill_tabs.show(ui, &self.theme) {
+                if let Some(index) = self.pill_tabs.show(ui) {
                     println!("Selected pill tab: {}", index);
                 }
 
@@ -88,7 +92,7 @@ impl eframe::App for TabsApp {
                 ui.heading("Segment Style");
                 ui.add_space(10.0);
 
-                if let Some(index) = self.segment_tabs.show(ui, &self.theme) {
+                if let Some(index) = self.segment_tabs.show(ui) {
                     println!("Selected segment tab: {}", index);
                 }
 

@@ -2,8 +2,8 @@
 //!
 //! User profile images and initials
 
-use crate::{Badge, BadgeColor, Theme};
-use egui::{pos2, vec2, Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
+use crate::{ext::ArmasContextExt, BadgeColor};
+use egui::{vec2, Color32, Rect, Response, Sense, Stroke, Ui};
 
 /// Avatar size presets
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -51,18 +51,19 @@ pub enum AvatarShape {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::{Avatar, AvatarSize};
+/// use armas::{Avatar, AvatarSize, ext::ArmasContextExt};
 ///
 /// // Avatar with initials
 /// Avatar::new("JD")
 ///     .size(AvatarSize::Large)
-///     .show(ui, &theme);
+///     .show(ui);
 ///
 /// // Avatar with custom color
+/// let theme = ui.ctx().armas_theme();
 /// Avatar::new("AM")
 ///     .size(AvatarSize::Medium)
 ///     .color(theme.primary())
-///     .show(ui, &theme);
+///     .show(ui);
 /// ```
 pub struct Avatar {
     text: String,
@@ -133,7 +134,8 @@ impl Avatar {
     }
 
     /// Show the avatar
-    pub fn show(self, ui: &mut Ui, theme: &Theme) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         let size = self.size.size();
         let sense = if self.clickable {
             Sense::click()

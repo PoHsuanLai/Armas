@@ -1,3 +1,4 @@
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Ui, Vec2};
 use std::f32::consts::PI;
@@ -10,11 +11,10 @@ use std::f32::consts::PI;
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::{Theme, components::Spinner};
+/// use armas::components::Spinner;
 ///
 /// fn ui(ui: &mut egui::Ui, spinner: &mut Spinner) {
-///     let theme = Theme::dark();
-///     spinner.show(ui, &theme);
+///     spinner.show(ui);
 /// }
 /// ```
 #[derive(Debug, Clone)]
@@ -34,12 +34,12 @@ pub struct Spinner {
 }
 
 impl Spinner {
-    /// Create a new spinner with theme-based defaults
-    pub fn new(theme: &Theme) -> Self {
+    /// Create a new spinner with default settings
+    pub fn new() -> Self {
         Self {
             size: 40.0,
             speed: 2.0 * PI, // One rotation per second
-            color: theme.primary(),
+            color: Color32::from_rgb(99, 102, 241), // Default primary blue
             rotation: 0.0,
             bar_count: 12,
             bar_width: 2.0,
@@ -71,7 +71,7 @@ impl Spinner {
     }
 
     /// Show the spinner
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 
         // Update rotation
@@ -132,11 +132,10 @@ impl Spinner {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::{Theme, components::LoadingDots};
+/// use armas::components::LoadingDots;
 ///
 /// fn ui(ui: &mut egui::Ui, dots: &mut LoadingDots) {
-///     let theme = Theme::dark();
-///     dots.show(ui, &theme);
+///     dots.show(ui);
 /// }
 /// ```
 #[derive(Debug, Clone)]
@@ -156,12 +155,12 @@ pub struct LoadingDots {
 }
 
 impl LoadingDots {
-    /// Create new loading dots with theme-based defaults
-    pub fn new(theme: &Theme) -> Self {
+    /// Create new loading dots with default settings
+    pub fn new() -> Self {
         Self {
             dot_size: 8.0,
             spacing: 12.0,
-            color: theme.primary(),
+            color: Color32::from_rgb(99, 102, 241), // Default primary blue
             phase: 0.0,
             speed: 1.5,
             dot_count: 3,
@@ -199,7 +198,7 @@ impl LoadingDots {
     }
 
     /// Show the loading dots
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         let width = (self.dot_count as f32 - 1.0) * self.spacing + self.dot_size;
         let height = self.dot_size;
 
@@ -256,11 +255,10 @@ impl LoadingDots {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::{Theme, components::Skeleton};
+/// use armas::components::Skeleton;
 ///
 /// fn ui(ui: &mut egui::Ui, skeleton: &mut Skeleton) {
-///     let theme = Theme::dark();
-///     skeleton.show(ui, &theme);
+///     skeleton.show(ui);
 /// }
 /// ```
 #[derive(Debug, Clone)]
@@ -329,7 +327,7 @@ impl Skeleton {
     }
 
     /// Show the skeleton loader
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         let (rect, response) =
             ui.allocate_exact_size(Vec2::new(self.width, self.height), egui::Sense::hover());
 
@@ -402,11 +400,10 @@ impl Default for Skeleton {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::{Theme, components::CircularProgress};
+/// use armas::components::CircularProgress};
 ///
 /// fn ui(ui: &mut egui::Ui, progress: &mut CircularProgress) {
-///     let theme = Theme::dark();
-///     progress.show(ui, &theme);
+///     progress.show(ui);
 /// }
 /// ```
 #[derive(Debug, Clone)]
@@ -426,11 +423,11 @@ pub struct CircularProgress {
 }
 
 impl CircularProgress {
-    /// Create a new circular progress indicator with theme-based defaults
-    pub fn new(theme: &Theme) -> Self {
+    /// Create a new circular progress indicator with default settings
+    pub fn new() -> Self {
         Self {
             size: 40.0,
-            color: theme.primary(),
+            color: Color32::from_rgb(99, 102, 241), // Default primary blue
             stroke_width: 3.0,
             rotation: 0.0,
             arc_length: 0.25,
@@ -457,7 +454,7 @@ impl CircularProgress {
     }
 
     /// Show the circular progress
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 
         // Update animation

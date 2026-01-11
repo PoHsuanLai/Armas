@@ -2,6 +2,7 @@
 //!
 //! Demonstrates all gradient types and neon color palettes
 
+use armas::ext::ArmasContextExt;
 use armas::{ColorStop, Gradient, NeonPalette, PainterExt, Theme};
 use eframe::egui;
 use std::f32::consts::PI;
@@ -17,19 +18,20 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Gradient Showcase",
         options,
-        Box::new(|_cc| Ok(Box::new(GradientShowcase::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(GradientShowcase::new()))
+        }),
     )
 }
 
 struct GradientShowcase {
-    theme: Theme,
     rotation: f32,
 }
 
 impl GradientShowcase {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             rotation: 0.0,
         }
     }
@@ -254,7 +256,7 @@ impl GradientShowcase {
         });
     }
 
-    fn show_glow_effects(&self, ui: &mut egui::Ui) {
+    fn show_glow_effects(&self, ui: &mut egui::Ui, theme: &Theme) {
         ui.heading("Glow & Shadow Effects");
         ui.add_space(10.0);
 
@@ -286,7 +288,7 @@ impl GradientShowcase {
                     10.0,
                     egui::Color32::from_black_alpha(100),
                 );
-                painter.rect_filled(rect, 8.0, self.theme.surface());
+                painter.rect_filled(rect, 8.0, theme.surface());
             });
 
             ui.add_space(20.0);
@@ -339,6 +341,7 @@ impl GradientShowcase {
 
 impl eframe::App for GradientShowcase {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         // Animate rotation
         self.rotation += ctx.input(|i| i.stable_dt) * PI / 2.0;
         ctx.request_repaint();
@@ -358,7 +361,7 @@ impl eframe::App for GradientShowcase {
                 self.show_linear_gradients(ui);
                 ui.add_space(30.0);
 
-                self.show_glow_effects(ui);
+                self.show_glow_effects(ui, &theme);
                 ui.add_space(30.0);
 
                 self.show_color_palettes(ui);

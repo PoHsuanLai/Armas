@@ -1,3 +1,4 @@
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Ui, Vec2};
 
@@ -115,7 +116,8 @@ impl FeatureGrid {
     }
 
     /// Show the feature grid
-    pub fn show(&self, ui: &mut Ui, theme: &Theme) -> Response {
+    pub fn show(&self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         let available_width = ui.available_width();
 
         // Calculate columns if not specified
@@ -148,11 +150,11 @@ impl FeatureGrid {
             // Check hover for this specific item
             let item_hovered = ui.rect_contains_pointer(item_rect);
 
-            self.draw_feature_item(ui, item_rect, item, item_hovered, theme);
+            self.draw_feature_item(ui, item_rect, item, item_hovered, &theme);
 
             // Draw borders (smart: only between items)
             if self.show_borders {
-                self.draw_borders(ui, item_rect, (row, col), (rows, columns), theme);
+                self.draw_borders(ui, item_rect, (row, col), (rows, columns), &theme);
             }
         }
 

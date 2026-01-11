@@ -2,6 +2,7 @@
 //!
 //! Creates shooting stars across the screen with trail effects
 
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Stroke, Ui, Vec2};
 use std::f32::consts::PI;
@@ -196,7 +197,7 @@ impl MeteorShower {
     }
 
     /// Show the meteor shower
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         let (response, _painter) =
             ui.allocate_painter(Vec2::new(self.width, self.height), egui::Sense::hover());
 

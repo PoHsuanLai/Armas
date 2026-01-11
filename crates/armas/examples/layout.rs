@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::layout::{
     AspectRatio, Container, ContainerSize, ContentMode, Divider, FormLayout, Grid, HStack,
     ScrollView, Spacer, Table, VStack, ZStack,
@@ -13,8 +14,11 @@ fn main() -> eframe::Result<()> {
     };
 
     eframe::run_simple_native("Layout Demo", native_options, move |ctx, _frame| {
+        // Set theme once per frame (for run_simple_native pattern)
+        ctx.set_armas_theme(Theme::dark());
+        let theme = ctx.armas_theme();
+
         egui::CentralPanel::default().show(ctx, |ui| {
-            let theme = Theme::dark();
 
             ScrollView::vertical().show(ui, |ui| {
                 Container::new(ContainerSize::Large).show(ui, &theme, |ui| {
@@ -23,7 +27,7 @@ fn main() -> eframe::Result<()> {
                         ui.heading("Armas Layout Components");
                         ui.label("SwiftUI-inspired layout system for egui");
 
-                        Divider::horizontal().show(ui, &theme);
+                        Divider::horizontal().show(ui);
 
                         // VStack & HStack Demo
                         demo_section(ui, &theme, "VStack & HStack", |ui| {
@@ -33,9 +37,9 @@ fn main() -> eframe::Result<()> {
                                         VStack::new(theme.spacing.md).show(ui, |ui| {
                                             ui.strong("VStack");
                                             ui.label("Vertical spacing: 16px");
-                                            Button::new("Button 1").show(ui, &theme);
-                                            Button::new("Button 2").show(ui, &theme);
-                                            Button::new("Button 3").show(ui, &theme);
+                                            Button::new("Button 1").show(ui);
+                                            Button::new("Button 2").show(ui);
+                                            Button::new("Button 3").show(ui);
                                         });
                                     });
 
@@ -44,9 +48,9 @@ fn main() -> eframe::Result<()> {
                                             ui.strong("HStack");
                                             ui.label("Horizontal spacing: 8px");
                                             HStack::new(theme.spacing.sm).show(ui, |ui| {
-                                                Button::new("A").show(ui, &theme);
-                                                Button::new("B").show(ui, &theme);
-                                                Button::new("C").show(ui, &theme);
+                                                Button::new("A").show(ui);
+                                                Button::new("B").show(ui);
+                                                Button::new("C").show(ui);
                                             });
                                         });
                                     });
@@ -61,9 +65,9 @@ fn main() -> eframe::Result<()> {
                                     VStack::new(theme.spacing.md).show(ui, |ui| {
                                         ui.strong("Flexible Spacer (pushes items apart)");
                                         HStack::new(0.0).show(ui, |ui| {
-                                            Button::new("Left").show(ui, &theme);
+                                            Button::new("Left").show(ui);
                                             Spacer::new().show(ui);
-                                            Button::new("Right").show(ui, &theme);
+                                            Button::new("Right").show(ui);
                                         });
 
                                         Spacer::md(&theme).show(ui);
@@ -93,9 +97,9 @@ fn main() -> eframe::Result<()> {
                                         VStack::new(theme.spacing.md).show(ui, |ui| {
                                             ui.strong("Horizontal Dividers");
                                             ui.label("Section 1");
-                                            Divider::horizontal().show(ui, &theme);
+                                            Divider::horizontal().show(ui);
                                             ui.label("Section 2");
-                                            Divider::horizontal().thickness(2.0).show(ui, &theme);
+                                            Divider::horizontal().thickness(2.0).show(ui);
                                             ui.label("Section 3");
                                         });
                                     });
@@ -105,9 +109,9 @@ fn main() -> eframe::Result<()> {
                                         ui.strong("Vertical Divider");
                                         HStack::new(theme.spacing.md).show(ui, |ui| {
                                             ui.label("Left");
-                                            Divider::vertical().height(100.0).show(ui, &theme);
+                                            Divider::vertical().height(100.0).show(ui);
                                             ui.label("Middle");
-                                            Divider::vertical().height(100.0).show(ui, &theme);
+                                            Divider::vertical().height(100.0).show(ui);
                                             ui.label("Right");
                                         });
                                     });
@@ -130,7 +134,7 @@ fn main() -> eframe::Result<()> {
                                                     grid.cell(|ui| {
                                                         Card::new().show(
                                                             ui,
-                                                            &Theme::dark(),
+                                                            &theme,
                                                             |ui| {
                                                                 ui.set_min_height(80.0);
                                                                 ui.vertical_centered(|ui| {
@@ -141,7 +145,7 @@ fn main() -> eframe::Result<()> {
                                                                     ));
                                                                     Badge::new(format!("#{}", i))
                                                                         .color(BadgeColor::Info)
-                                                                        .show(ui, &theme);
+                                                                        .show(ui);
                                                                 });
                                                             },
                                                         );
@@ -173,13 +177,13 @@ fn main() -> eframe::Result<()> {
                                                 form.row("Role:", |ui| {
                                                     Badge::new("Admin")
                                                         .color(BadgeColor::Success)
-                                                        .show(ui, &theme);
+                                                        .show(ui);
                                                 });
                                                 form.row("Status:", |ui| {
                                                     Badge::new("Active")
                                                         .variant(BadgeVariant::Filled)
                                                         .color(BadgeColor::Info)
-                                                        .show(ui, &theme);
+                                                        .show(ui);
                                                 });
                                             });
                                     });
@@ -206,13 +210,13 @@ fn main() -> eframe::Result<()> {
                                                     row.col(|ui| {
                                                         Badge::new("Admin")
                                                             .color(BadgeColor::Success)
-                                                            .show(ui, &theme);
+                                                            .show(ui);
                                                     });
                                                     row.col(|ui| {
                                                         Badge::new("Active")
                                                             .variant(BadgeVariant::Filled)
                                                             .color(BadgeColor::Info)
-                                                            .show(ui, &theme);
+                                                            .show(ui);
                                                     });
                                                 });
 
@@ -222,13 +226,13 @@ fn main() -> eframe::Result<()> {
                                                     row.col(|ui| {
                                                         Badge::new("User")
                                                             .color(BadgeColor::Info)
-                                                            .show(ui, &theme);
+                                                            .show(ui);
                                                     });
                                                     row.col(|ui| {
                                                         Badge::new("Active")
                                                             .variant(BadgeVariant::Filled)
                                                             .color(BadgeColor::Info)
-                                                            .show(ui, &theme);
+                                                            .show(ui);
                                                     });
                                                 });
 
@@ -238,12 +242,12 @@ fn main() -> eframe::Result<()> {
                                                     row.col(|ui| {
                                                         Badge::new("Moderator")
                                                             .color(BadgeColor::Warning)
-                                                            .show(ui, &theme);
+                                                            .show(ui);
                                                     });
                                                     row.col(|ui| {
                                                         Badge::new("Away")
                                                             .color(BadgeColor::Warning)
-                                                            .show(ui, &theme);
+                                                            .show(ui);
                                                     });
                                                 });
 
@@ -253,12 +257,12 @@ fn main() -> eframe::Result<()> {
                                                     row.col(|ui| {
                                                         Badge::new("User")
                                                             .color(BadgeColor::Info)
-                                                            .show(ui, &theme);
+                                                            .show(ui);
                                                     });
                                                     row.col(|ui| {
                                                         Badge::new("Offline")
                                                             .color(BadgeColor::Error)
-                                                            .show(ui, &theme);
+                                                            .show(ui);
                                                     });
                                                 });
                                             },
@@ -305,7 +309,7 @@ fn main() -> eframe::Result<()> {
                                                 Badge::new("New")
                                                     .variant(BadgeVariant::Filled)
                                                     .color(BadgeColor::Error)
-                                                    .show(ui, &theme);
+                                                    .show(ui);
                                             });
                                         });
                                     });
@@ -359,10 +363,10 @@ fn main() -> eframe::Result<()> {
                                             Spacer::new().show(ui);
                                             Badge::new("Pro")
                                                 .color(BadgeColor::Success)
-                                                .show(ui, &theme);
+                                                .show(ui);
                                         });
 
-                                        Divider::horizontal().show(ui, &theme);
+                                        Divider::horizontal().show(ui);
 
                                         // Content Grid
                                         Grid::new(2)
@@ -383,20 +387,20 @@ fn main() -> eframe::Result<()> {
                                                 });
                                             });
 
-                                        Divider::horizontal().show(ui, &theme);
+                                        Divider::horizontal().show(ui);
 
                                         // Footer Buttons
                                         HStack::new(theme.spacing.sm).show(ui, |ui| {
                                             Button::new("Edit")
                                                 .variant(ButtonVariant::Filled)
-                                                .show(ui, &theme);
+                                                .show(ui);
                                             Button::new("Share")
                                                 .variant(ButtonVariant::Outlined)
-                                                .show(ui, &theme);
+                                                .show(ui);
                                             Spacer::new().show(ui);
                                             Button::new("Delete")
                                                 .variant(ButtonVariant::Text)
-                                                .show(ui, &theme);
+                                                .show(ui);
                                         });
                                     });
                                 });
@@ -420,7 +424,7 @@ fn demo_section(
     VStack::new(theme.spacing.md).show(ui, |ui| {
         HStack::new(theme.spacing.sm).show(ui, |ui| {
             ui.heading(title);
-            Badge::new("Layout").color(BadgeColor::Info).show(ui, theme);
+            Badge::new("Layout").color(BadgeColor::Info).show(ui);
         });
         content(ui);
     });

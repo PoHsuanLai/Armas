@@ -3,6 +3,7 @@
 //! Auto-rotating stack of cards with staggered depth
 
 use crate::animation::EasingFunction;
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
@@ -80,7 +81,8 @@ impl CardStack {
     }
 
     /// Show the card stack
-    pub fn show(&mut self, ui: &mut Ui, theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         let (rect, response) =
             ui.allocate_exact_size(Vec2::new(self.width, self.height), Sense::click());
 

@@ -1,3 +1,4 @@
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 
@@ -37,15 +38,13 @@ pub enum BadgeColor {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::{Theme, components::{Badge, BadgeVariant, BadgeColor}};
+/// use armas::components::{Badge, BadgeVariant, BadgeColor};
 ///
 /// fn ui(ui: &mut egui::Ui) {
-///     let theme = Theme::dark();
-///
 ///     Badge::new("New")
 ///         .variant(BadgeVariant::Filled)
 ///         .color(BadgeColor::Success)
-///         .show(ui, &theme);
+///         .show(ui);
 /// }
 /// ```
 pub struct Badge {
@@ -106,14 +105,16 @@ impl Badge {
         self
     }
 
-    /// Show the badge, returns true if remove button was clicked
-    pub fn show(self, ui: &mut Ui, theme: &Theme) -> bool {
-        let (bg_color, text_color, border_color) = self.get_colors(theme);
+    /// Show the badge
+    pub fn show(self, ui: &mut Ui) -> BadgeResponse {
+        let theme = ui.ctx().armas_theme();
+        let (bg_color, text_color, border_color) = self.get_colors(&theme);
 
         // Calculate size
+        let font_id = egui::FontId::proportional(self.size);
         let text_galley = ui.painter().layout_no_wrap(
             self.text.clone(),
-            egui::FontId::proportional(self.size),
+            font_id.clone(),
             text_color,
         );
         let text_width = text_galley.rect.width();
@@ -129,7 +130,7 @@ impl Badge {
         let width = text_width + dot_space + remove_space + padding;
         let height = self.size + theme.spacing.md;
 
-        let (rect, _) = ui.allocate_exact_size(Vec2::new(width, height), egui::Sense::hover());
+        let (rect, response) = ui.allocate_exact_size(Vec2::new(width, height), egui::Sense::hover());
 
         // Background
         match self.variant {
@@ -163,7 +164,7 @@ impl Badge {
             Pos2::new(x, rect.center().y),
             egui::Align2::LEFT_CENTER,
             &self.text,
-            egui::FontId::proportional(self.size),
+            font_id,
             text_color,
         );
 
@@ -210,7 +211,10 @@ impl Badge {
             }
         }
 
-        was_clicked
+        BadgeResponse {
+            removed: was_clicked,
+            response,
+        }
     }
 
     /// Get colors based on variant and color theme
@@ -240,6 +244,15 @@ impl Badge {
     }
 }
 
+/// Response from a badge
+#[derive(Debug, Clone)]
+pub struct BadgeResponse {
+    /// Whether the remove button was clicked (only relevant if badge is removable)
+    pub removed: bool,
+    /// The underlying egui response
+    pub response: egui::Response,
+}
+
 /// Notification badge (typically shows a count)
 pub struct NotificationBadge {
     /// Count to display
@@ -253,12 +266,12 @@ pub struct NotificationBadge {
 }
 
 impl NotificationBadge {
-    /// Create a new notification badge with theme
-    pub fn new(count: usize, theme: &Theme) -> Self {
+    /// Create a new notification badge with count
+    pub fn new(count: usize) -> Self {
         Self {
             count,
             max_count: Some(99),
-            color: theme.error(), // Use theme error color for notifications
+            color: Color32::RED, // Default red, can be customized with .color()
             size: 18.0,
         }
     }

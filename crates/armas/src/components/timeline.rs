@@ -1,3 +1,4 @@
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Ui, Vec2};
 
@@ -129,7 +130,8 @@ impl Timeline {
     }
 
     /// Show the timeline
-    pub fn show(self, ui: &mut Ui, theme: &Theme) {
+    pub fn show(self, ui: &mut Ui) {
+        let theme = ui.ctx().armas_theme();
         if self.items.is_empty() {
             return;
         }

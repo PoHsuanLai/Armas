@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{Slider, Theme};
 use eframe::egui;
 
@@ -10,12 +11,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Slider Component Example",
         options,
-        Box::new(|_cc| Ok(Box::new(SliderExample::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(SliderExample::default()))
+        }),
     )
 }
 
 struct SliderExample {
-    theme: Theme,
     volume: f32,
     brightness: f32,
     temperature: f32,
@@ -27,7 +30,6 @@ struct SliderExample {
 impl Default for SliderExample {
     fn default() -> Self {
         Self {
-            theme: Theme::dark(),
             volume: 75.0,
             brightness: 50.0,
             temperature: 20.0,
@@ -52,7 +54,7 @@ impl eframe::App for SliderExample {
                 .label("Volume")
                 .suffix("%")
                 .width(300.0)
-                .show(ui, &self.theme);
+                .show(ui);
 
             if response.changed {
                 self.volume = response.value;
@@ -63,7 +65,7 @@ impl eframe::App for SliderExample {
                 .label("Brightness")
                 .suffix("%")
                 .width(300.0)
-                .show(ui, &self.theme);
+                .show(ui);
 
             if response.changed {
                 self.brightness = response.value;
@@ -81,7 +83,7 @@ impl eframe::App for SliderExample {
                 .label("Temperature")
                 .suffix("°C")
                 .width(400.0)
-                .show(ui, &self.theme);
+                .show(ui);
 
             if response.changed {
                 self.temperature = response.value;
@@ -92,7 +94,7 @@ impl eframe::App for SliderExample {
                 .label("Playback Speed")
                 .suffix("x")
                 .width(400.0)
-                .show(ui, &self.theme);
+                .show(ui);
 
             if response.changed {
                 self.speed = response.value;
@@ -111,7 +113,7 @@ impl eframe::App for SliderExample {
                 .suffix("%")
                 .step(10.0)
                 .width(400.0)
-                .show(ui, &self.theme);
+                .show(ui);
 
             if response.changed {
                 self.zoom = response.value;
@@ -128,21 +130,21 @@ impl eframe::App for SliderExample {
             Slider::new(50.0, 0.0, 100.0)
                 .label("Short Slider")
                 .width(200.0)
-                .show(ui, &self.theme);
+                .show(ui);
 
             ui.add_space(10.0);
 
             Slider::new(50.0, 0.0, 100.0)
                 .label("Medium Slider")
                 .width(400.0)
-                .show(ui, &self.theme);
+                .show(ui);
 
             ui.add_space(10.0);
 
             Slider::new(50.0, 0.0, 100.0)
                 .label("Long Slider")
                 .width(600.0)
-                .show(ui, &self.theme);
+                .show(ui);
 
             ui.add_space(20.0);
 
@@ -157,7 +159,7 @@ impl eframe::App for SliderExample {
                 .label("Opacity")
                 .show_value(false)
                 .width(300.0)
-                .show(ui, &self.theme);
+                .show(ui);
 
             if response.changed {
                 self.opacity = response.value;
@@ -175,7 +177,7 @@ impl eframe::App for SliderExample {
 
             Slider::new(50.0, 0.0, 100.0)
                 .width(300.0)
-                .show(ui, &self.theme);
+                .show(ui);
         });
     }
 }

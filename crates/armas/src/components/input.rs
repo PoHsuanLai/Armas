@@ -3,6 +3,7 @@
 //! Modern text input fields with icons, validation, and animations
 
 use crate::layout::VStack;
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{vec2, Color32, CornerRadius, Response, Sense, Stroke, TextEdit, Ui, Vec2};
 
@@ -108,7 +109,8 @@ impl Input {
     }
 
     /// Show the input field
-    pub fn show(&self, ui: &mut Ui, text: &mut String, theme: &Theme) -> Response {
+    pub fn show(self, ui: &mut Ui, text: &mut String) -> Response {
+        let theme = ui.ctx().armas_theme();
         let width = self.width.unwrap_or(200.0);
 
         VStack::new(4.0)
@@ -292,12 +294,12 @@ impl SearchInput {
     }
 
     /// Show the search input
-    pub fn show(&self, ui: &mut Ui, text: &mut String, theme: &Theme) -> Response {
+    pub fn show(self, ui: &mut Ui, text: &mut String) -> Response {
         Input::new(&self.placeholder)
             .variant(InputVariant::Filled)
             .with_left_icon("🔍")
             .with_width(self.width.unwrap_or(300.0))
-            .show(ui, text, theme)
+            .show(ui, text)
     }
 }
 

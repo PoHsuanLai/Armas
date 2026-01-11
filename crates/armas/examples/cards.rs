@@ -2,6 +2,7 @@
 //!
 //! Demonstrates Phase 3 interactive card effects
 
+use armas::ext::ArmasContextExt;
 use armas::{CardStack, HoverCard, StackCard, Theme, TiltCard};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Card Effects",
         options,
-        Box::new(|_cc| Ok(Box::new(CardEffectsApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(CardEffectsApp::new()))
+        }),
     )
 }
 
 struct CardEffectsApp {
-    theme: Theme,
     tilt_card: TiltCard,
     card_stack: CardStack,
     hover_card_1: HoverCard,
@@ -52,7 +55,6 @@ impl CardEffectsApp {
 
         let theme = Theme::dark();
         Self {
-            theme: theme.clone(),
             tilt_card: TiltCard::new(350.0, 250.0, &theme)
                 .with_tilt_strength(0.4)
                 .with_glare(true)
@@ -72,6 +74,7 @@ impl CardEffectsApp {
 
 impl eframe::App for CardEffectsApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
@@ -92,7 +95,7 @@ impl eframe::App for CardEffectsApp {
                     ui.label("3D Tilt Card");
                     ui.add_space(10.0);
 
-                    self.tilt_card.show(ui, &self.theme, |ui| {
+                    self.tilt_card.show(ui, &theme, |ui| {
                         ui.vertical_centered(|ui| {
                             ui.add_space(20.0);
                             ui.heading("Tilt Effect");
@@ -111,7 +114,7 @@ impl eframe::App for CardEffectsApp {
                     // Hover card 1
                     self.hover_card_1.show(
                         ui,
-                        &self.theme,
+                        &theme,
                         |ui, opacity| {
                             ui.vertical_centered(|ui| {
                                 let alpha = (255.0 * opacity) as u8;
@@ -148,7 +151,7 @@ impl eframe::App for CardEffectsApp {
                     ui.label("Auto-Rotating Card Stack");
                     ui.add_space(10.0);
 
-                    self.card_stack.show(ui, &self.theme);
+                    self.card_stack.show(ui);
 
                     ui.add_space(20.0);
                     ui.label("Cards rotate every 4 seconds");
@@ -163,7 +166,7 @@ impl eframe::App for CardEffectsApp {
 
                     self.hover_card_2.show(
                         ui,
-                        &self.theme,
+                        &theme,
                         |ui, opacity| {
                             ui.vertical_centered(|ui| {
                                 let alpha = (255.0 * opacity) as u8;

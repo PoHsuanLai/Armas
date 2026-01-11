@@ -3,6 +3,7 @@
 //! Horizontal slider for value selection
 
 use crate::layout::{HStack, Spacer, VStack};
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{pos2, vec2, Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 
@@ -72,7 +73,8 @@ impl Slider {
     }
 
     /// Show the slider
-    pub fn show(mut self, ui: &mut Ui, theme: &Theme) -> SliderResponse {
+    pub fn show(mut self, ui: &mut Ui) -> SliderResponse {
+        let theme = ui.ctx().armas_theme();
         let mut changed = false;
 
         VStack::new(4.0).show(ui, |ui| {

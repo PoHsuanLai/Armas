@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{ScrollDirection, ScrollingBanner, Theme};
 use eframe::egui;
 
@@ -12,12 +13,14 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Scrolling Banner Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(ScrollingBannerApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(ScrollingBannerApp::new()))
+        }),
     )
 }
 
 struct ScrollingBannerApp {
-    theme: Theme,
     banner_left: ScrollingBanner,
     banner_right: ScrollingBanner,
     banner_up: ScrollingBanner,
@@ -30,7 +33,6 @@ struct ScrollingBannerApp {
 impl ScrollingBannerApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             banner_left: ScrollingBanner::new()
                 .direction(ScrollDirection::Left)
                 .speed(50.0),
@@ -60,6 +62,7 @@ impl ScrollingBannerApp {
 impl eframe::App for ScrollingBannerApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            let theme = ui.ctx().armas_theme();
             ui.heading("Scrolling Banner Component");
             ui.add_space(10.0);
 
@@ -69,7 +72,7 @@ impl eframe::App for ScrollingBannerApp {
                 ui.add_space(5.0);
 
                 ui.set_height(50.0);
-                self.banner_left.show(ui, &self.theme, |ui, _index| {
+                self.banner_left.show(ui, |ui, _index| {
                     ui.horizontal(|ui| {
                         ui.label("Item 1");
                         ui.add_space(20.0);
@@ -92,17 +95,18 @@ impl eframe::App for ScrollingBannerApp {
                 ui.add_space(5.0);
 
                 ui.set_height(50.0);
-                self.banner_right.show(ui, &self.theme, |ui, _index| {
+                let theme_clone = theme.clone();
+                self.banner_right.show(ui, |ui, _index| {
                     ui.horizontal(|ui| {
-                        ui.colored_label(self.theme.primary(), "React");
+                        ui.colored_label(theme_clone.primary(), "React");
                         ui.add_space(20.0);
-                        ui.colored_label(self.theme.secondary(), "Vue");
+                        ui.colored_label(theme_clone.secondary(), "Vue");
                         ui.add_space(20.0);
-                        ui.colored_label(self.theme.success(), "Svelte");
+                        ui.colored_label(theme_clone.success(), "Svelte");
                         ui.add_space(20.0);
-                        ui.colored_label(self.theme.warning(), "Angular");
+                        ui.colored_label(theme_clone.warning(), "Angular");
                         ui.add_space(20.0);
-                        ui.colored_label(self.theme.error(), "Solid");
+                        ui.colored_label(theme_clone.error(), "Solid");
                     });
                 });
             });
@@ -115,7 +119,7 @@ impl eframe::App for ScrollingBannerApp {
                 ui.add_space(5.0);
 
                 ui.set_height(50.0);
-                self.banner_fast.show(ui, &self.theme, |ui, _index| {
+                self.banner_fast.show(ui, |ui, _index| {
                     ui.horizontal(|ui| {
                         for i in 1..=10 {
                             ui.label(format!("#{}", i));
@@ -132,7 +136,7 @@ impl eframe::App for ScrollingBannerApp {
                 ui.add_space(5.0);
 
                 ui.set_height(50.0);
-                self.banner_slow.show(ui, &self.theme, |ui, _index| {
+                self.banner_slow.show(ui, |ui, _index| {
                     ui.horizontal(|ui| {
                         ui.label("Slow");
                         ui.add_space(30.0);
@@ -157,7 +161,7 @@ impl eframe::App for ScrollingBannerApp {
                 ui.add_space(5.0);
 
                 ui.set_height(50.0);
-                self.banner_logos.show(ui, &self.theme, |ui, _index| {
+                self.banner_logos.show(ui, |ui, _index| {
                     ui.horizontal(|ui| {
                         // Simulate logo cards
                         for name in ["Rust", "egui", "TypeScript", "React", "Go"].iter() {
@@ -179,7 +183,7 @@ impl eframe::App for ScrollingBannerApp {
 
                     ui.set_width(150.0);
                     ui.set_height(200.0);
-                    self.banner_up.show(ui, &self.theme, |ui, _index| {
+                    self.banner_up.show(ui, |ui, _index| {
                         ui.vertical(|ui| {
                             for i in 1..=5 {
                                 ui.label(format!("Line {}", i));
@@ -198,10 +202,11 @@ impl eframe::App for ScrollingBannerApp {
 
                     ui.set_width(150.0);
                     ui.set_height(200.0);
-                    self.banner_down.show(ui, &self.theme, |ui, _index| {
+                    let theme_clone = theme.clone();
+                    self.banner_down.show(ui, |ui, _index| {
                         ui.vertical(|ui| {
                             for i in 1..=5 {
-                                ui.colored_label(self.theme.primary(), format!("Item {}", i));
+                                ui.colored_label(theme_clone.primary(), format!("Item {}", i));
                                 ui.add_space(10.0);
                             }
                         });

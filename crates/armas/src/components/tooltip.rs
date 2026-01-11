@@ -2,6 +2,7 @@
 //!
 //! Contextual help tooltips that appear on hover
 
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{pos2, vec2, FontId, Rect, Response, Shape, Stroke, StrokeKind, Ui, Vec2};
 use std::time::Instant;
@@ -71,7 +72,8 @@ impl Tooltip {
     /// Show tooltip for a UI element
     ///
     /// Returns true if the tooltip is currently visible
-    pub fn show(&mut self, ui: &mut Ui, theme: &Theme, target_response: &Response) -> bool {
+    pub fn show(&mut self, ui: &mut Ui, target_response: &Response) -> bool {
+        let theme = ui.ctx().armas_theme();
         let is_hovered = target_response.hovered();
 
         // Track hover state
@@ -129,7 +131,7 @@ impl Tooltip {
 
         // Arrow
         if self.show_arrow {
-            self.draw_arrow(&painter, theme, target_rect, tooltip_rect, position);
+            self.draw_arrow(&painter, &theme, target_rect, tooltip_rect, position);
         }
 
         // Text
@@ -279,7 +281,7 @@ impl Tooltip {
 /// ```
 pub fn tooltip(ui: &mut Ui, theme: &Theme, response: &Response, text: impl Into<String>) {
     let mut tooltip = Tooltip::new(text);
-    tooltip.show(ui, theme, response);
+    tooltip.show(ui, response);
 }
 
 /// Show tooltip with custom configuration
@@ -291,5 +293,5 @@ pub fn tooltip_with(
     configure: impl FnOnce(Tooltip) -> Tooltip,
 ) {
     let mut tooltip = configure(Tooltip::new(text));
-    tooltip.show(ui, theme, response);
+    tooltip.show(ui, response);
 }

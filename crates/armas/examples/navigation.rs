@@ -2,6 +2,7 @@
 //!
 //! Demonstrates navigation components including FloatingNavbar, Sidebar, Breadcrumbs, FloatingDock, and CommandMenu
 
+use armas::ext::ArmasContextExt;
 use armas::{
     BreadcrumbItem, Breadcrumbs, Command, CommandMenu, DockItem, DockPosition, FloatingDock,
     FloatingNavbar, NavItem, NavbarPosition, Sidebar, SidebarItem, Theme,
@@ -19,12 +20,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Navigation",
         options,
-        Box::new(|_cc| Ok(Box::new(NavigationApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(NavigationApp::new()))
+        }),
     )
 }
 
 struct NavigationApp {
-    theme: Theme,
     floating_navbar: FloatingNavbar,
     sidebar: Sidebar,
     dock: FloatingDock,
@@ -100,7 +103,6 @@ impl NavigationApp {
         ];
 
         Self {
-            theme: theme.clone(),
             floating_navbar: FloatingNavbar::new(navbar_items).position(NavbarPosition::Top),
             sidebar: Sidebar::new(sidebar_items),
             dock: FloatingDock::new(dock_items, &theme)
@@ -115,8 +117,9 @@ impl NavigationApp {
 
 impl eframe::App for NavigationApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         // Show floating navbar (it creates its own Area internally)
-        let navbar_response = self.floating_navbar.show(ctx, &self.theme);
+        let navbar_response = self.floating_navbar.show(ctx);
 
         if let Some(idx) = navbar_response.clicked {
             let labels = ["Home", "Products", "About", "Contact"];
@@ -128,7 +131,7 @@ impl eframe::App for NavigationApp {
         egui::SidePanel::left("sidebar_panel")
             .resizable(false)
             .show(ctx, |ui| {
-                let sidebar_response = self.sidebar.show(ui, &self.theme);
+                let sidebar_response = self.sidebar.show(ui);
 
                 if let Some(idx) = sidebar_response.clicked {
                     let labels = ["Dashboard", "Analytics", "Messages", "Team", "Settings"];
@@ -158,7 +161,7 @@ impl eframe::App for NavigationApp {
                 .add_item(BreadcrumbItem::new("Home").icon("🏠"))
                 .add_item(BreadcrumbItem::new("Products"))
                 .add_item(BreadcrumbItem::new("Electronics").current())
-                .show(ui, &self.theme);
+                .show(ui);
 
             if let Some(idx) = breadcrumb_response.clicked {
                 self.last_action = format!("Breadcrumb: clicked item {}", idx);
@@ -241,7 +244,7 @@ impl eframe::App for NavigationApp {
 ];
 let mut navbar = FloatingNavbar::new(items)
   .position(NavbarPosition::Top);
-navbar.show(ui, &theme);",
+navbar.show(ui);",
                     );
 
                     ui.add_space(10.0);
@@ -253,7 +256,7 @@ navbar.show(ui, &theme);",
   SidebarItem::new(\"📧\", \"Mail\").badge(\"3\"),
 ];
 let mut sidebar = Sidebar::new(items);
-sidebar.show(ui, &theme);",
+sidebar.show(ui);",
                     );
                 });
             });
@@ -265,7 +268,7 @@ sidebar.show(ui, &theme);",
         egui::Area::new(egui::Id::new("dock_area"))
             .fixed_pos(egui::pos2(0.0, 0.0))
             .show(ctx, |ui| {
-                let dock_response = self.dock.show(ui, &self.theme);
+                let dock_response = self.dock.show(ui);
                 if let Some(clicked_idx) = dock_response.clicked_item {
                     self.last_action = format!("Dock: clicked item {}", clicked_idx);
                 }
@@ -276,7 +279,7 @@ sidebar.show(ui, &theme);",
             .fixed_pos(egui::pos2(0.0, 0.0))
             .order(egui::Order::Foreground)
             .show(ctx, |ui| {
-                let cmd_response = self.command_menu.show(ui, &self.theme);
+                let cmd_response = self.command_menu.show(ui);
                 if let Some(cmd_id) = cmd_response.executed_command {
                     self.last_action = format!("Command executed: {}", cmd_id);
                 }

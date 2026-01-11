@@ -2,6 +2,7 @@
 //!
 //! Demonstrates swirling vortex effects with rotating particles
 
+use armas::ext::ArmasContextExt;
 use armas::{Theme, VortexBackground};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Vortex Background",
         options,
-        Box::new(|_cc| Ok(Box::new(VortexApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(VortexApp::new()))
+        }),
     )
 }
 
 struct VortexApp {
-    theme: Theme,
     vortex1: VortexBackground,
     vortex2: VortexBackground,
     vortex3: VortexBackground,
@@ -30,7 +33,6 @@ struct VortexApp {
 impl VortexApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             vortex1: VortexBackground::new(1200.0, 300.0),
             vortex2: VortexBackground::new(1200.0, 300.0)
                 .particle_count(25)
@@ -72,13 +74,13 @@ impl eframe::App for VortexApp {
                     egui::RichText::new("Default Vortex")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.group(|ui| {
                     ui.set_min_size(egui::vec2(1150.0, 300.0));
-                    self.vortex1.show(ui, &self.theme);
+                    self.vortex1.show(ui);
 
                     ui.centered_and_justified(|ui| {
                         ui.vertical_centered(|ui| {
@@ -103,13 +105,13 @@ impl eframe::App for VortexApp {
                     egui::RichText::new("Fast Rotation with Web Effect")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.group(|ui| {
                     ui.set_min_size(egui::vec2(1150.0, 300.0));
-                    self.vortex2.show(ui, &self.theme);
+                    self.vortex2.show(ui);
 
                     ui.centered_and_justified(|ui| {
                         ui.vertical_centered(|ui| {
@@ -134,13 +136,13 @@ impl eframe::App for VortexApp {
                     egui::RichText::new("Smooth Slow Vortex")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.group(|ui| {
                     ui.set_min_size(egui::vec2(1150.0, 300.0));
-                    self.vortex3.show(ui, &self.theme);
+                    self.vortex3.show(ui);
 
                     ui.centered_and_justified(|ui| {
                         ui.vertical_centered(|ui| {
@@ -170,7 +172,7 @@ impl eframe::App for VortexApp {
                             egui::RichText::new("💡 Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• particle_count() sets particles per ring (lower values show web lines)");

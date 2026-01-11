@@ -2,7 +2,7 @@
 //!
 //! Creates diagonal light beams across the background with subtle animation
 
-use crate::Theme;
+use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 use std::f32::consts::PI;
 
@@ -89,7 +89,7 @@ impl BackgroundBeams {
     }
 
     /// Show the background beams
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         if self.animate {
             let dt = ui.input(|i| i.stable_dt);
             self.animation_offset += dt * 20.0; // Slow movement

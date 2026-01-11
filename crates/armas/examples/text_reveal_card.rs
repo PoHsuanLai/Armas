@@ -2,6 +2,7 @@
 //!
 //! Demonstrates text reveal effect on mouse hover
 
+use armas::ext::ArmasContextExt;
 use armas::{TextRevealCard, Theme};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Text Reveal Card",
         options,
-        Box::new(|_cc| Ok(Box::new(TextRevealCardApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(TextRevealCardApp::new()))
+        }),
     )
 }
 
 struct TextRevealCardApp {
-    theme: Theme,
     card1: TextRevealCard,
     card2: TextRevealCard,
     card3: TextRevealCard,
@@ -30,7 +33,6 @@ struct TextRevealCardApp {
 impl TextRevealCardApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             card1: TextRevealCard::new(
                 550.0,
                 250.0,
@@ -75,14 +77,14 @@ impl eframe::App for TextRevealCardApp {
                     egui::RichText::new("Classic Reveal")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.horizontal(|ui| {
                     ui.add_space(25.0);
                     ui.vertical(|ui| {
-                        self.card1.show(ui, &self.theme);
+                        self.card1.show(ui);
                     });
                 });
 
@@ -93,14 +95,14 @@ impl eframe::App for TextRevealCardApp {
                     egui::RichText::new("Purple Gradient")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.horizontal(|ui| {
                     ui.add_space(25.0);
                     ui.vertical(|ui| {
-                        self.card2.show(ui, &self.theme);
+                        self.card2.show(ui);
                     });
                 });
 
@@ -111,14 +113,14 @@ impl eframe::App for TextRevealCardApp {
                     egui::RichText::new("Custom Colors")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
                 ui.horizontal(|ui| {
                     ui.add_space(25.0);
                     ui.vertical(|ui| {
-                        self.card3.show(ui, &self.theme);
+                        self.card3.show(ui);
                     });
                 });
 
@@ -134,7 +136,7 @@ impl eframe::App for TextRevealCardApp {
                             egui::RichText::new("Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• Move your mouse left to right across the card");

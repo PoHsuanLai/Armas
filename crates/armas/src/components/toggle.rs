@@ -4,6 +4,7 @@
 
 use crate::animation::SpringAnimation;
 use crate::layout::VStack;
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{pos2, vec2, Color32, CornerRadius, Response, Sense, Stroke, Ui, Vec2};
 
@@ -97,7 +98,8 @@ impl Toggle {
     }
 
     /// Show the toggle and return whether it changed
-    pub fn show(&mut self, ui: &mut Ui, checked: &mut bool, theme: &Theme) -> ToggleResponse {
+    pub fn show(&mut self, ui: &mut Ui, checked: &mut bool) -> ToggleResponse {
+        let theme = ui.ctx().armas_theme();
         let old_checked = *checked;
 
         // Update spring animation to match checked state
@@ -128,10 +130,10 @@ impl Toggle {
                 if ui.is_rect_visible(rect) {
                     match self.variant {
                         ToggleVariant::Switch => {
-                            self.draw_switch(ui, rect, *checked, theme);
+                            self.draw_switch(ui, rect, *checked, &theme);
                         }
                         ToggleVariant::Checkbox => {
-                            self.draw_checkbox(ui, rect, *checked, theme);
+                            self.draw_checkbox(ui, rect, *checked, &theme);
                         }
                     }
                 }
@@ -352,7 +354,8 @@ impl ToggleGroup {
     }
 
     /// Show the toggle group
-    pub fn show(&mut self, ui: &mut Ui, theme: &Theme) -> ToggleGroupResponse {
+    pub fn show(&mut self, ui: &mut Ui) -> ToggleGroupResponse {
+        let theme = ui.ctx().armas_theme();
         let mut changed = Vec::new();
 
         VStack::new(theme.spacing.sm).show(ui, |ui| {
@@ -369,7 +372,7 @@ impl ToggleGroup {
             // Show each toggle
             for item in &mut self.items {
                 let old_checked = item.checked;
-                item.toggle.show(ui, &mut item.checked, theme);
+                item.toggle.show(ui, &mut item.checked);
 
                 if old_checked != item.checked {
                     changed.push((item.id.clone(), item.checked));

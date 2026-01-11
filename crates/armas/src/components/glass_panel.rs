@@ -14,6 +14,14 @@ pub struct GlassPanel<'a> {
     pub glow_intensity: f32,
     /// Custom width (None = fill available)
     pub width: Option<f32>,
+    /// Blur amount (cosmetic, egui doesn't support actual blur)
+    pub blur_amount: f32,
+    /// Opacity level (0.0-1.0)
+    pub opacity: f32,
+    /// Corner radius
+    pub corner_radius: Option<f32>,
+    /// Inner margin/padding
+    pub inner_margin: Option<f32>,
 }
 
 impl<'a> GlassPanel<'a> {
@@ -23,6 +31,10 @@ impl<'a> GlassPanel<'a> {
             title: None,
             glow_intensity: 0.3,
             width: None,
+            blur_amount: 10.0,
+            opacity: 0.7,
+            corner_radius: None,
+            inner_margin: None,
         }
     }
 
@@ -44,6 +56,30 @@ impl<'a> GlassPanel<'a> {
         self
     }
 
+    /// Set blur amount (cosmetic only, egui doesn't support real blur)
+    pub fn blur(mut self, amount: f32) -> Self {
+        self.blur_amount = amount;
+        self
+    }
+
+    /// Set opacity level (0.0 to 1.0)
+    pub fn opacity(mut self, opacity: f32) -> Self {
+        self.opacity = opacity.clamp(0.0, 1.0);
+        self
+    }
+
+    /// Set corner radius
+    pub fn corner_radius(mut self, radius: f32) -> Self {
+        self.corner_radius = Some(radius);
+        self
+    }
+
+    /// Set inner margin/padding
+    pub fn inner_margin(mut self, margin: f32) -> Self {
+        self.inner_margin = Some(margin);
+        self
+    }
+
     /// Show the glass panel with content
     pub fn show<R>(
         self,
@@ -59,7 +95,7 @@ impl<'a> GlassPanel<'a> {
                 surface.r(),
                 surface.g(),
                 surface.b(),
-                (255.0 * 0.7) as u8, // 70% opacity for glass effect
+                (255.0 * self.opacity) as u8,
             )
         };
 
@@ -74,6 +110,8 @@ impl<'a> GlassPanel<'a> {
             )
         };
 
+        let corner_rad = self.corner_radius.unwrap_or(theme.spacing.corner_radius);
+        let inner_margin_val = self.inner_margin.unwrap_or(theme.spacing.spacing_medium);
         let mut content_result = None;
 
         // Create a vertical scope to constrain width if specified
@@ -83,9 +121,9 @@ impl<'a> GlassPanel<'a> {
 
                 egui::Frame::new()
                     .fill(glass_color)
-                    .corner_radius(CornerRadius::same(theme.spacing.corner_radius as u8))
+                    .corner_radius(CornerRadius::same(corner_rad as u8))
                     .stroke(egui::Stroke::new(1.0, theme.outline_variant()))
-                    .inner_margin(theme.spacing.spacing_medium)
+                    .inner_margin(inner_margin_val)
                     .show(ui, |ui| {
                         // Title if provided
                         if let Some(title) = self.title {
@@ -106,9 +144,9 @@ impl<'a> GlassPanel<'a> {
         } else {
             egui::Frame::new()
                 .fill(glass_color)
-                .corner_radius(CornerRadius::same(theme.spacing.corner_radius as u8))
+                .corner_radius(CornerRadius::same(corner_rad as u8))
                 .stroke(egui::Stroke::new(1.0, theme.outline_variant()))
-                .inner_margin(theme.spacing.spacing_medium)
+                .inner_margin(inner_margin_val)
                 .show(ui, |ui| {
                     // Title if provided
                     if let Some(title) = self.title {
@@ -132,7 +170,7 @@ impl<'a> GlassPanel<'a> {
         let shimmer_rect = egui::Rect::from_min_size(rect.min, egui::vec2(rect.width(), 2.0));
         ui.painter().rect_filled(
             shimmer_rect,
-            CornerRadius::same(theme.spacing.corner_radius as u8),
+            CornerRadius::same(corner_rad as u8),
             theme.outline_variant(),
         );
 
@@ -140,7 +178,7 @@ impl<'a> GlassPanel<'a> {
         if self.glow_intensity > 0.0 {
             ui.painter().rect_stroke(
                 rect,
-                CornerRadius::same(theme.spacing.corner_radius as u8),
+                CornerRadius::same(corner_rad as u8),
                 egui::Stroke::new(1.5, glow_color),
                 egui::StrokeKind::Middle,
             );

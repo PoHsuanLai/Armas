@@ -2,7 +2,7 @@
 //!
 //! Creates animated beams that follow paths with glow effects
 
-use crate::Theme;
+use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Response, Stroke, Ui, Vec2};
 
 /// A path point with optional curve control
@@ -51,13 +51,13 @@ pub enum BeamLoopMode {
 }
 
 impl AnimatedBeam {
-    /// Create a new animated beam with theme-based defaults
-    pub fn new(path: Vec<PathPoint>, theme: &Theme) -> Self {
+    /// Create a new animated beam with default color
+    pub fn new(path: Vec<PathPoint>) -> Self {
         Self {
             path,
             progress: 0.0,
             speed: 0.5,
-            color: theme.primary(),
+            color: Color32::from_rgb(99, 102, 241), // Default primary color
             thickness: 3.0,
             glow_intensity: 0.8,
             loop_mode: BeamLoopMode::Loop,
@@ -249,7 +249,7 @@ impl AnimatedBeams {
     }
 
     /// Show all beams
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         let (response, _painter) =
             ui.allocate_painter(Vec2::new(self.width, self.height), egui::Sense::hover());
 
@@ -275,16 +275,14 @@ mod tests {
     #[test]
     fn test_beam_creation() {
         let path = vec![PathPoint::new(0.0, 0.0), PathPoint::new(100.0, 100.0)];
-        let theme = Theme::default();
-        let beam = AnimatedBeam::new(path, &theme);
+        let beam = AnimatedBeam::new(path);
         assert_eq!(beam.progress, 0.0);
     }
 
     #[test]
     fn test_beam_config() {
         let path = vec![PathPoint::new(0.0, 0.0), PathPoint::new(100.0, 100.0)];
-        let theme = Theme::default();
-        let beam = AnimatedBeam::new(path, &theme)
+        let beam = AnimatedBeam::new(path)
             .with_speed(2.0)
             .with_loop_mode(BeamLoopMode::PingPong);
 

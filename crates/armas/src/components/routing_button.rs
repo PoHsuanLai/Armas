@@ -3,6 +3,7 @@
 //! Input/Output routing buttons (e.g., "Input L+R", "Main")
 //! Matches Studio One's I/O display.
 
+use crate::ext::ArmasContextExt;
 use crate::theme::Theme;
 use egui;
 
@@ -33,7 +34,8 @@ impl<'a> RoutingButton<'a> {
         }
     }
 
-    pub fn show(self, ui: &mut egui::Ui, theme: &Theme) -> egui::Response {
+    pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
+        let theme = ui.ctx().armas_theme();
         let font_size = ui.spacing().interact_size.y * 0.4;
         let (rect, response) =
             ui.allocate_exact_size(egui::vec2(self.width, self.height), egui::Sense::click());

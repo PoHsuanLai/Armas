@@ -258,7 +258,7 @@ impl Drawer {
                                     if Button::new("✕")
                                         .variant(ButtonVariant::Text)
                                         .min_size(vec2(32.0, 32.0))
-                                        .show(ui, theme)
+                                        .show(ui)
                                         .clicked()
                                     {
                                         *is_open = false;

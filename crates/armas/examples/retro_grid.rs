@@ -2,6 +2,7 @@
 //!
 //! Demonstrates cyberpunk-style perspective grid backgrounds
 
+use armas::ext::ArmasContextExt;
 use armas::{RetroGrid, Theme};
 use eframe::egui;
 
@@ -16,12 +17,14 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Retro Grid",
         options,
-        Box::new(|_cc| Ok(Box::new(RetroGridApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(RetroGridApp::new()))
+        }),
     )
 }
 
 struct RetroGridApp {
-    theme: Theme,
     grid1: RetroGrid,
     grid2: RetroGrid,
     grid3: RetroGrid,
@@ -30,7 +33,6 @@ struct RetroGridApp {
 impl RetroGridApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
             grid1: RetroGrid::new(1150.0, 350.0),
             grid2: RetroGrid::new(1150.0, 350.0)
                 .grid_color(egui::Color32::from_rgba_unmultiplied(255, 0, 255, 100))
@@ -48,6 +50,7 @@ impl RetroGridApp {
 
 impl eframe::App for RetroGridApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.visuals_mut().override_text_color = Some(egui::Color32::WHITE);
 
@@ -65,7 +68,7 @@ impl eframe::App for RetroGridApp {
                     egui::RichText::new("Classic Cyberpunk")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -75,7 +78,7 @@ impl eframe::App for RetroGridApp {
                         ui.set_min_size(egui::vec2(1150.0, 350.0));
 
                         // Draw grid first
-                        self.grid1.show(ui, &self.theme);
+                        self.grid1.show(ui);
 
                         // Overlay content
                         ui.centered_and_justified(|ui| {
@@ -104,7 +107,7 @@ impl eframe::App for RetroGridApp {
                     egui::RichText::new("Inverted Colors")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -113,7 +116,7 @@ impl eframe::App for RetroGridApp {
                     ui.group(|ui| {
                         ui.set_min_size(egui::vec2(1150.0, 350.0));
 
-                        self.grid2.show(ui, &self.theme);
+                        self.grid2.show(ui);
 
                         ui.centered_and_justified(|ui| {
                             ui.vertical_centered(|ui| {
@@ -141,7 +144,7 @@ impl eframe::App for RetroGridApp {
                     egui::RichText::new("Matrix Style (Static)")
                         .size(18.0)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(theme.on_surface()),
                 );
                 ui.add_space(15.0);
 
@@ -150,7 +153,7 @@ impl eframe::App for RetroGridApp {
                     ui.group(|ui| {
                         ui.set_min_size(egui::vec2(1150.0, 350.0));
 
-                        self.grid3.show(ui, &self.theme);
+                        self.grid3.show(ui);
 
                         ui.centered_and_justified(|ui| {
                             ui.vertical_centered(|ui| {
@@ -183,7 +186,7 @@ impl eframe::App for RetroGridApp {
                             egui::RichText::new("💡 Tips")
                                 .size(16.0)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(theme.on_surface()),
                         );
                         ui.add_space(10.0);
                         ui.label("• grid_color() sets the color of grid lines");

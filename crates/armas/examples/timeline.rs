@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{Theme, Timeline, TimelineItem};
 use eframe::egui;
 
@@ -12,18 +13,19 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Timeline Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(TimelineApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(TimelineApp::new()))
+        }),
     )
 }
 
 struct TimelineApp {
-    theme: Theme,
 }
 
 impl TimelineApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
         }
     }
 }
@@ -75,7 +77,7 @@ impl eframe::App for TimelineApp {
                 Timeline::new(items)
                     .dot_size(12.0)
                     .item_gap(32.0)
-                    .show(ui, &self.theme);
+                    .show(ui);
 
                 ui.add_space(40.0);
 
@@ -99,7 +101,7 @@ impl eframe::App for TimelineApp {
                     .dot_size(8.0)
                     .line_width(2.0)
                     .item_gap(24.0)
-                    .show(ui, &self.theme);
+                    .show(ui);
             });
         });
     }

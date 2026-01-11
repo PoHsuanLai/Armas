@@ -2,6 +2,7 @@
 //!
 //! Step-by-step progress indicator for multi-step workflows
 
+use crate::ext::ArmasContextExt;
 use crate::layout::HStack;
 use crate::{Badge, BadgeColor, Theme};
 use egui::{vec2, Color32, Pos2, Rect, Stroke, Ui, Vec2};
@@ -107,15 +108,16 @@ impl Stepper {
     }
 
     /// Show the stepper
-    pub fn show(&self, ui: &mut Ui, theme: &Theme, current_step: usize) -> StepperResponse {
+    pub fn show(&self, ui: &mut Ui, current_step: usize) -> StepperResponse {
+        let theme = ui.ctx().armas_theme();
         let mut response = StepperResponse { clicked_step: None };
 
         match self.orientation {
             StepperOrientation::Horizontal => {
-                self.show_horizontal(ui, theme, current_step, &mut response);
+                self.show_horizontal(ui, &theme, current_step, &mut response);
             }
             StepperOrientation::Vertical => {
-                self.show_vertical(ui, theme, current_step, &mut response);
+                self.show_vertical(ui, &theme, current_step, &mut response);
             }
         }
 

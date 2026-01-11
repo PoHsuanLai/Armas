@@ -2,6 +2,7 @@
 //!
 //! Animated wave effects for backgrounds and hero sections
 
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Stroke, Ui, Vec2};
 use std::f32::consts::PI;
@@ -82,7 +83,7 @@ impl WavyBackground {
     }
 
     /// Show the wavy background
-    pub fn show(&mut self, ui: &mut Ui, _theme: &Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
         let dt = ui.input(|i| i.stable_dt);
         self.time += dt * self.speed;
         ui.ctx().request_repaint();

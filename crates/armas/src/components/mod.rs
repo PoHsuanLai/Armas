@@ -81,7 +81,10 @@ pub use background_beams::BackgroundBeams;
 pub use badge::{Badge, BadgeColor, BadgeVariant, NotificationBadge};
 pub use bento_grid::{BentoGrid, BentoItem, GridSpan};
 pub use breadcrumbs::{BreadcrumbItem, Breadcrumbs, BreadcrumbsResponse};
-pub use button::{Button, ButtonVariant};
+pub use button::{
+    BrutalButton, Button, ButtonVariant, FigmaButton, InvertButton, ShimmerButton, SimpleButton,
+    SketchButton, SpotifyButton,
+};
 pub use card::{Card, CardResponse};
 pub use card_stack::{CardStack, StackCard};
 pub use command_menu::{Command, CommandMenu, CommandMenuResponse};

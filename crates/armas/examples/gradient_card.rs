@@ -1,3 +1,4 @@
+use armas::ext::ArmasContextExt;
 use armas::{GradientCard, Theme};
 use eframe::egui;
 
@@ -12,24 +13,26 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Gradient Card Demo",
         options,
-        Box::new(|_cc| Ok(Box::new(GradientCardApp::new()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(GradientCardApp::new()))
+        }),
     )
 }
 
 struct GradientCardApp {
-    theme: Theme,
 }
 
 impl GradientCardApp {
     fn new() -> Self {
         Self {
-            theme: Theme::dark(),
         }
     }
 }
 
 impl eframe::App for GradientCardApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let theme = ctx.armas_theme();
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Gradient Card Component");
             ui.add_space(20.0);
