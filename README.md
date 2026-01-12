@@ -3,9 +3,9 @@
 [![Crates.io](https://img.shields.io/crates/v/armas.svg)](https://crates.io/crates/armas)
 [![Docs.rs](https://docs.rs/armas/badge.svg)](https://docs.rs/armas)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Deploy to GitHub Pages](https://github.com/PoHsuanLai/armas/actions/workflows/deploy.yml/badge.svg)](https://pohsuanlai.github.io/armas/)
+[![Deploy to GitHub Pages](https://github.com/PoHsuanLai/armas/actions/workflows/deploy.yml/badge.svg)](https://pohsuanlai.github.io/Armas/)
 
-Live Demo: [https://pohsuanlai.github.io/armas/](https://pohsuanlai.github.io/armas/)
+Live Demo: [https://pohsuanlai.github.io/armas/](https://pohsuanlai.github.io/Armas/)
 
 A modern, theme-aware, opinionated component library for [egui](https://github.com/emilk/egui).
 
