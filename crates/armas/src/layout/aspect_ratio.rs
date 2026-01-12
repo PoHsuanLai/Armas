@@ -8,6 +8,8 @@ use egui::{Response, Ui, Vec2};
 /// # Example
 ///
 /// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
 /// use armas::layout::AspectRatio;
 ///
 /// // 16:9 aspect ratio
@@ -21,6 +23,7 @@ use egui::{Response, Ui, Vec2};
 ///     .show(ui, |ui| {
 ///         ui.label("Square content");
 ///     });
+/// # }
 /// ```
 pub struct AspectRatio {
     ratio: f32,

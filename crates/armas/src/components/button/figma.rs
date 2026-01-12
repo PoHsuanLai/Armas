@@ -10,6 +10,7 @@ pub struct FigmaButton {
     min_size: Vec2,
     enabled: bool,
     outlined: bool,
+    max_width: Option<f32>,
 }
 
 impl FigmaButton {
@@ -20,6 +21,7 @@ impl FigmaButton {
             min_size: Vec2::new(80.0, 36.0),
             enabled: true,
             outlined: false,
+            max_width: None,
         }
     }
 
@@ -30,6 +32,7 @@ impl FigmaButton {
             min_size: Vec2::new(80.0, 36.0),
             enabled: true,
             outlined: true,
+            max_width: None,
         }
     }
 
@@ -45,6 +48,12 @@ impl FigmaButton {
         self
     }
 
+    /// Set maximum width
+    pub fn max_width(mut self, max_width: f32) -> Self {
+        self.max_width = Some(max_width);
+        self
+    }
+
     /// Show the button
     pub fn show(self, ui: &mut Ui) -> Response {
         let FigmaButton {
@@ -52,7 +61,26 @@ impl FigmaButton {
             min_size,
             enabled,
             outlined,
+            max_width,
         } = self;
+
+        // Measure text to calculate button width
+        let font_id = egui::FontId::new(14.0, egui::FontFamily::Name("InterBold".into()));
+        let text_galley = ui.painter().layout_no_wrap(
+            text.clone(),
+            font_id.clone(),
+            Color32::PLACEHOLDER,
+        );
+        let text_width = text_galley.rect.width();
+        let mut button_width = text_width + 24.0;
+        button_width = button_width.max(min_size.x);
+
+        // Apply max_width if specified
+        if let Some(max_w) = max_width {
+            button_width = button_width.min(max_w);
+        }
+
+        let button_size = Vec2::new(button_width, min_size.y);
 
         let sense = if enabled {
             Sense::click()
@@ -60,7 +88,7 @@ impl FigmaButton {
             Sense::hover()
         };
 
-        let (rect, response) = ui.allocate_exact_size(min_size, sense);
+        let (rect, response) = ui.allocate_exact_size(button_size, sense);
 
         // Apply lift effect on hover
         let lift_offset = if response.hovered() { -2.0 } else { 0.0 };
@@ -69,6 +97,9 @@ impl FigmaButton {
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
             let corner_radius = 8.0;
+
+            let font_id = egui::FontId::new(14.0, egui::FontFamily::Name("InterBold".into()));
+            let available_text_width = lifted_rect.width() - 24.0;
 
             if outlined {
                 // Outlined version
@@ -80,27 +111,31 @@ impl FigmaButton {
                 );
 
                 // Figma uses font-bold (700 weight)
-                let font_id = egui::FontId::new(14.0, egui::FontFamily::Name("InterBold".into()));
-                painter.text(
-                    lifted_rect.center(),
-                    egui::Align2::CENTER_CENTER,
-                    text,
-                    font_id,
-                    Color32::BLACK,
+                let final_galley = if text_width > available_text_width {
+                    painter.layout(text, font_id, Color32::BLACK, available_text_width)
+                } else {
+                    text_galley
+                };
+                let text_pos = egui::pos2(
+                    lifted_rect.center().x - final_galley.size().x / 2.0,
+                    lifted_rect.center().y - final_galley.size().y / 2.0,
                 );
+                painter.galley(text_pos, final_galley, Color32::BLACK);
             } else {
                 // Filled version
                 painter.rect_filled(lifted_rect, corner_radius, Color32::BLACK);
 
                 // Figma uses font-bold (700 weight)
-                let font_id = egui::FontId::new(14.0, egui::FontFamily::Name("InterBold".into()));
-                painter.text(
-                    lifted_rect.center(),
-                    egui::Align2::CENTER_CENTER,
-                    text,
-                    font_id,
-                    Color32::WHITE,
+                let final_galley = if text_width > available_text_width {
+                    painter.layout(text, font_id, Color32::WHITE, available_text_width)
+                } else {
+                    text_galley
+                };
+                let text_pos = egui::pos2(
+                    lifted_rect.center().x - final_galley.size().x / 2.0,
+                    lifted_rect.center().y - final_galley.size().y / 2.0,
                 );
+                painter.galley(text_pos, final_galley, Color32::WHITE);
             }
         }
 

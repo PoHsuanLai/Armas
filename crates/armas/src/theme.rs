@@ -1,4 +1,4 @@
-//! ALIG Theme System
+//! ARMAS Theme System
 //!
 //! Serializable theme system for egui applications.
 //! Provides a complete color palette and spacing configuration that can be
@@ -68,19 +68,11 @@ pub struct Spacing {
     pub xxl: f32,
 
     /// Standard corner radius (12px)
-    pub corner_radius: f32,
+    pub corner_radius: u8,
     /// Small corner radius (8px)
-    pub corner_radius_small: f32,
+    pub corner_radius_small: u8,
     /// Large corner radius (16px)
-    pub corner_radius_large: f32,
-
-    // Legacy names for backward compatibility
-    #[serde(skip)]
-    pub spacing_small: f32,
-    #[serde(skip)]
-    pub spacing_medium: f32,
-    #[serde(skip)]
-    pub spacing_large: f32,
+    pub corner_radius_large: u8,
 }
 
 impl Default for Theme {
@@ -118,12 +110,9 @@ impl Theme {
                 lg: 24.0,
                 xl: 32.0,
                 xxl: 48.0,
-                corner_radius: 12.0,
-                corner_radius_small: 8.0,
-                corner_radius_large: 16.0,
-                spacing_small: 8.0,
-                spacing_medium: 16.0,
-                spacing_large: 24.0,
+                corner_radius: 12,
+                corner_radius_small: 8,
+                corner_radius_large: 16,
             },
         }
     }
@@ -156,126 +145,9 @@ impl Theme {
                 lg: 24.0,
                 xl: 32.0,
                 xxl: 48.0,
-                corner_radius: 12.0,
-                corner_radius_small: 8.0,
-                corner_radius_large: 16.0,
-                spacing_small: 8.0,
-                spacing_medium: 16.0,
-                spacing_large: 24.0,
-            },
-        }
-    }
-
-    /// Nord theme - cool Nordic palette
-    pub fn nord() -> Self {
-        Self {
-            colors: ColorPalette {
-                primary: [136, 192, 208],            // Frost blue
-                secondary: [163, 190, 140],          // Aurora green
-                background: [46, 52, 64],            // Polar night
-                surface: [59, 66, 82],               // Lighter polar
-                surface_variant: [67, 76, 94],       // Even lighter
-                on_background: [236, 239, 244],      // Snow storm white
-                on_surface: [236, 239, 244],         // Snow storm white
-                on_surface_variant: [216, 222, 233], // Dimmed white
-                outline: [76, 86, 106],              // Borders
-                outline_variant: [76, 86, 106],      // Subtle borders
-                hover: [76, 86, 106],                // Hover state
-                focus: [136, 192, 208],              // Focus (frost)
-                error: [191, 97, 106],               // Aurora red
-                warning: [235, 203, 139],            // Aurora yellow
-                success: [163, 190, 140],            // Aurora green
-                info: [136, 192, 208],               // Frost blue
-            },
-            spacing: Spacing {
-                xs: 4.0,
-                sm: 8.0,
-                md: 16.0,
-                lg: 24.0,
-                xl: 32.0,
-                xxl: 48.0,
-                corner_radius: 12.0,
-                corner_radius_small: 8.0,
-                corner_radius_large: 16.0,
-                spacing_small: 8.0,
-                spacing_medium: 16.0,
-                spacing_large: 24.0,
-            },
-        }
-    }
-
-    /// Dracula theme - popular dark theme
-    pub fn dracula() -> Self {
-        Self {
-            colors: ColorPalette {
-                primary: [189, 147, 249],            // Purple
-                secondary: [255, 121, 198],          // Pink
-                background: [40, 42, 54],            // Dark background
-                surface: [68, 71, 90],               // Current line
-                surface_variant: [98, 114, 164],     // Selection
-                on_background: [248, 248, 242],      // Foreground
-                on_surface: [248, 248, 242],         // Foreground
-                on_surface_variant: [189, 147, 249], // Purple text
-                outline: [98, 114, 164],             // Comment
-                outline_variant: [68, 71, 90],       // Subtle
-                hover: [68, 71, 90],                 // Current line
-                focus: [189, 147, 249],              // Purple
-                error: [255, 85, 85],                // Red
-                warning: [241, 250, 140],            // Yellow
-                success: [80, 250, 123],             // Green
-                info: [139, 233, 253],               // Cyan
-            },
-            spacing: Spacing {
-                xs: 4.0,
-                sm: 8.0,
-                md: 16.0,
-                lg: 24.0,
-                xl: 32.0,
-                xxl: 48.0,
-                corner_radius: 12.0,
-                corner_radius_small: 8.0,
-                corner_radius_large: 16.0,
-                spacing_small: 8.0,
-                spacing_medium: 16.0,
-                spacing_large: 24.0,
-            },
-        }
-    }
-
-    /// Studio theme - professional neutral dark theme (DAW-inspired)
-    pub fn studio() -> Self {
-        Self {
-            colors: ColorPalette {
-                primary: [100, 181, 246],            // Light blue
-                secondary: [129, 199, 132],          // Light green
-                background: [30, 30, 30],            // Very dark gray
-                surface: [45, 45, 45],               // Dark gray
-                surface_variant: [60, 60, 60],       // Medium gray
-                on_background: [224, 224, 224],      // Light gray text
-                on_surface: [224, 224, 224],         // Light gray text
-                on_surface_variant: [158, 158, 158], // Dimmed text
-                outline: [97, 97, 97],               // Borders
-                outline_variant: [66, 66, 66],       // Subtle borders
-                hover: [55, 55, 55],                 // Hover state
-                focus: [100, 181, 246],              // Light blue focus
-                error: [244, 67, 54],                // Red
-                warning: [255, 152, 0],              // Orange
-                success: [76, 175, 80],              // Green
-                info: [33, 150, 243],                // Blue
-            },
-            spacing: Spacing {
-                xs: 4.0,
-                sm: 8.0,
-                md: 16.0,
-                lg: 24.0,
-                xl: 32.0,
-                xxl: 48.0,
-                corner_radius: 12.0,
-                corner_radius_small: 8.0,
-                corner_radius_large: 16.0,
-                spacing_small: 8.0,
-                spacing_medium: 16.0,
-                spacing_large: 24.0,
+                corner_radius: 12,
+                corner_radius_small: 8,
+                corner_radius_large: 16,
             },
         }
     }
@@ -376,19 +248,5 @@ impl Theme {
     pub fn info(&self) -> Color32 {
         let [r, g, b] = self.colors.info;
         Color32::from_rgb(r, g, b)
-    }
-
-    /// Save theme to JSON file
-    pub fn save_to_file(&self, path: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
-        let json = serde_json::to_string_pretty(self)?;
-        std::fs::write(path, json)?;
-        Ok(())
-    }
-
-    /// Load theme from JSON file
-    pub fn load_from_file(path: &std::path::Path) -> Result<Self, Box<dyn std::error::Error>> {
-        let json = std::fs::read_to_string(path)?;
-        let theme = serde_json::from_str(&json)?;
-        Ok(theme)
     }
 }

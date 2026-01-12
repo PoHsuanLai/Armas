@@ -230,7 +230,7 @@ fn render_heading(ui: &mut egui::Ui, text: &str, level: HeadingLevel, theme: &Th
         egui::RichText::new(text)
             .size(font_size)
             .family(egui::FontFamily::Name("InterBold".into()))
-            .color(theme.on_background()),
+            .color(theme.primary()),
     );
 
     ui.add_space(spacing_after);
@@ -268,7 +268,7 @@ fn render_paragraph(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
                         egui::RichText::new(&text)
                             .size(14.0)
                             .family(egui::FontFamily::Name("FiraMono".into()))
-                            .background_color(egui::Color32::from_rgb(25, 25, 25))
+                            .background_color(theme.surface_variant())
                             .color(theme.primary()),
                     );
                 } else {
@@ -288,60 +288,124 @@ fn render_paragraph(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
 fn render_code_block(ui: &mut egui::Ui, code: &str, language: &str, theme: &Theme, base_id: u64, id: usize) {
     ui.add_space(8.0);
 
-    // Center the code block with max width
-    ui.centered_and_justified(|ui| {
+    // Left-aligned code block with max width
+    ui.horizontal(|ui| {
         ui.set_max_width(800.0);
 
+        // Use theme-aware background color
+        let bg_color = theme.surface_variant();
+
         let frame = egui::Frame::NONE
-            .fill(egui::Color32::from_rgb(25, 25, 25))
+            .fill(bg_color)
             .corner_radius(8.0)
             .stroke(egui::Stroke::new(1.0, theme.outline()))
             .inner_margin(0.0);
 
         frame.show(ui, |ui| {
-            ui.vertical(|ui| {
-                // Header with copy button
-                ui.horizontal(|ui| {
-                    ui.add_space(12.0);
-                    ui.allocate_space(egui::vec2(ui.available_width() - 80.0, 0.0));
+            // Get available rect for overlaying button
+            let available_rect = ui.available_rect_before_wrap();
 
-                    use armas::{Button, ButtonVariant};
-                    if Button::new("Copy")
+            // Code content with syntax highlighting
+            ui.push_id((base_id, id), |ui| {
+                // Calculate height based on number of lines (with a reasonable max)
+                let line_count = code.trim().lines().count();
+                let line_height = 20.0; // Approximate height per line
+                let padding = 24.0; // Top and bottom padding
+                let content_height = (line_count as f32 * line_height + padding).min(400.0);
+
+                egui::ScrollArea::vertical()
+                    .max_height(content_height)
+                    .auto_shrink([false, true])
+                    .show(ui, |ui| {
+                        egui::Frame::NONE
+                            .fill(bg_color)
+                            .inner_margin(12.0)
+                            .show(ui, |ui| {
+                                ui.set_width(ui.available_width());
+                                // Use syntax highlighting with detected language
+                                let lang = if language.is_empty() { "rust" } else { language };
+                                crate::syntax::highlight_code(ui, code.trim(), lang, theme);
+                            });
+                    });
+            });
+
+            // Overlay buttons
+            use armas::{Button, ButtonVariant};
+
+            if language == "demo" {
+                // Theme toggle button for demo blocks
+                let toggle_id = egui::Id::new("theme_toggle_request");
+
+                // Position button in top-right corner
+                let button_size = egui::vec2(100.0, 32.0);
+                let button_pos = egui::pos2(
+                    available_rect.max.x - button_size.x - 12.0,
+                    available_rect.min.y + 12.0
+                );
+                let button_rect = egui::Rect::from_min_size(button_pos, button_size);
+
+                let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(button_rect), |ui| {
+                    if Button::new("🌓 Theme")
                         .variant(ButtonVariant::Text)
                         .show(ui)
+                        .on_hover_text("Toggle light/dark theme")
+                        .clicked()
+                    {
+                        ui.ctx().data_mut(|d| d.insert_temp(toggle_id, true));
+                    }
+                });
+            } else {
+                // Copy button for code blocks
+                let copy_id = ui.id().with((base_id, id, "copy_state"));
+                let copied_at: Option<f64> = ui.ctx().data(|d| d.get_temp(copy_id));
+                let current_time = ui.input(|i| i.time);
+
+                // Show check mark for 2 seconds after copying
+                let show_check = if let Some(copied_time) = copied_at {
+                    current_time - copied_time < 2.0
+                } else {
+                    false
+                };
+
+                // Request repaint if we're showing the check mark
+                if show_check {
+                    ui.ctx().request_repaint_after(std::time::Duration::from_millis(100));
+                }
+
+                let button_text = if show_check { "✓ Copied" } else { "📋 Copy" };
+                let button_tooltip = if show_check { "Copied to clipboard" } else { "Copy code to clipboard" };
+
+                // Position button in top-right corner
+                let button_size = egui::vec2(100.0, 32.0);
+                let button_pos = egui::pos2(
+                    available_rect.max.x - button_size.x - 12.0,
+                    available_rect.min.y + 12.0
+                );
+                let button_rect = egui::Rect::from_min_size(button_pos, button_size);
+
+                let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(button_rect), |ui| {
+                    if Button::new(button_text)
+                        .variant(ButtonVariant::Text)
+                        .show(ui)
+                        .on_hover_text(button_tooltip)
                         .clicked()
                     {
                         ui.ctx().copy_text(code.to_string());
+                        ui.ctx().data_mut(|d| d.insert_temp(copy_id, current_time));
+
+                        // For WASM, also use web Clipboard API
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            if let Some(window) = web_sys::window() {
+                                let navigator = window.navigator().clipboard();
+                                let code_copy = code.to_string();
+                                let promise = navigator.write_text(&code_copy);
+                                let _ = wasm_bindgen_futures::JsFuture::from(promise);
+                            }
+                        }
                     }
-                    ui.add_space(12.0);
                 });
-
-                ui.add_space(4.0);
-
-                // Code content with syntax highlighting
-                ui.push_id((base_id, id), |ui| {
-                    // Calculate height based on number of lines (with a reasonable max)
-                    let line_count = code.trim().lines().count();
-                    let line_height = 20.0; // Approximate height per line
-                    let padding = 24.0; // Top and bottom padding
-                    let content_height = (line_count as f32 * line_height + padding).min(400.0);
-
-                    egui::ScrollArea::vertical()
-                        .max_height(content_height)
-                        .auto_shrink([false, true])
-                        .show(ui, |ui| {
-                            egui::Frame::NONE
-                                .fill(egui::Color32::from_gray(20))
-                                .inner_margin(12.0)
-                                .show(ui, |ui| {
-                                    ui.set_width(ui.available_width());
-                                    // Use syntax highlighting with detected language
-                                    let lang = if language.is_empty() { "rust" } else { language };
-                                    crate::syntax::highlight_code(ui, code.trim(), lang, theme);
-                                });
-                        });
-                });
-            });
+            }
         });
     });
 
@@ -389,7 +453,7 @@ fn render_list_item(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
                                 egui::RichText::new(&text)
                                     .size(14.0)
                                     .family(egui::FontFamily::Name("FiraMono".into()))
-                                    .background_color(egui::Color32::from_rgb(25, 25, 25))
+                                    .background_color(theme.surface_variant())
                                     .color(theme.primary()),
                             );
                         } else {
@@ -465,9 +529,7 @@ fn render_table(
                                             egui::RichText::new(&text)
                                                 .size(14.0)
                                                 .family(egui::FontFamily::Name("FiraMono".into()))
-                                                .background_color(egui::Color32::from_rgb(
-                                                    25, 25, 25,
-                                                ))
+                                                .background_color(theme.surface_variant())
                                                 .color(theme.primary()),
                                         );
                                     } else {

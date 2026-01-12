@@ -1,0 +1,307 @@
+//! Card Component
+//!
+//! Material Design 3 card - a surface for displaying grouped content.
+//! Features three variants: Filled, Outlined, and Elevated.
+//!
+//! # Material Design 3 Variants
+//!
+//! - **Filled**: Subtle separation with filled background (surface_variant)
+//! - **Outlined**: Clear boundary with stroke and transparent background
+//! - **Elevated**: Visual separation with shadow effect (simulated via border)
+//!
+//! # Example
+//!
+//! ```rust,no_run
+//! use armas::{Card, CardVariant, Theme};
+//!
+//! fn show_cards(ui: &mut egui::Ui, theme: &Theme) {
+//!     // Filled card (default)
+//!     Card::new()
+//!         .variant(CardVariant::Filled)
+//!         .title("Filled Card")
+//!         .show(ui, theme, |ui| {
+//!             ui.label("Content goes here");
+//!         });
+//!
+//!     // Outlined card
+//!     Card::new()
+//!         .variant(CardVariant::Outlined)
+//!         .title("Outlined Card")
+//!         .show(ui, theme, |ui| {
+//!             ui.label("Content with clear boundary");
+//!         });
+//!
+//!     // Elevated card
+//!     Card::new()
+//!         .variant(CardVariant::Elevated)
+//!         .title("Elevated Card")
+//!         .show(ui, theme, |ui| {
+//!             ui.label("Content with shadow effect");
+//!         });
+//! }
+//! ```
+
+use crate::theme::Theme;
+use egui::{self, Color32, CornerRadius};
+
+/// Material Design 3 card variant
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CardVariant {
+    /// Filled card - subtle separation with filled background
+    /// Uses surface_variant color, no border, no shadow
+    Filled,
+    /// Outlined card - clear boundary with stroke
+    /// Uses surface color with 1px outline_variant border
+    Outlined,
+    /// Elevated card - visual separation with shadow effect
+    /// Uses surface color with simulated shadow (thicker border gradient)
+    Elevated,
+}
+
+impl Default for CardVariant {
+    fn default() -> Self {
+        CardVariant::Filled
+    }
+}
+
+/// Material Design 3 card component
+pub struct Card<'a> {
+    /// Optional title for the card
+    pub title: Option<&'a str>,
+    /// Card variant (Filled, Outlined, Elevated)
+    pub variant: CardVariant,
+    /// Whether the card is clickable (adds hover effect)
+    pub clickable: bool,
+    /// Custom width (None = fill available)
+    pub width: Option<f32>,
+    /// Custom inner margin (None = use theme default)
+    pub inner_margin: Option<f32>,
+    /// Custom background color (None = use theme default)
+    pub fill_color: Option<Color32>,
+    /// Custom border color (None = use theme default)
+    pub stroke_color: Option<Color32>,
+    /// Custom corner radius (None = use theme default)
+    pub corner_radius: Option<f32>,
+}
+
+impl<'a> Card<'a> {
+    /// Create a new card with default Filled variant
+    pub fn new() -> Self {
+        Self {
+            title: None,
+            variant: CardVariant::Filled,
+            clickable: false,
+            width: None,
+            inner_margin: None,
+            fill_color: None,
+            stroke_color: None,
+            corner_radius: None,
+        }
+    }
+
+    /// Set the card title
+    pub fn title(mut self, title: &'a str) -> Self {
+        self.title = Some(title);
+        self
+    }
+
+    /// Set the Material Design 3 card variant
+    pub fn variant(mut self, variant: CardVariant) -> Self {
+        self.variant = variant;
+        self
+    }
+
+    /// Make the card clickable (adds hover effect)
+    pub fn clickable(mut self, clickable: bool) -> Self {
+        self.clickable = clickable;
+        self
+    }
+
+    /// Set custom width
+    pub fn width(mut self, width: f32) -> Self {
+        self.width = Some(width);
+        self
+    }
+
+    /// Set custom inner margin (overrides theme default)
+    pub fn inner_margin(mut self, margin: f32) -> Self {
+        self.inner_margin = Some(margin);
+        self
+    }
+
+    /// Set custom fill/background color (overrides theme default)
+    pub fn fill(mut self, color: Color32) -> Self {
+        self.fill_color = Some(color);
+        self
+    }
+
+    /// Set custom stroke/border color (overrides theme default)
+    pub fn stroke(mut self, color: Color32) -> Self {
+        self.stroke_color = Some(color);
+        self
+    }
+
+    /// Set custom corner radius (overrides theme default)
+    pub fn corner_radius(mut self, radius: f32) -> Self {
+        self.corner_radius = Some(radius);
+        self
+    }
+
+    /// Alias for corner_radius for backwards compatibility
+    pub fn rounding(mut self, radius: f32) -> Self {
+        self.corner_radius = Some(radius);
+        self
+    }
+
+    /// Enable hover effect (same as clickable)
+    pub fn hover_effect(mut self, enable: bool) -> Self {
+        self.clickable = enable;
+        self
+    }
+
+    /// Show the card with content
+    pub fn show<R>(
+        self,
+        ui: &mut egui::Ui,
+        theme: &Theme,
+        content: impl FnOnce(&mut egui::Ui) -> R,
+    ) -> CardResponse<R> {
+        // Material Design 3 variant styling
+        let (fill_color, border_width, border_color) = match self.variant {
+            CardVariant::Filled => {
+                // Filled: surface_variant background, no border
+                (
+                    self.fill_color.unwrap_or_else(|| theme.surface_variant()),
+                    0.0,
+                    Color32::TRANSPARENT,
+                )
+            }
+            CardVariant::Outlined => {
+                // Outlined: surface background with 1px outline_variant border
+                (
+                    self.fill_color.unwrap_or_else(|| theme.surface()),
+                    1.0,
+                    self.stroke_color.unwrap_or_else(|| theme.outline_variant()),
+                )
+            }
+            CardVariant::Elevated => {
+                // Elevated: surface background with thicker border to simulate shadow
+                // Since egui doesn't have real shadows, we use a 2px border with outline color
+                (
+                    self.fill_color.unwrap_or_else(|| theme.surface()),
+                    2.0,
+                    self.stroke_color
+                        .unwrap_or_else(|| theme.outline().linear_multiply(0.5)),
+                )
+            }
+        };
+
+        let corner_rad = self.corner_radius.unwrap_or(theme.spacing.corner_radius as f32) as u8;
+
+        let sense = if self.clickable {
+            egui::Sense::click()
+        } else {
+            egui::Sense::hover()
+        };
+
+        let inner_margin = self.inner_margin.unwrap_or(theme.spacing.md);
+        let mut content_result = None;
+
+        // Create a vertical scope to constrain width if specified
+        let outer_response = if let Some(width) = self.width {
+            ui.vertical(|ui| {
+                ui.set_max_width(width);
+
+                let frame_response = egui::Frame::new()
+                    .fill(fill_color)
+                    .corner_radius(CornerRadius::same(corner_rad))
+                    .stroke(egui::Stroke::new(border_width, border_color))
+                    .inner_margin(inner_margin)
+                    .show(ui, |ui| {
+                        // Title if provided
+                        if let Some(title) = self.title {
+                            ui.label(
+                                egui::RichText::new(title)
+                                    .size(ui.spacing().interact_size.y * 0.7)
+                                    .color(theme.on_surface())
+                                    .strong(),
+                            );
+                            ui.add_space(theme.spacing.sm);
+                        }
+
+                        // User content
+                        content_result = Some(content(ui));
+                    });
+
+                frame_response
+            })
+            .inner
+        } else {
+            egui::Frame::new()
+                .fill(fill_color)
+                .corner_radius(CornerRadius::same(corner_rad))
+                .stroke(egui::Stroke::new(border_width, border_color))
+                .inner_margin(inner_margin)
+                .show(ui, |ui| {
+                    // Title if provided
+                    if let Some(title) = self.title {
+                        ui.label(
+                            egui::RichText::new(title)
+                                .size(ui.spacing().interact_size.y * 0.7)
+                                .color(theme.on_surface())
+                                .strong(),
+                        );
+                        ui.add_space(theme.spacing.sm);
+                    }
+
+                    // User content
+                    content_result = Some(content(ui));
+                })
+        };
+
+        // Make the entire frame interactive if clickable
+        let rect = outer_response.response.rect;
+        let response = if self.clickable {
+            ui.interact(rect, ui.id().with("card"), sense)
+        } else {
+            outer_response.response
+        };
+
+        // Apply hover background if clickable and hovered
+        if self.clickable && response.hovered() {
+            ui.painter()
+                .rect_filled(rect, CornerRadius::same(corner_rad), theme.hover());
+        }
+
+        CardResponse {
+            response,
+            inner: content_result.unwrap(),
+        }
+    }
+}
+
+impl<'a> Default for Card<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Response from showing a card
+pub struct CardResponse<R> {
+    /// The interaction response for the card
+    pub response: egui::Response,
+    /// The result from the content closure
+    pub inner: R,
+}
+
+impl<R> CardResponse<R> {
+    /// Whether the card was clicked (if clickable)
+    pub fn clicked(&self) -> bool {
+        self.response.clicked()
+    }
+
+    /// Whether the card is hovered
+    pub fn hovered(&self) -> bool {
+        self.response.hovered()
+    }
+}

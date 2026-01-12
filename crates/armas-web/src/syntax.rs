@@ -12,13 +12,13 @@ pub fn highlight_code(ui: &mut egui::Ui, code: &str, language: &str, theme: &The
 pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
     let mut job = LayoutJob::default();
 
-    // Define color scheme using theme colors only
-    let keyword_color = theme.primary(); // Primary color for keywords
+    // Define color scheme with navy blue and dark red
+    let keyword_color = egui::Color32::from_rgb(100, 149, 237); // Navy blue (cornflower blue) for keywords
     let string_color = egui::Color32::from_rgb(206, 145, 120); // Orange/peach
     let comment_color = egui::Color32::from_rgb(106, 153, 85); // Green (muted)
     let function_color = theme.on_surface_variant(); // Use theme color instead of yellow
     let number_color = egui::Color32::from_rgb(181, 206, 168); // Light green
-    let type_color = theme.secondary(); // Secondary color for types
+    let type_color = egui::Color32::from_rgb(180, 60, 60); // Dark red for types
     let default_color = theme.on_surface(); // Theme's text color
 
     let keywords = [
@@ -184,12 +184,12 @@ pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
 pub fn highlight_toml_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
     let mut job = LayoutJob::default();
 
-    // Define color scheme using theme colors
-    let key_color = egui::Color32::from_rgb(156, 220, 254); // Light blue
+    // Define color scheme with navy blue and dark red
+    let key_color = egui::Color32::from_rgb(100, 149, 237); // Navy blue for keys
     let string_color = egui::Color32::from_rgb(206, 145, 120); // Orange/peach
     let comment_color = egui::Color32::from_rgb(106, 153, 85); // Green
-    let section_color = theme.primary(); // Primary for sections
-    let boolean_color = theme.secondary(); // Secondary for booleans
+    let section_color = egui::Color32::from_rgb(180, 60, 60); // Dark red for sections
+    let boolean_color = egui::Color32::from_rgb(180, 60, 60); // Dark red for booleans
     let number_color = egui::Color32::from_rgb(181, 206, 168); // Light green
     let default_color = theme.on_surface(); // Theme's text color
 

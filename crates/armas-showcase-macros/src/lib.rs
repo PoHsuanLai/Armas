@@ -286,9 +286,26 @@ fn generate_show_function(blocks: &[CodeBlock]) -> Result<proc_macro2::TokenStre
                                 .inner_margin(24.0)
                                 .show(ui, |ui| {
                                     if active_tab == 0 {
-                                        // Preview - centered, expands vertically with content
-                                        // Set fixed width to prevent jumping
+                                        // Preview with theme toggle
                                         ui.set_width(ui.available_width());
+
+                                        // Theme toggle button at the top
+                                        ui.horizontal(|ui| {
+                                            ui.allocate_space(egui::vec2(ui.available_width() - 120.0, 0.0));
+
+                                            use armas::{Button, ButtonVariant};
+                                            let toggle_id = egui::Id::new("theme_toggle_request");
+                                            if Button::new("🌓 Theme")
+                                                .variant(ButtonVariant::Outlined)
+                                                .show(ui)
+                                                .on_hover_text("Toggle light/dark theme")
+                                                .clicked()
+                                            {
+                                                ui.ctx().data_mut(|d| d.insert_temp(toggle_id, true));
+                                            }
+                                        });
+
+                                        ui.add_space(12.0);
 
                                         // Use vertical layout with centered main axis
                                         let _ = ui.with_layout(
@@ -349,15 +366,35 @@ fn generate_show_function(blocks: &[CodeBlock]) -> Result<proc_macro2::TokenStre
                                                 });
                                         });
 
-                                        // Overlay copy button on top
+                                        // Overlay copy button on top with check animation
                                         let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(button_rect), |ui| {
                                             use armas::{Button, ButtonVariant};
-                                            if Button::new("Copy")
+
+                                            let copy_id = demo_id.with("code_copy_state");
+                                            let copied_at: Option<f64> = ui.ctx().data(|d| d.get_temp(copy_id));
+                                            let current_time = ui.input(|i| i.time);
+
+                                            // Show check mark for 2 seconds after copying
+                                            let show_check = if let Some(copied_time) = copied_at {
+                                                current_time - copied_time < 2.0
+                                            } else {
+                                                false
+                                            };
+
+                                            // Request repaint if we're showing the check mark
+                                            if show_check {
+                                                ui.ctx().request_repaint_after(std::time::Duration::from_millis(100));
+                                            }
+
+                                            let button_text = if show_check { "✓ Copied" } else { "Copy" };
+
+                                            if Button::new(button_text)
                                                 .variant(ButtonVariant::Text)
                                                 .show(ui)
                                                 .clicked()
                                             {
                                                 ui.ctx().copy_text(code.to_string());
+                                                ui.ctx().data_mut(|d| d.insert_temp(copy_id, current_time));
                                             }
                                         });
                                     }

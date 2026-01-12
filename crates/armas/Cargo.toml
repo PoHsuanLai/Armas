@@ -14,6 +14,7 @@ egui = "0.33"
 egui-theme = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+chrono = { version = "0.4", features = ["clock", "wasmbind"] }
 
 [dev-dependencies]
 eframe = "0.33"

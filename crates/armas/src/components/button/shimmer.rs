@@ -8,6 +8,7 @@ use egui::{Color32, Response, Sense, Ui, Vec2};
 pub struct ShimmerButton {
     text: String,
     min_size: Vec2,
+    max_width: Option<f32>,
     enabled: bool,
 }
 
@@ -17,6 +18,7 @@ impl ShimmerButton {
         Self {
             text: text.into(),
             min_size: Vec2::new(100.0, 48.0),
+            max_width: None,
             enabled: true,
         }
     }
@@ -36,6 +38,12 @@ impl ShimmerButton {
         self
     }
 
+    /// Set maximum width (text will be truncated with ellipsis if it exceeds this)
+    pub fn max_width(mut self, max_width: f32) -> Self {
+        self.max_width = Some(max_width);
+        self
+    }
+
     /// Set enabled state
     pub fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
@@ -47,6 +55,7 @@ impl ShimmerButton {
         let ShimmerButton {
             text,
             min_size,
+            max_width,
             enabled,
         } = self;
 
@@ -56,7 +65,29 @@ impl ShimmerButton {
             Sense::hover()
         };
 
-        let (rect, response) = ui.allocate_exact_size(min_size, sense);
+        // Calculate actual button size based on text
+        let font_id = egui::FontId::new(14.0, egui::FontFamily::Name("InterMedium".into()));
+        let horizontal_padding = 24.0; // 12px on each side
+
+        // Measure text to determine required width
+        let text_galley = ui.painter().layout_no_wrap(
+            text.clone(),
+            font_id.clone(),
+            Color32::PLACEHOLDER,
+        );
+        let text_width = text_galley.rect.width();
+
+        // Calculate button width: max(min_size.x, text_width + padding)
+        let mut button_width = text_width + horizontal_padding;
+        button_width = button_width.max(min_size.x);
+
+        // Apply max_width if specified
+        if let Some(max_w) = max_width {
+            button_width = button_width.min(max_w);
+        }
+
+        let button_size = Vec2::new(button_width, min_size.y);
+        let (rect, response) = ui.allocate_exact_size(button_size, sense);
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
@@ -130,15 +161,33 @@ impl ShimmerButton {
                 egui::StrokeKind::Middle,
             );
 
-            // Draw text - Shimmer uses font-medium (500 weight)
-            let font_id = egui::FontId::new(14.0, egui::FontFamily::Name("InterMedium".into()));
-            painter.text(
-                rect.center(),
-                egui::Align2::CENTER_CENTER,
-                text,
-                font_id,
-                Color32::from_gray(148), // slate-400
+            // Draw text with proper clipping/truncation
+            let available_text_width = rect.width() - horizontal_padding;
+            let text_color = Color32::from_gray(148); // slate-400
+
+            // Create galley with truncation if needed
+            let final_galley = if text_width > available_text_width {
+                // Text is too long, truncate with ellipsis
+                ui.painter().layout(
+                    text,
+                    font_id.clone(),
+                    text_color,
+                    available_text_width,
+                )
+            } else {
+                // Text fits, use normal layout
+                text_galley
+            };
+
+            // Calculate text position (galley uses top-left corner)
+            let galley_height = final_galley.rect.height();
+            let galley_width = final_galley.rect.width();
+            let text_pos = egui::pos2(
+                rect.center().x - galley_width / 2.0,
+                rect.center().y - galley_height / 2.0,
             );
+
+            painter.galley(text_pos, final_galley, text_color);
 
             // Request repaint for animation
             ui.ctx().request_repaint();

@@ -266,10 +266,10 @@ mod tests {
     #[test]
     fn test_ease_in_out_bounds() {
         let result = EasingFunction::EaseInOut.apply(0.0);
-        assert!(result >= 0.0 && result <= 1.0);
+        assert!((0.0..=1.0).contains(&result));
 
         let result = EasingFunction::EaseInOut.apply(1.0);
-        assert!(result >= 0.0 && result <= 1.0);
+        assert!((0.0..=1.0).contains(&result));
     }
 
     #[test]
@@ -297,7 +297,7 @@ mod tests {
                 let t = i as f32 / 10.0;
                 let result = func.apply(t);
                 assert!(
-                    result >= -0.1 && result <= 1.1,
+                    (-0.1..=1.1).contains(&result),
                     "Easing {:?} at t={} gave {}",
                     func,
                     t,

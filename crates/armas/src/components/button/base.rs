@@ -31,6 +31,7 @@ pub struct Button {
     text: String,
     variant: ButtonVariant,
     min_size: Vec2,
+    max_width: Option<f32>,
     enabled: bool,
     text_align: egui::Align2,
     text_color: Option<Color32>,
@@ -38,12 +39,31 @@ pub struct Button {
 }
 
 impl Button {
+    /// Calculate contrasting text color based on background brightness
+    fn contrasting_text_color(bg_color: Color32) -> Color32 {
+        // Calculate relative luminance (perceived brightness)
+        let r = bg_color.r() as f32 / 255.0;
+        let g = bg_color.g() as f32 / 255.0;
+        let b = bg_color.b() as f32 / 255.0;
+
+        let luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+        // If background is bright (luminance > 0.5), use dark text
+        // Otherwise use light text
+        if luminance > 0.5 {
+            Color32::from_gray(20) // Dark text
+        } else {
+            Color32::from_gray(235) // Light text
+        }
+    }
+
     /// Create a new button with text
     pub fn new(text: impl Into<String>) -> Self {
         Self {
             text: text.into(),
             variant: ButtonVariant::Filled,
             min_size: Vec2::new(80.0, 32.0),
+            max_width: None,
             enabled: true,
             text_align: egui::Align2::CENTER_CENTER,
             text_color: None,
@@ -60,6 +80,12 @@ impl Button {
     /// Set minimum size
     pub fn min_size(mut self, size: Vec2) -> Self {
         self.min_size = size;
+        self
+    }
+
+    /// Set maximum width (text will be truncated with ellipsis if it exceeds this)
+    pub fn max_width(mut self, max_width: f32) -> Self {
+        self.max_width = Some(max_width);
         self
     }
 
@@ -94,6 +120,7 @@ impl Button {
             text,
             variant,
             min_size,
+            max_width,
             enabled,
             text_align,
             text_color: custom_text_color,
@@ -106,7 +133,29 @@ impl Button {
             Sense::hover()
         };
 
-        let (rect, mut response) = ui.allocate_exact_size(min_size, sense);
+        // Calculate actual button size based on text
+        let font_id = egui::TextStyle::Button.resolve(ui.style());
+        let horizontal_padding = 24.0; // 12px on each side
+
+        // Measure text to determine required width
+        let text_galley = ui.painter().layout_no_wrap(
+            text.clone(),
+            font_id.clone(),
+            Color32::PLACEHOLDER, // Color doesn't matter for measurement
+        );
+        let text_width = text_galley.rect.width();
+
+        // Calculate button width: max(min_size.x, text_width + padding)
+        let mut button_width = text_width + horizontal_padding;
+        button_width = button_width.max(min_size.x);
+
+        // Apply max_width if specified
+        if let Some(max_w) = max_width {
+            button_width = button_width.min(max_w);
+        }
+
+        let button_size = Vec2::new(button_width, min_size.y);
+        let (rect, mut response) = ui.allocate_exact_size(button_size, sense);
 
         // Change cursor to pointer on hover when enabled
         if enabled && response.hovered() {
@@ -125,7 +174,9 @@ impl Button {
                 match variant {
                     ButtonVariant::Filled => {
                         let hover_bg = theme.primary().interpolate(&theme.hover(), 0.2);
-                        (hover_bg, theme.on_surface(), theme.primary(), false)
+                        // Calculate contrasting text color based on primary color brightness
+                        let text_color = Self::contrasting_text_color(theme.primary());
+                        (hover_bg, text_color, theme.primary(), false)
                     }
                     ButtonVariant::FilledTonal => {
                         let hover_bg = theme.secondary().interpolate(&theme.hover(), 0.15);
@@ -146,7 +197,9 @@ impl Button {
                 // Normal state
                 match variant {
                     ButtonVariant::Filled => {
-                        (theme.primary(), theme.on_surface(), theme.primary(), false)
+                        // Calculate contrasting text color based on primary color brightness
+                        let text_color = Self::contrasting_text_color(theme.primary());
+                        (theme.primary(), text_color, theme.primary(), false)
                     }
                     ButtonVariant::FilledTonal => {
                         let tonal_bg = theme.secondary();
@@ -204,15 +257,51 @@ impl Button {
                 );
             }
 
-            // Draw text
-            let font_id = egui::TextStyle::Button.resolve(ui.style());
-            let text_pos = match text_align {
-                egui::Align2::LEFT_CENTER => egui::pos2(rect.left() + 12.0, rect.center().y),
-                egui::Align2::RIGHT_CENTER => egui::pos2(rect.right() - 12.0, rect.center().y),
-                _ => rect.center(),
+            // Draw text with proper clipping/truncation
+            let available_text_width = rect.width() - horizontal_padding;
+
+            // Create galley with truncation if needed
+            let final_galley = if text_width > available_text_width {
+                // Text is too long, truncate with ellipsis
+                ui.painter().layout(
+                    text,
+                    font_id.clone(),
+                    text_color,
+                    available_text_width,
+                )
+            } else {
+                // Text fits, use normal layout
+                text_galley
             };
-            ui.painter()
-                .text(text_pos, text_align, text, font_id, text_color);
+
+            // Calculate text position based on alignment
+            // galley() uses top-left corner, so we need to adjust for centering
+            let galley_height = final_galley.rect.height();
+            let galley_width = final_galley.rect.width();
+
+            let text_pos = match text_align {
+                egui::Align2::LEFT_CENTER => {
+                    egui::pos2(
+                        rect.left() + 12.0,
+                        rect.center().y - galley_height / 2.0,
+                    )
+                }
+                egui::Align2::RIGHT_CENTER => {
+                    egui::pos2(
+                        rect.right() - 12.0 - galley_width,
+                        rect.center().y - galley_height / 2.0,
+                    )
+                }
+                _ => {
+                    // CENTER_CENTER
+                    egui::pos2(
+                        rect.center().x - galley_width / 2.0,
+                        rect.center().y - galley_height / 2.0,
+                    )
+                }
+            };
+
+            ui.painter().galley(text_pos, final_galley, text_color);
         }
 
         response

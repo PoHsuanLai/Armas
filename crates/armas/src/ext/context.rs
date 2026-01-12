@@ -43,6 +43,7 @@ pub trait ArmasContextExt {
     /// # use armas::ext::ArmasContextExt;
     /// # use armas::Theme;
     /// # let ctx = &egui::Context::default();
+    /// # let user_wants_light_theme = false;
     /// // Set theme once at startup
     /// ctx.set_armas_theme(Theme::dark());
     ///

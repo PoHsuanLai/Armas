@@ -16,25 +16,27 @@
 //! ## Example
 //!
 //! ```rust,no_run
-//! use armas::{Theme, components::Slot};
+//! # use egui::Ui;
+//! # fn example(ui: &mut Ui) {
+//! use armas::components::Slot;
 //!
-//! fn ui(ui: &mut egui::Ui) {
-//!     let theme = Theme::dark();
+//! let slot = Slot::new()
+//!     .size(60.0, 30.0)
+//!     .effect("Reverb")
+//!     .level(0.7);
 //!
-//!     let slot = Slot::new(60.0, 30.0)
-//!         .with_effect("Reverb")
-//!         .level(0.7);
-//!
-//!     let response = slot.show(ui, &theme);
-//!     if response.clicked() {
-//!         // Handle click
-//!     }
+//! let response = slot.show(ui);
+//! if response.clicked() {
+//!     // Handle click
 //! }
+//! # }
 //! ```
 
 pub mod animation;
+pub mod backgrounds;
 pub mod color;
 pub mod components;
+pub mod effects;
 pub mod ext;
 pub mod fonts;
 pub mod layout;
@@ -48,10 +50,12 @@ pub use animation::{
     Animation, AnimationSequence, AnimationState, EasingFunction, LoopMode, LoopingAnimation,
     SpringAnimation, StaggeredAnimation,
 };
+pub use backgrounds::*;
 pub use color::{
     blend, lerp_color, saturate, with_alpha, BlendMode, ColorStop, Gradient, NeonPalette,
 };
 pub use components::*;
+pub use effects::*;
 pub use ext::{
     ArmasContextExt, {neon_circle, neon_line, PainterExt},
 };

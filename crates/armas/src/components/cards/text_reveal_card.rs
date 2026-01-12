@@ -2,6 +2,8 @@
 //!
 //! Card component that reveals text on mouse hover with clip-path effect
 
+use crate::animation::{Animation, EasingFunction};
+use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Text reveal card component
@@ -16,13 +18,11 @@ pub struct TextRevealCard {
     border_color: Color32,
     text_color: Color32,
     reveal_color: Color32,
-    animation_duration: f32,
 
     // Animation state
+    reveal_animation: Animation<f32>,
     mouse_x: f32,
     is_hovered: bool,
-    unhover_start_time: Option<f32>,
-    unhover_start_value: f32,
 }
 
 impl TextRevealCard {
@@ -33,15 +33,13 @@ impl TextRevealCard {
             height,
             static_text,
             reveal_text,
-            background_color: Color32::from_rgb(29, 28, 32), // #1d1c20
-            border_color: Color32::from_rgba_unmultiplied(255, 255, 255, 20),
-            text_color: Color32::from_gray(200),
-            reveal_color: Color32::from_rgb(100, 200, 255), // Cyan gradient
-            animation_duration: 0.4,
+            background_color: Color32::PLACEHOLDER, // Use theme.surface()
+            border_color: Color32::PLACEHOLDER, // Use theme.outline_variant()
+            text_color: Color32::PLACEHOLDER, // Use theme.on_surface()
+            reveal_color: Color32::PLACEHOLDER, // Use theme.primary()
+            reveal_animation: Animation::new(0.0, 0.0, 0.4).easing(EasingFunction::EaseOut),
             mouse_x: 0.0,
             is_hovered: false,
-            unhover_start_time: None,
-            unhover_start_value: 0.0,
         }
     }
 
@@ -71,54 +69,62 @@ impl TextRevealCard {
 
     /// Show the text reveal card
     pub fn show(&mut self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
+
+        // Use theme colors if not explicitly set
+        let background_color = if self.background_color == Color32::PLACEHOLDER {
+            theme.surface()
+        } else {
+            self.background_color
+        };
+        let border_color = if self.border_color == Color32::PLACEHOLDER {
+            let outline = theme.outline_variant();
+            Color32::from_rgba_unmultiplied(outline.r(), outline.g(), outline.b(), 20)
+        } else {
+            self.border_color
+        };
+        let text_color = if self.text_color == Color32::PLACEHOLDER {
+            theme.on_surface_variant()
+        } else {
+            self.text_color
+        };
+        let reveal_color = if self.reveal_color == Color32::PLACEHOLDER {
+            theme.primary()
+        } else {
+            self.reveal_color
+        };
+
         let (rect, response) =
             ui.allocate_exact_size(Vec2::new(self.width, self.height), Sense::hover());
 
-        let time = ui.input(|i| i.time) as f32;
+        let dt = ui.input(|i| i.stable_dt);
 
-        // Calculate reveal percentage
-        let reveal_percentage = if response.hovered() {
+        // Track mouse position
+        if response.hovered() {
             if let Some(hover_pos) = response.hover_pos() {
-                if !self.is_hovered {
-                    // Just started hovering
-                    self.is_hovered = true;
-                    self.unhover_start_time = None;
-                }
-
+                self.is_hovered = true;
                 self.mouse_x = hover_pos.x - rect.left();
-                // Calculate width percentage - instantly follow mouse
-                (self.mouse_x / rect.width()).clamp(0.0, 1.0)
-            } else {
-                0.0
+
+                // Calculate width percentage
+                let width_percentage = (self.mouse_x / rect.width()).clamp(0.0, 1.0);
+
+                // Update animation target instantly on hover
+                self.reveal_animation.end = width_percentage;
+                self.reveal_animation.start = width_percentage;
+                self.reveal_animation.elapsed = self.reveal_animation.duration; // instant
             }
-        } else {
-            if self.is_hovered {
-                // Mouse just left - start unhover animation
-                self.is_hovered = false;
-                self.unhover_start_time = Some(time);
-                self.unhover_start_value = (self.mouse_x / rect.width()).clamp(0.0, 1.0);
-            }
+        } else if self.is_hovered {
+            // Mouse left - animate back to 0
+            self.is_hovered = false;
+            self.reveal_animation.start = self.reveal_animation.value();
+            self.reveal_animation.end = 0.0;
+            self.reveal_animation.elapsed = 0.0;
+            self.reveal_animation.start();
+        }
 
-            // Animate back to 0
-            if let Some(start_time) = self.unhover_start_time {
-                let elapsed = time - start_time;
-                let t = (elapsed / self.animation_duration).min(1.0);
-
-                // Apply ease-out easing
-                let eased_t = 1.0 - (1.0 - t).powi(3);
-
-                let current_value = self.unhover_start_value * (1.0 - eased_t);
-
-                if t >= 1.0 {
-                    self.unhover_start_time = None;
-                    0.0
-                } else {
-                    current_value
-                }
-            } else {
-                0.0
-            }
-        };
+        // Update animation
+        self.reveal_animation.update(dt);
+        let reveal_percentage = self.reveal_animation.value();
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
@@ -126,26 +132,26 @@ impl TextRevealCard {
             // Draw card background
             painter.rect(
                 rect,
-                8.0, // rounded corners
-                self.background_color,
-                egui::Stroke::new(1.0, self.border_color),
+                theme.spacing.corner_radius,
+                background_color,
+                egui::Stroke::new(1.0, border_color),
                 egui::StrokeKind::Outside,
             );
 
             // Content area with padding
-            let content_rect = rect.shrink(20.0);
+            let content_rect = rect.shrink(theme.spacing.md);
 
             // Draw static text
             painter.text(
-                content_rect.left_top() + Vec2::new(0.0, 10.0),
+                content_rect.left_top() + Vec2::new(0.0, theme.spacing.sm),
                 egui::Align2::LEFT_TOP,
                 &self.static_text,
                 egui::FontId::proportional(24.0),
-                self.text_color,
+                text_color,
             );
 
             // Draw revealed text with clip-path effect (bottom of card)
-            let reveal_y = content_rect.bottom() - 40.0;
+            let reveal_y = content_rect.bottom() - theme.spacing.lg * 2.0;
             let reveal_rect = Rect::from_min_max(
                 Pos2::new(content_rect.left(), reveal_y),
                 Pos2::new(content_rect.right(), content_rect.bottom()),
@@ -178,27 +184,28 @@ impl TextRevealCard {
 
                 // Draw text with gradient effect (simulate gradient by using lighter color)
                 clipped_painter.text(
-                    Pos2::new(reveal_rect.left(), reveal_y + 10.0),
+                    Pos2::new(reveal_rect.left(), reveal_y + theme.spacing.sm),
                     egui::Align2::LEFT_TOP,
                     &self.reveal_text,
                     egui::FontId::proportional(28.0),
-                    self.reveal_color,
+                    reveal_color,
                 );
             }
 
             // Draw subtle instruction text
             if !self.is_hovered {
+                let hint_color = theme.on_surface_variant();
                 painter.text(
-                    Pos2::new(reveal_rect.left(), reveal_y + 10.0),
+                    Pos2::new(reveal_rect.left(), reveal_y + theme.spacing.sm),
                     egui::Align2::LEFT_TOP,
                     "Move mouse to reveal →",
                     egui::FontId::proportional(18.0),
-                    Color32::from_gray(100),
+                    Color32::from_rgba_unmultiplied(hint_color.r(), hint_color.g(), hint_color.b(), 100),
                 );
             }
         }
 
-        if self.unhover_start_time.is_some() {
+        if !self.reveal_animation.is_complete() {
             ui.ctx().request_repaint();
         }
 

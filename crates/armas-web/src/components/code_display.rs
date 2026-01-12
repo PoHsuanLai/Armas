@@ -203,13 +203,30 @@ impl CodeDisplayCard {
                     }
                 }
 
-                if self.show_copy_button
-                    && Button::new("📋 Copy")
+                if self.show_copy_button {
+                    let copy_button = Button::new("📋 Copy")
                         .variant(ButtonVariant::Text)
-                        .show(ui)
-                        .clicked()
-                {
-                    ui.ctx().copy_text(self.code.clone());
+                        .show(ui);
+
+                    if copy_button.clicked() {
+                        // Copy to clipboard (works on both native and WASM)
+                        ui.ctx().copy_text(self.code.clone());
+
+                        // For WASM, also try using the web Clipboard API for better compatibility
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            if let Some(window) = web_sys::window() {
+                                let navigator = window.navigator().clipboard();
+                                let code_copy = self.code.clone();
+                                let promise = navigator.write_text(&code_copy);
+
+                                // Spawn a future to handle the promise (fire and forget)
+                                let _ = wasm_bindgen_futures::JsFuture::from(promise);
+                            }
+                        }
+                    }
+
+                    copy_button.on_hover_text("Copy code to clipboard");
                 }
             });
 

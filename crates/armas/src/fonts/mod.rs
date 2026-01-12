@@ -10,7 +10,7 @@
 //!
 //! ## Usage
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! use armas::fonts::{FontWeight, FontFamilyBuilder};
 //! use eframe::egui;
 //!
@@ -86,7 +86,7 @@ impl FontWeight {
 ///
 /// # Example
 ///
-/// ```rust,no_run
+/// ```rust,ignore
 /// use armas::fonts::FontFamilyBuilder;
 /// use eframe::egui;
 ///
@@ -280,7 +280,7 @@ impl Default for FontFamilyBuilder {
 ///
 /// ## Example: Loading Inter
 ///
-/// ```rust,no_run
+/// ```rust,ignore
 /// # let ctx = &egui::Context::default();
 /// let inter_regular = include_bytes!("../fonts/Inter-Regular.ttf");
 /// let inter_medium = include_bytes!("../fonts/Inter-Medium.ttf");

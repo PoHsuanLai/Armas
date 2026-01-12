@@ -44,13 +44,13 @@ impl<T: Interpolate> StaggeredAnimation<T> {
     }
 
     /// Set the base delay before first item
-    pub fn with_base_delay(mut self, delay: f32) -> Self {
+    pub fn base_delay(mut self, delay: f32) -> Self {
         self.base_delay = delay;
         self
     }
 
     /// Set the easing function
-    pub fn with_easing(mut self, easing: EasingFunction) -> Self {
+    pub fn easing(mut self, easing: EasingFunction) -> Self {
         self.easing = easing;
         self
     }
@@ -249,7 +249,7 @@ impl<T: Interpolate> LoopingAnimation<T> {
     }
 
     /// Set easing function
-    pub fn with_easing(mut self, easing: EasingFunction) -> Self {
+    pub fn easing(mut self, easing: EasingFunction) -> Self {
         self.animation.easing = easing;
         self
     }

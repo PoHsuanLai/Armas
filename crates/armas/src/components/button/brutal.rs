@@ -9,6 +9,7 @@ pub struct BrutalButton {
     text: String,
     min_size: Vec2,
     enabled: bool,
+    max_width: Option<f32>,
 }
 
 impl BrutalButton {
@@ -18,6 +19,7 @@ impl BrutalButton {
             text: text.into(),
             min_size: Vec2::new(80.0, 32.0),
             enabled: true,
+            max_width: None,
         }
     }
 
@@ -33,13 +35,39 @@ impl BrutalButton {
         self
     }
 
+    /// Set maximum width
+    pub fn max_width(mut self, max_width: f32) -> Self {
+        self.max_width = Some(max_width);
+        self
+    }
+
     /// Show the button
     pub fn show(self, ui: &mut Ui) -> Response {
         let BrutalButton {
             text,
             min_size,
             enabled,
+            max_width,
         } = self;
+
+        // Measure text to calculate button width (using uppercase version)
+        let display_text = text.to_uppercase();
+        let font_id = egui::FontId::new(13.0, egui::FontFamily::Name("Inter".into()));
+        let text_galley = ui.painter().layout_no_wrap(
+            display_text.clone(),
+            font_id.clone(),
+            Color32::PLACEHOLDER,
+        );
+        let text_width = text_galley.rect.width();
+        let mut button_width = text_width + 24.0;
+        button_width = button_width.max(min_size.x);
+
+        // Apply max_width if specified
+        if let Some(max_w) = max_width {
+            button_width = button_width.min(max_w);
+        }
+
+        let button_size = Vec2::new(button_width, min_size.y);
 
         let sense = if enabled {
             Sense::click()
@@ -47,7 +75,7 @@ impl BrutalButton {
             Sense::hover()
         };
 
-        let (rect, response) = ui.allocate_exact_size(min_size, sense);
+        let (rect, response) = ui.allocate_exact_size(button_size, sense);
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
@@ -76,13 +104,18 @@ impl BrutalButton {
 
             // Draw text - Brutal uses regular weight, uppercase, smaller size
             let font_id = egui::FontId::new(13.0, egui::FontFamily::Name("Inter".into()));
-            painter.text(
-                rect.center(),
-                egui::Align2::CENTER_CENTER,
-                text.to_uppercase(),
-                font_id,
-                Color32::from_gray(60),
+            let text_color = Color32::from_gray(60);
+            let available_text_width = rect.width() - 24.0;
+            let final_galley = if text_width > available_text_width {
+                painter.layout(display_text, font_id, text_color, available_text_width)
+            } else {
+                text_galley
+            };
+            let text_pos = egui::pos2(
+                rect.center().x - final_galley.size().x / 2.0,
+                rect.center().y - final_galley.size().y / 2.0,
             );
+            painter.galley(text_pos, final_galley, text_color);
         }
 
         response

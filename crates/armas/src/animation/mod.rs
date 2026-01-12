@@ -50,7 +50,7 @@ impl<T: Interpolate> Animation<T> {
     }
 
     /// Set the easing function
-    pub fn with_easing(mut self, easing: EasingFunction) -> Self {
+    pub fn easing(mut self, easing: EasingFunction) -> Self {
         self.easing = easing;
         self
     }
@@ -157,7 +157,7 @@ impl SpringAnimation {
     }
 
     /// Set spring parameters
-    pub fn with_params(mut self, stiffness: f32, damping: f32) -> Self {
+    pub fn params(mut self, stiffness: f32, damping: f32) -> Self {
         self.stiffness = stiffness;
         self.damping = damping;
         self

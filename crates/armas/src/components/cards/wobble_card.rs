@@ -3,8 +3,7 @@
 //! Card that wobbles and jiggles on hover for playful interactions
 
 use crate::ext::ArmasContextExt;
-use crate::context::ArmasContextExt;
-use crate::effects::{ShadowConfig, ShadowEffect};
+use crate::Theme;
 use egui::{Color32, CornerRadius, Pos2, Response, Sense, Stroke, Ui, Vec2};
 
 /// Wobble card component
@@ -13,7 +12,7 @@ use egui::{Color32, CornerRadius, Pos2, Response, Sense, Stroke, Ui, Vec2};
 pub struct WobbleCard {
     width: f32,
     height: f32,
-    background: Option<Color32>,
+    background: Color32,
     border: Option<Color32>,
     corner_radius: f32,
     wobble_intensity: f32,
@@ -27,13 +26,12 @@ pub struct WobbleCard {
 
 impl WobbleCard {
     /// Create a new wobble card
-    /// Background and border colors will be derived from theme when shown
     pub fn new(width: f32, height: f32) -> Self {
         Self {
             width,
             height,
-            background: None, // Will use theme.surface()
-            border: None,     // Will use theme.outline()
+            background: Color32::PLACEHOLDER, // Use theme.surface()
+            border: Some(Color32::PLACEHOLDER), // Use theme.outline_variant()
             corner_radius: 12.0,
             wobble_intensity: 1.0,
             wobble_speed: 8.0,
@@ -45,7 +43,7 @@ impl WobbleCard {
 
     /// Set background color
     pub fn background(mut self, color: Color32) -> Self {
-        self.background = Some(color);
+        self.background = color;
         self
     }
 
@@ -77,13 +75,24 @@ impl WobbleCard {
     pub fn show<R>(
         &mut self,
         ui: &mut Ui,
+        _theme: &Theme,
         content: impl FnOnce(&mut Ui) -> R,
     ) -> Response {
         let theme = ui.ctx().armas_theme();
 
-        // Use theme colors if not set
-        let background = self.background.unwrap_or_else(|| theme.surface());
-        let border = self.border.or_else(|| Some(theme.outline()));
+        // Use theme colors if not explicitly set
+        let background = if self.background == Color32::PLACEHOLDER {
+            theme.surface()
+        } else {
+            self.background
+        };
+        let border = self.border.map(|b| {
+            if b == Color32::PLACEHOLDER {
+                theme.outline_variant()
+            } else {
+                b
+            }
+        });
 
         let dt = ui.input(|i| i.stable_dt);
         self.time += dt;
@@ -128,22 +137,21 @@ impl WobbleCard {
             // Apply transforms
             let center = rect.center() + offset;
 
-            // Draw shadow using unified ShadowEffect
+            // Draw shadow (slightly offset)
             if self.is_hovered {
-                let shadow = ShadowEffect::new(
-                    ShadowConfig::new()
-                        .offset(Vec2::new(2.0, 2.0) + offset)
-                        .blur(4.0)
-                        .color(Color32::from_rgba_unmultiplied(0, 0, 0, 40))
+                let shadow_rect = rect.translate(Vec2::new(theme.spacing.xs / 2.0, theme.spacing.xs / 2.0) + offset);
+                painter.rect_filled(
+                    shadow_rect,
+                    CornerRadius::same(theme.spacing.corner_radius),
+                    Color32::from_rgba_unmultiplied(0, 0, 0, 40),
                 );
-                shadow.render(&painter, rect, self.corner_radius);
             }
 
             // Draw card with rotation
             if rotation.abs() > 0.001 {
                 // For rotation, we need to draw the card as a rotated shape
                 let half_size = rect.size() / 2.0;
-                let corners = vec![
+                let corners = [
                     Vec2::new(-half_size.x, -half_size.y),
                     Vec2::new(half_size.x, -half_size.y),
                     Vec2::new(half_size.x, half_size.y),
@@ -183,14 +191,14 @@ impl WobbleCard {
 
                 painter.rect_filled(
                     wobble_rect,
-                    CornerRadius::same(self.corner_radius as u8),
+                    CornerRadius::same(theme.spacing.corner_radius),
                     background,
                 );
 
                 if let Some(border_color) = border {
                     painter.rect_stroke(
                         wobble_rect,
-                        CornerRadius::same(self.corner_radius as u8),
+                        CornerRadius::same(theme.spacing.corner_radius),
                         Stroke::new(1.0, border_color),
                         egui::StrokeKind::Outside,
                     );
@@ -198,8 +206,8 @@ impl WobbleCard {
             }
 
             // Render content
-            let content_rect = rect.translate(offset).shrink(16.0);
-            ui.allocate_ui_at_rect(content_rect, |ui| {
+            let content_rect = rect.translate(offset).shrink(theme.spacing.md);
+            ui.scope_builder(egui::UiBuilder::new().max_rect(content_rect), |ui| {
                 content(ui);
             });
 

@@ -1,7 +1,5 @@
-use crate::ext::ArmasContextExt;
 use crate::animation::Interpolate;
-use crate::effects::{GlowConfig, GlowEffect};
-use crate::context::ArmasContextExt;
+use crate::Theme;
 use egui::{Color32, Pos2, Rect, Response, Ui, Vec2};
 use std::f32::consts::PI;
 
@@ -16,10 +14,10 @@ use std::f32::consts::PI;
 /// ```rust,no_run
 /// use armas::{Theme, components::GradientCard};
 ///
-/// fn ui(ui: &mut egui::Ui, card: &mut GradientCard) {
+/// fn ui(ui: &mut egui::Ui) {
 ///     let theme = Theme::dark();
 ///
-///     card.show(ui, &theme, |ui| {
+///     GradientCard::new().show(ui, &theme, |ui| {
 ///         ui.heading("Premium Content");
 ///         ui.label("This card has an animated gradient border");
 ///     });
@@ -37,6 +35,8 @@ pub struct GradientCard {
     pub corner_radius: f32,
     /// Gradient colors (at least 2 required)
     pub gradient_colors: Vec<Color32>,
+    /// Current gradient rotation angle
+    gradient_angle: f32,
     /// Rotation speed (radians per second)
     pub rotation_speed: f32,
     /// Whether to animate the gradient
@@ -57,14 +57,18 @@ impl Default for GradientCard {
 
 impl GradientCard {
     /// Create a new gradient card with default settings
-    /// Gradient colors will be derived from theme when shown
     pub fn new() -> Self {
         Self {
             width: None,
             height: None,
             border_width: 2.0,
             corner_radius: 8.0,
-            gradient_colors: Vec::new(), // Will use theme.gradient()
+            gradient_colors: vec![
+                Color32::from_rgb(59, 130, 246), // Blue
+                Color32::from_rgb(147, 51, 234), // Purple
+                Color32::from_rgb(236, 72, 153), // Pink
+            ],
+            gradient_angle: 0.0,
             rotation_speed: PI / 4.0, // 45 degrees per second
             animate: true,
             background_color: None,
@@ -131,73 +135,83 @@ impl GradientCard {
 
     /// Show the gradient card with custom content
     pub fn show<R>(
-        &mut self,
+        mut self,
         ui: &mut Ui,
-        content: impl FnOnce(&mut Ui) -> R,
+        theme: &Theme,
+        content: impl Fn(&mut Ui) -> R,
     ) -> (R, Response) {
-        let theme = ui.ctx().armas_theme();
-        // Initialize gradient colors from theme if not set
-        if self.gradient_colors.is_empty() {
-            let [c1, c2, c3] = theme.gradient();
-            self.gradient_colors = vec![c1, c2, c3];
+        // Determine card size
+        let available_width = ui.available_width();
+        let desired_width = self.width.unwrap_or(available_width);
+
+        // Use absolute time for animation
+        let time = ui.input(|i| i.time) as f32;
+
+        if self.animate {
+            self.gradient_angle = (time * self.rotation_speed) % (2.0 * PI);
         }
 
-        // Determine card size
-        let available = ui.available_size();
-        let desired_width = self.width.unwrap_or(available.x);
-        let desired_height = self.height.unwrap_or(0.0); // Will auto-size if 0
+        // For auto-sizing, we need to measure content first
+        let auto_size = self.height.is_none();
+
+        // Measure content if auto-sizing
+        let content_size = if auto_size {
+            let layout = *ui.layout();
+            let measure_response = ui.scope(|ui| {
+                ui.set_invisible();
+                ui.with_layout(layout, |ui| {
+                    let inner_rect = Rect::from_min_size(
+                        ui.cursor().min,
+                        Vec2::new(desired_width - self.border_width * 2.0, 1000.0),
+                    );
+                    let mut content_ui = ui.new_child(
+                        egui::UiBuilder::new()
+                            .max_rect(inner_rect)
+                            .layout(layout),
+                    );
+                    content(&mut content_ui);
+                })
+                .response
+            });
+            measure_response.inner.rect.size()
+        } else {
+            Vec2::ZERO
+        };
+
+        let desired_height = if auto_size {
+            content_size.y.max(60.0) + self.border_width * 2.0
+        } else {
+            self.height.unwrap()
+        };
 
         // Allocate space for the card
-        let (outer_rect, mut response) = if self.height.is_some() {
-            ui.allocate_exact_size(
-                Vec2::new(desired_width, desired_height),
-                egui::Sense::hover(),
-            )
-        } else {
-            // Auto-size height
-            let (id, rect) = ui.allocate_space(Vec2::new(desired_width, 0.0));
-            let response = ui.interact(rect, id, egui::Sense::hover());
-            (rect, response)
-        };
+        let (outer_rect, response) = ui.allocate_exact_size(
+            Vec2::new(desired_width, desired_height),
+            egui::Sense::hover(),
+        );
 
         let is_hovered = response.hovered();
 
-        // Update animations
-        let time = ui.input(|i| i.time) as f32;
-        let dt = ui.input(|i| i.stable_dt);
-
-        let gradient_angle = if self.animate {
-            (time * self.rotation_speed) % (2.0 * PI)
-        } else {
-            0.0
-        };
-
-        // Animate glow on hover
-        let target_glow = if self.glow_on_hover && is_hovered {
-            1.0
-        } else {
-            0.0
-        };
-        let glow_speed = 5.0; // Smooth transition
-        self.glow_intensity += (target_glow - self.glow_intensity) * glow_speed * dt;
-        self.glow_intensity = self.glow_intensity.clamp(0.0, 1.0);
+        // Animate glow on hover using absolute time
+        let target_glow = if self.glow_on_hover && is_hovered { 1.0 } else { 0.0 };
+        self.glow_intensity = target_glow; // Instant for stateless rendering
 
         // Render the card
         let inner_rect = outer_rect.shrink(self.border_width);
 
         // Draw gradient border
-        self.draw_gradient_border(ui, outer_rect, inner_rect, gradient_angle);
+        self.draw_gradient_border(ui, outer_rect, inner_rect, theme);
 
         // Draw glow effect if hovered
         if self.glow_intensity > 0.01 {
-            self.draw_glow(ui, outer_rect);
+            self.draw_glow(ui, outer_rect, theme);
         }
 
         // Draw background
         let bg_color = self.background_color.unwrap_or(theme.surface());
         ui.painter().rect_filled(
             inner_rect,
-            self.corner_radius - self.border_width / 2.0,
+            (theme.spacing.corner_radius as f32 - self.border_width / 2.0).max(0.0),
             bg_color,
         );
 
@@ -209,16 +223,8 @@ impl GradientCard {
         );
         let content_result = content(&mut content_ui);
 
-        // Update response rect if we auto-sized
-        if self.height.is_none() {
-            let content_rect = content_ui.min_rect();
-            let total_height = content_rect.height() + self.border_width * 2.0;
-            response.rect =
-                Rect::from_min_size(outer_rect.min, Vec2::new(desired_width, total_height));
-        }
-
         // Request repaint for animation
-        if self.animate || self.glow_intensity > 0.01 {
+        if self.animate {
             ui.ctx().request_repaint();
         }
 
@@ -226,7 +232,7 @@ impl GradientCard {
     }
 
     /// Draw the animated gradient border
-    fn draw_gradient_border(&self, ui: &mut Ui, outer_rect: Rect, inner_rect: Rect, gradient_angle: f32) {
+    fn draw_gradient_border(&self, ui: &mut Ui, outer_rect: Rect, inner_rect: Rect, _theme: &Theme) {
         let painter = ui.painter();
 
         // Draw gradient border by rendering many small quad segments around the perimeter
@@ -237,8 +243,8 @@ impl GradientCard {
             let t1 = i as f32 / segments as f32;
             let t2 = (i + 1) as f32 / segments as f32;
 
-            let color1 = self.get_gradient_color(t1, gradient_angle);
-            let color2 = self.get_gradient_color(t2, gradient_angle);
+            let color1 = self.get_gradient_color(t1);
+            let color2 = self.get_gradient_color(t2);
 
             // Get points on outer and inner perimeter
             let outer1 = self.get_perimeter_point(outer_rect, t1);
@@ -250,30 +256,32 @@ impl GradientCard {
             // Use a mesh for proper gradient rendering
             use egui::epaint::{Mesh, Vertex};
 
-            let mut mesh = Mesh::default();
-            mesh.vertices = vec![
-                Vertex {
-                    pos: outer1,
-                    uv: Pos2::ZERO,
-                    color: color1,
-                },
-                Vertex {
-                    pos: outer2,
-                    uv: Pos2::ZERO,
-                    color: color2,
-                },
-                Vertex {
-                    pos: inner2,
-                    uv: Pos2::ZERO,
-                    color: color2,
-                },
-                Vertex {
-                    pos: inner1,
-                    uv: Pos2::ZERO,
-                    color: color1,
-                },
-            ];
-            mesh.indices = vec![0, 1, 2, 0, 2, 3]; // Two triangles forming a quad
+            let mesh = Mesh {
+                vertices: vec![
+                    Vertex {
+                        pos: outer1,
+                        uv: Pos2::ZERO,
+                        color: color1,
+                    },
+                    Vertex {
+                        pos: outer2,
+                        uv: Pos2::ZERO,
+                        color: color2,
+                    },
+                    Vertex {
+                        pos: inner2,
+                        uv: Pos2::ZERO,
+                        color: color2,
+                    },
+                    Vertex {
+                        pos: inner1,
+                        uv: Pos2::ZERO,
+                        color: color1,
+                    },
+                ],
+                indices: vec![0, 1, 2, 0, 2, 3], // Two triangles forming a quad
+                ..Default::default()
+            };
 
             painter.add(mesh);
         }
@@ -308,7 +316,7 @@ impl GradientCard {
     }
 
     /// Get color from gradient at position t (0.0 to 1.0)
-    fn get_gradient_color(&self, t: f32, _gradient_angle: f32) -> Color32 {
+    fn get_gradient_color(&self, t: f32) -> Color32 {
         let num_colors = self.gradient_colors.len();
         let position = t * num_colors as f32;
         let index = position.floor() as usize % num_colors;
@@ -316,28 +324,35 @@ impl GradientCard {
         let blend = position.fract();
 
         // Use animation system's Interpolate trait for color blending
-        Color32::interpolate(self.gradient_colors[index], self.gradient_colors[next_index], blend)
+        self.gradient_colors[index].interpolate(&self.gradient_colors[next_index], blend)
     }
 
-    /// Draw glow effect around the card using unified GlowEffect
-    fn draw_glow(&self, ui: &mut Ui, rect: Rect) {
+    /// Draw glow effect around the card
+    fn draw_glow(&self, ui: &mut Ui, rect: Rect, theme: &Theme) {
         let painter = ui.painter();
+        let glow_layers = 5;
+        let max_glow_distance = theme.spacing.sm;
 
-        // Use the first gradient color for glow
-        let glow_color = Color32::from_rgba_unmultiplied(
-            self.gradient_colors[0].r(),
-            self.gradient_colors[0].g(),
-            self.gradient_colors[0].b(),
-            (self.glow_intensity * 40.0) as u8,
-        );
+        for i in 0..glow_layers {
+            let distance = (i + 1) as f32 / glow_layers as f32 * max_glow_distance;
+            let alpha = ((1.0 - i as f32 / glow_layers as f32) * self.glow_intensity * 40.0) as u8;
 
-        let glow = GlowEffect::new(
-            GlowConfig::new(glow_color)
-                .layers(5)
-                .expansion(10.0)
-                .intensity(self.glow_intensity),
-        );
-        glow.render_rect(&painter, rect, self.corner_radius, 2.0);
+            // Use the first gradient color for glow
+            let glow_color = Color32::from_rgba_unmultiplied(
+                self.gradient_colors[0].r(),
+                self.gradient_colors[0].g(),
+                self.gradient_colors[0].b(),
+                alpha,
+            );
+
+            let glow_rect = rect.expand(distance);
+            painter.rect_stroke(
+                glow_rect,
+                theme.spacing.corner_radius as f32 + distance,
+                egui::Stroke::new(2.0, glow_color),
+                egui::StrokeKind::Middle,
+            );
+        }
     }
 }
 

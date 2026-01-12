@@ -26,7 +26,7 @@ impl Hero {
         );
 
         AuroraBackground::cyberpunk(full_rect.width(), full_rect.height())
-            .with_id("hero_aurora")
+            .id("hero_aurora")
             .show(ui);
 
         // Draw content on top wrapped in GlassPanel
@@ -39,40 +39,56 @@ impl Hero {
                 .inner_margin(0.0)
                 .show(ui, &theme, |ui| {
                     ui.set_height(hero_height);
+                    ui.set_width(ui.available_width());
 
-                    ui.vertical_centered(|ui| {
+                    // Center everything horizontally only
+                    ui.vertical(|ui| {
                         ui.add_space(hero_height * 0.35);
 
-                        // Hero title
-                        ui.label(
-                            egui::RichText::new("Armas")
-                                .size(72.0)
-                                .family(egui::FontFamily::Name("InterBold".into()))
-                                .color(egui::Color32::WHITE),
-                        );
+                        // Hero title - centered horizontally
+                        ui.horizontal(|ui| {
+                            ui.allocate_space(egui::vec2((ui.available_width() - 200.0) / 2.0, 0.0));
+                            ui.label(
+                                egui::RichText::new("Armas")
+                                    .size(72.0)
+                                    .family(egui::FontFamily::Name("InterBold".into()))
+                                    .color(egui::Color32::WHITE),
+                            );
+                        });
 
                         ui.add_space(16.0);
 
-                        // Subtitle
-                        ui.label(
-                            egui::RichText::new("Modern UI Components for egui")
-                                .size(24.0)
-                                .color(egui::Color32::from_gray(200)),
-                        );
+                        // Subtitle - centered
+                        ui.horizontal(|ui| {
+                            let text_width = 400.0; // Approximate width
+                            ui.allocate_space(egui::vec2((ui.available_width() - text_width) / 2.0, 0.0));
+                            ui.label(
+                                egui::RichText::new("Modern UI Components for egui")
+                                    .size(24.0)
+                                    .color(egui::Color32::from_gray(200)),
+                            );
+                        });
 
                         ui.add_space(32.0);
 
-                        // Description
-                        ui.label(
-                            egui::RichText::new("Material Design inspired components with smooth animations")
-                                .size(16.0)
-                                .color(egui::Color32::from_gray(160)),
-                        );
+                        // Description - centered
+                        ui.horizontal(|ui| {
+                            let text_width = 600.0; // Approximate width
+                            ui.allocate_space(egui::vec2((ui.available_width() - text_width) / 2.0, 0.0));
+                            ui.label(
+                                egui::RichText::new("Material Design inspired components with smooth animations")
+                                    .size(16.0)
+                                    .color(egui::Color32::from_gray(160)),
+                            );
+                        });
 
                         ui.add_space(48.0);
 
-                        // CTA Buttons
+                        // CTA Buttons - centered
                         ui.horizontal(|ui| {
+                            let buttons_width = 316.0; // 140 + 16 + 160
+                            ui.allocate_space(egui::vec2((ui.available_width() - buttons_width) / 2.0, 0.0));
+
                             if Button::new("Get Started")
                                 .variant(ButtonVariant::Filled)
                                 .min_size(egui::vec2(140.0, 48.0))

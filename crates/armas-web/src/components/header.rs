@@ -5,7 +5,7 @@ use armas::*;
 use eframe::egui;
 
 // Include logo at compile time
-const LOGO_BYTES: &[u8] = include_bytes!("../../../../logo/logo4.png");
+const LOGO_BYTES: &[u8] = include_bytes!("../../assets/images/logo.png");
 
 pub struct Header;
 
@@ -27,8 +27,7 @@ impl Header {
 
                 // Determine layout based on screen width
                 let is_mobile = screen_width < layout::MOBILE_BREAKPOINT;
-                let is_tablet = screen_width >= layout::MOBILE_BREAKPOINT
-                    && screen_width < layout::DESKTOP_BREAKPOINT;
+                let is_tablet = (layout::MOBILE_BREAKPOINT..layout::DESKTOP_BREAKPOINT).contains(&screen_width);
 
                 // Left side: Logo (always visible)
                 let left_rect =
@@ -106,8 +105,8 @@ impl Header {
                         // Mobile: Small search + hamburger
                         if is_mobile {
                             Input::new("Search...")
-                                .with_left_icon("🔍")
-                                .with_width(100.0)
+                                .left_icon("🔍")
+                                .width(100.0)
                                 .variant(InputVariant::Filled)
                                 .show(ui, search_text);
 
@@ -161,8 +160,8 @@ impl Header {
                             };
 
                             Input::new("Search...")
-                                .with_left_icon("🔍")
-                                .with_width(search_width)
+                                .left_icon("🔍")
+                                .width(search_width)
                                 .variant(InputVariant::Filled)
                                 .show(ui, search_text);
 

@@ -45,6 +45,8 @@ impl FeatureItem {
 /// # Example
 ///
 /// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
 /// use armas::layout::FeatureGrid;
 ///
 /// FeatureGrid::new()
@@ -54,6 +56,7 @@ impl FeatureItem {
 ///         grid.feature("🎨", "Beautiful", "Gorgeous UI components");
 ///         grid.feature("🔒", "Secure", "Built with security in mind");
 ///     });
+/// # }
 /// ```
 pub struct FeatureGrid {
     /// Number of columns (None = auto-calculate)
@@ -66,6 +69,12 @@ pub struct FeatureGrid {
     hover_effect: bool,
     /// Icon size
     icon_size: f32,
+}
+
+impl Default for FeatureGrid {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl FeatureGrid {

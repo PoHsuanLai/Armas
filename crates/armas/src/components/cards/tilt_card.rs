@@ -2,23 +2,22 @@
 //!
 //! Card that tilts in 3D based on mouse position with glare effect
 
-use crate::ext::ArmasContextExt;
 use crate::animation::SpringAnimation;
-use crate::context::ArmasContextExt;
-use crate::effects::{ShadowConfig, ShadowEffect};
+use crate::{PainterExt, Theme};
 use egui::{Color32, Pos2, Response, Sense, Ui, Vec2};
 
 /// 3D tilt card with mouse-tracking perspective
 ///
 /// Creates a card that tilts based on mouse position, with optional
 /// glare effect that moves with the tilt.
+#[derive(Clone)]
 pub struct TiltCard {
-    width: Option<f32>,
-    height: Option<f32>,
+    width: f32,
+    height: f32,
     tilt_strength: f32,
     glare_enabled: bool,
     corner_radius: f32,
-    background: Option<Color32>,
+    background: Color32,
     border_color: Option<Color32>,
     elevation: f32,
 
@@ -29,34 +28,37 @@ pub struct TiltCard {
 }
 
 impl TiltCard {
-    /// Create a new tilt card
-    pub fn new() -> Self {
+    /// Create a new tilt card with theme-based defaults
+    pub fn new(width: f32, height: f32, theme: &Theme) -> Self {
+        let outline = theme.outline_variant();
+        let primary = theme.primary();
+        // Use primary color with low alpha over surface for a lighter, themed background
+        let surface = theme.surface();
+        let background = Color32::from_rgba_unmultiplied(
+            ((surface.r() as u16 * 200 + primary.r() as u16 * 55) / 255) as u8,
+            ((surface.g() as u16 * 200 + primary.g() as u16 * 55) / 255) as u8,
+            ((surface.b() as u16 * 200 + primary.b() as u16 * 55) / 255) as u8,
+            255,
+        );
         Self {
-            width: None,
-            height: None,
+            width,
+            height,
             tilt_strength: 0.15,
             glare_enabled: true,
             corner_radius: 12.0,
-            background: None,
-            border_color: None,
+            background,
+            border_color: Some(Color32::from_rgba_unmultiplied(
+                outline.r(),
+                outline.g(),
+                outline.b(),
+                100,
+            )),
             elevation: 8.0,
             mouse_pos: None,
             // Smooth spring animations for natural tilt motion
             tilt_x_spring: SpringAnimation::new(0.0, 0.0).params(150.0, 15.0),
             tilt_y_spring: SpringAnimation::new(0.0, 0.0).params(150.0, 15.0),
         }
-    }
-
-    /// Set width
-    pub fn width(mut self, width: f32) -> Self {
-        self.width = Some(width);
-        self
-    }
-
-    /// Set height
-    pub fn height(mut self, height: f32) -> Self {
-        self.height = Some(height);
-        self
     }
 
     /// Set tilt strength (0.0 to 1.0)
@@ -79,7 +81,7 @@ impl TiltCard {
 
     /// Set background color
     pub fn background(mut self, color: Color32) -> Self {
-        self.background = Some(color);
+        self.background = color;
         self
     }
 
@@ -99,40 +101,24 @@ impl TiltCard {
     pub fn show<R>(
         &mut self,
         ui: &mut Ui,
+        theme: &Theme,
         content: impl FnOnce(&mut Ui) -> R,
     ) -> Response {
-        let theme = ui.ctx().armas_theme();
-
-        // Apply defaults from theme if not set
-        let width = self.width.unwrap_or(300.0);
-        let height = self.height.unwrap_or(200.0);
-        let background = self.background.unwrap_or_else(|| theme.surface());
-        let border_color = self.border_color.or_else(|| {
-            let outline = theme.outline_variant();
-            Some(Color32::from_rgba_unmultiplied(
-                outline.r(),
-                outline.g(),
-                outline.b(),
-                100,
-            ))
-        });
-
         let (rect, response) =
-            ui.allocate_exact_size(Vec2::new(width, height), Sense::hover());
+            ui.allocate_exact_size(Vec2::new(self.width, self.height), Sense::hover());
 
         // Update mouse position
-        // Use rect_contains_pointer to ensure hover is detected even over child widgets
-        if ui.rect_contains_pointer(rect) {
-            self.mouse_pos = ui.input(|i| i.pointer.hover_pos());
-        } else {
+        if let Some(hover_pos) = response.hover_pos() {
+            self.mouse_pos = Some(hover_pos);
+        } else if !response.hovered() {
             self.mouse_pos = None;
         }
 
         // Calculate tilt targets based on mouse position
         let (target_tilt_x, target_tilt_y) = if let Some(mouse_pos) = self.mouse_pos {
             let center = rect.center();
-            let dx = (mouse_pos.x - center.x) / (width / 2.0);
-            let dy = (mouse_pos.y - center.y) / (height / 2.0);
+            let dx = (mouse_pos.x - center.x) / (self.width / 2.0);
+            let dy = (mouse_pos.y - center.y) / (self.height / 2.0);
             (
                 dy * self.tilt_strength * 20.0,
                 -dx * self.tilt_strength * 20.0,
@@ -154,17 +140,16 @@ impl TiltCard {
 
         let painter = ui.painter();
 
-        // Draw shadow with tilt offset using new ShadowEffect
+        // Draw shadow with tilt offset
         let shadow_offset = Vec2::new(-tilt_y * 0.5, tilt_x * 0.5 + self.elevation * 0.5);
 
-        let shadow = ShadowEffect::new(
-            ShadowConfig::new()
-                .offset(shadow_offset)
-                .blur(self.elevation)
-                .elevation(self.elevation)
-                .color(Color32::from_black_alpha(100))
+        painter.shadow(
+            rect,
+            self.corner_radius.into(),
+            shadow_offset,
+            self.elevation,
+            Color32::from_black_alpha(100),
         );
-        shadow.render(&painter, rect, self.corner_radius);
 
         // For now, draw a simple transformed rect (egui doesn't support full 3D transforms)
         // We simulate tilt with offset and shape
@@ -172,14 +157,14 @@ impl TiltCard {
         let tilted_rect = rect.translate(tilt_offset);
 
         // Draw card background
-        painter.rect_filled(tilted_rect, self.corner_radius, background);
+        painter.rect_filled(tilted_rect, theme.spacing.corner_radius, self.background);
 
         // Draw border if enabled
-        if let Some(border_col) = border_color {
+        if let Some(border_color) = self.border_color {
             painter.rect_stroke(
                 tilted_rect,
-                self.corner_radius,
-                egui::Stroke::new(1.0, border_col),
+                theme.spacing.corner_radius,
+                egui::Stroke::new(1.0, border_color),
                 egui::epaint::StrokeKind::Middle,
             );
         }
@@ -193,36 +178,28 @@ impl TiltCard {
                     tilted_rect.center().y - tilt_x * 3.0,
                 );
 
-                // Use on_surface color for glare (typically white/light)
-                let glare_color = theme.on_surface();
-
+                let on_surface = theme.on_surface();
                 // Draw multiple glare layers for more visibility
                 painter.circle_filled(
                     glare_center,
                     100.0,
-                    Color32::from_rgba_unmultiplied(
-                        glare_color.r(),
-                        glare_color.g(),
-                        glare_color.b(),
-                        (glare_strength * 50.0) as u8,
-                    ),
+                    Color32::from_rgba_unmultiplied(on_surface.r(), on_surface.g(), on_surface.b(), (glare_strength * 50.0) as u8),
                 );
                 painter.circle_filled(
                     glare_center,
                     60.0,
-                    Color32::from_rgba_unmultiplied(
-                        glare_color.r(),
-                        glare_color.g(),
-                        glare_color.b(),
-                        (glare_strength * 80.0) as u8,
-                    ),
+                    Color32::from_rgba_unmultiplied(on_surface.r(), on_surface.g(), on_surface.b(), (glare_strength * 80.0) as u8),
                 );
             }
         }
 
         // Draw content in a child UI
-        let content_rect = tilted_rect.shrink(16.0);
-        let mut child_ui = ui.child_ui(content_rect, *ui.layout(), None);
+        let content_rect = tilted_rect.shrink(theme.spacing.md);
+        let mut child_ui = ui.new_child(
+            egui::UiBuilder::new()
+                .max_rect(content_rect)
+                .layout(*ui.layout()),
+        );
         content(&mut child_ui);
 
         // Request repaint for smooth animation (while springs are settling)
@@ -242,15 +219,15 @@ mod tests {
     #[test]
     fn test_tilt_card_creation() {
         let theme = Theme::default();
-        let card = TiltCard::new().width(300.0).height(200.0);
-        assert_eq!(card.width, Some(300.0));
-        assert_eq!(card.height, Some(200.0));
+        let card = TiltCard::new(300.0, 200.0, &theme);
+        assert_eq!(card.width, 300.0);
+        assert_eq!(card.height, 200.0);
     }
 
     #[test]
     fn test_tilt_card_config() {
         let theme = Theme::default();
-        let card = TiltCard::new().width(300.0).height(200.0)
+        let card = TiltCard::new(300.0, 200.0, &theme)
             .tilt_strength(0.5)
             .glare(false);
 

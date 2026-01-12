@@ -2,12 +2,15 @@
 //!
 //! Import this module to get access to the most commonly used armas types:
 //!
-//! ```rust
+//! ```rust,no_run
+//! # use egui::Ui;
+//! # fn example(ui: &mut Ui) {
 //! use armas::prelude::*;
 //!
 //! // Now you can use components directly
 //! Badge::new("Success").show(ui);
 //! Button::new("Click me").show(ui);
+//! # }
 //! ```
 
 // Core theme system
