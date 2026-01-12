@@ -151,6 +151,7 @@ impl Textarea {
                     InputVariant::Default => (Color32::TRANSPARENT, Color32::TRANSPARENT),
                     InputVariant::Outlined => (Color32::TRANSPARENT, border_color),
                     InputVariant::Filled => (bg_color, Color32::TRANSPARENT),
+                    InputVariant::Inline => (bg_color, border_color), // Same as filled for textarea
                 };
 
                 // Frame for the textarea

@@ -16,10 +16,12 @@
 
 mod aspect_ratio;
 mod bento_grid;
+mod divider;
 mod feature_grid;
 mod table;
 
 pub use aspect_ratio::{AspectRatio, ContentMode};
 pub use bento_grid::{BentoGrid, GridSpan};
+pub use divider::{DividerOrientation, DividerStyle, GlowingDivider};
 pub use feature_grid::{FeatureGrid, FeatureItem};
 pub use table::{Table, TableStyle};

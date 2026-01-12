@@ -60,6 +60,10 @@ pub struct Badge {
     size: f32,
     /// Removable (shows × button)
     removable: bool,
+    /// Corner radius (None = use default pill shape)
+    corner_radius: Option<f32>,
+    /// Vertical padding (None = use default theme spacing)
+    vertical_padding: Option<f32>,
 }
 
 impl Badge {
@@ -72,6 +76,8 @@ impl Badge {
             show_dot: false,
             size: 13.0,
             removable: false,
+            corner_radius: None,
+            vertical_padding: None,
         }
     }
 
@@ -105,6 +111,18 @@ impl Badge {
         self
     }
 
+    /// Set corner radius (overrides default pill shape)
+    pub fn corner_radius(mut self, radius: f32) -> Self {
+        self.corner_radius = Some(radius);
+        self
+    }
+
+    /// Set vertical padding (overrides default theme spacing)
+    pub fn vertical_padding(mut self, padding: f32) -> Self {
+        self.vertical_padding = Some(padding);
+        self
+    }
+
     /// Show the badge
     pub fn show(self, ui: &mut Ui) -> BadgeResponse {
         let theme = ui.ctx().armas_theme();
@@ -124,28 +142,32 @@ impl Badge {
             0.0
         };
         let padding = theme.spacing.md;
+        let vertical_pad = self.vertical_padding.unwrap_or(theme.spacing.md);
 
         let width = text_width + dot_space + remove_space + padding;
-        let height = self.size + theme.spacing.md;
+        let height = self.size + vertical_pad;
 
         let (rect, response) =
             ui.allocate_exact_size(Vec2::new(width, height), egui::Sense::hover());
 
+        // Calculate corner radius (default to pill shape)
+        let radius = self.corner_radius.unwrap_or(height / 2.0);
+
         // Background
         match self.variant {
             BadgeVariant::Filled => {
-                ui.painter().rect_filled(rect, height / 2.0, bg_color);
+                ui.painter().rect_filled(rect, radius, bg_color);
             }
             BadgeVariant::Outlined => {
                 ui.painter().rect_stroke(
                     rect,
-                    height / 2.0,
+                    radius,
                     egui::Stroke::new(1.0, border_color),
                     egui::StrokeKind::Middle,
                 );
             }
             BadgeVariant::Soft => {
-                ui.painter().rect_filled(rect, height / 2.0, bg_color);
+                ui.painter().rect_filled(rect, radius, bg_color);
             }
         }
 

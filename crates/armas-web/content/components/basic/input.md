@@ -39,6 +39,28 @@ Input::new("Filled input").id("input_4")
     .show(ui, &mut text);
 ```
 
+### Inline
+
+Button-like appearance when not focused, editable when clicked. Perfect for inline editing scenarios.
+
+```demo
+let mut text = String::from("Click to edit");
+Input::new("").id("input_inline_1")
+    .variant(InputVariant::Inline)
+    .show(ui, &mut text);
+```
+
+```demo
+let mut name = String::from("Channel 1");
+ui.horizontal(|ui| {
+    ui.label("Name:");
+    Input::new("").id("input_inline_2")
+        .variant(InputVariant::Inline)
+        .width(120.0)
+        .show(ui, &mut name);
+});
+```
+
 ## With Label
 
 ```demo

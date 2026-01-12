@@ -1,6 +1,6 @@
 # Knob
 
-Polished metallic knob with 3D appearance and inner glow level indicator. Perfect for audio mixing, synthesizers, and effect controls.
+Polished glazed ceramic knob with sophisticated 3D appearance and rim level indicator. Perfect for audio mixing, synthesizers, and effect controls.
 
 ## Basic Usage
 
@@ -221,24 +221,36 @@ Returns an `egui::Response` for interaction handling.
 
 ## Visual Design
 
-### 3D Metallic Appearance
-- **Base color**: Polished silver/white metallic
-- **Gradient shading**: Darker bottom, lighter top for depth
-- **Multiple highlights**: Large diffuse + small sharp highlight
-- **Outer shadow**: 4-layer shadow for depth perception
-- **Rim highlight**: Subtle edge highlight
+### Glazed Ceramic Appearance
+The knob uses 13 sophisticated rendering layers to achieve a realistic glazed ceramic look:
 
-### Inner Glow Indicator
-- **Dark inner ring**: Contrasts with glow
-- **Multi-layer glow**: 3 layers for intensity
-- **Arc rendering**: Smooth 32-segment arc
-- **Value-based brightness**: Glow intensity increases with value
+**Depth Layers:**
+- **Outer shadow**: 6-layer soft shadow for depth perception
+- **Bottom shadow arc**: 6-layer gradient arc for depth
+- **Side ambient occlusion**: 4-layer darker edges on the left side
+
+**Ceramic Body:**
+- **Base gradient**: Darker bottom (RGB: 185, 190, 200) to lighter top (RGB: 225, 230, 238)
+- **Main ceramic color**: Silver-grey (RGB: 210, 215, 222)
+
+**Glass Glaze Coating:**
+- **Base glaze layer**: 10-layer large diffuse area where glaze is thickest
+- **Mid glaze layer**: 6-layer concentrated bright area
+- **Fresnel effect**: 5-layer edge brightness where light catches the curved glass
+- **Subsurface scattering**: 4-layer rim glow where light penetrates the glaze
+
+**Highlights:**
+- **Primary specular**: 5-layer main light source reflection
+- **Secondary specular**: 3-layer additional reflection
+- **Sharp highlights**: Intense bright spots for wet glaze look
+- **Edge refraction**: 3-layer subtle color shift at edges
+
+### Rim Level Indicator
+- **Colored arc**: Shows current level on the outer rim
+- **Bright overlay**: White highlight on top for glass effect
+- **48-segment rendering**: Smooth arc rendering
 - **Custom colors**: Override with `.glow_color()`
-
-### Position Indicator
-- **White line**: Clear position marker
-- **Radiates from center**: Easy to read at any angle
-- **3px stroke**: Visible but not overpowering
+- **Very bright rim**: White rim highlight for ceramic glaze appearance
 
 ## Use Cases
 

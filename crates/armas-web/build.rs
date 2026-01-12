@@ -194,7 +194,7 @@ fn main() {
             .join(" ");
 
         if subsections.is_empty() {
-            // Top-level section with no subsections
+            // Top-level section with no subsections - wrap in single subsection for consistency
             if let Some((section_name, files)) = sections.iter().find(|(s, _)| s == parent_name) {
                 code.push_str(&format!("    nested.push((\"{}\", vec![\n", parent_display));
                 code.push_str(&format!("        (\"{}\", vec![\n", parent_display));

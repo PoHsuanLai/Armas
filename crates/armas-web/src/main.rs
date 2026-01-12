@@ -474,8 +474,14 @@ impl ShowcaseApp {
                                     });
 
                                     if has_matching_pages {
-                                        sidebar.group("", parent_name, |parent_group| {
-                                            for (section_name, section_pages) in subsections.iter() {
+                                        // Check if this is a flat section (single subsection with pages directly)
+                                        let is_flat = subsections.len() == 1 && subsections[0].1.len() > 0;
+
+                                        if is_flat {
+                                            // Flat section - show pages directly under parent
+                                            sidebar.group("", parent_name, |parent_group| {
+                                                let (_, section_pages) = &subsections[0];
+
                                                 // Filter pages if search is active
                                                 let filtered_pages: Vec<_> = if let Some(ref matcher) = matcher {
                                                     section_pages
@@ -488,16 +494,37 @@ impl ShowcaseApp {
                                                     section_pages.iter().collect()
                                                 };
 
-                                                // Only show subsection if it has pages
-                                                if !filtered_pages.is_empty() {
-                                                    parent_group.group("", section_name, |subgroup| {
-                                                        for (page_name, _) in filtered_pages {
-                                                            subgroup.item("", page_name);
-                                                        }
-                                                    });
+                                                for (page_name, _) in filtered_pages {
+                                                    parent_group.item("", page_name);
                                                 }
-                                            }
-                                        });
+                                            });
+                                        } else {
+                                            // Nested section - show subsections
+                                            sidebar.group("", parent_name, |parent_group| {
+                                                for (section_name, section_pages) in subsections.iter() {
+                                                    // Filter pages if search is active
+                                                    let filtered_pages: Vec<_> = if let Some(ref matcher) = matcher {
+                                                        section_pages
+                                                            .iter()
+                                                            .filter(|(page_name, _)| {
+                                                                matcher.fuzzy_match(page_name, &search_text).is_some()
+                                                            })
+                                                            .collect()
+                                                    } else {
+                                                        section_pages.iter().collect()
+                                                    };
+
+                                                    // Only show subsection if it has pages
+                                                    if !filtered_pages.is_empty() {
+                                                        parent_group.group("", section_name, |subgroup| {
+                                                            for (page_name, _) in filtered_pages {
+                                                                subgroup.item("", page_name);
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                        }
                                     }
                                 }
                             });

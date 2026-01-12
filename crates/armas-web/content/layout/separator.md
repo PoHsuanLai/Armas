@@ -184,6 +184,52 @@ ui.horizontal(|ui| {
 });
 ```
 
+## Glowing Divider
+
+For animated separators with glow effects, use `GlowingDivider`.
+
+```demo
+ui.label("Above glowing divider");
+
+GlowingDivider::new()
+    .show(ui, &theme);
+
+ui.label("Below glowing divider");
+```
+
+## Glowing Gradient Style
+
+```demo
+ui.label("Content");
+
+GlowingDivider::new()
+    .style(DividerStyle::Gradient)
+    .glow_intensity(0.8)
+    .show(ui, &theme);
+
+ui.label("More content");
+```
+
+## Pulsing Glow Animation
+
+```demo
+GlowingDivider::new()
+    .style(DividerStyle::Pulsing)
+    .glow_intensity(0.7)
+    .thickness(2.0)
+    .show(ui, &theme);
+```
+
+## Custom Glow Color
+
+```demo
+GlowingDivider::new()
+    .style(DividerStyle::Gradient)
+    .glow_color(egui::Color32::from_rgb(255, 100, 200))
+    .thickness(2.0)
+    .show(ui, &theme);
+```
+
 ## Notes
 
 - Separators automatically adapt to layout direction
@@ -191,3 +237,4 @@ ui.horizontal(|ui| {
 - In `ui.horizontal()`: creates vertical line
 - Respects theme colors automatically
 - For custom styling, draw directly with `ui.painter()`
+- For glowing effects, use `GlowingDivider` component

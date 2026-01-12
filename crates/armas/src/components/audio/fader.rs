@@ -62,6 +62,7 @@ impl Fader {
 
     /// Show the fader and return the new value
     pub fn show(mut self, ui: &mut Ui) -> (Response, f32) {
+        let theme = ui.ctx().armas_theme();
         let desired_size = Vec2::new(self.width, self.height);
         let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
 
@@ -102,11 +103,11 @@ impl Fader {
             // Track plate dimensions (the black inner plate) - this is the entire fader now
             let track_rect = rect;
 
-            // Track background (dark inset with shadow for depth)
+            // Track background (recessed surface)
             painter.rect_filled(
                 track_rect,
                 TRACK_CORNER_RADIUS * scale,
-                Color32::from_rgb(8, 8, 8),
+                theme.background(),
             );
 
             // Add inset shadow for 3D recessed effect
@@ -130,7 +131,7 @@ impl Fader {
             }
 
             // Draw tick marks with varying widths
-            self.draw_tick_marks(painter, track_rect, scale);
+            self.draw_tick_marks(painter, track_rect, scale, &theme);
 
             // Draw the slider channel/crack (vertical dark gradient track)
             // Channel has internal padding within the track plate
@@ -145,18 +146,18 @@ impl Fader {
                 Vec2::new(channel_width, channel_height),
             );
 
-            // Draw solid black channel to hide tick marks underneath
+            // Draw channel background
             painter.rect_filled(
                 channel_rect,
                 CHANNEL_CORNER_RADIUS * scale,
-                Color32::from_rgb(0, 0, 0), // Solid black
+                theme.background(),
             );
 
             // Add border to channel
             painter.rect_stroke(
                 channel_rect,
                 CHANNEL_CORNER_RADIUS * scale,
-                (1.0 * scale, Color32::from_rgb(14, 14, 14)),
+                (1.0 * scale, theme.outline()),
                 egui::StrokeKind::Middle,
             );
 
@@ -177,19 +178,23 @@ impl Fader {
                 thumb_width,
                 thumb_height,
                 scale,
+                &theme,
             );
         }
 
         (response, self.value)
     }
 
-    fn draw_tick_marks(&self, painter: &egui::Painter, track_rect: Rect, scale: f32) {
+    fn draw_tick_marks(&self, painter: &egui::Painter, track_rect: Rect, scale: f32, theme: &crate::theme::Theme) {
         // Tick mark pattern from the SVG: varying widths (scaled)
         // Draw tick marks from center extending outward to left and right
         let tick_widths = [0.0, 8.0, 9.0, 8.0, 10.0, 8.0, 10.0, 8.0, 10.0, 8.0, 0.0];
         let track_center_x = track_rect.center().x;
         let track_start_y = track_rect.min.y + 15.0 * scale;
         let track_usable_height = track_rect.height() - 30.0 * scale;
+
+        // Use theme color for tick marks - lighter than background
+        let tick_color = theme.outline_variant();
 
         for (i, &width) in tick_widths.iter().enumerate() {
             // Skip first and last tick marks to avoid rounded corners
@@ -207,7 +212,7 @@ impl Fader {
                     Pos2::new(track_center_x - tick_length, y),
                     Pos2::new(track_center_x, y),
                 ],
-                (1.0 * scale, Color32::from_rgb(51, 51, 51)), // #333 from SVG
+                (1.0 * scale, tick_color),
             );
 
             // Right tick mark (from center extending rightward)
@@ -216,7 +221,7 @@ impl Fader {
                     Pos2::new(track_center_x, y),
                     Pos2::new(track_center_x + tick_length, y),
                 ],
-                (1.0 * scale, Color32::from_rgb(51, 51, 51)), // #333 from SVG
+                (1.0 * scale, tick_color),
             );
         }
     }
@@ -228,6 +233,7 @@ impl Fader {
         width: f32,
         height: f32,
         scale: f32,
+        theme: &crate::theme::Theme,
     ) {
         let rect = Rect::from_min_size(pos, Vec2::new(width, height));
 
@@ -235,12 +241,31 @@ impl Fader {
         let w_scale = width / THUMB_WIDTH;
         let h_scale = height / THUMB_HEIGHT;
 
-        // Top cap (gradient from #3D3D3D to #4E4E4E)
+        // Determine brightness based on theme - brighter in dark mode
+        let bg = theme.background();
+        let bg_luminance = (bg.r() as u16 + bg.g() as u16 + bg.b() as u16) / 3;
+        let is_dark = bg_luminance < 128;
+
+        // Base gray - brighter in dark mode, darker in light mode
+        let base_gray = if is_dark { 120u8 } else { 80u8 };
+
+        // Glow effect (outer shadow)
+        for i in 0..4 {
+            let glow_offset = (4 - i) as f32 * scale;
+            let glow_alpha = (40 - i * 8) as u8;
+            painter.rect_filled(
+                rect.expand(glow_offset),
+                2.0,
+                Color32::from_rgba_unmultiplied(255, 255, 255, glow_alpha),
+            );
+        }
+
+        // Top cap
         let top_cap = Rect::from_min_size(
             pos + Vec2::new(1.0 * w_scale, 0.0),
             Vec2::new(23.0 * w_scale, 4.0 * h_scale),
         );
-        painter.rect_filled(top_cap, 0.0, Color32::from_rgb(69, 69, 69));
+        painter.rect_filled(top_cap, 0.0, Color32::from_rgb(base_gray + 20, base_gray + 20, base_gray + 20));
 
         // Top cap highlight
         painter.line_segment(
@@ -248,7 +273,7 @@ impl Fader {
                 pos + Vec2::new(1.0 * w_scale, 0.0),
                 pos + Vec2::new(24.0 * w_scale, 0.0),
             ],
-            (1.0 * scale, Color32::from_rgb(106, 106, 106)),
+            (1.0 * scale, Color32::from_rgb(base_gray + 50, base_gray + 50, base_gray + 50)),
         );
 
         // Top slanted face
@@ -256,18 +281,14 @@ impl Fader {
             pos + Vec2::new(2.0 * w_scale, 5.0 * h_scale),
             Vec2::new(21.0 * w_scale, 3.0 * h_scale),
         );
-        painter.rect_filled(top_slant, 0.0, Color32::from_rgb(28, 28, 28));
+        painter.rect_filled(top_slant, 0.0, Color32::from_rgb(base_gray - 30, base_gray - 30, base_gray - 30));
 
-        // Main body (gradient from #2E2E2E to #646464)
-        // Approximate gradient with multiple horizontal lines (scaled)
+        // Main body (gradient)
         let gradient_lines = (39.0 * h_scale) as usize;
         for i in 0..gradient_lines {
             let t = i as f32 / (gradient_lines - 1) as f32;
-            let color = Color32::from_rgb(
-                (46.0 + t * (100.0 - 46.0)) as u8,
-                (46.0 + t * (100.0 - 46.0)) as u8,
-                (46.0 + t * (100.0 - 46.0)) as u8,
-            );
+            let gray_value = ((base_gray - 10) as f32 + t * 40.0) as u8;
+            let color = Color32::from_rgb(gray_value, gray_value, gray_value);
             painter.line_segment(
                 [
                     pos + Vec2::new(2.0 * w_scale, 8.0 * h_scale + i as f32 * h_scale),
@@ -286,7 +307,7 @@ impl Fader {
                     Pos2::new(pos.x + 2.0 * w_scale, y),
                     Pos2::new(pos.x + 23.0 * w_scale, y),
                 ],
-                (1.0 * scale, Color32::from_rgba_unmultiplied(0, 0, 0, 100)),
+                (1.0 * scale, Color32::from_rgba_unmultiplied(0, 0, 0, 80)),
             );
         }
 
@@ -295,20 +316,20 @@ impl Fader {
             pos + Vec2::new(1.0 * w_scale, 24.0 * h_scale),
             Vec2::new(23.0 * w_scale, 5.0 * h_scale),
         );
-        painter.rect_filled(groove, 0.0, Color32::from_rgb(145, 145, 145));
+        painter.rect_filled(groove, 0.0, Color32::from_rgb(base_gray + 60, base_gray + 60, base_gray + 60));
         painter.rect_stroke(
             groove,
             0.0,
-            (1.0 * scale, Color32::from_rgb(27, 27, 27)),
+            (1.0 * scale, Color32::from_rgb(base_gray - 40, base_gray - 40, base_gray - 40)),
             egui::StrokeKind::Middle,
         );
 
-        // Bottom cap (gradient from #1E1E1E to #0B0B0B) (scaled)
+        // Bottom cap
         let bottom_cap = Rect::from_min_size(
             pos + Vec2::new(1.0 * w_scale, height - 6.0 * h_scale),
             Vec2::new(23.0 * w_scale, 6.0 * h_scale),
         );
-        painter.rect_filled(bottom_cap, 0.0, Color32::from_rgb(20, 20, 20));
+        painter.rect_filled(bottom_cap, 0.0, Color32::from_rgb(base_gray - 35, base_gray - 35, base_gray - 35));
 
         // Side borders (scaled)
         painter.line_segment(
@@ -316,14 +337,14 @@ impl Fader {
                 pos + Vec2::new(1.0 * w_scale, 5.0 * h_scale),
                 pos + Vec2::new(1.0 * w_scale, height - 6.0 * h_scale),
             ],
-            (1.0 * scale, Color32::from_rgb(17, 17, 17)),
+            (1.0 * scale, Color32::from_rgb(base_gray - 45, base_gray - 45, base_gray - 45)),
         );
         painter.line_segment(
             [
                 pos + Vec2::new(24.0 * w_scale, 5.0 * h_scale),
                 pos + Vec2::new(24.0 * w_scale, height - 6.0 * h_scale),
             ],
-            (1.0 * scale, Color32::from_rgb(21, 21, 21)),
+            (1.0 * scale, Color32::from_rgb(base_gray - 40, base_gray - 40, base_gray - 40)),
         );
 
         // Drop shadow (scaled)
@@ -367,7 +388,7 @@ impl FaderStrip {
 
     /// Show the fader strip and return the new value
     pub fn show(mut self, ui: &mut Ui) -> (Response, f32) {
-        let _theme = ui.ctx().armas_theme();
+        let theme = ui.ctx().armas_theme();
         let desired_size = Vec2::new(self.width, self.height);
         let (rect, response) = ui.allocate_exact_size(desired_size, Sense::hover());
 
@@ -379,20 +400,27 @@ impl FaderStrip {
             let scale_y = self.height / STRIP_DEFAULT_HEIGHT;
             let scale = scale_x.min(scale_y);
 
-            // Draw outer housing with gradient (from #252525 to #121212)
+            // Housing gradient colors from theme
+            let housing_top = theme.surface_variant();
+            let housing_bottom = theme.surface();
+
+            // Draw outer housing with gradient
             // First draw a base rounded rect for the shape
             painter.rect_filled(
                 rect,
                 HOUSING_CORNER_RADIUS * scale,
-                Color32::from_rgb(37, 37, 37), // Base color
+                housing_top,
             );
 
             // Then draw gradient layers on top (no corner radius to avoid waves)
             for i in 0..HOUSING_GRADIENT_STEPS {
                 let t = i as f32 / (HOUSING_GRADIENT_STEPS - 1) as f32;
-                // Interpolate from #252525 to #121212
-                let color_value = (37.0 - t * (37.0 - 18.0)) as u8;
-                let color = Color32::from_rgb(color_value, color_value, color_value);
+                // Interpolate from top to bottom color
+                let color = Color32::from_rgb(
+                    (housing_top.r() as f32 * (1.0 - t) + housing_bottom.r() as f32 * t) as u8,
+                    (housing_top.g() as f32 * (1.0 - t) + housing_bottom.g() as f32 * t) as u8,
+                    (housing_top.b() as f32 * (1.0 - t) + housing_bottom.b() as f32 * t) as u8,
+                );
 
                 let segment_height = self.height / HOUSING_GRADIENT_STEPS as f32;
                 let y = rect.min.y + i as f32 * segment_height;
@@ -411,7 +439,7 @@ impl FaderStrip {
             painter.rect_stroke(
                 rect,
                 HOUSING_CORNER_RADIUS * scale,
-                (0.5 * scale, Color32::from_rgb(18, 18, 18)), // Subtle border
+                (0.5 * scale, theme.outline()),
                 egui::StrokeKind::Middle,
             );
 

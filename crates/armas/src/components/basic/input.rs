@@ -24,6 +24,8 @@ pub enum InputVariant {
     Outlined,
     /// Filled background style (MD3 recommended for higher emphasis)
     Filled,
+    /// Inline edit style - looks like a button when not focused, editable when clicked
+    Inline,
 }
 
 /// Input validation state
@@ -127,7 +129,6 @@ impl Input {
     /// Show the input field
     pub fn show(self, ui: &mut Ui, text: &mut String) -> Response {
         let theme = ui.ctx().armas_theme();
-        let width = self.width.unwrap_or(200.0);
 
         // Load state from memory if ID is set
         if let Some(id) = self.id {
@@ -137,6 +138,19 @@ impl Input {
                 .data_mut(|d| d.get_temp(state_id).unwrap_or_else(|| text.clone()));
             *text = stored_text;
         }
+
+        // For Inline variant, calculate width based on text content
+        let width = if self.variant == InputVariant::Inline && self.width.is_none() {
+            // Estimate width: ~8px per character for proportional font at size 14
+            let char_count = text.len().max(8); // Minimum 8 chars
+            let estimated_width = (char_count as f32 * 8.0) + 24.0; // 24px padding
+            estimated_width.min(300.0).max(80.0) // Min 80, max 300
+        } else {
+            self.width.unwrap_or(200.0)
+        };
+
+        // For Inline variant, use button height
+        let height = if self.variant == InputVariant::Inline { 28.0 } else { 40.0 };
 
         // Only use vertical layout if we have label or helper text
         let has_extras = self.label.is_some() || self.helper_text.is_some();
@@ -156,7 +170,7 @@ impl Input {
             }
 
             // Input container
-            let desired_size = vec2(width, 40.0);
+            let desired_size = vec2(width, height);
             let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click());
 
             if ui.is_rect_visible(rect) {
@@ -186,6 +200,18 @@ impl Input {
                         InputVariant::Filled => {
                             let surface = theme.surface_variant();
                             (surface, theme.primary())
+                        }
+                        InputVariant::Inline => {
+                            // Button-like appearance when not focused
+                            if response.has_focus() {
+                                // Editable state - subtle background
+                                let surface = theme.surface_variant();
+                                (surface, theme.primary())
+                            } else {
+                                // Button-like state
+                                let surface = theme.surface();
+                                (surface, theme.outline())
+                            }
                         }
                     },
                     InputState::Success => {

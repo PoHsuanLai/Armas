@@ -2,6 +2,61 @@ use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Pos2, Response, Ui, Vec2};
 
+/// Size variants for accordion items
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AccordionSize {
+    /// Compact size (28px header)
+    Compact,
+    /// Small size (36px header)
+    Small,
+    /// Medium size (44px header)
+    Medium,
+    /// Large size (52px header)
+    Large,
+}
+
+impl AccordionSize {
+    /// Get the header height for this size
+    pub fn header_height(&self) -> f32 {
+        match self {
+            AccordionSize::Compact => 28.0,
+            AccordionSize::Small => 36.0,
+            AccordionSize::Medium => 44.0,
+            AccordionSize::Large => 52.0,
+        }
+    }
+
+    /// Get the font size for this size
+    pub fn font_size(&self) -> f32 {
+        match self {
+            AccordionSize::Compact => 12.0,
+            AccordionSize::Small => 14.0,
+            AccordionSize::Medium => 16.0,
+            AccordionSize::Large => 18.0,
+        }
+    }
+
+    /// Get the icon size for this size
+    pub fn icon_size(&self) -> f32 {
+        match self {
+            AccordionSize::Compact => 4.0,
+            AccordionSize::Small => 5.0,
+            AccordionSize::Medium => 6.0,
+            AccordionSize::Large => 7.0,
+        }
+    }
+
+    /// Get the horizontal padding for this size
+    pub fn padding(&self) -> f32 {
+        match self {
+            AccordionSize::Compact => 8.0,
+            AccordionSize::Small => 12.0,
+            AccordionSize::Medium => 16.0,
+            AccordionSize::Large => 20.0,
+        }
+    }
+}
+
 /// An accordion item with title and collapsible content
 pub struct AccordionItem {
     /// Item title
@@ -16,6 +71,8 @@ pub struct AccordionItem {
     animate: bool,
     /// Animation progress (0.0 to 1.0)
     animation_t: f32,
+    /// Size variant
+    size: AccordionSize,
 }
 
 impl AccordionItem {
@@ -28,6 +85,7 @@ impl AccordionItem {
             show_icon: true,
             animate: true,
             animation_t: 0.0,
+            size: AccordionSize::Medium,
         }
     }
 
@@ -53,6 +111,12 @@ impl AccordionItem {
     /// Enable or disable animation
     pub fn animate(mut self, animate: bool) -> Self {
         self.animate = animate;
+        self
+    }
+
+    /// Set size variant
+    pub fn size(mut self, size: AccordionSize) -> Self {
+        self.size = size;
         self
     }
 
@@ -173,7 +237,11 @@ impl AccordionItem {
 
     /// Show the header
     fn show_header(&self, ui: &mut Ui, theme: &Theme) -> Response {
-        let desired_size = Vec2::new(ui.available_width(), 44.0);
+        let header_height = self.size.header_height();
+        let padding = self.size.padding();
+        let font_size = self.size.font_size();
+
+        let desired_size = Vec2::new(ui.available_width(), header_height);
         let (rect, response) = ui.allocate_exact_size(desired_size, egui::Sense::click());
 
         let is_hovered = response.hovered();
@@ -199,8 +267,8 @@ impl AccordionItem {
 
         // Chevron icon
         if self.show_icon {
-            let icon_x = rect.min.x + 16.0;
-            let icon_y = rect.min.y + 22.0;
+            let icon_x = rect.min.x + padding;
+            let icon_y = rect.min.y + header_height / 2.0;
 
             // Rotate chevron based on animation
             let rotation = self.animation_t * std::f32::consts::PI / 2.0;
@@ -208,17 +276,14 @@ impl AccordionItem {
         }
 
         // Title
-        let title_x = if self.show_icon {
-            rect.min.x + 40.0
-        } else {
-            rect.min.x + 16.0
-        };
+        let icon_spacing = if self.show_icon { 24.0 } else { 0.0 };
+        let title_x = rect.min.x + padding + icon_spacing;
 
         ui.painter().text(
-            Pos2::new(title_x, rect.min.y + 22.0),
+            Pos2::new(title_x, rect.min.y + header_height / 2.0),
             egui::Align2::LEFT_CENTER,
             &self.title,
-            egui::FontId::proportional(16.0),
+            egui::FontId::proportional(font_size),
             theme.on_surface(),
         );
 
@@ -227,7 +292,7 @@ impl AccordionItem {
 
     /// Draw chevron icon
     fn draw_chevron(&self, ui: &mut Ui, center: Pos2, rotation: f32, theme: &Theme) {
-        let size = 6.0;
+        let size = self.size.icon_size();
         let painter = ui.painter();
 
         // Chevron points (right-pointing)
@@ -253,7 +318,7 @@ impl AccordionItem {
             let pos1 = center + rotated1;
             let pos2 = center + rotated2;
 
-            painter.line_segment([pos1, pos2], egui::Stroke::new(2.0, theme.on_surface()));
+            painter.line_segment([pos1, pos2], egui::Stroke::new(1.5, theme.on_surface()));
         }
     }
 }

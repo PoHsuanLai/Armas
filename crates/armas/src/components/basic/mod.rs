@@ -21,7 +21,7 @@ pub mod toggle;
 pub mod tooltip;
 
 // Re-exports
-pub use accordion::{Accordion, AccordionItem};
+pub use accordion::{Accordion, AccordionItem, AccordionSize};
 pub use alert::{
     alert, alert_error, alert_info, alert_success, alert_warning, Alert, AlertResponse,
     AlertVariant,
