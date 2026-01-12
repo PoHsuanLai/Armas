@@ -16,9 +16,6 @@ pub struct RetroGrid {
     perspective_depth: f32,
     animate: bool,
     animation_speed: f32,
-
-    // Internal state
-    animation_offset: f32,
 }
 
 impl RetroGrid {
@@ -27,13 +24,13 @@ impl RetroGrid {
         Self {
             width,
             height,
-            grid_color: Color32::from_rgba_unmultiplied(0, 255, 255, 80), // Cyan
-            horizon_color: Color32::from_rgba_unmultiplied(255, 0, 255, 100), // Magenta
+            // More subtle, polished colors
+            grid_color: Color32::from_rgba_unmultiplied(100, 200, 255, 60), // Subtle cyan
+            horizon_color: Color32::from_rgba_unmultiplied(200, 100, 255, 80), // Subtle purple
             cell_size: 50.0,
             perspective_depth: 0.6,
             animate: true,
-            animation_speed: 20.0,
-            animation_offset: 0.0,
+            animation_speed: 15.0, // Slightly slower for smoothness
         }
     }
 
@@ -74,15 +71,19 @@ impl RetroGrid {
     }
 
     /// Show the retro grid
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
+    pub fn show(&self, ui: &mut Ui) -> Response {
+        let time = ui.input(|i| i.time) as f32;
+
         if self.animate {
-            let dt = ui.input(|i| i.stable_dt);
-            self.animation_offset += dt * self.animation_speed;
-            if self.animation_offset > self.cell_size {
-                self.animation_offset -= self.cell_size;
-            }
             ui.ctx().request_repaint();
         }
+
+        // Calculate animation offset from absolute time
+        let animation_offset = if self.animate {
+            (time * self.animation_speed) % self.cell_size
+        } else {
+            0.0
+        };
 
         let (response, painter) =
             ui.allocate_painter(Vec2::new(self.width, self.height), egui::Sense::hover());
@@ -101,7 +102,7 @@ impl RetroGrid {
 
                 // Apply animation offset
                 let animated_t = if self.animate {
-                    (t + self.animation_offset / (self.cell_size * num_h_lines as f32)) % 1.0
+                    (t + animation_offset / (self.cell_size * num_h_lines as f32)) % 1.0
                 } else {
                     t
                 };

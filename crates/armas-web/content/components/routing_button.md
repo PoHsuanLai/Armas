@@ -1,38 +1,59 @@
 # Routing Button
 
-Input/Output routing buttons (Studio One style).
+Audio/MIDI routing button for input/output channel selection.
 
 ## Basic Usage
 
 ```demo
-// Input button
-if RoutingButton::input("Input L+R", 80.0, 24.0)
-    .show(ui)
-    .clicked()
-{
-    // Handle click
-}
+ui.horizontal(|ui| {
+    // Input button
+    if RoutingButton::input("Input L+R")
+        .show(ui)
+        .clicked()
+    {
+        // Handle click
+    }
 
-// Output button
-if RoutingButton::output("Main", 80.0, 24.0)
-    .show(ui)
-    .clicked()
-{
-    // Handle click
-}
+    // Output button
+    if RoutingButton::output("Main")
+        .show(ui)
+        .clicked()
+    {
+        // Handle click
+    }
+});
+```
+
+## Multiple Routing Options
+
+```demo
+ui.horizontal(|ui| {
+    RoutingButton::input("Stereo").show(ui);
+    RoutingButton::input("Mono").show(ui);
+    RoutingButton::input("MIDI").show(ui);
+});
+
+ui.horizontal(|ui| {
+    RoutingButton::output("Main").show(ui);
+    RoutingButton::output("Bus 1").show(ui);
+    RoutingButton::output("Bus 2").show(ui);
+});
 ```
 
 ## API Reference
 
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
-| `::input(label, width, height)` | `(&str, f32, f32)` | - | Create input routing button |
-| `::output(label, width, height)` | `(&str, f32, f32)` | - | Create output routing button |
+| `::input(label)` | `&str` | `100x32` | Create input routing button |
+| `::output(label)` | `&str` | `100x32` | Create output routing button |
+| `.size()` | `(f32, f32)` | - | Set custom width and height |
+| `.width()` | `f32` | `100.0` | Set width |
+| `.height()` | `f32` | `32.0` | Set height |
 | `.show(&mut Ui)` | - | - | Show the button |
 
 ## Note
 
-This component is designed to match Studio One's I/O display style. Output buttons are slightly lighter than input buttons.
+Output buttons are styled slightly lighter than input buttons for visual distinction.
 
 ## Dependencies
 

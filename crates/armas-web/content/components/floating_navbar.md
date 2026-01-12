@@ -2,6 +2,51 @@
 
 Floating navigation bar with smooth morphing background that highlights the active item.
 
+## Interactive Demo with Backdrop
+
+```demo
+use egui::Id;
+
+// Store navbar visibility state
+let id = Id::new("navbar_visible");
+let mut visible = ui.data_mut(|d| d.get_temp::<bool>(id).unwrap_or(false));
+
+// Button to toggle navbar
+if Button::new("Toggle Navbar")
+    .variant(ButtonVariant::Filled)
+    .show(ui)
+    .clicked()
+{
+    visible = !visible;
+    ui.data_mut(|d| d.insert_temp(id, visible));
+}
+
+// Show navbar when visible
+if visible {
+    let items = vec![
+        NavItem::new("Home").icon("🏠").active(true),
+        NavItem::new("Search").icon("🔍"),
+        NavItem::new("Profile").icon("👤"),
+        NavItem::new("Settings").icon("⚙️"),
+    ];
+
+    let mut navbar = FloatingNavbar::new(items)
+        .with_id("navbar_demo")
+        .with_backdrop(true); // Dark background overlay
+
+    let response = navbar.show(ui.ctx());
+
+    // Close navbar when:
+    // - Item is clicked
+    // - Close button (X) is clicked
+    // - Backdrop is clicked
+    if response.clicked.is_some() || response.close_clicked || response.backdrop_clicked {
+        visible = false;
+        ui.data_mut(|d| d.insert_temp(id, visible));
+    }
+}
+```
+
 ## Basic Usage
 
 ```demo
@@ -11,88 +56,17 @@ let items = vec![
     NavItem::new("Contact"),
 ];
 
-let mut navbar = FloatingNavbar::new(items);
+let mut navbar = FloatingNavbar::new(items)
+    .with_id("navbar_basic")
+    .position(NavbarPosition::Bottom);
+
 let response = navbar.show(ui.ctx());
 
 if let Some(index) = response.clicked {
-    println!("Clicked item {}", index);
+    // Handle navigation
 }
 ```
 
-## With Icons
-
-```demo
-let items = vec![
-    NavItem::new("Home").icon("🏠").active(true),
-    NavItem::new("Search").icon("🔍"),
-    NavItem::new("Profile").icon("👤"),
-    NavItem::new("Settings").icon("⚙️"),
-];
-
-let mut navbar = FloatingNavbar::new(items);
-navbar.show(ui.ctx());
-```
-
-## Custom Position
-
-```demo
-let items = vec![
-    NavItem::new("Top Nav").active(true),
-    NavItem::new("Item 2"),
-];
-
-// Position at top (default)
-let mut navbar = FloatingNavbar::new(items.clone())
-    .position(NavbarPosition::Top);
-navbar.show(ui.ctx());
-
-// Position at bottom
-let mut navbar = FloatingNavbar::new(items.clone())
-    .position(NavbarPosition::Bottom);
-navbar.show(ui.ctx());
-```
-
-## Custom Width
-
-```demo
-let items = vec![
-    NavItem::new("Wide").active(true),
-    NavItem::new("Navbar"),
-];
-
-let mut navbar = FloatingNavbar::new(items)
-    .width(1000.0);
-
-navbar.show(ui.ctx());
-```
-
-## Handle Interactions
-
-```demo
-let items = vec![
-    NavItem::new("Dashboard"),
-    NavItem::new("Analytics"),
-    NavItem::new("Reports"),
-];
-
-let mut navbar = FloatingNavbar::new(items);
-let response = navbar.show(ui.ctx());
-
-// Handle clicks
-if let Some(clicked_index) = response.clicked {
-    match clicked_index {
-        0 => { /* navigate to dashboard */ },
-        1 => { /* navigate to analytics */ },
-        2 => { /* navigate to reports */ },
-        _ => {}
-    }
-}
-
-// Handle hover
-if let Some(hovered_index) = response.hovered {
-    println!("Hovering item {}", hovered_index);
-}
-```
 
 ## API Reference
 
@@ -101,8 +75,10 @@ if let Some(hovered_index) = response.hovered {
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
 | `::new(items)` | `Vec<NavItem>` | - | Create navbar with items |
+| `.with_id()` | `impl Hash` | - | Set unique ID (required for multiple instances) |
 | `.position()` | `NavbarPosition` | `Top` | Set navbar position |
 | `.width()` | `f32` | `800.0` | Set fixed width |
+| `.with_backdrop()` | `bool` | `false` | Show darkened background overlay |
 | `.show(&egui::Context)` | - | - | Show navbar and handle interactions |
 
 ### NavItem
@@ -127,11 +103,15 @@ if let Some(hovered_index) = response.hovered {
 | `response` | `Response` | The underlying egui response |
 | `clicked` | `Option<usize>` | Index of clicked item, if any |
 | `hovered` | `Option<usize>` | Index of hovered item, if any |
+| `close_clicked` | `bool` | Whether the close button (X) was clicked |
+| `backdrop_clicked` | `bool` | Whether the backdrop overlay was clicked |
 
 ## Features
 
 - **Morphing Indicator**: Background pill smoothly animates to highlight active item
 - **Floating Design**: Navbar floats above content with semi-transparent background
+- **Close Button**: X button in top-right corner to dismiss navbar
+- **Backdrop Dismissal**: Click backdrop overlay to close navbar
 - **Auto-Sizing**: Items automatically size to fill available width
 - **Icons & Labels**: Support for both icons and text labels
 - **Smooth Animations**: Easing functions for natural motion

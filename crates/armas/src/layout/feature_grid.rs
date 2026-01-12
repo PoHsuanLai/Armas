@@ -1,6 +1,6 @@
 use crate::ext::ArmasContextExt;
 use crate::Theme;
-use egui::{Color32, Pos2, Rect, Response, Ui, Vec2};
+use egui::{Color32, Pos2, Rect, Ui, Vec2};
 
 /// A feature item with icon, title, and description
 #[derive(Clone)]
@@ -45,21 +45,17 @@ impl FeatureItem {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::{Theme, components::{FeatureGrid, FeatureItem}};
+/// use armas::layout::FeatureGrid;
 ///
-/// fn ui(ui: &mut egui::Ui) {
-///     let theme = Theme::dark();
-///     let items = vec![
-///         FeatureItem::new("🚀", "Fast", "Lightning fast performance"),
-///         FeatureItem::new("🎨", "Beautiful", "Gorgeous UI components"),
-///     ];
-///
-///     FeatureGrid::new(items).show(ui, &theme);
-/// }
+/// FeatureGrid::new()
+///     .columns(3)
+///     .show(ui, |grid| {
+///         grid.feature("🚀", "Fast", "Lightning fast performance");
+///         grid.feature("🎨", "Beautiful", "Gorgeous UI components");
+///         grid.feature("🔒", "Secure", "Built with security in mind");
+///     });
 /// ```
 pub struct FeatureGrid {
-    /// Feature items to display
-    items: Vec<FeatureItem>,
     /// Number of columns (None = auto-calculate)
     columns: Option<usize>,
     /// Gap between items
@@ -74,9 +70,8 @@ pub struct FeatureGrid {
 
 impl FeatureGrid {
     /// Create a new feature grid
-    pub fn new(items: Vec<FeatureItem>) -> Self {
+    pub fn new() -> Self {
         Self {
-            items,
             columns: None,
             gap: 20.0,
             show_borders: true,
@@ -116,24 +111,80 @@ impl FeatureGrid {
     }
 
     /// Show the feature grid
-    pub fn show(&self, ui: &mut Ui) -> Response {
+    pub fn show<R>(self, ui: &mut Ui, content: impl FnOnce(&mut GridBuilder) -> R) -> R {
         let theme = ui.ctx().armas_theme();
         let available_width = ui.available_width();
 
-        // Calculate columns if not specified
+        let mut builder = GridBuilder {
+            ui,
+            columns: self.columns,
+            gap: self.gap,
+            show_borders: self.show_borders,
+            hover_effect: self.hover_effect,
+            icon_size: self.icon_size,
+            theme,
+            available_width,
+            items: Vec::new(),
+        };
+
+        let result = content(&mut builder);
+
+        builder.render();
+        result
+    }
+}
+
+/// Builder for adding features to the grid
+pub struct GridBuilder<'a> {
+    ui: &'a mut Ui,
+    columns: Option<usize>,
+    gap: f32,
+    show_borders: bool,
+    hover_effect: bool,
+    icon_size: f32,
+    theme: Theme,
+    available_width: f32,
+    items: Vec<FeatureItem>,
+}
+
+impl<'a> GridBuilder<'a> {
+    /// Add a feature to the grid
+    pub fn feature(
+        &mut self,
+        icon: impl Into<String>,
+        title: impl Into<String>,
+        description: impl Into<String>,
+    ) {
+        self.items.push(FeatureItem::new(icon, title, description));
+    }
+
+    /// Add a feature with custom icon color
+    pub fn feature_with_color(
+        &mut self,
+        icon: impl Into<String>,
+        title: impl Into<String>,
+        description: impl Into<String>,
+        icon_color: Color32,
+    ) {
+        self.items
+            .push(FeatureItem::new(icon, title, description).icon_color(icon_color));
+    }
+
+    /// Render all features
+    fn render(&mut self) {
         let columns = self.columns.unwrap_or_else(|| {
             // Auto-calculate based on available width
             let min_item_width = 250.0;
-            ((available_width / min_item_width).floor() as usize).clamp(1, 4)
+            ((self.available_width / min_item_width).floor() as usize).clamp(1, 4)
         });
 
         let rows = self.items.len().div_ceil(columns);
-        let item_width = (available_width - (columns - 1) as f32 * self.gap) / columns as f32;
+        let item_width = (self.available_width - (columns - 1) as f32 * self.gap) / columns as f32;
 
         // Allocate space for the grid
         let total_height = rows as f32 * 150.0 + (rows - 1) as f32 * self.gap;
-        let (rect, response) = ui.allocate_exact_size(
-            Vec2::new(available_width, total_height),
+        let (rect, _response) = self.ui.allocate_exact_size(
+            Vec2::new(self.available_width, total_height),
             egui::Sense::hover(),
         );
 
@@ -148,33 +199,24 @@ impl FeatureGrid {
             let item_rect = Rect::from_min_size(Pos2::new(x, y), Vec2::new(item_width, 150.0));
 
             // Check hover for this specific item
-            let item_hovered = ui.rect_contains_pointer(item_rect);
+            let item_hovered = self.ui.rect_contains_pointer(item_rect);
 
-            self.draw_feature_item(ui, item_rect, item, item_hovered, &theme);
+            self.draw_feature_item(item_rect, item, item_hovered);
 
             // Draw borders (smart: only between items)
             if self.show_borders {
-                self.draw_borders(ui, item_rect, (row, col), (rows, columns), &theme);
+                self.draw_borders(item_rect, (row, col), (rows, columns));
             }
         }
-
-        response
     }
 
     /// Draw a single feature item
-    fn draw_feature_item(
-        &self,
-        ui: &mut Ui,
-        rect: Rect,
-        item: &FeatureItem,
-        is_hovered: bool,
-        theme: &Theme,
-    ) {
-        let painter = ui.painter();
+    fn draw_feature_item(&self, rect: Rect, item: &FeatureItem, is_hovered: bool) {
+        let painter = self.ui.painter();
 
         // Background with hover effect
         let bg_color = if self.hover_effect && is_hovered {
-            theme.hover()
+            self.theme.hover()
         } else {
             Color32::TRANSPARENT
         };
@@ -184,7 +226,7 @@ impl FeatureGrid {
         }
 
         // Icon
-        let icon_color = item.icon_color.unwrap_or(theme.primary());
+        let icon_color = item.icon_color.unwrap_or(self.theme.primary());
         let icon_pos = Pos2::new(rect.min.x + 20.0, rect.min.y + 20.0);
 
         painter.text(
@@ -202,7 +244,7 @@ impl FeatureGrid {
             egui::Align2::LEFT_TOP,
             &item.title,
             egui::FontId::proportional(18.0),
-            theme.on_surface(),
+            self.theme.on_surface(),
         );
 
         // Description
@@ -213,26 +255,19 @@ impl FeatureGrid {
         let galley = painter.layout(
             item.description.clone(),
             egui::FontId::proportional(14.0),
-            theme.on_surface_variant(),
+            self.theme.on_surface_variant(),
             desc_width,
         );
 
-        painter.galley(desc_pos, galley, theme.on_surface_variant());
+        painter.galley(desc_pos, galley, self.theme.on_surface_variant());
     }
 
     /// Draw smart borders (only between items)
-    fn draw_borders(
-        &self,
-        ui: &mut Ui,
-        rect: Rect,
-        position: (usize, usize),
-        grid_size: (usize, usize),
-        theme: &Theme,
-    ) {
+    fn draw_borders(&self, rect: Rect, position: (usize, usize), grid_size: (usize, usize)) {
         let (row, col) = position;
         let (rows, columns) = grid_size;
-        let painter = ui.painter();
-        let border_color = theme.outline_variant();
+        let painter = self.ui.painter();
+        let border_color = self.theme.outline_variant();
         let stroke = egui::Stroke::new(1.0, border_color);
 
         // Right border (not on last column)

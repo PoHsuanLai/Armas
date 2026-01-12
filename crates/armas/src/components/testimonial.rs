@@ -139,21 +139,21 @@ impl TestimonialCard {
         let available = ui.available_size();
         let desired_width = self.width.unwrap_or(available.x);
 
-        // Allocate space
+        // Allocate space - larger default height for more breathing room
         let (rect, response) = if self.height.is_some() {
             ui.allocate_exact_size(
                 Vec2::new(desired_width, self.height.unwrap()),
                 egui::Sense::hover(),
             )
         } else {
-            ui.allocate_at_least(Vec2::new(desired_width, 100.0), egui::Sense::hover())
+            ui.allocate_at_least(Vec2::new(desired_width, 180.0), egui::Sense::hover())
         };
 
         let is_hovered = response.hovered();
 
-        // Background
+        // Background - use standard style
         let bg_color = if self.hover_effect && is_hovered {
-            theme.hover()
+            theme.surface_variant()
         } else {
             theme.surface()
         };
@@ -170,49 +170,14 @@ impl TestimonialCard {
             );
         }
 
-        // Content area with padding
-        let content_rect = rect.shrink(20.0);
+        // Content area with generous padding for breathing room
+        let content_rect = rect.shrink(24.0);
         let mut y = content_rect.min.y;
 
-        // Rating stars - use theme warning color (gold/yellow)
-        if let Some(rating) = self.item.rating {
-            let star_size = 16.0;
-            let spacing = 4.0;
-            for i in 0..5 {
-                let x = content_rect.min.x + i as f32 * (star_size + spacing);
-                let color = if i < rating {
-                    theme.warning() // Use theme warning/gold color for stars
-                } else {
-                    theme.outline_variant()
-                };
-                ui.painter().text(
-                    Pos2::new(x, y),
-                    egui::Align2::LEFT_TOP,
-                    "★",
-                    egui::FontId::proportional(star_size),
-                    color,
-                );
-            }
-            y += 20.0;
-        }
-
-        // Quote text
-        if self.show_quotes {
-            let quote_mark = "\"";
-            ui.painter().text(
-                Pos2::new(content_rect.min.x, y),
-                egui::Align2::LEFT_TOP,
-                quote_mark,
-                egui::FontId::proportional(32.0),
-                theme.primary().gamma_multiply(0.3),
-            );
-            y += 10.0;
-        }
-
-        // Quote content
+        // Quote content with larger, readable text
         let quote_galley = ui.painter().layout(
             self.item.quote.clone(),
-            egui::FontId::proportional(16.0),
+            egui::FontId::proportional(15.0),
             theme.on_surface(),
             content_rect.width(),
         );
@@ -224,8 +189,8 @@ impl TestimonialCard {
         );
         y += quote_height + 20.0;
 
-        // Author section with avatar
-        let avatar_size = 48.0;
+        // Author section with avatar - spacious layout
+        let avatar_size = 40.0;
         let author_x = content_rect.min.x;
 
         if let Some(avatar_text) = &self.item.avatar {
@@ -241,24 +206,24 @@ impl TestimonialCard {
                 avatar_center,
                 egui::Align2::CENTER_CENTER,
                 avatar_text,
-                egui::FontId::proportional(20.0),
+                egui::FontId::proportional(16.0),
                 Color32::WHITE,
             );
 
             // Author info next to avatar
             let info_x = author_x + avatar_size + 12.0;
             ui.painter().text(
-                Pos2::new(info_x, y + 12.0),
+                Pos2::new(info_x, y + 8.0),
                 egui::Align2::LEFT_TOP,
                 &self.item.author,
-                egui::FontId::proportional(16.0),
+                egui::FontId::proportional(14.0),
                 theme.on_surface(),
             );
             ui.painter().text(
-                Pos2::new(info_x, y + 30.0),
+                Pos2::new(info_x, y + 24.0),
                 egui::Align2::LEFT_TOP,
                 &self.item.role,
-                egui::FontId::proportional(14.0),
+                egui::FontId::proportional(12.0),
                 theme.on_surface_variant(),
             );
         } else {
@@ -267,14 +232,14 @@ impl TestimonialCard {
                 Pos2::new(author_x, y),
                 egui::Align2::LEFT_TOP,
                 &self.item.author,
-                egui::FontId::proportional(16.0),
+                egui::FontId::proportional(14.0),
                 theme.on_surface(),
             );
             ui.painter().text(
-                Pos2::new(author_x, y + 20.0),
+                Pos2::new(author_x, y + 18.0),
                 egui::Align2::LEFT_TOP,
                 &self.item.role,
-                egui::FontId::proportional(14.0),
+                egui::FontId::proportional(12.0),
                 theme.on_surface_variant(),
             );
         }

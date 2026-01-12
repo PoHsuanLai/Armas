@@ -18,9 +18,6 @@ pub struct GlowingBorder {
     glow_intensity: f32,
     pulse_speed: f32,
     pulse: bool,
-
-    // Internal state
-    time: f32,
 }
 
 impl GlowingBorder {
@@ -36,7 +33,6 @@ impl GlowingBorder {
             glow_intensity: 1.0,
             pulse_speed: 1.0,
             pulse: true,
-            time: 0.0,
         }
     }
 
@@ -101,15 +97,15 @@ impl GlowingBorder {
         _theme: &Theme,
         content: impl FnOnce(&mut Ui) -> R,
     ) -> Response {
+        let time = ui.input(|i| i.time) as f32;
+
         if self.pulse {
-            let dt = ui.input(|i| i.stable_dt);
-            self.time += dt * self.pulse_speed;
             ui.ctx().request_repaint();
         }
 
         // Calculate pulse multiplier
         let pulse_multiplier = if self.pulse {
-            0.6 + (self.time * 2.0).sin() * 0.4
+            0.6 + (time * self.pulse_speed * 2.0).sin() * 0.4
         } else {
             1.0
         };

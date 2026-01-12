@@ -116,6 +116,9 @@ impl Spotlight {
         let response = content_ui.response();
         let rect = response.rect;
 
+        // Advance parent UI cursor to account for the space we used
+        ui.allocate_rect(rect, egui::Sense::hover());
+
         // Get mouse position
         let pointer_pos = ui.input(|i| i.pointer.hover_pos());
         let is_hovered = response.hovered();

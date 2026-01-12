@@ -6,7 +6,6 @@
 pub mod animated_beam;
 pub mod aurora;
 pub mod background_beams;
-pub mod lamp;
 pub mod meteor;
 pub mod moving_border;
 pub mod sparkles;
@@ -17,7 +16,6 @@ pub mod wavy_background;
 pub use animated_beam::{AnimatedBeam, AnimatedBeams, BeamLoopMode, PathPoint};
 pub use aurora::AuroraBackground;
 pub use background_beams::BackgroundBeams;
-pub use lamp::LampEffect;
 pub use meteor::MeteorShower;
 pub use moving_border::MovingBorder;
 pub use sparkles::Sparkles;

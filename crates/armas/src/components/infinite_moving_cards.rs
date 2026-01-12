@@ -84,10 +84,6 @@ pub struct InfiniteMovingCards {
     direction: Direction,
     speed: ScrollSpeed,
     pause_on_hover: bool,
-
-    // Animation state
-    scroll_offset: f32,
-    is_paused: bool,
 }
 
 impl InfiniteMovingCards {
@@ -101,8 +97,6 @@ impl InfiniteMovingCards {
             direction: Direction::LeftToRight,
             speed: ScrollSpeed::Normal,
             pause_on_hover: true,
-            scroll_offset: 0.0,
-            is_paused: false,
         }
     }
 
@@ -139,7 +133,7 @@ impl InfiniteMovingCards {
 
     /// Show the infinite moving cards
     pub fn show(&mut self, ui: &mut Ui) -> Response {
-        let dt = ui.input(|i| i.stable_dt);
+        let time = ui.input(|i| i.time) as f32;
 
         // Allocate space for the component (full width, fixed height)
         let available_width = ui.available_width();
@@ -147,12 +141,10 @@ impl InfiniteMovingCards {
             ui.allocate_exact_size(Vec2::new(available_width, self.card_height), Sense::hover());
 
         // Check if hovered for pause
-        if self.pause_on_hover {
-            self.is_paused = response.hovered();
-        }
+        let is_paused = self.pause_on_hover && response.hovered();
 
-        // Update scroll offset
-        if !self.is_paused {
+        // Calculate scroll offset from absolute time
+        let scroll_offset = if !is_paused {
             let direction_multiplier = match self.direction {
                 Direction::LeftToRight => 1.0,
                 Direction::RightToLeft => -1.0,
@@ -160,16 +152,21 @@ impl InfiniteMovingCards {
                 Direction::TopDown | Direction::BottomUp => 0.0,
             };
 
-            self.scroll_offset += self.speed.pixels_per_second() * dt * direction_multiplier;
-        }
+            time * self.speed.pixels_per_second() * direction_multiplier
+        } else {
+            0.0
+        };
 
         // Calculate total width of all cards
         let single_set_width = self.cards.len() as f32 * (self.card_width + self.spacing);
 
         // Wrap the offset to create infinite loop
-        self.scroll_offset %= single_set_width;
+        let scroll_offset = scroll_offset % single_set_width;
 
         if ui.is_rect_visible(rect) {
+            // Set clip rect to prevent cards from drawing outside the allocated area
+            ui.set_clip_rect(rect);
+
             let painter = ui.painter();
 
             // We need to render enough duplicates to fill the viewport
@@ -178,7 +175,7 @@ impl InfiniteMovingCards {
 
             // Draw multiple sets of cards to create seamless loop
             for set_index in 0..sets_needed {
-                let set_base_x = set_index as f32 * single_set_width - self.scroll_offset;
+                let set_base_x = set_index as f32 * single_set_width - scroll_offset;
 
                 for (card_index, card) in self.cards.iter().enumerate() {
                     let card_x = set_base_x + card_index as f32 * (self.card_width + self.spacing);
@@ -189,53 +186,48 @@ impl InfiniteMovingCards {
 
                     // Only render if the card is visible in the viewport
                     if card_rect.right() >= rect.left() && card_rect.left() <= rect.right() {
-                        // Clip to viewport
-                        let visible_rect = card_rect.intersect(rect);
+                        // Draw card background
+                        painter.rect(
+                            card_rect,
+                            8.0,
+                            card.background_color,
+                            egui::Stroke::new(
+                                1.0,
+                                Color32::from_rgba_unmultiplied(255, 255, 255, 30),
+                            ),
+                            egui::StrokeKind::Outside,
+                        );
 
-                        if visible_rect.is_positive() {
-                            // Draw card background
-                            painter.rect(
-                                card_rect,
-                                8.0,
-                                card.background_color,
-                                egui::Stroke::new(
-                                    1.0,
-                                    Color32::from_rgba_unmultiplied(255, 255, 255, 30),
-                                ),
-                                egui::StrokeKind::Outside,
-                            );
+                        // Draw card content
+                        let content_rect = card_rect.shrink(20.0);
 
-                            // Draw card content
-                            let content_rect = card_rect.shrink(20.0);
+                        // Title
+                        painter.text(
+                            Pos2::new(content_rect.left(), content_rect.top() + 20.0),
+                            egui::Align2::LEFT_TOP,
+                            &card.title,
+                            egui::FontId::proportional(20.0),
+                            card.text_color,
+                        );
 
-                            // Title
+                        // Subtitle
+                        painter.text(
+                            Pos2::new(content_rect.left(), content_rect.top() + 50.0),
+                            egui::Align2::LEFT_TOP,
+                            &card.subtitle,
+                            egui::FontId::proportional(14.0),
+                            Color32::from_gray(170),
+                        );
+
+                        // Author (if present)
+                        if let Some(author) = &card.author {
                             painter.text(
-                                Pos2::new(content_rect.left(), content_rect.top() + 20.0),
+                                Pos2::new(content_rect.left(), content_rect.bottom() - 25.0),
                                 egui::Align2::LEFT_TOP,
-                                &card.title,
-                                egui::FontId::proportional(20.0),
-                                card.text_color,
+                                author,
+                                egui::FontId::proportional(12.0),
+                                Color32::from_gray(140),
                             );
-
-                            // Subtitle
-                            painter.text(
-                                Pos2::new(content_rect.left(), content_rect.top() + 50.0),
-                                egui::Align2::LEFT_TOP,
-                                &card.subtitle,
-                                egui::FontId::proportional(14.0),
-                                Color32::from_gray(170),
-                            );
-
-                            // Author (if present)
-                            if let Some(author) = &card.author {
-                                painter.text(
-                                    Pos2::new(content_rect.left(), content_rect.bottom() - 25.0),
-                                    egui::Align2::LEFT_TOP,
-                                    author,
-                                    egui::FontId::proportional(12.0),
-                                    Color32::from_gray(140),
-                                );
-                            }
                         }
                     }
                 }

@@ -89,6 +89,8 @@ pub struct Sidebar {
     show_icons: bool,              // Whether to show icons
     use_buttons: bool,             // Whether to use Button components
     button_variant: ButtonVariant, // Button variant to use
+    persist_state: bool,           // Whether to persist expanded states to memory
+    state_id_prefix: Option<String>, // Prefix for state persistence IDs
 
     // Animation state
     width_animation: Animation<f32>,
@@ -111,11 +113,20 @@ impl Sidebar {
             show_icons: true,                    // Default: show icons
             use_buttons: false,                  // Default: custom rendering
             button_variant: ButtonVariant::Text, // Default variant for button mode
+            persist_state: false,                // Default: no persistence
+            state_id_prefix: None,               // Default: no prefix
             width_animation: Animation::new(240.0, 240.0, 0.3).with_easing(EasingFunction::EaseOut),
             active_position_animation: Animation::new(0.0, 0.0, 0.3)
                 .with_easing(EasingFunction::EaseOut),
             current_active,
         }
+    }
+
+    /// Enable state persistence with optional ID prefix
+    pub fn persist_state(mut self, prefix: impl Into<String>) -> Self {
+        self.persist_state = true;
+        self.state_id_prefix = Some(prefix.into());
+        self
     }
 
     /// Set whether the sidebar can be collapsed
@@ -220,6 +231,14 @@ impl Sidebar {
                         if button.show(ui).clicked() {
                             if !item.children.is_empty() {
                                 item.expanded = !item.expanded;
+
+                                // Persist expanded state if enabled
+                                if self.persist_state {
+                                    if let Some(prefix) = &self.state_id_prefix {
+                                        let state_id = egui::Id::new(format!("{}_{}", prefix, index));
+                                        ui.ctx().data_mut(|d| d.insert_temp(state_id, item.expanded));
+                                    }
+                                }
                             } else {
                                 clicked_index = Some(index);
                             }

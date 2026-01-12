@@ -8,10 +8,16 @@ Interactive spotlight effect that follows the mouse cursor, creating a dramatic 
 let theme = ui.ctx().armas_theme();
 let mut spotlight = Spotlight::new(&theme);
 spotlight.show(ui, &theme, |ui| {
-    ui.vertical_centered(|ui| {
-        ui.add_space(80.0);
-        ui.label("Spotlight Effect");
-    });
+    ui.allocate_ui_with_layout(
+        egui::vec2(ui.available_width(), 600.0),
+        egui::Layout::top_down(egui::Align::Center),
+        |ui| {
+            ui.add_space(280.0);
+            ui.label("Spotlight Effect");
+            ui.add_space(20.0);
+            ui.label("Move your mouse over this area");
+        }
+    );
 });
 ```
 
@@ -21,10 +27,16 @@ spotlight.show(ui, &theme, |ui| {
 let theme = ui.ctx().armas_theme();
 let mut spotlight = Spotlight::new(&theme).radius(200.0);
 spotlight.show(ui, &theme, |ui| {
-    ui.vertical_centered(|ui| {
-        ui.add_space(80.0);
-        ui.label("Large Spotlight");
-    });
+    ui.allocate_ui_with_layout(
+        egui::vec2(ui.available_width(), 600.0),
+        egui::Layout::top_down(egui::Align::Center),
+        |ui| {
+            ui.add_space(280.0);
+            ui.label("Large Spotlight");
+            ui.add_space(20.0);
+            ui.label("Larger radius creates wider effect");
+        }
+    );
 });
 ```
 
@@ -36,10 +48,16 @@ let mut spotlight = Spotlight::new(&theme)
     .radius(150.0)
     .smoothing(0.15);
 spotlight.show(ui, &theme, |ui| {
-    ui.vertical_centered(|ui| {
-        ui.add_space(80.0);
-        ui.label("Smooth Spotlight");
-    });
+    ui.allocate_ui_with_layout(
+        egui::vec2(ui.available_width(), 600.0),
+        egui::Layout::top_down(egui::Align::Center),
+        |ui| {
+            ui.add_space(280.0);
+            ui.label("Smooth Spotlight");
+            ui.add_space(20.0);
+            ui.label("Smoothing creates fluid motion");
+        }
+    );
 });
 ```
 

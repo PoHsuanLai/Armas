@@ -5,57 +5,81 @@ Vertical fader component inspired by DAW mixer faders.
 ## Basic Usage (Minimal Fader)
 
 ```demo
-let mut value = 0.5; // 0.0 to 1.0
+use egui::Id;
+
+let id = Id::new("fader_basic");
+let mut value = ui.data_mut(|d| d.get_temp::<f32>(id).unwrap_or(0.5));
 
 let (response, new_value) = Fader::new(value).show(ui);
 value = new_value;
+ui.data_mut(|d| d.insert_temp(id, value));
 
 if response.changed() {
-    println!("Fader value: {}", value);
+    // Fader value changed
 }
 ```
 
 ## Custom Size
 
 ```demo
-let mut value = 0.75;
+use egui::Id;
+
+let id = Id::new("fader_custom_size");
+let mut value = ui.data_mut(|d| d.get_temp::<f32>(id).unwrap_or(0.75));
 
 let (response, new_value) = Fader::new(value)
     .size(40.0, 300.0)
     .show(ui);
 
 value = new_value;
+ui.data_mut(|d| d.insert_temp(id, value));
 ```
 
 ## Complete Fader Strip (With Housing)
 
 ```demo
-let mut value = 0.6;
+use egui::Id;
+
+let id = Id::new("fader_strip");
+let mut value = ui.data_mut(|d| d.get_temp::<f32>(id).unwrap_or(0.6));
 
 // FaderStrip includes the grey gradient housing box
 let (response, new_value) = FaderStrip::new(value).show(ui);
 value = new_value;
+ui.data_mut(|d| d.insert_temp(id, value));
 ```
 
 ## Custom Fader Strip Size
 
 ```demo
-let mut value = 0.8;
+use egui::Id;
+
+let id = Id::new("fader_strip_custom");
+let mut value = ui.data_mut(|d| d.get_temp::<f32>(id).unwrap_or(0.8));
 
 let (response, new_value) = FaderStrip::new(value)
     .size(50.0, 320.0)
     .show(ui);
 
 value = new_value;
+ui.data_mut(|d| d.insert_temp(id, value));
 ```
 
 ## Multiple Faders (Mixer)
 
 ```demo
+use egui::Id;
+
 ui.horizontal(|ui| {
     for i in 0..4 {
         ui.vertical(|ui| {
-            let (_, new_val) = FaderStrip::new(0.5).show(ui);
+            let id = Id::new(format!("mixer_fader_{}", i));
+            let mut value = ui.data_mut(|d| d.get_temp::<f32>(id).unwrap_or(0.5));
+
+            let (_, new_val) = FaderStrip::new(value).show(ui);
+            value = new_val;
+            ui.data_mut(|d| d.insert_temp(id, value));
+
             ui.label(format!("Ch {}", i + 1));
         });
     }

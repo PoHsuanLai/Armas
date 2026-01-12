@@ -5,69 +5,104 @@ Searchable command palette (Cmd+K style) with keyboard navigation.
 ## Basic Usage
 
 ```demo
-let commands = vec![
-    Command::new("new-file", "New File"),
-    Command::new("open-file", "Open File"),
-    Command::new("save", "Save"),
-];
+// Get or create menu from memory
+let menu_id = ui.id().with("basic_menu");
+let mut menu = ui.data_mut(|d| {
+    d.get_temp::<CommandMenu>(menu_id).unwrap_or_else(|| {
+        CommandMenu::new(vec![
+            Command::new("new-file", "New File"),
+            Command::new("open-file", "Open File"),
+            Command::new("save", "Save"),
+        ])
+    })
+});
 
-let mut menu = CommandMenu::new(commands);
+// Button to open menu
+if Button::new("Open Menu (or press Cmd+K)").show(ui).clicked() {
+    menu.open();
+}
 
 let response = menu.show(ui);
 
 if let Some(command_id) = response.executed_command {
-    match command_id.as_str() {
-        "new-file" => { /* handle new file */ },
-        "open-file" => { /* handle open */ },
-        "save" => { /* handle save */ },
-        _ => {}
-    }
+    ui.label(format!("Executed: {}", command_id));
 }
+
+// Store back to memory
+ui.data_mut(|d| d.insert_temp(menu_id, menu));
 ```
 
 ## With Icons and Descriptions
 
 ```demo
-let commands = vec![
-    Command::new("copy", "Copy")
-        .with_icon("📋")
-        .with_description("Copy selected text")
-        .with_shortcut("Cmd+C"),
+let menu_id = ui.id().with("icons_menu");
+let mut menu = ui.data_mut(|d| {
+    d.get_temp::<CommandMenu>(menu_id).unwrap_or_else(|| {
+        CommandMenu::new(vec![
+            Command::new("copy", "Copy")
+                .with_icon("📋")
+                .with_description("Copy selected text")
+                .with_shortcut("Cmd+C"),
 
-    Command::new("paste", "Paste")
-        .with_icon("📄")
-        .with_description("Paste from clipboard")
-        .with_shortcut("Cmd+V"),
+            Command::new("paste", "Paste")
+                .with_icon("📄")
+                .with_description("Paste from clipboard")
+                .with_shortcut("Cmd+V"),
 
-    Command::new("cut", "Cut")
-        .with_icon("✂️")
-        .with_description("Cut selected text")
-        .with_shortcut("Cmd+X"),
-];
+            Command::new("cut", "Cut")
+                .with_icon("✂️")
+                .with_description("Cut selected text")
+                .with_shortcut("Cmd+X"),
+        ])
+    })
+});
 
-let mut menu = CommandMenu::new(commands);
-menu.show(ui);
+if Button::new("Open Menu").show(ui).clicked() {
+    menu.open();
+}
+
+let response = menu.show(ui);
+
+if let Some(command_id) = response.executed_command {
+    ui.label(format!("Executed: {}", command_id));
+}
+
+ui.data_mut(|d| d.insert_temp(menu_id, menu));
 ```
 
 ## With Categories
 
 ```demo
-let commands = vec![
-    Command::new("new", "New File")
-        .with_category("File")
-        .with_icon("📄"),
+let menu_id = ui.id().with("categories_menu");
+let mut menu = ui.data_mut(|d| {
+    d.get_temp::<CommandMenu>(menu_id).unwrap_or_else(|| {
+        CommandMenu::new(vec![
+            Command::new("new", "New File")
+                .with_category("File")
+                .with_icon("📄"),
 
-    Command::new("open", "Open File")
-        .with_category("File")
-        .with_icon("📁"),
+            Command::new("open", "Open File")
+                .with_category("File")
+                .with_icon("📁"),
 
-    Command::new("find", "Find")
-        .with_category("Edit")
-        .with_icon("🔍"),
-];
+            Command::new("find", "Find")
+                .with_category("Edit")
+                .with_icon("🔍"),
+        ])
+    })
+});
 
-let mut menu = CommandMenu::new(commands);
-menu.show(ui);
+if Button::new("Open Menu").show(ui).clicked() {
+    menu.open();
+}
+
+let response = menu.show(ui);
+
+if let Some(command_id) = response.executed_command {
+    ui.label(format!("Executed: {}", command_id));
+}
+
+ui.data_mut(|d| d.insert_temp(menu_id, menu));
 ```
 
 ## Custom Trigger Key
@@ -75,29 +110,60 @@ menu.show(ui);
 ```demo
 use egui::{Key, Modifiers};
 
-let commands = vec![Command::new("search", "Search")];
+let menu_id = ui.id().with("trigger_menu");
+let mut menu = ui.data_mut(|d| {
+    d.get_temp::<CommandMenu>(menu_id).unwrap_or_else(|| {
+        CommandMenu::new(vec![Command::new("search", "Search")])
+            .with_trigger(Key::P, Modifiers::COMMAND)
+    })
+});
 
-let mut menu = CommandMenu::new(commands)
-    .with_trigger(Key::P, Modifiers::COMMAND);
+ui.label("Press Cmd+P to open menu");
 
-menu.show(ui);
+let response = menu.show(ui);
+
+if let Some(command_id) = response.executed_command {
+    ui.label(format!("Executed: {}", command_id));
+}
+
+ui.data_mut(|d| d.insert_temp(menu_id, menu));
 ```
 
 ## Manual Control
 
 ```demo
-let commands = vec![Command::new("test", "Test Command")];
-let mut menu = CommandMenu::new(commands);
+let menu_id = ui.id().with("manual_menu");
+let mut menu = ui.data_mut(|d| {
+    d.get_temp::<CommandMenu>(menu_id).unwrap_or_else(|| {
+        CommandMenu::new(vec![Command::new("test", "Test Command")])
+    })
+});
 
 // Open programmatically
-if ui.button("Open Menu").clicked() {
+if Button::new("Open Menu").show(ui).clicked() {
     menu.open();
 }
 
-// Check state
-if menu.is_open() {
-    menu.show(ui);
+// Close button
+if Button::new("Close Menu").show(ui).clicked() {
+    menu.close();
 }
+
+// Toggle button
+if Button::new("Toggle Menu").show(ui).clicked() {
+    menu.toggle();
+}
+
+// Check state
+ui.label(format!("Menu is {}", if menu.is_open() { "open" } else { "closed" }));
+
+let response = menu.show(ui);
+
+if let Some(command_id) = response.executed_command {
+    ui.label(format!("Executed: {}", command_id));
+}
+
+ui.data_mut(|d| d.insert_temp(menu_id, menu));
 ```
 
 ## API Reference

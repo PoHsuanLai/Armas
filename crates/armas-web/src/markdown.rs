@@ -16,6 +16,7 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
     let mut in_heading = None;
     let mut in_code_block = false;
     let mut code_block_text = String::new();
+    let mut code_block_lang = String::new();
     let mut in_list = false;
     let mut list_item_text = String::new();
     let mut in_table = false;
@@ -41,9 +42,13 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
                 Tag::Heading { level, .. } => {
                     in_heading = Some(level);
                 }
-                Tag::CodeBlock(_) => {
+                Tag::CodeBlock(kind) => {
                     in_code_block = true;
                     code_block_text.clear();
+                    code_block_lang = match kind {
+                        pulldown_cmark::CodeBlockKind::Fenced(lang) => lang.to_string(),
+                        pulldown_cmark::CodeBlockKind::Indented => String::new(),
+                    };
                 }
                 Tag::List(_) => {
                     in_list = true;
@@ -87,9 +92,10 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
                     }
                 }
                 TagEnd::CodeBlock => {
-                    render_code_block(ui, &code_block_text, theme, base_id, element_counter);
+                    render_code_block(ui, &code_block_text, &code_block_lang, theme, base_id, element_counter);
                     element_counter += 1;
                     code_block_text.clear();
+                    code_block_lang.clear();
                     in_code_block = false;
                 }
                 TagEnd::Paragraph => {
@@ -211,19 +217,20 @@ fn render_heading(ui: &mut egui::Ui, text: &str, level: HeadingLevel, theme: &Th
     ui.add_space(16.0);
 
     let (font_size, spacing_after) = match level {
-        HeadingLevel::H1 => (28.0, 12.0),
-        HeadingLevel::H2 => (24.0, 10.0),
-        HeadingLevel::H3 => (20.0, 8.0),
-        HeadingLevel::H4 => (18.0, 6.0),
-        HeadingLevel::H5 => (16.0, 4.0),
-        HeadingLevel::H6 => (14.0, 4.0),
+        HeadingLevel::H1 => (32.0, 12.0),
+        HeadingLevel::H2 => (26.0, 10.0),
+        HeadingLevel::H3 => (22.0, 8.0),
+        HeadingLevel::H4 => (19.0, 6.0),
+        HeadingLevel::H5 => (17.0, 4.0),
+        HeadingLevel::H6 => (15.0, 4.0),
     };
 
+    // Use InterBold font family for extra bold headers
     ui.label(
         egui::RichText::new(text)
             .size(font_size)
-            .color(theme.on_background())
-            .strong(),
+            .family(egui::FontFamily::Name("InterBold".into()))
+            .color(theme.on_background()),
     );
 
     ui.add_space(spacing_after);
@@ -259,7 +266,8 @@ fn render_paragraph(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
                 if is_code {
                     ui.label(
                         egui::RichText::new(&text)
-                            .monospace()
+                            .size(14.0)
+                            .family(egui::FontFamily::Name("FiraMono".into()))
                             .background_color(egui::Color32::from_rgb(25, 25, 25))
                             .color(theme.primary()),
                     );
@@ -277,24 +285,62 @@ fn render_paragraph(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
     ui.add_space(8.0);
 }
 
-fn render_code_block(ui: &mut egui::Ui, code: &str, theme: &Theme, base_id: u64, id: usize) {
+fn render_code_block(ui: &mut egui::Ui, code: &str, language: &str, theme: &Theme, base_id: u64, id: usize) {
     ui.add_space(8.0);
 
-    let frame = egui::Frame::NONE
-        .fill(egui::Color32::from_rgb(25, 25, 25))
-        .corner_radius(4.0)
-        .inner_margin(12.0);
+    // Center the code block with max width
+    ui.centered_and_justified(|ui| {
+        ui.set_max_width(800.0);
 
-    frame.show(ui, |ui| {
-        ui.style_mut().override_font_id = Some(egui::FontId::monospace(13.0));
+        let frame = egui::Frame::NONE
+            .fill(egui::Color32::from_rgb(25, 25, 25))
+            .corner_radius(8.0)
+            .stroke(egui::Stroke::new(1.0, theme.outline()))
+            .inner_margin(0.0);
 
-        ui.push_id((base_id, id), |ui| {
-            egui::ScrollArea::horizontal().show(ui, |ui| {
-                ui.label(
-                    egui::RichText::new(code.trim())
-                        .color(theme.on_surface())
-                        .monospace(),
-                );
+        frame.show(ui, |ui| {
+            ui.vertical(|ui| {
+                // Header with copy button
+                ui.horizontal(|ui| {
+                    ui.add_space(12.0);
+                    ui.allocate_space(egui::vec2(ui.available_width() - 80.0, 0.0));
+
+                    use armas::{Button, ButtonVariant};
+                    if Button::new("Copy")
+                        .variant(ButtonVariant::Text)
+                        .show(ui)
+                        .clicked()
+                    {
+                        ui.ctx().copy_text(code.to_string());
+                    }
+                    ui.add_space(12.0);
+                });
+
+                ui.add_space(4.0);
+
+                // Code content with syntax highlighting
+                ui.push_id((base_id, id), |ui| {
+                    // Calculate height based on number of lines (with a reasonable max)
+                    let line_count = code.trim().lines().count();
+                    let line_height = 20.0; // Approximate height per line
+                    let padding = 24.0; // Top and bottom padding
+                    let content_height = (line_count as f32 * line_height + padding).min(400.0);
+
+                    egui::ScrollArea::vertical()
+                        .max_height(content_height)
+                        .auto_shrink([false, true])
+                        .show(ui, |ui| {
+                            egui::Frame::NONE
+                                .fill(egui::Color32::from_gray(20))
+                                .inner_margin(12.0)
+                                .show(ui, |ui| {
+                                    ui.set_width(ui.available_width());
+                                    // Use syntax highlighting with detected language
+                                    let lang = if language.is_empty() { "rust" } else { language };
+                                    crate::syntax::highlight_code(ui, code.trim(), lang, theme);
+                                });
+                        });
+                });
             });
         });
     });
@@ -304,9 +350,13 @@ fn render_code_block(ui: &mut egui::Ui, code: &str, theme: &Theme, base_id: u64,
 
 fn render_list_item(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, id: usize) {
     ui.push_id((base_id, id), |ui| {
-        ui.horizontal(|ui| {
+        ui.horizontal_top(|ui| {
+            // Add left indentation
+            ui.add_space(16.0);
+
+            // Bullet point at the top
             ui.label(egui::RichText::new("•").size(14.0).color(theme.primary()));
-            ui.add_space(8.0);
+            ui.add_space(6.0);
 
             // Parse inline code
             let mut segments = Vec::new();
@@ -330,26 +380,33 @@ fn render_list_item(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
                 segments.push((current, in_code));
             }
 
-            ui.horizontal_wrapped(|ui| {
-                for (text, is_code) in segments {
-                    if is_code {
-                        ui.label(
-                            egui::RichText::new(&text)
-                                .monospace()
-                                .background_color(egui::Color32::from_rgb(25, 25, 25))
-                                .color(theme.primary()),
-                        );
-                    } else {
-                        ui.label(
-                            egui::RichText::new(&text)
-                                .size(14.0)
-                                .color(theme.on_surface_variant()),
-                        );
+            // Text content with wrapping
+            ui.vertical(|ui| {
+                ui.horizontal_wrapped(|ui| {
+                    for (text, is_code) in segments {
+                        if is_code {
+                            ui.label(
+                                egui::RichText::new(&text)
+                                    .size(14.0)
+                                    .family(egui::FontFamily::Name("FiraMono".into()))
+                                    .background_color(egui::Color32::from_rgb(25, 25, 25))
+                                    .color(theme.primary()),
+                            );
+                        } else {
+                            ui.label(
+                                egui::RichText::new(&text)
+                                    .size(14.0)
+                                    .color(theme.on_surface_variant()),
+                            );
+                        }
                     }
-                }
+                });
             });
         });
     });
+
+    // Add spacing after each list item
+    ui.add_space(4.0);
 }
 
 fn render_table(
@@ -406,7 +463,8 @@ fn render_table(
                                     if is_code {
                                         ui.label(
                                             egui::RichText::new(&text)
-                                                .monospace()
+                                                .size(14.0)
+                                                .family(egui::FontFamily::Name("FiraMono".into()))
                                                 .background_color(egui::Color32::from_rgb(
                                                     25, 25, 25,
                                                 ))

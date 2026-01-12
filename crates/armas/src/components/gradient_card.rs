@@ -135,48 +135,66 @@ impl GradientCard {
 
     /// Show the gradient card with custom content
     pub fn show<R>(
-        &mut self,
+        mut self,
         ui: &mut Ui,
         theme: &Theme,
-        content: impl FnOnce(&mut Ui) -> R,
+        content: impl Fn(&mut Ui) -> R,
     ) -> (R, Response) {
         // Determine card size
-        let available = ui.available_size();
-        let desired_width = self.width.unwrap_or(available.x);
-        let desired_height = self.height.unwrap_or(0.0); // Will auto-size if 0
+        let available_width = ui.available_width();
+        let desired_width = self.width.unwrap_or(available_width);
+
+        // Use absolute time for animation
+        let time = ui.input(|i| i.time) as f32;
+
+        if self.animate {
+            self.gradient_angle = (time * self.rotation_speed) % (2.0 * PI);
+        }
+
+        // For auto-sizing, we need to measure content first
+        let auto_size = self.height.is_none();
+
+        // Measure content if auto-sizing
+        let content_size = if auto_size {
+            let layout = *ui.layout();
+            let measure_response = ui.scope(|ui| {
+                ui.set_invisible();
+                ui.with_layout(layout, |ui| {
+                    let inner_rect = Rect::from_min_size(
+                        ui.cursor().min,
+                        Vec2::new(desired_width - self.border_width * 2.0, 1000.0),
+                    );
+                    let mut content_ui = ui.new_child(
+                        egui::UiBuilder::new()
+                            .max_rect(inner_rect)
+                            .layout(layout),
+                    );
+                    content(&mut content_ui);
+                })
+                .response
+            });
+            measure_response.inner.rect.size()
+        } else {
+            Vec2::ZERO
+        };
+
+        let desired_height = if auto_size {
+            content_size.y.max(60.0) + self.border_width * 2.0
+        } else {
+            self.height.unwrap()
+        };
 
         // Allocate space for the card
-        let (outer_rect, mut response) = if self.height.is_some() {
-            ui.allocate_exact_size(
-                Vec2::new(desired_width, desired_height),
-                egui::Sense::hover(),
-            )
-        } else {
-            // Auto-size height
-            let (id, rect) = ui.allocate_space(Vec2::new(desired_width, 0.0));
-            let response = ui.interact(rect, id, egui::Sense::hover());
-            (rect, response)
-        };
+        let (outer_rect, response) = ui.allocate_exact_size(
+            Vec2::new(desired_width, desired_height),
+            egui::Sense::hover(),
+        );
 
         let is_hovered = response.hovered();
 
-        // Update animations
-        let dt = ui.input(|i| i.stable_dt);
-
-        if self.animate {
-            self.gradient_angle += self.rotation_speed * dt;
-            self.gradient_angle %= 2.0 * PI;
-        }
-
-        // Animate glow on hover
-        let target_glow = if self.glow_on_hover && is_hovered {
-            1.0
-        } else {
-            0.0
-        };
-        let glow_speed = 5.0; // Smooth transition
-        self.glow_intensity += (target_glow - self.glow_intensity) * glow_speed * dt;
-        self.glow_intensity = self.glow_intensity.clamp(0.0, 1.0);
+        // Animate glow on hover using absolute time
+        let target_glow = if self.glow_on_hover && is_hovered { 1.0 } else { 0.0 };
+        self.glow_intensity = target_glow; // Instant for stateless rendering
 
         // Render the card
         let inner_rect = outer_rect.shrink(self.border_width);
@@ -205,16 +223,8 @@ impl GradientCard {
         );
         let content_result = content(&mut content_ui);
 
-        // Update response rect if we auto-sized
-        if self.height.is_none() {
-            let content_rect = content_ui.min_rect();
-            let total_height = content_rect.height() + self.border_width * 2.0;
-            response.rect =
-                Rect::from_min_size(outer_rect.min, Vec2::new(desired_width, total_height));
-        }
-
         // Request repaint for animation
-        if self.animate || self.glow_intensity > 0.01 {
+        if self.animate {
             ui.ctx().request_repaint();
         }
 

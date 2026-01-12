@@ -14,20 +14,25 @@ pub struct StackCard {
     pub color: Color32,
 }
 
+/// Internal state for CardStack (stored in egui memory)
+#[derive(Clone)]
+struct CardStackState {
+    active_index: usize,
+    last_rotation_time: f32,
+}
+
 /// Card stack with auto-rotation
 ///
 /// Displays multiple cards in a stack with automatic rotation
 /// and smooth transitions between cards.
 pub struct CardStack {
     cards: Vec<StackCard>,
-    active_index: usize,
     rotation_interval: f32,
-    time_elapsed: f32,
-    transition_progress: f32,
     transition_duration: f32,
     width: f32,
     height: f32,
     auto_rotate: bool,
+    id: egui::Id,
 }
 
 impl CardStack {
@@ -35,15 +40,19 @@ impl CardStack {
     pub fn new(width: f32, height: f32) -> Self {
         Self {
             cards: Vec::new(),
-            active_index: 0,
             rotation_interval: 5.0,
-            time_elapsed: 0.0,
-            transition_progress: 0.0,
             transition_duration: 0.5,
             width,
             height,
             auto_rotate: true,
+            id: egui::Id::new("card_stack"),
         }
+    }
+
+    /// Create a new card stack with a unique ID
+    pub fn with_id(mut self, id: impl std::hash::Hash) -> Self {
+        self.id = egui::Id::new(id);
+        self
     }
 
     /// Add a card to the stack
@@ -71,40 +80,44 @@ impl CardStack {
     }
 
     /// Manually advance to next card
-    pub fn next(&mut self) {
-        if !self.cards.is_empty() {
-            self.active_index = (self.active_index + 1) % self.cards.len();
-            self.transition_progress = 0.0;
-            self.time_elapsed = 0.0;
+    fn next(state: &mut CardStackState, time: f32, num_cards: usize) {
+        if num_cards > 0 {
+            state.active_index = (state.active_index + 1) % num_cards;
+            state.last_rotation_time = time;
         }
     }
 
     /// Show the card stack
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
         let theme = ui.ctx().armas_theme();
         let (rect, response) =
             ui.allocate_exact_size(Vec2::new(self.width, self.height), Sense::click());
 
-        if response.clicked() && !self.auto_rotate {
-            self.next();
-        }
+        let time = ui.input(|i| i.time) as f32;
 
-        let dt = ui.input(|i| i.stable_dt);
+        // Get or initialize state from egui memory
+        let mut state = ui.data_mut(|d| {
+            d.get_temp::<CardStackState>(self.id).unwrap_or(CardStackState {
+                active_index: 0,
+                last_rotation_time: time,
+            })
+        });
+
+        if response.clicked() && !self.auto_rotate {
+            Self::next(&mut state, time, self.cards.len());
+        }
 
         // Update timing
         if self.auto_rotate && !self.cards.is_empty() {
-            self.time_elapsed += dt;
+            let time_since_rotation = time - state.last_rotation_time;
 
-            if self.time_elapsed >= self.rotation_interval {
-                self.next();
-            }
-
-            // Update transition
-            if self.transition_progress < 1.0 {
-                self.transition_progress += dt / self.transition_duration;
-                self.transition_progress = self.transition_progress.min(1.0);
+            if time_since_rotation >= self.rotation_interval {
+                Self::next(&mut state, time, self.cards.len());
             }
         }
+
+        // Store state back
+        ui.data_mut(|d| d.insert_temp(self.id, state.clone()));
 
         if self.cards.is_empty() {
             return response;
@@ -115,7 +128,7 @@ impl CardStack {
 
         // Draw back cards first (higher depth), then front card last
         for stack_pos in (0..num_visible).rev() {
-            let card_index = (self.active_index + stack_pos) % self.cards.len();
+            let card_index = (state.active_index + stack_pos) % self.cards.len();
             let card = &self.cards[card_index];
 
             // Calculate offset and scale for stack effect
@@ -128,7 +141,9 @@ impl CardStack {
             // The active card is when stack_pos == 0 (front of stack)
             let is_active = stack_pos == 0;
             let (final_scale, final_y_offset) = if is_active {
-                let t = EasingFunction::CubicOut.apply(self.transition_progress);
+                let time_since_rotation = time - state.last_rotation_time;
+                let transition_progress = (time_since_rotation / self.transition_duration).min(1.0);
+                let t = EasingFunction::CubicOut.apply(transition_progress);
                 let start_scale = 0.95;
                 let start_y = -15.0; // Start from back position
                 (
@@ -192,7 +207,8 @@ impl CardStack {
 
         // Draw progress indicator
         if self.auto_rotate {
-            let progress = self.time_elapsed / self.rotation_interval;
+            let time_since_rotation = time - state.last_rotation_time;
+            let progress = (time_since_rotation / self.rotation_interval).min(1.0);
             let indicator_width = self.width * 0.8;
             let indicator_height = 4.0;
             let indicator_x = rect.left() + (self.width - indicator_width) / 2.0;

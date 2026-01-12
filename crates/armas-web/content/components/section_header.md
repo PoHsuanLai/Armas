@@ -1,36 +1,75 @@
 # Section Header
 
-Collapsible section header with arrow indicator (Studio One style).
+Collapsible section header with directional arrow indicator.
 
-## Basic Usage
+## Interactive Example
 
 ```demo
-let mut collapsed = false;
+use egui::Id;
 
-if SectionHeader::new("Sends", collapsed)
+let id = Id::new("section_header_demo");
+let mut collapsed = ui.data_mut(|d| d.get_temp::<bool>(id).unwrap_or(false));
+
+if SectionHeader::new("Settings", collapsed)
     .show(ui)
     .clicked()
 {
     collapsed = !collapsed;
+    ui.data_mut(|d| d.insert_temp(id, collapsed));
+}
+
+if !collapsed {
+    ui.indent("settings_content", |ui| {
+        ui.label("Setting 1: Enabled");
+        ui.label("Setting 2: Disabled");
+        ui.label("Setting 3: Auto");
+    });
 }
 ```
 
 ## Expanded State
 
 ```demo
-let collapsed = false;
-SectionHeader::new("Effects", collapsed)
+SectionHeader::new("Audio Effects", false)
     .show(ui);
-// Shows "Effects ▼"
+ui.indent("audio_effects", |ui| {
+    ui.label("• Reverb");
+    ui.label("• Delay");
+    ui.label("• Compressor");
+});
 ```
 
 ## Collapsed State
 
 ```demo
-let collapsed = true;
-SectionHeader::new("Inserts", collapsed)
+SectionHeader::new("Advanced Options", true)
     .show(ui);
-// Shows "Inserts ▶"
+// Content hidden when collapsed
+```
+
+## Multiple Sections
+
+```demo
+use egui::Id;
+
+for (i, section) in ["General", "Audio", "MIDI", "Performance"].iter().enumerate() {
+    let id = Id::new(format!("section_{}", i));
+    let mut collapsed = ui.data_mut(|d| d.get_temp::<bool>(id).unwrap_or(true));
+
+    if SectionHeader::new(section, collapsed)
+        .show(ui)
+        .clicked()
+    {
+        collapsed = !collapsed;
+        ui.data_mut(|d| d.insert_temp(id, collapsed));
+    }
+
+    if !collapsed {
+        ui.indent(format!("content_{}", i), |ui| {
+            ui.label(format!("{} settings here...", section));
+        });
+    }
+}
 ```
 
 ## API Reference
@@ -38,11 +77,13 @@ SectionHeader::new("Inserts", collapsed)
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
 | `::new(label, collapsed)` | `(&str, bool)` | - | Create section header |
-| `.show(&mut Ui)` | - | - | Show the header |
+| `.show(&mut Ui)` | - | - | Show the header (returns clickable Response) |
 
 ## Note
 
-This component matches Studio One's "Sends ▼" style collapsible headers. The arrow indicator automatically changes based on the collapsed state.
+The arrow indicator automatically changes based on the collapsed state:
+- **▼** when expanded (section visible)
+- **▶** when collapsed (section hidden)
 
 ## Dependencies
 

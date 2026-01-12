@@ -31,15 +31,15 @@ pub struct GridPattern {
 
 impl GridPattern {
     /// Create a new grid pattern with theme-based defaults
-    pub fn new(width: f32, height: f32, spacing: f32, theme: &Theme) -> Self {
-        let outline = theme.outline_variant();
+    pub fn new(width: f32, height: f32, spacing: f32, _theme: &Theme) -> Self {
+        // Subtle but visible: slightly lighter than Aceternity for better visibility
         Self {
             spacing,
-            color: Color32::from_rgba_unmultiplied(outline.r(), outline.g(), outline.b(), 50),
+            color: Color32::from_rgb(50, 50, 50), // Slightly lighter than #262626
             dot_color: None,
             fade_distance: 0.3,
             perspective: false,
-            thickness: 1.0,
+            thickness: 0.8, // Thin but visible
             dot_radius: 2.0,
             width,
             height,

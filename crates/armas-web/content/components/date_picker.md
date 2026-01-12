@@ -5,64 +5,96 @@ Calendar date selection with input field, popover calendar, and keyboard navigat
 ## Basic Usage
 
 ```demo
-let mut date_picker = DatePicker::new("my_date_picker");
-let mut selected_date = None;
+let ctx = ui.ctx().clone();
+let theme = ctx.armas_theme();
+let date_id = ui.id().with("basic_date");
+let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
 
-date_picker.show(ui, &mut selected_date);
+let mut date_picker = DatePicker::new("my_date_picker");
+date_picker.show(&ctx, &theme, ui, &mut selected_date);
+
+ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
 
 ## With Label
 
 ```demo
-let mut date_picker = DatePicker::new("birthday")
-    .label("Birthday");
-let mut selected_date = None;
+let ctx = ui.ctx().clone();
+let theme = ctx.armas_theme();
+let date_id = ui.id().with("label_date");
+let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
 
-date_picker.show(ui, &mut selected_date);
+let mut date_picker = DatePicker::new("birthday").label("Birthday");
+date_picker.show(&ctx, &theme, ui, &mut selected_date);
+
+ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
 
 ## Custom Placeholder
 
 ```demo
-let mut date_picker = DatePicker::new("event_date")
-    .placeholder("Choose event date...");
-let mut selected_date = None;
+let ctx = ui.ctx().clone();
+let theme = ctx.armas_theme();
+let date_id = ui.id().with("placeholder_date");
+let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
 
-date_picker.show(ui, &mut selected_date);
+let mut date_picker = DatePicker::new("event_date").placeholder("Choose event date...");
+date_picker.show(&ctx, &theme, ui, &mut selected_date);
+
+ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
 
 ## Pre-Selected Date
 
 ```demo
-let mut date_picker = DatePicker::new("appointment");
-let mut selected_date = Some(Date::new(2024, 3, 15).unwrap());
+let ctx = ui.ctx().clone();
+let theme = ctx.armas_theme();
+let date_id = ui.id().with("preselected_date");
+let mut selected_date: Option<Date> = ctx.data(|d| {
+    d.get_temp(date_id).or_else(|| Some(Date::new(2024, 3, 15).unwrap()))
+});
 
-date_picker.show(ui, &mut selected_date);
+let mut date_picker = DatePicker::new("appointment");
+date_picker.show(&ctx, &theme, ui, &mut selected_date);
+
+ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
 
 ## Today's Date
 
 ```demo
-let mut date_picker = DatePicker::new("today");
-let mut selected_date = Some(Date::today());
+let ctx = ui.ctx().clone();
+let theme = ctx.armas_theme();
+let date_id = ui.id().with("today_date");
+let mut selected_date: Option<Date> = ctx.data(|d| {
+    d.get_temp(date_id).or_else(|| Some(Date::today()))
+});
 
-date_picker.show(ui, &mut selected_date);
+let mut date_picker = DatePicker::new("today");
+date_picker.show(&ctx, &theme, ui, &mut selected_date);
+
+ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
 
 ## Handling Changes
 
 ```demo
-let mut date_picker = DatePicker::new("date");
-let mut selected_date = None;
+let ctx = ui.ctx().clone();
+let theme = ctx.armas_theme();
+let date_id = ui.id().with("changes_date");
+let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
 
-let response = date_picker.show(ui, &mut selected_date);
+let mut date_picker = DatePicker::new("date");
+let response = date_picker.show(&ctx, &theme, ui, &mut selected_date);
 
 if response.changed {
     if let Some(date) = selected_date {
         let formatted = date.format(); // YYYY-MM-DD
-        // Handle date change
+        ui.label(format!("Selected: {}", formatted));
     }
 }
+
+ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
 
 ## Date Formatting
@@ -89,10 +121,16 @@ if let Some(date) = Date::parse("2024-03-15") {
 }
 
 // Manual input support
+let ctx = ui.ctx().clone();
+let theme = ctx.armas_theme();
+let date_id = ui.id().with("manual_date");
+let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
+
 let mut date_picker = DatePicker::new("manual");
-let mut selected_date = None;
-date_picker.show(ui, &mut selected_date);
+date_picker.show(&ctx, &theme, ui, &mut selected_date);
 // User can type "2024-03-15" directly in input field
+
+ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
 
 ## Working with Dates
@@ -114,23 +152,29 @@ let days = Date::days_in_month(2024, 2); // 29
 ## Complete Form Example
 
 ```demo
+let ctx = ui.ctx().clone();
+let theme = ctx.armas_theme();
 ui.vertical(|ui| {
     ui.heading("Event Registration");
     ui.add_space(8.0);
 
+    let event_date_id = ui.id().with("event_date");
+    let mut event_date_value: Option<Date> = ctx.data(|d| d.get_temp(event_date_id));
     let mut event_date = DatePicker::new("event")
         .label("Event Date")
         .placeholder("Select date...");
-    let mut date = None;
-    event_date.show(ui, &mut date);
+    event_date.show(&ctx, &theme, ui, &mut event_date_value);
+    ctx.data_mut(|d| d.insert_temp(event_date_id, event_date_value));
 
     ui.add_space(8.0);
 
+    let deadline_id = ui.id().with("deadline_date");
+    let mut deadline_date: Option<Date> = ctx.data(|d| d.get_temp(deadline_id));
     let mut deadline = DatePicker::new("deadline")
         .label("Registration Deadline")
         .placeholder("Select deadline...");
-    let mut deadline_date = None;
-    deadline.show(ui, &mut deadline_date);
+    deadline.show(&ctx, &theme, ui, &mut deadline_date);
+    ctx.data_mut(|d| d.insert_temp(deadline_id, deadline_date));
 });
 ```
 

@@ -18,9 +18,6 @@ pub struct MovingBorder {
     text_color: Color32,
     corner_radius: f32,
     animation_speed: f32,
-
-    // Internal state
-    animation_offset: f32,
 }
 
 impl MovingBorder {
@@ -40,7 +37,6 @@ impl MovingBorder {
             text_color: Color32::WHITE,
             corner_radius: 8.0,
             animation_speed: 1.0,
-            animation_offset: 0.0,
         }
     }
 
@@ -96,12 +92,9 @@ impl MovingBorder {
 
     /// Show the button
     pub fn show(&mut self, ui: &mut Ui) -> Response {
-        // Update animation
-        let dt = ui.input(|i| i.stable_dt);
-        self.animation_offset += self.animation_speed * dt;
-        if self.animation_offset > 2.0 * PI {
-            self.animation_offset -= 2.0 * PI;
-        }
+        // Calculate animation offset from time
+        let time = ui.input(|i| i.time) as f32;
+        let animation_offset = (time * self.animation_speed) % (2.0 * PI);
         ui.ctx().request_repaint();
 
         // Calculate size
@@ -134,7 +127,7 @@ impl MovingBorder {
             let segment_length = perimeter / segments as f32;
 
             for i in 0..segments {
-                let t = (i as f32 / segments as f32) + (self.animation_offset / (2.0 * PI));
+                let t = (i as f32 / segments as f32) + (animation_offset / (2.0 * PI));
                 let t = t % 1.0;
 
                 // Calculate color based on position

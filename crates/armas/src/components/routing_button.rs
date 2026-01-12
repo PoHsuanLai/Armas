@@ -1,38 +1,81 @@
 //! Routing Button Component
 //!
-//! Input/Output routing buttons (e.g., "Input L+R", "Main")
-//! Matches Studio One's I/O display.
+//! Input/Output routing button for audio/MIDI channel selection.
+//!
+//! A compact button component designed to display routing information
+//! like "Input L+R", "Main", or other channel labels. Output buttons
+//! are styled slightly lighter than input buttons for visual distinction.
 
 use crate::ext::ArmasContextExt;
 use egui;
 
-/// Routing button component
+/// Audio/MIDI routing button component
+///
+/// Displays routing information with automatic styling for input vs output.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use armas::components::RoutingButton;
+///
+/// fn ui(ui: &mut egui::Ui) {
+///     RoutingButton::input("Input L+R").show(ui);
+///     RoutingButton::output("Main").show(ui);
+///
+///     // Custom size
+///     RoutingButton::input("Stereo")
+///         .size(100.0, 30.0)
+///         .show(ui);
+/// }
+/// ```
 pub struct RoutingButton<'a> {
     pub label: &'a str,
     pub width: f32,
     pub height: f32,
-    pub is_output: bool, // Output buttons are slightly lighter
+    pub is_output: bool,
 }
 
 impl<'a> RoutingButton<'a> {
-    pub fn input(label: &'a str, width: f32, height: f32) -> Self {
+    /// Create an input routing button with default size (100x32)
+    pub fn input(label: &'a str) -> Self {
         Self {
             label,
-            width,
-            height,
+            width: 100.0,
+            height: 32.0,
             is_output: false,
         }
     }
 
-    pub fn output(label: &'a str, width: f32, height: f32) -> Self {
+    /// Create an output routing button with default size (100x32, styled slightly lighter)
+    pub fn output(label: &'a str) -> Self {
         Self {
             label,
-            width,
-            height,
+            width: 100.0,
+            height: 32.0,
             is_output: true,
         }
     }
 
+    /// Set custom width and height
+    pub fn size(mut self, width: f32, height: f32) -> Self {
+        self.width = width;
+        self.height = height;
+        self
+    }
+
+    /// Set width
+    pub fn width(mut self, width: f32) -> Self {
+        self.width = width;
+        self
+    }
+
+    /// Set height
+    pub fn height(mut self, height: f32) -> Self {
+        self.height = height;
+        self
+    }
+
+    /// Show the routing button
     pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
         let theme = ui.ctx().armas_theme();
         let font_size = ui.spacing().interact_size.y * 0.4;

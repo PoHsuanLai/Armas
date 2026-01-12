@@ -11,7 +11,7 @@
 //! ```
 
 // Core theme system
-pub use crate::ext::ArmasContextExt;
+pub use crate::ext::{ArmasContextExt, PainterExt};
 pub use crate::Theme;
 
 // Color utilities
@@ -54,6 +54,3 @@ pub use crate::animation::{
     Animation, AnimationSequence, AnimationState, EasingFunction, Interpolate, LoopingAnimation,
     StaggeredAnimation,
 };
-
-// Painter extensions
-pub use crate::painter_ext::PainterExt;

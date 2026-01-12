@@ -100,10 +100,18 @@ impl Sparkle {
     }
 }
 
+/// Persistent state for sparkles animation
+#[derive(Clone)]
+struct SparklesState {
+    sparkles: Vec<Sparkle>,
+    initialized: bool,
+}
+
 /// Sparkles overlay component
 ///
 /// Creates twinkling sparkle particles that can overlay content
 pub struct Sparkles {
+    id: egui::Id,
     width: f32,
     height: f32,
     particle_count: usize,
@@ -111,7 +119,7 @@ pub struct Sparkles {
     min_size: f32,
     max_size: f32,
 
-    // Internal state
+    // Initial state (used for initialization)
     sparkles: Vec<Sparkle>,
     initialized: bool,
 }
@@ -120,6 +128,7 @@ impl Sparkles {
     /// Create a new sparkles effect
     pub fn new(width: f32, height: f32) -> Self {
         Self {
+            id: egui::Id::new("sparkles_default"),
             width,
             height,
             particle_count: 30,
@@ -133,6 +142,12 @@ impl Sparkles {
             sparkles: Vec::new(),
             initialized: false,
         }
+    }
+
+    /// Set a unique ID for this sparkles effect (required for state persistence)
+    pub fn with_id(mut self, id: impl std::hash::Hash) -> Self {
+        self.id = egui::Id::new(id);
+        self
     }
 
     /// Set number of sparkle particles
@@ -186,15 +201,27 @@ impl Sparkles {
     }
 
     /// Show the sparkles effect
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
-        if !self.initialized {
+    pub fn show(mut self, ui: &mut Ui) -> Response {
+        // Get or initialize state from egui memory
+        let mut state = ui.data_mut(|d| {
+            d.get_temp::<SparklesState>(self.id).unwrap_or_else(|| {
+                SparklesState {
+                    sparkles: self.sparkles.clone(),
+                    initialized: self.initialized,
+                }
+            })
+        });
+
+        if !state.initialized {
             self.initialize_sparkles();
+            state.sparkles = self.sparkles.clone();
+            state.initialized = true;
         }
 
         let dt = ui.input(|i| i.stable_dt);
 
         // Update all sparkles
-        for sparkle in &mut self.sparkles {
+        for sparkle in &mut state.sparkles {
             sparkle.update(dt);
         }
 
@@ -205,12 +232,15 @@ impl Sparkles {
 
         if ui.is_rect_visible(rect) {
             // Draw all sparkles
-            for sparkle in &self.sparkles {
+            for sparkle in &state.sparkles {
                 let mut adjusted_sparkle = sparkle.clone();
                 adjusted_sparkle.position = rect.min + (sparkle.position.to_vec2());
                 adjusted_sparkle.draw(&painter);
             }
         }
+
+        // Store state back
+        ui.data_mut(|d| d.insert_temp(self.id, state));
 
         ui.ctx().request_repaint();
         response
@@ -218,7 +248,7 @@ impl Sparkles {
 
     /// Show sparkles overlaying content
     pub fn show_with_content<R>(
-        &mut self,
+        mut self,
         ui: &mut Ui,
         _theme: &Theme,
         content: impl FnOnce(&mut Ui) -> R,
@@ -231,15 +261,27 @@ impl Sparkles {
             content(ui);
         });
 
+        // Get or initialize state from egui memory
+        let mut state = ui.data_mut(|d| {
+            d.get_temp::<SparklesState>(self.id).unwrap_or_else(|| {
+                SparklesState {
+                    sparkles: self.sparkles.clone(),
+                    initialized: self.initialized,
+                }
+            })
+        });
+
         // Then overlay sparkles
-        if !self.initialized {
+        if !state.initialized {
             self.initialize_sparkles();
+            state.sparkles = self.sparkles.clone();
+            state.initialized = true;
         }
 
         let dt = ui.input(|i| i.stable_dt);
 
         // Update all sparkles
-        for sparkle in &mut self.sparkles {
+        for sparkle in &mut state.sparkles {
             sparkle.update(dt);
         }
 
@@ -247,12 +289,15 @@ impl Sparkles {
             let painter = ui.painter();
 
             // Draw all sparkles
-            for sparkle in &self.sparkles {
+            for sparkle in &state.sparkles {
                 let mut adjusted_sparkle = sparkle.clone();
                 adjusted_sparkle.position = rect.min + sparkle.position.to_vec2();
                 adjusted_sparkle.draw(painter);
             }
         }
+
+        // Store state back
+        ui.data_mut(|d| d.insert_temp(self.id, state));
 
         ui.ctx().request_repaint();
         response

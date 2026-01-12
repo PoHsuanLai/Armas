@@ -48,6 +48,10 @@ pub struct NavbarResponse {
     pub clicked: Option<usize>,
     /// Index of the hovered item, if any
     pub hovered: Option<usize>,
+    /// Whether the close button was clicked
+    pub close_clicked: bool,
+    /// Whether the backdrop was clicked
+    pub backdrop_clicked: bool,
 }
 
 /// Position of the floating navbar
@@ -64,9 +68,11 @@ pub enum NavbarPosition {
 /// A navbar that floats above content with smooth morphing background
 /// that highlights the active item.
 pub struct FloatingNavbar {
+    id: egui::Id,
     items: Vec<NavItem>,
     position: NavbarPosition,
     width: Option<f32>,
+    show_backdrop: bool,
 
     // Animation state
     active_position_animation: Animation<f32>,
@@ -81,15 +87,23 @@ impl FloatingNavbar {
         let current_active = items.iter().position(|item| item.active);
 
         Self {
+            id: egui::Id::new("floating_navbar"),
             items,
             position: NavbarPosition::Top,
             width: None,
+            show_backdrop: false,
             active_position_animation: Animation::new(0.0, 0.0, 0.3)
                 .with_easing(EasingFunction::EaseOut),
             active_width_animation: Animation::new(0.0, 0.0, 0.3)
                 .with_easing(EasingFunction::EaseOut),
             current_active,
         }
+    }
+
+    /// Set a unique ID (required for multiple instances)
+    pub fn with_id(mut self, id: impl std::hash::Hash) -> Self {
+        self.id = egui::Id::new(id);
+        self
     }
 
     /// Set the navbar position
@@ -101,6 +115,12 @@ impl FloatingNavbar {
     /// Set a fixed width (otherwise uses available width)
     pub fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
+        self
+    }
+
+    /// Show a darkened backdrop behind the navbar
+    pub fn with_backdrop(mut self, show: bool) -> Self {
+        self.show_backdrop = show;
         self
     }
 
@@ -120,10 +140,35 @@ impl FloatingNavbar {
         // Calculate navbar width
         let navbar_width = self.width.unwrap_or(800.0);
 
-        // Position the navbar using egui::Area for floating behavior
-        let area_id = egui::Id::new("floating_navbar");
+        // Draw backdrop if enabled and handle backdrop clicks
+        let mut backdrop_clicked = false;
+        if self.show_backdrop {
+            let backdrop_id = self.id.with("backdrop");
+            let backdrop_response = egui::Area::new(backdrop_id)
+                .fixed_pos(Pos2::ZERO)
+                .order(egui::Order::Background)
+                .interactable(true)
+                .show(ctx, |ui| {
+                    let viewport_rect = ctx.viewport_rect();
+                    let (rect, response) = ui.allocate_exact_size(
+                        viewport_rect.size(),
+                        Sense::click(),
+                    );
+                    ui.painter().rect_filled(
+                        rect,
+                        0.0,
+                        Color32::from_black_alpha(180), // Semi-transparent dark overlay
+                    );
+                    response
+                });
 
-        let navbar_response = egui::Area::new(area_id)
+            if backdrop_response.inner.clicked() {
+                backdrop_clicked = true;
+            }
+        }
+
+        // Position the navbar using egui::Area for floating behavior
+        let navbar_response = egui::Area::new(self.id)
             .fixed_pos(match self.position {
                 NavbarPosition::Top => {
                     Pos2::new((ctx.viewport_rect().width() - navbar_width) / 2.0, 20.0)
@@ -141,18 +186,82 @@ impl FloatingNavbar {
 
                 let mut clicked_index: Option<usize> = None;
                 let mut hovered_index: Option<usize> = None;
+                let mut close_clicked = false;
 
                 if ui.is_rect_visible(rect) {
                     let painter = ui.painter();
 
-                    // Draw navbar background with blur effect
-                    painter.rect(
+                    // Draw navbar background using Armas standard style
+                    let surface = theme.surface_variant();
+                    let bg_color = Color32::from_rgba_unmultiplied(surface.r(), surface.g(), surface.b(), 200);
+
+                    painter.rect_filled(
                         rect,
-                        16.0,
-                        Color32::from_rgba_unmultiplied(20, 20, 25, 200),
-                        egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(255, 255, 255, 20)),
+                        theme.spacing.corner_radius_small,
+                        bg_color,
+                    );
+
+                    // Border
+                    let border_color = Color32::from_gray(80);
+                    painter.rect_stroke(
+                        rect,
+                        theme.spacing.corner_radius_small,
+                        egui::Stroke::new(1.0, border_color),
                         egui::StrokeKind::Outside,
                     );
+
+                    // Draw close button (X) in top-right corner
+                    let close_button_size = 32.0;
+                    let close_button_rect = Rect::from_min_size(
+                        Pos2::new(rect.right() - close_button_size - 8.0, rect.top() + 14.0),
+                        Vec2::new(close_button_size, close_button_size),
+                    );
+
+                    let close_response = ui.interact(
+                        close_button_rect,
+                        ui.id().with("close_button"),
+                        Sense::click().union(Sense::hover()),
+                    );
+
+                    // Draw close button background
+                    let close_bg_color = if close_response.hovered() {
+                        let error = theme.error();
+                        Color32::from_rgba_unmultiplied(error.r(), error.g(), error.b(), 150)
+                    } else {
+                        let hover = theme.hover();
+                        Color32::from_rgba_unmultiplied(hover.r(), hover.g(), hover.b(), 100)
+                    };
+
+                    painter.rect_filled(
+                        close_button_rect,
+                        theme.spacing.corner_radius_small,
+                        close_bg_color,
+                    );
+
+                    // Draw X icon with two lines
+                    let line_length = 10.0;
+                    let center = close_button_rect.center();
+                    let offset = line_length / 2.0;
+
+                    // Draw diagonal lines forming an X
+                    painter.line_segment(
+                        [
+                            Pos2::new(center.x - offset, center.y - offset),
+                            Pos2::new(center.x + offset, center.y + offset),
+                        ],
+                        egui::Stroke::new(2.0, theme.on_surface()),
+                    );
+                    painter.line_segment(
+                        [
+                            Pos2::new(center.x + offset, center.y - offset),
+                            Pos2::new(center.x - offset, center.y + offset),
+                        ],
+                        egui::Stroke::new(2.0, theme.on_surface()),
+                    );
+
+                    if close_response.clicked() {
+                        close_clicked = true;
+                    }
 
                     // Calculate item positions and sizes
                     let content_width = navbar_width - (padding * 2.0);
@@ -216,11 +325,11 @@ impl FloatingNavbar {
 
                         // Draw item content
                         let text_color = if item.active {
-                            Color32::WHITE
+                            theme.on_surface()
                         } else if item_response.hovered() {
-                            Color32::from_gray(220)
+                            theme.on_surface()
                         } else {
-                            Color32::from_gray(160)
+                            theme.on_surface_variant()
                         };
 
                         let mut text_y_offset = 0.0;
@@ -275,10 +384,14 @@ impl FloatingNavbar {
                     response,
                     clicked: clicked_index,
                     hovered: hovered_index,
+                    close_clicked,
+                    backdrop_clicked: false,
                 }
             });
 
-        navbar_response.inner
+        let mut final_response = navbar_response.inner;
+        final_response.backdrop_clicked = backdrop_clicked;
+        final_response
     }
 }
 

@@ -1,13 +1,41 @@
 //! Slot Component
 //!
-//! Colored box showing plugin/effect with mini meter and bypass indicator.
-//! Matches Studio One's insert design.
+//! Plugin/effect insert slot with activity meter and bypass indicator.
+//!
+//! A colored box component designed to display audio plugins or effects.
+//! Features an activity meter showing processing level and a bypass indicator.
+//! Colors are automatically assigned based on effect type (reverb, EQ, compressor, etc.).
 
 use crate::ext::ArmasContextExt;
 use crate::theme::Theme;
 use egui;
 
-/// Insert slot component (Studio One style)
+/// Plugin/effect insert slot component
+///
+/// Displays a plugin or effect insert with:
+/// - Color-coded background based on effect type
+/// - Activity meter showing processing level
+/// - Bypass indicator when effect is bypassed
+/// - Clickable for interaction
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use armas::components::Slot;
+///
+/// fn ui(ui: &mut egui::Ui) {
+///     Slot::new()
+///         .with_effect("Reverb")
+///         .level(0.75)
+///         .show(ui);
+///
+///     // Custom size
+///     Slot::new()
+///         .size(100.0, 40.0)
+///         .with_effect("EQ")
+///         .show(ui);
+/// }
+/// ```
 pub struct Slot<'a> {
     /// Plugin/effect name (or None for empty slot)
     pub name: Option<&'a str>,
@@ -22,31 +50,55 @@ pub struct Slot<'a> {
 }
 
 impl<'a> Slot<'a> {
-    pub fn new(width: f32, height: f32) -> Self {
+    /// Create a new empty slot with default dimensions (120x36)
+    pub fn new() -> Self {
         Self {
             name: None,
             bypassed: false,
             level: 0.0,
-            width,
-            height,
+            width: 120.0,
+            height: 36.0,
         }
     }
 
+    /// Set custom width and height
+    pub fn size(mut self, width: f32, height: f32) -> Self {
+        self.width = width;
+        self.height = height;
+        self
+    }
+
+    /// Set width
+    pub fn width(mut self, width: f32) -> Self {
+        self.width = width;
+        self
+    }
+
+    /// Set height
+    pub fn height(mut self, height: f32) -> Self {
+        self.height = height;
+        self
+    }
+
+    /// Set the plugin/effect name
     pub fn with_effect(mut self, name: &'a str) -> Self {
         self.name = Some(name);
         self
     }
 
+    /// Set whether the effect is bypassed
     pub fn bypassed(mut self, bypassed: bool) -> Self {
         self.bypassed = bypassed;
         self
     }
 
+    /// Set the activity level (0.0 to 1.0)
     pub fn level(mut self, level: f32) -> Self {
-        self.level = level;
+        self.level = level.clamp(0.0, 1.0);
         self
     }
 
+    /// Show the slot component
     pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
         let theme = ui.ctx().armas_theme();
         let font_size = ui.spacing().interact_size.y * 0.4;

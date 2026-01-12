@@ -5,47 +5,49 @@ Infinite scrolling banner/marquee component.
 ## Basic Usage
 
 ```demo
-let mut banner = ScrollingBanner::new();
-banner.show(ui, |ui, _index| {
-    ui.label("Breaking News: Armas UI Library Released!");
-    ui.separator();
-    ui.label("Now with 60+ components!");
+ScrollingBanner::new().show(ui, |ui, _index| {
+    ui.label("Breaking News  •  Armas UI Library Released  •  60+ Components  •  ");
 });
 ```
 
 ## Custom Speed and Direction
 
 ```demo
-let mut banner = ScrollingBanner::new()
+ScrollingBanner::new()
     .speed(100.0)
-    .direction(ScrollDirection::Right);
-banner.show(ui, |ui, _index| {
-    ui.label("Fast scrolling to the right");
-});
+    .direction(ScrollDirection::Right)
+    .show(ui, |ui, _index| {
+        ui.label("Fast scrolling to the right  →  →  →  ");
+    });
 ```
 
 ## Without Fade Effect
 
 ```demo
-let mut banner = ScrollingBanner::new()
+ScrollingBanner::new()
     .show_fade(false)
-    .pause_on_hover(false);
-banner.show(ui, |ui, _index| {
-    ui.label("No fade, no pause");
-});
+    .pause_on_hover(false)
+    .show(ui, |ui, _index| {
+        ui.label("No fade, no pause on hover  •  Continuous scrolling  •  ");
+    });
 ```
 
-## Vertical Scrolling
+## Multiple Items
 
 ```demo
-let mut banner = ScrollingBanner::new()
-    .direction(ScrollDirection::Up)
-    .speed(30.0);
-banner.show(ui, |ui, _index| {
-    ui.label("Scrolling up");
-    ui.separator();
-    ui.label("Continuously");
-});
+ScrollingBanner::new()
+    .gap(50.0)
+    .show(ui, |ui, _index| {
+        ui.label("Item 1");
+        ui.add_space(20.0);
+        ui.label("•");
+        ui.add_space(20.0);
+        ui.label("Item 2");
+        ui.add_space(20.0);
+        ui.label("•");
+        ui.add_space(20.0);
+        ui.label("Item 3");
+    });
 ```
 
 ## API Reference

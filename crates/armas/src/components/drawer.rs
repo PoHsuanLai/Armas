@@ -2,7 +2,7 @@
 //!
 //! Slide-out side panels for navigation, settings, or additional content
 
-use crate::{Animation, Button, ButtonVariant, EasingFunction, Theme};
+use crate::{Animation, EasingFunction, Theme};
 use egui::{vec2, Color32, Key, Rect, Sense, Ui};
 
 /// Drawer position
@@ -271,15 +271,44 @@ impl Drawer {
 
                                 ui.allocate_space(ui.available_size());
 
-                                if self.closable
-                                    && Button::new("✕")
-                                        .variant(ButtonVariant::Text)
-                                        .min_size(vec2(32.0, 32.0))
-                                        .show(ui)
-                                        .clicked()
-                                {
-                                    is_open = false;
-                                    response.closed = true;
+                                if self.closable {
+                                    // Draw close button with X
+                                    let close_size = vec2(32.0, 32.0);
+                                    let (close_rect, close_response) = ui.allocate_exact_size(close_size, Sense::click());
+
+                                    if ui.is_rect_visible(close_rect) {
+                                        // Background on hover
+                                        if close_response.hovered() {
+                                            ui.painter().rect_filled(
+                                                close_rect,
+                                                4.0,
+                                                Color32::from_rgba_unmultiplied(255, 80, 80, 100),
+                                            );
+                                        }
+
+                                        // Draw X with lines
+                                        let center = close_rect.center();
+                                        let offset = 6.0;
+                                        ui.painter().line_segment(
+                                            [
+                                                egui::pos2(center.x - offset, center.y - offset),
+                                                egui::pos2(center.x + offset, center.y + offset),
+                                            ],
+                                            egui::Stroke::new(2.0, theme.on_surface()),
+                                        );
+                                        ui.painter().line_segment(
+                                            [
+                                                egui::pos2(center.x + offset, center.y - offset),
+                                                egui::pos2(center.x - offset, center.y + offset),
+                                            ],
+                                            egui::Stroke::new(2.0, theme.on_surface()),
+                                        );
+                                    }
+
+                                    if close_response.clicked() {
+                                        is_open = false;
+                                        response.closed = true;
+                                    }
                                 }
                             });
 

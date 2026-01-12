@@ -92,13 +92,20 @@ impl Meteor {
     }
 }
 
+/// Persistent state for meteor shower animation
+#[derive(Clone)]
+struct MeteorShowerState {
+    meteors: Vec<Meteor>,
+    last_spawn_time: f32,
+}
+
 /// Meteor shower effect with shooting stars
 ///
 /// Creates a continuous meteor shower with customizable angle, speed,
 /// and spawn rate.
 pub struct MeteorShower {
+    id: egui::Id,
     meteors: Vec<Meteor>,
-    spawn_timer: f32,
     spawn_rate: f32,
     angle: f32,
     speed_min: f32,
@@ -106,14 +113,15 @@ pub struct MeteorShower {
     color: Color32,
     width: f32,
     height: f32,
+    last_spawn_time: f32,
 }
 
 impl MeteorShower {
     /// Create a new meteor shower with theme-based defaults
     pub fn new(width: f32, height: f32, theme: &Theme) -> Self {
         Self {
+            id: egui::Id::new("meteor_default"),
             meteors: Vec::new(),
-            spawn_timer: 0.0,
             spawn_rate: 0.5, // spawn every 0.5 seconds
             angle: PI / 4.0, // 45 degrees
             speed_min: 0.8,
@@ -121,7 +129,14 @@ impl MeteorShower {
             color: theme.primary(),
             width,
             height,
+            last_spawn_time: 0.0,
         }
+    }
+
+    /// Set a unique ID for this meteor shower (required for state persistence)
+    pub fn with_id(mut self, id: impl std::hash::Hash) -> Self {
+        self.id = egui::Id::new(id);
+        self
     }
 
     /// Set the spawn rate (meteors per second)
@@ -149,13 +164,13 @@ impl MeteorShower {
         self
     }
 
-    fn spawn_meteor(&mut self, bounds: Rect) {
+    fn spawn_meteor_to_state(&self, state: &mut MeteorShowerState, bounds: Rect, time: f32) {
         use std::collections::hash_map::RandomState;
         use std::hash::BuildHasher;
 
         // Generate pseudo-random values
 
-        let hash = RandomState::new().hash_one(self.spawn_timer.to_bits());
+        let hash = RandomState::new().hash_one(time.to_bits());
 
         // Random position along spawn edge
         let spawn_t = (hash % 1000) as f32 / 1000.0;
@@ -189,33 +204,44 @@ impl MeteorShower {
         // Random tail length
         let tail_length = 80.0 + ((hash >> 20) % 100) as f32;
 
-        self.meteors
+        state.meteors
             .push(Meteor::new(start, end, speed, self.color, tail_length, 2.5));
     }
 
     /// Show the meteor shower
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
         let (response, _painter) =
             ui.allocate_painter(Vec2::new(self.width, self.height), egui::Sense::hover());
 
         let bounds = response.rect;
+        let time = ui.input(|i| i.time) as f32;
         let dt = ui.input(|i| i.stable_dt);
 
-        // Update spawn timer
-        self.spawn_timer += dt;
-        if self.spawn_timer >= self.spawn_rate {
-            self.spawn_meteor(bounds);
-            self.spawn_timer = 0.0;
+        // Get or initialize state from egui memory
+        let mut state = ui.data_mut(|d| {
+            d.get_temp::<MeteorShowerState>(self.id).unwrap_or(MeteorShowerState {
+                meteors: self.meteors.clone(),
+                last_spawn_time: self.last_spawn_time,
+            })
+        });
+
+        // Check if we need to spawn a new meteor based on time
+        if time - state.last_spawn_time >= self.spawn_rate {
+            self.spawn_meteor_to_state(&mut state, bounds, time);
+            state.last_spawn_time = time;
         }
 
         // Update and draw all meteors
-        for meteor in &mut self.meteors {
+        for meteor in &mut state.meteors {
             meteor.update(dt);
             meteor.draw(ui);
         }
 
         // Remove finished meteors
-        self.meteors.retain(|m| !m.is_finished());
+        state.meteors.retain(|m| !m.is_finished());
+
+        // Store state back
+        ui.data_mut(|d| d.insert_temp(self.id, state));
 
         // Request repaint for continuous animation
         ui.ctx().request_repaint();

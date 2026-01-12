@@ -38,7 +38,6 @@ pub mod components;
 pub mod ext;
 pub mod fonts;
 pub mod layout;
-pub mod painter_ext;
 pub mod theme;
 
 // Prelude module for convenient imports
@@ -53,8 +52,9 @@ pub use color::{
     blend, lerp_color, saturate, with_alpha, BlendMode, ColorStop, Gradient, NeonPalette,
 };
 pub use components::*;
-pub use ext::ArmasContextExt;
+pub use ext::{
+    ArmasContextExt, {neon_circle, neon_line, PainterExt},
+};
 pub use fonts::{FontFamilyBuilder, FontWeight};
 pub use layout::*;
-pub use painter_ext::{neon_circle, neon_line, PainterExt};
 pub use theme::Theme;

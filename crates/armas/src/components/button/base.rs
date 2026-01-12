@@ -6,7 +6,6 @@
 //! - Elevated: Filled tonal with shadow for separation
 //! - Outlined: Medium emphasis, transparent with border
 //! - Text: Lowest emphasis, minimal styling
-//! - Speaker: Modern plastic aesthetic for audio controls
 
 use crate::animation::Interpolate;
 use crate::ext::ArmasContextExt;
@@ -25,9 +24,6 @@ pub enum ButtonVariant {
     Outlined,
     /// Text button - lowest emphasis for tertiary actions
     Text,
-    /// Speaker-style button - modern, sleek plastic aesthetic with subtle depth
-    /// Perfect for audio controls (play, pause, mute, solo, record, etc.)
-    Speaker,
 }
 
 /// Material Design inspired button component
@@ -145,10 +141,6 @@ impl Button {
                     ButtonVariant::Text => {
                         (theme.hover(), theme.primary(), Color32::TRANSPARENT, false)
                     }
-                    ButtonVariant::Speaker => {
-                        let hover_bg = theme.surface_variant().interpolate(&theme.hover(), 0.3);
-                        (hover_bg, theme.on_surface(), theme.outline_variant(), false)
-                    }
                 }
             } else {
                 // Normal state
@@ -176,12 +168,6 @@ impl Button {
                         Color32::TRANSPARENT,
                         false,
                     ),
-                    ButtonVariant::Speaker => (
-                        theme.surface_variant(),
-                        theme.on_surface_variant(),
-                        theme.outline_variant(),
-                        false,
-                    ),
                 }
             };
 
@@ -194,110 +180,28 @@ impl Button {
                 text_color = normal_color;
             }
 
-            // Special rendering for Speaker variant
-            if variant == ButtonVariant::Speaker {
-                let painter = ui.painter();
-                let corner_radius = 10.0;
-                let is_pressed = response.is_pointer_button_down_on();
-
-                // Soft shadow
-                let shadow_color = Color32::from_black_alpha(50);
-                painter.rect_filled(
+            // Draw shadow for elevated variant
+            if draw_shadow {
+                let shadow_color = Color32::from_black_alpha(60);
+                ui.painter().rect_filled(
                     rect.translate(Vec2::new(0.0, 2.0)),
-                    corner_radius,
+                    theme.spacing.corner_radius_small,
                     shadow_color,
                 );
+            }
 
-                if is_pressed {
-                    let pressed_bg = theme
-                        .surface_variant()
-                        .interpolate(&theme.background(), 0.5);
-                    painter.rect_filled(rect, corner_radius, pressed_bg);
+            // Draw background
+            ui.painter()
+                .rect_filled(rect, theme.spacing.corner_radius_small, bg_color);
 
-                    painter.rect_stroke(
-                        rect.shrink(0.5),
-                        corner_radius,
-                        egui::Stroke::new(1.0, Color32::from_black_alpha(80)),
-                        egui::StrokeKind::Middle,
-                    );
-                } else {
-                    let base_color = if response.hovered() {
-                        theme.surface_variant().interpolate(&theme.hover(), 0.3)
-                    } else {
-                        theme.surface_variant()
-                    };
-
-                    let top_color = base_color;
-                    let bottom_color = base_color.interpolate(&theme.background(), 0.2);
-
-                    // Draw gradient
-                    for i in 0..8 {
-                        let t = i as f32 / 7.0;
-                        let color = Color32::from_rgb(
-                            (top_color.r() as f32
-                                + t * (bottom_color.r() as f32 - top_color.r() as f32))
-                                as u8,
-                            (top_color.g() as f32
-                                + t * (bottom_color.g() as f32 - top_color.g() as f32))
-                                as u8,
-                            (top_color.b() as f32
-                                + t * (bottom_color.b() as f32 - top_color.b() as f32))
-                                as u8,
-                        );
-
-                        let segment_height = rect.height() / 8.0;
-                        let y = rect.min.y + i as f32 * segment_height;
-
-                        painter.rect_filled(
-                            egui::Rect::from_min_size(
-                                egui::Pos2::new(rect.min.x, y),
-                                Vec2::new(rect.width(), segment_height + 1.0),
-                            ),
-                            corner_radius,
-                            color,
-                        );
-                    }
-
-                    // Top highlight
-                    painter.line_segment(
-                        [
-                            rect.min + Vec2::new(corner_radius, 1.0),
-                            rect.min + Vec2::new(rect.width() - corner_radius, 1.0),
-                        ],
-                        egui::Stroke::new(0.5, Color32::from_white_alpha(25)),
-                    );
-                }
-
-                painter.rect_stroke(
+            // Draw border for outlined variant
+            if variant == ButtonVariant::Outlined {
+                ui.painter().rect_stroke(
                     rect,
-                    corner_radius,
-                    egui::Stroke::new(1.0, border_color),
+                    theme.spacing.corner_radius_small,
+                    egui::Stroke::new(1.5, border_color),
                     egui::StrokeKind::Middle,
                 );
-            } else {
-                // Draw shadow for elevated variant
-                if draw_shadow {
-                    let shadow_color = Color32::from_black_alpha(60);
-                    ui.painter().rect_filled(
-                        rect.translate(Vec2::new(0.0, 2.0)),
-                        theme.spacing.corner_radius_small,
-                        shadow_color,
-                    );
-                }
-
-                // Draw background
-                ui.painter()
-                    .rect_filled(rect, theme.spacing.corner_radius_small, bg_color);
-
-                // Draw border for outlined variant
-                if variant == ButtonVariant::Outlined {
-                    ui.painter().rect_stroke(
-                        rect,
-                        theme.spacing.corner_radius_small,
-                        egui::Stroke::new(1.5, border_color),
-                        egui::StrokeKind::Middle,
-                    );
-                }
             }
 
             // Draw text

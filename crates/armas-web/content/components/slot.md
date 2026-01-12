@@ -1,11 +1,11 @@
 # Slot
 
-Insert slot component (Studio One style).
+Plugin/effect insert slot with activity meter and bypass indicator.
 
 ## Empty Slot
 
 ```demo
-Slot::new(80.0, 24.0)
+Slot::new()
     .show(ui);
 // Shows "+" indicating empty slot
 ```
@@ -13,7 +13,7 @@ Slot::new(80.0, 24.0)
 ## With Effect
 
 ```demo
-Slot::new(80.0, 24.0)
+Slot::new()
     .with_effect("Reverb")
     .level(0.7)
     .show(ui);
@@ -22,7 +22,7 @@ Slot::new(80.0, 24.0)
 ## Bypassed Effect
 
 ```demo
-Slot::new(80.0, 24.0)
+Slot::new()
     .with_effect("EQ")
     .bypassed(true)
     .level(0.5)
@@ -32,37 +32,55 @@ Slot::new(80.0, 24.0)
 ## Different Effect Types
 
 ```demo
-// Reverb (blue - spatial/time-based)
-Slot::new(80.0, 24.0)
-    .with_effect("Reverb")
-    .show(ui);
+ui.horizontal(|ui| {
+    // Reverb (blue - spatial/time-based)
+    Slot::new()
+        .with_effect("Reverb")
+        .level(0.6)
+        .show(ui);
 
-// EQ (green - corrective)
-Slot::new(80.0, 24.0)
-    .with_effect("EQ")
-    .show(ui);
+    // EQ (green - corrective)
+    Slot::new()
+        .with_effect("EQ")
+        .level(0.4)
+        .show(ui);
+});
 
-// Compressor (orange - dynamic)
-Slot::new(80.0, 24.0)
-    .with_effect("Compressor")
-    .show(ui);
+ui.horizontal(|ui| {
+    // Compressor (orange - dynamic)
+    Slot::new()
+        .with_effect("Compressor")
+        .level(0.8)
+        .show(ui);
 
-// Chorus (purple - modulation)
-Slot::new(80.0, 24.0)
-    .with_effect("Chorus")
-    .show(ui);
+    // Chorus (purple - modulation)
+    Slot::new()
+        .with_effect("Chorus")
+        .level(0.5)
+        .show(ui);
+});
 
-// Distortion (red - aggressive)
-Slot::new(80.0, 24.0)
-    .with_effect("Distortion")
-    .show(ui);
+ui.horizontal(|ui| {
+    // Distortion (red - aggressive)
+    Slot::new()
+        .with_effect("Distortion")
+        .level(0.9)
+        .show(ui);
+
+    // Empty slot
+    Slot::new()
+        .show(ui);
+});
 ```
 
 ## API Reference
 
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
-| `::new(width, height)` | `(f32, f32)` | - | Create insert slot |
+| `::new()` | - | `120x36` | Create insert slot with default size |
+| `.size()` | `(f32, f32)` | - | Set custom width and height |
+| `.width()` | `f32` | `120.0` | Set width |
+| `.height()` | `f32` | `36.0` | Set height |
 | `.with_effect()` | `&str` | `None` | Set effect name |
 | `.bypassed()` | `bool` | `false` | Set bypass state |
 | `.level()` | `f32` | `0.0` | Activity level (0.0-1.0) for mini meter |

@@ -8,9 +8,9 @@ Continuous meteor shower with shooting stars across the screen.
 use armas::Theme;
 
 let theme = Theme::dark();
-let mut meteor_shower = MeteorShower::new(800.0, 600.0, &theme);
-
-meteor_shower.show(ui);
+MeteorShower::new(ui.available_width(), 600.0, &theme)
+    .with_id("meteor_basic")
+    .show(ui);
 ```
 
 ## Custom Configuration
@@ -21,13 +21,13 @@ use egui::Color32;
 use std::f32::consts::PI;
 
 let theme = Theme::dark();
-let mut meteor_shower = MeteorShower::new(800.0, 600.0, &theme)
+MeteorShower::new(ui.available_width(), 600.0, &theme)
+    .with_id("meteor_custom")
     .with_spawn_rate(2.0)  // 2 meteors per second
     .with_angle(PI / 4.0)  // 45 degrees
     .with_color(Color32::from_rgb(255, 200, 100))
-    .with_speed_range(0.6, 1.5);
-
-meteor_shower.show(ui);
+    .with_speed_range(0.6, 1.5)
+    .show(ui);
 ```
 
 ## API Reference

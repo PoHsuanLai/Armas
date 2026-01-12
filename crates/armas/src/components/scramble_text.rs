@@ -2,43 +2,52 @@
 //!
 //! Random character morphing that gradually reveals target text
 
-use egui::{Response, RichText, Ui};
+use egui::{Id, Response, RichText, Ui};
+
+/// Scramble text internal state stored in egui memory
+#[derive(Clone)]
+struct ScrambleTextState {
+    start_time: f32,
+    loop_start_time: f32,
+    last_frame_time: f32,
+    current: String,
+}
+
+impl Default for ScrambleTextState {
+    fn default() -> Self {
+        Self {
+            start_time: 0.0,
+            loop_start_time: 0.0,
+            last_frame_time: 0.0,
+            current: String::new(),
+        }
+    }
+}
 
 /// Text scramble effect
 ///
 /// Displays random characters that gradually morph into the target text.
 pub struct ScrambleText {
+    id: Id,
     target: String,
-    current: String,
-    progress: f32,
     speed: f32,
     charset: Vec<char>,
-    frame_time: f32,
     frame_interval: f32,
     loop_mode: bool,
     delay_before_loop: f32,
-    delay_timer: f32,
 }
 
 impl ScrambleText {
     /// Create a new scramble text effect
     pub fn new(target: impl Into<String>) -> Self {
-        let target = target.into();
-        let current = (0..target.len())
-            .map(|_| Self::default_charset()[0])
-            .collect();
-
         Self {
-            target,
-            current,
-            progress: 0.0,
+            id: Id::new("scramble_text"),
+            target: target.into(),
             speed: 2.0,
             charset: Self::default_charset(),
-            frame_time: 0.0,
             frame_interval: 0.05,
             loop_mode: false,
             delay_before_loop: 1.0,
-            delay_timer: 0.0,
         }
     }
 
@@ -47,6 +56,12 @@ impl ScrambleText {
         "!@#$%^&*()_+-=[]{}|;:',.<>?/~`ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
             .chars()
             .collect()
+    }
+
+    /// Set unique ID for this scramble text (required for multiple instances)
+    pub fn with_id(mut self, id: impl std::hash::Hash) -> Self {
+        self.id = Id::new(id);
+        self
     }
 
     /// Set scramble speed (progress per second, 0.0 to 1.0)
@@ -82,74 +97,83 @@ impl ScrambleText {
         self
     }
 
-    /// Reset the animation
-    pub fn reset(&mut self) {
-        self.progress = 0.0;
-        self.delay_timer = 0.0;
-        self.frame_time = 0.0;
-        self.current = (0..self.target.len()).map(|_| self.charset[0]).collect();
-    }
-
-    /// Set a new target text
-    pub fn set_target(&mut self, target: impl Into<String>) {
-        self.target = target.into();
-        self.reset();
-    }
-
-    /// Check if scrambling is complete
-    pub fn is_complete(&self) -> bool {
-        self.progress >= 1.0
-    }
-
     /// Update and show the scramble text
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
         self.show_styled(ui, RichText::new)
     }
 
     /// Update and show with custom styling
-    pub fn show_styled<F>(&mut self, ui: &mut Ui, style_fn: F) -> Response
+    pub fn show_styled<F>(self, ui: &mut Ui, style_fn: F) -> Response
     where
         F: FnOnce(String) -> RichText,
     {
-        let dt = ui.input(|i| i.stable_dt);
+        let time = ui.input(|i| i.time) as f32;
 
-        // Update progress
-        if !self.is_complete() {
-            self.progress += dt * self.speed;
-            if self.progress > 1.0 {
-                self.progress = 1.0;
-                self.delay_timer = 0.0;
+        // Get or initialize state
+        let mut state = ui.data_mut(|d| {
+            d.get_temp::<ScrambleTextState>(self.id)
+                .unwrap_or_default()
+        });
+
+        // Initialize start time on first frame
+        if state.start_time == 0.0 {
+            state.start_time = time;
+            state.loop_start_time = time;
+            state.last_frame_time = time;
+            state.current = (0..self.target.len())
+                .map(|_| self.charset[0])
+                .collect();
+        }
+
+        // Calculate elapsed time and progress
+        let elapsed = time - state.start_time;
+        let progress = (elapsed * self.speed).min(1.0);
+        let is_complete = progress >= 1.0;
+
+        // Handle looping
+        if is_complete && self.loop_mode {
+            let delay_elapsed = time - state.loop_start_time;
+            if delay_elapsed >= self.delay_before_loop {
+                // Reset for next loop
+                state.start_time = time;
+                state.loop_start_time = time;
+                state.last_frame_time = time;
+                state.current = (0..self.target.len())
+                    .map(|_| self.charset[0])
+                    .collect();
             }
-        } else if self.loop_mode {
-            self.delay_timer += dt;
-            if self.delay_timer >= self.delay_before_loop {
-                self.reset();
+        } else if is_complete && !self.loop_mode {
+            // Mark loop start time when complete (for delay)
+            if state.loop_start_time == state.start_time {
+                state.loop_start_time = time;
             }
         }
 
         // Update frame for character changes
-        self.frame_time += dt;
-        if self.frame_time >= self.frame_interval {
-            self.frame_time = 0.0;
-            self.update_characters();
+        if time - state.last_frame_time >= self.frame_interval {
+            state.last_frame_time = time;
+            self.update_characters(&mut state.current, progress, time);
         }
 
+        // Store state back
+        ui.data_mut(|d| d.insert_temp(self.id, state.clone()));
+
         // Request repaint
-        if !self.is_complete() || (self.loop_mode && self.is_complete()) {
+        if !is_complete || (self.loop_mode && is_complete) {
             ui.ctx().request_repaint();
         }
 
-        ui.label(style_fn(self.current.clone()))
+        ui.label(style_fn(state.current))
     }
 
     /// Update the scrambled characters
-    fn update_characters(&mut self) {
+    fn update_characters(&self, current: &mut String, progress: f32, time: f32) {
         let target_chars: Vec<char> = self.target.chars().collect();
-        let mut current_chars: Vec<char> = self.current.chars().collect();
+        let mut current_chars: Vec<char> = current.chars().collect();
 
         // Ensure current has same length as target
         while current_chars.len() < target_chars.len() {
-            current_chars.push(self.random_char());
+            current_chars.push(self.random_char(time, progress));
         }
         while current_chars.len() > target_chars.len() {
             current_chars.pop();
@@ -163,34 +187,34 @@ impl ScrambleText {
             let reveal_start = char_progress * 0.7; // Start revealing at 70% through the position
             let reveal_end = char_progress * 0.7 + 0.3; // Finish by adding 30%
 
-            if self.progress >= reveal_end {
+            if progress >= reveal_end {
                 // Fully revealed
                 current_chars[i] = *target_char;
-            } else if self.progress >= reveal_start {
+            } else if progress >= reveal_start {
                 // In scramble zone - randomize
                 if current_chars[i] != *target_char {
-                    current_chars[i] = self.random_char();
+                    current_chars[i] = self.random_char(time + i as f32, progress);
                 }
             } else {
                 // Not yet started
-                current_chars[i] = self.random_char();
+                current_chars[i] = self.random_char(time + i as f32, progress);
             }
         }
 
-        self.current = current_chars.into_iter().collect();
+        *current = current_chars.into_iter().collect();
     }
 
     /// Get a random character from the charset
-    fn random_char(&self) -> char {
+    fn random_char(&self, time: f32, progress: f32) -> char {
         use std::collections::hash_map::RandomState;
         use std::hash::{BuildHasher, Hash, Hasher};
 
         let state = RandomState::new();
         let mut hasher = state.build_hasher();
 
-        // Use frame time and progress as seed for pseudo-randomness
-        ((self.frame_time * 1000.0) as u64).hash(&mut hasher);
-        ((self.progress * 1000.0) as u64).hash(&mut hasher);
+        // Use time and progress as seed for pseudo-randomness
+        ((time * 1000.0) as u64).hash(&mut hasher);
+        ((progress * 1000.0) as u64).hash(&mut hasher);
 
         let hash = hasher.finish();
         let index = (hash as usize) % self.charset.len();
@@ -206,7 +230,7 @@ mod tests {
     fn test_scramble_creation() {
         let st = ScrambleText::new("Hello");
         assert_eq!(st.target, "Hello");
-        assert_eq!(st.current.len(), 5);
+        assert_eq!(st.speed, 2.0);
     }
 
     #[test]
@@ -215,13 +239,5 @@ mod tests {
 
         assert_eq!(st.speed, 5.0);
         assert!(st.loop_mode);
-    }
-
-    #[test]
-    fn test_set_target() {
-        let mut st = ScrambleText::new("Hello");
-        st.set_target("World");
-        assert_eq!(st.target, "World");
-        assert_eq!(st.progress, 0.0);
     }
 }

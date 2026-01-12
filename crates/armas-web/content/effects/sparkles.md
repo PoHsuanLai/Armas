@@ -5,8 +5,9 @@ Twinkling sparkle particle effect overlay.
 ## Basic Usage
 
 ```demo
-let mut sparkles = Sparkles::new(800.0, 600.0);
-let _ = sparkles.show(ui);
+Sparkles::new(ui.available_width(), 600.0)
+    .with_id("sparkles_basic")
+    .show(ui);
 ```
 
 ## Custom Configuration
@@ -14,26 +15,30 @@ let _ = sparkles.show(ui);
 ```demo
 use egui::Color32;
 
-let mut sparkles = Sparkles::new(800.0, 600.0)
+Sparkles::new(ui.available_width(), 600.0)
+    .with_id("sparkles_custom")
     .particle_count(50)
     .colors(vec![
         Color32::from_rgb(255, 215, 0),   // Gold
         Color32::from_rgb(255, 255, 255), // White
         Color32::from_rgb(135, 206, 250), // Sky blue
     ])
-    .size_range(3.0, 6.0);
-
-let _response = sparkles.show(ui);
+    .size_range(3.0, 6.0)
+    .show(ui);
 ```
 
 ## With Content Overlay
 
 ```demo
-let mut sparkles = Sparkles::new(400.0, 300.0);
-sparkles.show_with_content(ui, &theme, |ui| {
-    ui.heading("Sparkling Content");
-    ui.label("Content with sparkles overlay");
-});
+Sparkles::new(ui.available_width(), 300.0)
+    .with_id("sparkles_overlay")
+    .show_with_content(ui, &theme, |ui| {
+        ui.vertical_centered(|ui| {
+            ui.add_space(120.0);
+            ui.heading("Sparkling Content");
+            ui.label("Content with sparkles overlay");
+        });
+    });
 ```
 
 ## API Reference

@@ -37,8 +37,6 @@ pub struct GradientCard {
     pub corner_radius: f32,
     /// Gradient colors (at least 2 required)
     pub gradient_colors: Vec<Color32>,
-    /// Current gradient rotation angle
-    gradient_angle: f32,
     /// Rotation speed (radians per second)
     pub rotation_speed: f32,
     /// Whether to animate the gradient
@@ -67,7 +65,6 @@ impl GradientCard {
             border_width: 2.0,
             corner_radius: 8.0,
             gradient_colors: Vec::new(), // Will use theme.gradient()
-            gradient_angle: 0.0,
             rotation_speed: PI / 4.0, // 45 degrees per second
             animate: true,
             background_color: None,
@@ -166,12 +163,14 @@ impl GradientCard {
         let is_hovered = response.hovered();
 
         // Update animations
+        let time = ui.input(|i| i.time) as f32;
         let dt = ui.input(|i| i.stable_dt);
 
-        if self.animate {
-            self.gradient_angle += self.rotation_speed * dt;
-            self.gradient_angle %= 2.0 * PI;
-        }
+        let gradient_angle = if self.animate {
+            (time * self.rotation_speed) % (2.0 * PI)
+        } else {
+            0.0
+        };
 
         // Animate glow on hover
         let target_glow = if self.glow_on_hover && is_hovered {
@@ -187,7 +186,7 @@ impl GradientCard {
         let inner_rect = outer_rect.shrink(self.border_width);
 
         // Draw gradient border
-        self.draw_gradient_border(ui, outer_rect, inner_rect);
+        self.draw_gradient_border(ui, outer_rect, inner_rect, gradient_angle);
 
         // Draw glow effect if hovered
         if self.glow_intensity > 0.01 {
@@ -227,7 +226,7 @@ impl GradientCard {
     }
 
     /// Draw the animated gradient border
-    fn draw_gradient_border(&self, ui: &mut Ui, outer_rect: Rect, inner_rect: Rect) {
+    fn draw_gradient_border(&self, ui: &mut Ui, outer_rect: Rect, inner_rect: Rect, gradient_angle: f32) {
         let painter = ui.painter();
 
         // Draw gradient border by rendering many small quad segments around the perimeter
@@ -238,8 +237,8 @@ impl GradientCard {
             let t1 = i as f32 / segments as f32;
             let t2 = (i + 1) as f32 / segments as f32;
 
-            let color1 = self.get_gradient_color(t1);
-            let color2 = self.get_gradient_color(t2);
+            let color1 = self.get_gradient_color(t1, gradient_angle);
+            let color2 = self.get_gradient_color(t2, gradient_angle);
 
             // Get points on outer and inner perimeter
             let outer1 = self.get_perimeter_point(outer_rect, t1);
@@ -309,7 +308,7 @@ impl GradientCard {
     }
 
     /// Get color from gradient at position t (0.0 to 1.0)
-    fn get_gradient_color(&self, t: f32) -> Color32 {
+    fn get_gradient_color(&self, t: f32, _gradient_angle: f32) -> Color32 {
         let num_colors = self.gradient_colors.len();
         let position = t * num_colors as f32;
         let index = position.floor() as usize % num_colors;

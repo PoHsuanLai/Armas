@@ -5,7 +5,7 @@ Contextual information that appears on hover.
 ## Basic Usage
 
 ```demo
-let response = ui.button("Hover me");
+let response = Button::new("Hover me").show(ui);
 let mut tooltip = Tooltip::new("This is a tooltip");
 tooltip.show(ui, &response);
 ```
@@ -15,7 +15,7 @@ tooltip.show(ui, &response);
 ### Top
 
 ```demo
-let response = ui.button("Top tooltip");
+let response = Button::new("Top tooltip").show(ui);
 let mut tooltip = Tooltip::new("Appears above")
     .position(TooltipPosition::Top);
 tooltip.show(ui, &response);
@@ -24,7 +24,7 @@ tooltip.show(ui, &response);
 ### Bottom
 
 ```demo
-let response = ui.button("Bottom tooltip");
+let response = Button::new("Bottom tooltip").show(ui);
 let mut tooltip = Tooltip::new("Appears below")
     .position(TooltipPosition::Bottom);
 tooltip.show(ui, &response);
@@ -33,7 +33,7 @@ tooltip.show(ui, &response);
 ### Left
 
 ```demo
-let response = ui.button("Left tooltip");
+let response = Button::new("Left tooltip").show(ui);
 let mut tooltip = Tooltip::new("Appears to the left")
     .position(TooltipPosition::Left);
 tooltip.show(ui, &response);
@@ -42,7 +42,7 @@ tooltip.show(ui, &response);
 ### Right
 
 ```demo
-let response = ui.button("Right tooltip");
+let response = Button::new("Right tooltip").show(ui);
 let mut tooltip = Tooltip::new("Appears to the right")
     .position(TooltipPosition::Right);
 tooltip.show(ui, &response);
@@ -51,7 +51,7 @@ tooltip.show(ui, &response);
 ### Auto (Default)
 
 ```demo
-let response = ui.button("Auto tooltip");
+let response = Button::new("Auto tooltip").show(ui);
 let mut tooltip = Tooltip::new("Automatically positioned based on available space")
     .position(TooltipPosition::Auto);
 tooltip.show(ui, &response);
@@ -62,7 +62,7 @@ tooltip.show(ui, &response);
 ### No Delay
 
 ```demo
-let response = ui.button("Instant tooltip");
+let response = Button::new("Instant tooltip").show(ui);
 let mut tooltip = Tooltip::new("Shows immediately")
     .delay(0);
 tooltip.show(ui, &response);
@@ -71,7 +71,7 @@ tooltip.show(ui, &response);
 ### Long Delay
 
 ```demo
-let response = ui.button("Delayed tooltip");
+let response = Button::new("Delayed tooltip").show(ui);
 let mut tooltip = Tooltip::new("Shows after 1 second")
     .delay(1000);
 tooltip.show(ui, &response);
@@ -82,7 +82,7 @@ tooltip.show(ui, &response);
 ### Narrow
 
 ```demo
-let response = ui.button("Narrow tooltip");
+let response = Button::new("Narrow tooltip").show(ui);
 let mut tooltip = Tooltip::new("This is a longer tooltip text that will wrap to multiple lines")
     .max_width(150.0);
 tooltip.show(ui, &response);
@@ -91,7 +91,7 @@ tooltip.show(ui, &response);
 ### Wide
 
 ```demo
-let response = ui.button("Wide tooltip");
+let response = Button::new("Wide tooltip").show(ui);
 let mut tooltip = Tooltip::new("This is a longer tooltip text that will wrap to multiple lines")
     .max_width(300.0);
 tooltip.show(ui, &response);
@@ -100,7 +100,7 @@ tooltip.show(ui, &response);
 ## Without Arrow
 
 ```demo
-let response = ui.button("No arrow");
+let response = Button::new("No arrow").show(ui);
 let mut tooltip = Tooltip::new("Tooltip without arrow pointer")
     .show_arrow(false);
 tooltip.show(ui, &response);
@@ -122,7 +122,7 @@ tooltip.show(ui, &response);
 
 ```demo
 ui.horizontal(|ui| {
-    ui.button("Submit");
+    Button::new("Submit").show(ui);
     let help = ui.label("?");
     let mut tooltip = Tooltip::new("Click Submit to process the form")
         .max_width(200.0);
@@ -142,7 +142,7 @@ tooltip.show(ui, &response);
 ### Multi-line Tooltip
 
 ```demo
-let response = ui.button("Details");
+let response = Button::new("Details").show(ui);
 let mut tooltip = Tooltip::new("Line 1: First detail\nLine 2: Second detail\nLine 3: Third detail")
     .max_width(250.0);
 tooltip.show(ui, &response);

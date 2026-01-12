@@ -5,58 +5,63 @@ Card with animated gradient border.
 ## Basic Usage
 
 ```demo
-let mut card = GradientCard::new();
-card.show(ui, &theme, |ui| {
+GradientCard::new().show(ui, &theme, |ui| {
     ui.heading("Gradient Card");
     ui.label("Beautiful animated gradient border");
+    ui.add_space(8.0);
+    ui.label("Hover to see the glow effect!");
 });
 ```
 
 ## Custom Colors
 
 ```demo
-let mut card = GradientCard::new()
+GradientCard::new()
     .gradient_colors(vec![
         theme.primary(),
         theme.secondary(),
         theme.error(),
-    ]);
-card.show(ui, &theme, |ui| {
-    ui.label("Custom gradient");
-});
+    ])
+    .show(ui, &theme, |ui| {
+        ui.heading("Custom Colors");
+        ui.label("Using theme colors for the gradient");
+    });
 ```
 
 ## Preset Gradients
 
 ```demo
-// Rainbow gradient
-let mut card = GradientCard::rainbow();
-card.show(ui, &theme, |ui| {
-    ui.label("Rainbow");
+GradientCard::rainbow().show(ui, &theme, |ui| {
+    ui.heading("Rainbow");
+    ui.label("All the colors of the rainbow");
 });
+```
 
-// Warm gradient
-let mut card = GradientCard::warm();
-card.show(ui, &theme, |ui| {
-    ui.label("Warm");
+```demo
+GradientCard::warm().show(ui, &theme, |ui| {
+    ui.heading("Warm Gradient");
+    ui.label("Red to orange to yellow");
 });
+```
 
-// Cool gradient
-let mut card = GradientCard::cool();
-card.show(ui, &theme, |ui| {
-    ui.label("Cool");
+```demo
+GradientCard::cool().show(ui, &theme, |ui| {
+    ui.heading("Cool Gradient");
+    ui.label("Cyan to blue to purple");
 });
+```
 
-// Neon gradient
-let mut card = GradientCard::neon();
-card.show(ui, &theme, |ui| {
-    ui.label("Neon");
+```demo
+GradientCard::neon().show(ui, &theme, |ui| {
+    ui.heading("Neon Gradient");
+    ui.label("Bright and saturated!");
 });
+```
 
-// Gold gradient
-let mut card = GradientCard::gold();
-card.show(ui, &theme, |ui| {
-    ui.label("Gold");
+```demo
+GradientCard::gold().show(ui, &theme, |ui| {
+    ui.heading("Gold Gradient");
+    ui.label("Shiny and premium");
 });
 ```
 

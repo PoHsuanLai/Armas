@@ -40,8 +40,6 @@ pub struct ScrollingBanner {
     pub speed: f32,
     /// Direction of scrolling
     pub direction: ScrollDirection,
-    /// Current scroll offset in pixels
-    offset: f32,
     /// Gap between repeated content in pixels
     pub gap: f32,
     /// Whether the animation is paused
@@ -66,7 +64,6 @@ impl ScrollingBanner {
         Self {
             speed: 50.0,
             direction: ScrollDirection::Left,
-            offset: 0.0,
             gap: 32.0,
             paused: false,
             pause_on_hover: true,
@@ -121,16 +118,12 @@ impl ScrollingBanner {
         self.paused = false;
     }
 
-    /// Reset the scroll offset
-    pub fn reset(&mut self) {
-        self.offset = 0.0;
-    }
 
     /// Show the scrolling banner with custom content
     ///
     /// The content function receives the UI and the current repetition index.
     /// The content will be rendered multiple times to create the infinite loop effect.
-    pub fn show<F>(&mut self, ui: &mut Ui, content: F) -> Response
+    pub fn show<F>(self, ui: &mut Ui, content: F) -> Response
     where
         F: Fn(&mut Ui, usize),
     {
@@ -139,18 +132,22 @@ impl ScrollingBanner {
         let content_size = self.measure_content(ui, &content);
 
         // Determine the size to allocate based on available space and content
-        let desired_size = ui.available_size();
+        let available_width = ui.available_width();
+        let desired_height = content_size.y.max(40.0); // Ensure minimum height
+        let desired_size = egui::vec2(available_width, desired_height);
 
         // Allocate space for the banner - this advances the cursor properly
         let (rect, response) = ui.allocate_exact_size(desired_size, egui::Sense::hover());
 
-        // Update animation
-        let dt = ui.input(|i| i.stable_dt);
+        // Calculate animation offset from absolute time
+        let time = ui.input(|i| i.time) as f32;
         let is_hovered = response.hovered();
 
-        if !self.paused && (!self.pause_on_hover || !is_hovered) {
-            self.offset += self.speed * dt;
-        }
+        let offset = if !self.paused && (!self.pause_on_hover || !is_hovered) {
+            time * self.speed
+        } else {
+            0.0
+        };
 
         // Calculate how many repetitions we need to fill the visible area
         let (primary_axis_size, _secondary_axis_size) = match self.direction {
@@ -166,9 +163,11 @@ impl ScrollingBanner {
         let repeat_distance = total_content_size + self.gap;
 
         // Wrap offset to create infinite loop
-        if repeat_distance > 0.0 {
-            self.offset %= repeat_distance;
-        }
+        let offset = if repeat_distance > 0.0 {
+            offset % repeat_distance
+        } else {
+            offset
+        };
 
         // Calculate number of repetitions needed (always at least 2 for seamless loop)
         let repetitions = ((primary_axis_size / repeat_distance).ceil() as usize + 2).max(2);
@@ -181,16 +180,16 @@ impl ScrollingBanner {
             let offset_multiplier = i as f32;
             let position_offset = match self.direction {
                 ScrollDirection::Left => {
-                    Vec2::new(-self.offset + offset_multiplier * repeat_distance, 0.0)
+                    Vec2::new(-offset + offset_multiplier * repeat_distance, 0.0)
                 }
                 ScrollDirection::Right => {
-                    Vec2::new(self.offset - offset_multiplier * repeat_distance, 0.0)
+                    Vec2::new(offset - offset_multiplier * repeat_distance, 0.0)
                 }
                 ScrollDirection::Up => {
-                    Vec2::new(0.0, -self.offset + offset_multiplier * repeat_distance)
+                    Vec2::new(0.0, -offset + offset_multiplier * repeat_distance)
                 }
                 ScrollDirection::Down => {
-                    Vec2::new(0.0, self.offset - offset_multiplier * repeat_distance)
+                    Vec2::new(0.0, offset - offset_multiplier * repeat_distance)
                 }
             };
 

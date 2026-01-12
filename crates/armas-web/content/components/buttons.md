@@ -52,14 +52,6 @@ Button::new("Text")
     .show(ui);
 ```
 
-### Speaker
-
-```demo
-Button::new("Speaker")
-    .variant(ButtonVariant::Speaker)
-    .show(ui);
-```
-
 ## Sizes
 
 ```demo

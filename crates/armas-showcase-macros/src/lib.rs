@@ -140,6 +140,18 @@ fn parse_showcase_markdown(markdown: &str) -> Result<proc_macro2::TokenStream, S
             Event::End(TagEnd::Paragraph) => {
                 current_text.push_str("\n\n");
             }
+            Event::Start(Tag::List(_)) => {
+                current_text.push('\n');
+            }
+            Event::End(TagEnd::List(_)) => {
+                current_text.push_str("\n\n");
+            }
+            Event::Start(Tag::Item) => {
+                current_text.push_str("- ");
+            }
+            Event::End(TagEnd::Item) => {
+                current_text.push('\n');
+            }
             Event::Start(Tag::Strong) => current_text.push_str("**"),
             Event::End(TagEnd::Strong) => current_text.push_str("**"),
             Event::Start(Tag::Emphasis) => current_text.push('*'),
@@ -242,7 +254,7 @@ fn generate_show_function(blocks: &[CodeBlock]) -> Result<proc_macro2::TokenStre
                         use armas::{AnimatedTabs, TabStyle};
 
                         let demo_id = ui.id().with(#code_string);
-                        let mut active_tab = ui.data_mut(|d| d.get_temp::<usize>(demo_id).unwrap_or(0));
+                        let mut active_tab = ui.ctx().data_mut(|d| d.get_temp::<usize>(demo_id).unwrap_or(0));
 
                         // Container with border
                         let container_rect = ui.available_rect_before_wrap();
@@ -253,11 +265,16 @@ fn generate_show_function(blocks: &[CodeBlock]) -> Result<proc_macro2::TokenStre
                         let _ = ui.vertical(|ui| {
                             ui.set_max_width(ui.available_width());
 
-                            // Tabs at the top
-                            if let Some(new_tab) = tabs.show(ui) {
-                                active_tab = new_tab;
-                                ui.data_mut(|d| d.insert_temp(demo_id, active_tab));
-                            }
+                            // Tabs at the top (narrower)
+                            ui.horizontal(|ui| {
+                                let tab_width = ui.available_width() / 3.0;
+                                ui.allocate_ui(egui::vec2(tab_width, ui.available_height()), |ui| {
+                                    if let Some(new_tab) = tabs.show(ui) {
+                                        active_tab = new_tab;
+                                        ui.ctx().data_mut(|d| d.insert_temp(demo_id, active_tab));
+                                    }
+                                });
+                            });
 
                             ui.add_space(12.0);
 
@@ -270,6 +287,9 @@ fn generate_show_function(blocks: &[CodeBlock]) -> Result<proc_macro2::TokenStre
                                 .show(ui, |ui| {
                                     if active_tab == 0 {
                                         // Preview - centered, expands vertically with content
+                                        // Set fixed width to prevent jumping
+                                        ui.set_width(ui.available_width());
+
                                         // Use vertical layout with centered main axis
                                         let _ = ui.with_layout(
                                             egui::Layout::top_down(egui::Align::Center),

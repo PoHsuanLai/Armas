@@ -25,7 +25,7 @@ impl Slider {
             id: None,
             min,
             max,
-            width: 200.0,
+            width: 0.0, // 0.0 means use available width
             height: 20.0,
             show_value: true,
             label: None,
@@ -115,8 +115,13 @@ impl Slider {
             }
 
             // Slider track and handle
+            let slider_width = if self.width == 0.0 {
+                ui.available_width()
+            } else {
+                self.width
+            };
             let (rect, response) =
-                ui.allocate_exact_size(vec2(self.width, self.height), Sense::click_and_drag());
+                ui.allocate_exact_size(vec2(slider_width, self.height), Sense::click_and_drag());
 
             if response.clicked() || response.dragged() {
                 if let Some(pos) = response.interact_pointer_pos() {

@@ -99,7 +99,7 @@ impl Timeline {
             items,
             dot_size: 12.0,
             line_width: 2.0,
-            item_gap: 32.0,
+            item_gap: 48.0, // Increased from 32.0 for better spacing
             show_lines: true,
         }
     }
@@ -136,14 +136,14 @@ impl Timeline {
         }
 
         let available_width = ui.available_width();
-        let left_margin = 40.0; // Space for dot and line
+        let left_margin = 50.0; // Increased from 40.0 - space for dot and line
         let content_width = available_width - left_margin - 20.0;
 
         for (index, item) in self.items.iter().enumerate() {
             let is_last = index == self.items.len() - 1;
 
             // Calculate item height
-            let title_height = 20.0;
+            let title_height = 24.0; // Increased from 20.0
             let desc_height = {
                 let galley = ui.painter().layout_no_wrap(
                     item.description.clone(),
@@ -152,15 +152,15 @@ impl Timeline {
                 );
                 galley.rect.height().min(100.0) // Approximate max height for multi-line
             };
-            let time_height = if item.time.is_some() { 18.0 } else { 0.0 };
-            let item_height = title_height + desc_height + time_height + 20.0;
+            let time_height = if item.time.is_some() { 20.0 } else { 0.0 }; // Increased from 18.0
+            let item_height = title_height + desc_height + time_height + self.item_gap;
 
             let (rect, _) = ui.allocate_exact_size(
                 Vec2::new(available_width, item_height),
                 egui::Sense::hover(),
             );
 
-            let dot_center = Pos2::new(rect.min.x + 20.0, rect.min.y + 10.0);
+            let dot_center = Pos2::new(rect.min.x + 24.0, rect.min.y + 12.0); // Adjusted positioning
 
             // Draw connecting line to next item
             if self.show_lines && !is_last {
@@ -246,7 +246,7 @@ impl Timeline {
                 title_color,
             );
 
-            content_y += title_height;
+            content_y += title_height + 4.0; // Add spacing between title and description
 
             // Description
             let desc_galley = ui.painter().layout(

@@ -200,23 +200,25 @@ impl Popover {
         let popover_pos =
             self.calculate_position(anchor_rect, estimated_size, arrow_size, position);
 
-        // Draw backdrop to catch clicks outside
-        let backdrop_id = self.id.with("backdrop");
-        let _backdrop_response = egui::Area::new(backdrop_id)
-            .order(egui::Order::Middle)
-            .interactable(true)
-            .show(ctx, |ui| {
-                let screen_rect = ctx.content_rect();
-                let backdrop = ui.allocate_response(screen_rect.size(), Sense::click());
+        // Draw backdrop to catch clicks outside - ONLY when popover is actually open
+        if is_open {
+            let backdrop_id = self.id.with("backdrop");
+            let _backdrop_response = egui::Area::new(backdrop_id)
+                .order(egui::Order::Middle)
+                .interactable(true)
+                .show(ctx, |ui| {
+                    let screen_rect = ctx.viewport_rect();
+                    let backdrop = ui.allocate_response(screen_rect.size(), Sense::click());
 
-                if backdrop.clicked() && is_open {
-                    is_open = false;
-                    response.clicked_outside = true;
-                    response.should_close = true;
-                }
+                    if backdrop.clicked() {
+                        is_open = false;
+                        response.clicked_outside = true;
+                        response.should_close = true;
+                    }
 
-                backdrop
-            });
+                    backdrop
+                });
+        }
 
         // Persist state if not externally controlled
         if self.external_is_open.is_none() {

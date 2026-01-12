@@ -2,7 +2,6 @@
 //!
 //! Animated text that cycles through a list of words with flip transitions
 
-use crate::animation::{Animation, EasingFunction};
 use egui::{Align2, Color32, FontId, Pos2, Response, Ui, Vec2};
 
 /// Flip transition style
@@ -22,12 +21,10 @@ pub enum FlipStyle {
 pub struct FlipWords {
     /// List of words to cycle through
     words: Vec<String>,
-    /// Current word index
-    current_index: usize,
     /// Time per word (in seconds)
     duration: f32,
-    /// Flip transition animation
-    flip_animation: Animation<f32>,
+    /// Flip transition duration (in seconds)
+    transition_duration: f32,
     /// Flip style
     style: FlipStyle,
     /// Font size
@@ -36,8 +33,6 @@ pub struct FlipWords {
     color: Color32,
     /// Highlight color (optional)
     highlight_color: Option<Color32>,
-    /// Internal timer
-    timer: f32,
 }
 
 impl FlipWords {
@@ -45,14 +40,12 @@ impl FlipWords {
     pub fn new(words: Vec<impl Into<String>>) -> Self {
         Self {
             words: words.into_iter().map(|w| w.into()).collect(),
-            current_index: 0,
             duration: 2.5,
-            flip_animation: Animation::new(0.0, 1.0, 0.5).with_easing(EasingFunction::CubicInOut),
+            transition_duration: 0.5,
             style: FlipStyle::Vertical,
             font_size: 24.0,
             color: Color32::WHITE,
             highlight_color: None,
-            timer: 0.0,
         }
     }
 
@@ -92,35 +85,24 @@ impl FlipWords {
             return ui.label("(no words)");
         }
 
-        let dt = ui.input(|i| i.stable_dt);
+        let time = ui.input(|i| i.time) as f32;
 
-        // Update timer and animation
-        self.timer += dt;
+        // Calculate current word index and transition progress
+        let current_index = ((time / self.duration) as usize) % self.words.len();
+        let time_in_cycle = time % self.duration;
 
-        // Check if we should transition to next word
-        let transition_start = self.duration - 0.5; // Start transition 0.5s before word change
-
-        if self.timer >= self.duration {
-            // Move to next word
-            self.current_index = (self.current_index + 1) % self.words.len();
-            self.timer = 0.0;
-            self.flip_animation.reset();
-        } else if self.timer >= transition_start {
-            // In transition - start/update animation
-            if !self.flip_animation.is_running() && !self.flip_animation.is_complete() {
-                self.flip_animation.start();
-            }
-            self.flip_animation.update(dt);
+        // Calculate transition progress (0.0 = stable, 1.0 = fully transitioned)
+        let transition_start = self.duration - self.transition_duration;
+        let flip_t = if time_in_cycle >= transition_start {
+            ((time_in_cycle - transition_start) / self.transition_duration).min(1.0)
         } else {
-            // Word is stable
-            self.flip_animation.reset();
-        }
+            0.0
+        };
 
-        // Request repaint for animation
         ui.ctx().request_repaint();
 
-        let current_word = &self.words[self.current_index];
-        let next_index = (self.current_index + 1) % self.words.len();
+        let current_word = &self.words[current_index];
+        let next_index = (current_index + 1) % self.words.len();
         let next_word = &self.words[next_index];
 
         // Calculate text size for both words to get max width
@@ -151,12 +133,11 @@ impl FlipWords {
             match self.style {
                 FlipStyle::Vertical => {
                     // Vertical flip effect (top half disappears, bottom half appears)
-                    let t = self.flip_animation.value();
-                    if t > 0.0 {
+                    if flip_t > 0.0 {
                         // First half: current word flips out (0.0 to 0.5)
-                        if t < 0.5 {
-                            let scale_y = 1.0 - (t * 2.0);
-                            let alpha = (255.0 * (1.0 - t * 2.0)) as u8;
+                        if flip_t < 0.5 {
+                            let scale_y = 1.0 - (flip_t * 2.0);
+                            let alpha = (255.0 * (1.0 - flip_t * 2.0)) as u8;
                             let text_color = self.highlight_color.unwrap_or(self.color);
                             let faded_color = Color32::from_rgba_unmultiplied(
                                 text_color.r(),
@@ -176,7 +157,7 @@ impl FlipWords {
                         }
                         // Second half: next word flips in (0.5 to 1.0)
                         else {
-                            let scale_y = (t - 0.5) * 2.0;
+                            let scale_y = (flip_t - 0.5) * 2.0;
                             let alpha = (255.0 * scale_y) as u8;
                             let text_color = self.highlight_color.unwrap_or(self.color);
                             let faded_color = Color32::from_rgba_unmultiplied(
@@ -210,12 +191,11 @@ impl FlipWords {
 
                 FlipStyle::Horizontal => {
                     // Horizontal flip (scale X to simulate rotation)
-                    let t = self.flip_animation.value();
-                    if t > 0.0 {
-                        if t < 0.5 {
+                    if flip_t > 0.0 {
+                        if flip_t < 0.5 {
                             // Current word scales down horizontally
-                            let _scale_x = 1.0 - (t * 2.0);
-                            let alpha = (255.0 * (1.0 - t * 2.0)) as u8;
+                            let _scale_x = 1.0 - (flip_t * 2.0);
+                            let alpha = (255.0 * (1.0 - flip_t * 2.0)) as u8;
                             let text_color = self.highlight_color.unwrap_or(self.color);
                             let faded_color = Color32::from_rgba_unmultiplied(
                                 text_color.r(),
@@ -234,7 +214,7 @@ impl FlipWords {
                             );
                         } else {
                             // Next word scales up horizontally
-                            let scale_x = (t - 0.5) * 2.0;
+                            let scale_x = (flip_t - 0.5) * 2.0;
                             let alpha = (255.0 * scale_x) as u8;
                             let text_color = self.highlight_color.unwrap_or(self.color);
                             let faded_color = Color32::from_rgba_unmultiplied(
@@ -266,10 +246,9 @@ impl FlipWords {
 
                 FlipStyle::Fade => {
                     // Simple crossfade
-                    let t = self.flip_animation.value();
-                    if t > 0.0 {
+                    if flip_t > 0.0 {
                         // Fade out current word
-                        let current_alpha = (255.0 * (1.0 - t)) as u8;
+                        let current_alpha = (255.0 * (1.0 - flip_t)) as u8;
                         let text_color = self.highlight_color.unwrap_or(self.color);
                         let current_color = Color32::from_rgba_unmultiplied(
                             text_color.r(),
@@ -279,7 +258,7 @@ impl FlipWords {
                         );
 
                         // Fade in next word
-                        let next_alpha = (255.0 * t) as u8;
+                        let next_alpha = (255.0 * flip_t) as u8;
                         let next_color = Color32::from_rgba_unmultiplied(
                             text_color.r(),
                             text_color.g(),
@@ -328,7 +307,7 @@ mod tests {
     fn test_flip_words_creation() {
         let flip = FlipWords::new(vec!["Hello", "World", "Test"]);
         assert_eq!(flip.words.len(), 3);
-        assert_eq!(flip.current_index, 0);
+        assert_eq!(flip.duration, 2.5);
     }
 
     #[test]

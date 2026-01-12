@@ -11,14 +11,12 @@ use egui::{Response, RichText, Ui};
 /// and optional blinking cursor.
 pub struct Typewriter {
     text: String,
-    char_index: f32,
     speed: f32, // characters per second
     cursor_enabled: bool,
     cursor_blink_speed: f32,
-    cursor_time: f32,
     loop_mode: bool,
     delay_before_loop: f32,
-    delay_timer: f32,
+    start_time: Option<f32>,
 }
 
 impl Typewriter {
@@ -26,14 +24,12 @@ impl Typewriter {
     pub fn new(text: impl Into<String>) -> Self {
         Self {
             text: text.into(),
-            char_index: 0.0,
             speed: 20.0,
             cursor_enabled: true,
             cursor_blink_speed: 2.0,
-            cursor_time: 0.0,
             loop_mode: false,
             delay_before_loop: 2.0,
-            delay_timer: 0.0,
+            start_time: None,
         }
     }
 
@@ -69,14 +65,7 @@ impl Typewriter {
 
     /// Reset the animation
     pub fn reset(&mut self) {
-        self.char_index = 0.0;
-        self.delay_timer = 0.0;
-        self.cursor_time = 0.0;
-    }
-
-    /// Check if typing is complete
-    pub fn is_complete(&self) -> bool {
-        self.char_index >= self.text.len() as f32
+        self.start_time = None;
     }
 
     /// Show the typewriter text
@@ -89,39 +78,45 @@ impl Typewriter {
     where
         F: FnOnce(String) -> RichText,
     {
-        let dt = ui.input(|i| i.stable_dt);
+        let time = ui.input(|i| i.time) as f32;
 
-        // Update animation
-        if !self.is_complete() {
-            self.char_index += dt * self.speed;
-            if self.char_index > self.text.len() as f32 {
-                self.char_index = self.text.len() as f32;
-                self.delay_timer = 0.0;
-            }
+        // Initialize start time on first show
+        if self.start_time.is_none() {
+            self.start_time = Some(time);
+        }
+
+        let elapsed = time - self.start_time.unwrap();
+        let typing_duration = self.text.len() as f32 / self.speed;
+
+        // Calculate char index
+        let (char_index, is_complete) = if elapsed < typing_duration {
+            (elapsed * self.speed, false)
         } else if self.loop_mode {
-            self.delay_timer += dt;
-            if self.delay_timer >= self.delay_before_loop {
-                self.reset();
+            // Check if in delay period
+            let delay_end = typing_duration + self.delay_before_loop;
+            if elapsed < delay_end {
+                (self.text.len() as f32, true)
+            } else {
+                // Reset for next loop
+                self.start_time = Some(time);
+                (0.0, false)
             }
-        }
-
-        // Update cursor blink
-        if self.cursor_enabled {
-            self.cursor_time += dt;
-        }
+        } else {
+            (self.text.len() as f32, true)
+        };
 
         // Get visible text
-        let visible_chars = self.char_index.floor() as usize;
+        let visible_chars = char_index.floor() as usize;
         let visible_text = self.text.chars().take(visible_chars).collect::<String>();
 
         // Add cursor if enabled
         let cursor_visible = if self.cursor_enabled {
-            ((self.cursor_time * self.cursor_blink_speed * 2.0) % 2.0) < 1.0
+            ((time * self.cursor_blink_speed * 2.0) % 2.0) < 1.0
         } else {
             false
         };
 
-        let display_text = if cursor_visible && !self.is_complete() {
+        let display_text = if cursor_visible && !is_complete {
             format!("{}|", visible_text)
         } else if cursor_visible && self.loop_mode {
             format!("{}|", visible_text)
@@ -130,7 +125,7 @@ impl Typewriter {
         };
 
         // Request repaint
-        if !self.is_complete() || (self.loop_mode && self.is_complete()) || cursor_visible {
+        if !is_complete || self.loop_mode || cursor_visible {
             ui.ctx().request_repaint();
         }
 
@@ -143,11 +138,10 @@ impl Typewriter {
 pub struct WordTypewriter {
     text: String,
     words: Vec<String>,
-    word_index: f32,
     speed: f32, // words per second
     loop_mode: bool,
     delay_before_loop: f32,
-    delay_timer: f32,
+    start_time: Option<f32>,
 }
 
 impl WordTypewriter {
@@ -159,11 +153,10 @@ impl WordTypewriter {
         Self {
             text,
             words,
-            word_index: 0.0,
             speed: 4.0,
             loop_mode: false,
             delay_before_loop: 2.0,
-            delay_timer: 0.0,
+            start_time: None,
         }
     }
 
@@ -187,13 +180,7 @@ impl WordTypewriter {
 
     /// Reset the animation
     pub fn reset(&mut self) {
-        self.word_index = 0.0;
-        self.delay_timer = 0.0;
-    }
-
-    /// Check if typing is complete
-    pub fn is_complete(&self) -> bool {
-        self.word_index >= self.words.len() as f32
+        self.start_time = None;
     }
 
     /// Show the word typewriter
@@ -206,24 +193,35 @@ impl WordTypewriter {
     where
         F: FnOnce(String) -> RichText,
     {
-        let dt = ui.input(|i| i.stable_dt);
+        let time = ui.input(|i| i.time) as f32;
 
-        // Update animation
-        if !self.is_complete() {
-            self.word_index += dt * self.speed;
-            if self.word_index > self.words.len() as f32 {
-                self.word_index = self.words.len() as f32;
-                self.delay_timer = 0.0;
-            }
-        } else if self.loop_mode {
-            self.delay_timer += dt;
-            if self.delay_timer >= self.delay_before_loop {
-                self.reset();
-            }
+        // Initialize start time on first show
+        if self.start_time.is_none() {
+            self.start_time = Some(time);
         }
 
+        let elapsed = time - self.start_time.unwrap();
+        let typing_duration = self.words.len() as f32 / self.speed;
+
+        // Calculate word index
+        let (word_index, is_complete) = if elapsed < typing_duration {
+            (elapsed * self.speed, false)
+        } else if self.loop_mode {
+            // Check if in delay period
+            let delay_end = typing_duration + self.delay_before_loop;
+            if elapsed < delay_end {
+                (self.words.len() as f32, true)
+            } else {
+                // Reset for next loop
+                self.start_time = Some(time);
+                (0.0, false)
+            }
+        } else {
+            (self.words.len() as f32, true)
+        };
+
         // Get visible words
-        let visible_count = self.word_index.floor() as usize;
+        let visible_count = word_index.floor() as usize;
         let visible_text = self
             .words
             .iter()
@@ -233,7 +231,7 @@ impl WordTypewriter {
             .join(" ");
 
         // Request repaint
-        if !self.is_complete() || (self.loop_mode && self.is_complete()) {
+        if !is_complete || self.loop_mode {
             ui.ctx().request_repaint();
         }
 
@@ -269,7 +267,7 @@ mod tests {
     #[test]
     fn test_typewriter_creation() {
         let tw = Typewriter::new("Hello");
-        assert_eq!(tw.char_index, 0.0);
+        assert_eq!(tw.start_time, None);
         assert_eq!(tw.text, "Hello");
     }
 

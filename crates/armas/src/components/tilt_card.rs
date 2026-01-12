@@ -10,6 +10,7 @@ use egui::{Color32, Pos2, Response, Sense, Ui, Vec2};
 ///
 /// Creates a card that tilts based on mouse position, with optional
 /// glare effect that moves with the tilt.
+#[derive(Clone)]
 pub struct TiltCard {
     width: f32,
     height: f32,
@@ -30,13 +31,22 @@ impl TiltCard {
     /// Create a new tilt card with theme-based defaults
     pub fn new(width: f32, height: f32, theme: &Theme) -> Self {
         let outline = theme.outline_variant();
+        let primary = theme.primary();
+        // Use primary color with low alpha over surface for a lighter, themed background
+        let surface = theme.surface();
+        let background = Color32::from_rgba_unmultiplied(
+            ((surface.r() as u16 * 200 + primary.r() as u16 * 55) / 255) as u8,
+            ((surface.g() as u16 * 200 + primary.g() as u16 * 55) / 255) as u8,
+            ((surface.b() as u16 * 200 + primary.b() as u16 * 55) / 255) as u8,
+            255,
+        );
         Self {
             width,
             height,
             tilt_strength: 0.15,
             glare_enabled: true,
             corner_radius: 12.0,
-            background: theme.surface(),
+            background,
             border_color: Some(Color32::from_rgba_unmultiplied(
                 outline.r(),
                 outline.g(),

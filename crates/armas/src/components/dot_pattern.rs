@@ -27,10 +27,11 @@ pub struct DotPattern {
 impl DotPattern {
     /// Create a new dot pattern with theme-based defaults
     pub fn new(width: f32, height: f32, _theme: &Theme) -> Self {
+        // Subtle but visible: slightly lighter than Aceternity
         Self {
             spacing: 20.0,
-            dot_radius: 1.5,
-            color: Color32::from_gray(120), // Use gray instead of theme color for visibility
+            dot_radius: 0.8, // Small but visible
+            color: Color32::from_rgb(80, 80, 80), // Slightly lighter than #404040
             fade_distance: 0.0,
             glow: false,
             width,
@@ -137,7 +138,7 @@ mod tests {
         let theme = Theme::default();
         let pattern = DotPattern::new(800.0, 600.0, &theme);
         assert_eq!(pattern.spacing, 20.0);
-        assert_eq!(pattern.dot_radius, 1.5);
+        assert_eq!(pattern.dot_radius, 0.8);
     }
 
     #[test]

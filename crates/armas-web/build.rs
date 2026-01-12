@@ -12,7 +12,7 @@ fn main() {
     }
 
     // Define section order
-    let section_order = vec!["getting_started", "components", "effects", "examples"];
+    let section_order = vec!["introduction", "installation", "layout", "components", "effects"];
 
     let mut sections: Vec<(String, Vec<(String, PathBuf)>)> = Vec::new();
 

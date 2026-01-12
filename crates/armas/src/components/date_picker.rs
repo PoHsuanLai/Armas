@@ -3,8 +3,7 @@
 //! Calendar date selection with input field and popover
 //! Modern design inspired by shadcn/ui with refined styling
 
-use crate::ext::ArmasContextExt;
-use crate::{Input, Popover, PopoverPosition};
+use crate::{Input, Popover, PopoverPosition, Theme};
 use egui::{vec2, Color32, Id, Sense, Ui};
 
 /// A date value (year, month, day)
@@ -154,6 +153,7 @@ impl Date {
 ///
 /// date_picker.show(ui, &mut selected_date);
 /// ```
+#[derive(Clone)]
 pub struct DatePicker {
     _id: Id,
     popover: Popover,
@@ -197,14 +197,29 @@ impl DatePicker {
     }
 
     /// Show the date picker
-    pub fn show(&mut self, ui: &mut Ui, selected_date: &mut Option<Date>) -> DatePickerResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(&mut self, ctx: &egui::Context, theme: &Theme, ui: &mut Ui, selected_date: &mut Option<Date>) -> DatePickerResponse {
         let mut response = DatePickerResponse { changed: false };
+
+        // Load internal state from context
+        let state_id = self._id.with("state");
+        let (is_open, viewing_year, viewing_month, mut input_text) = ctx.data(|d| {
+            d.get_temp::<(bool, i32, u32, String)>(state_id)
+                .unwrap_or_else(|| {
+                    let today = Date::today();
+                    (false, today.year, today.month, String::new())
+                })
+        });
 
         // Update input text from selected date
         if let Some(date) = selected_date {
-            self.input_text = date.format();
+            input_text = date.format();
         }
+
+        // Apply loaded state to self
+        self.is_open = is_open;
+        self.viewing_year = viewing_year;
+        self.viewing_month = viewing_month;
+        self.input_text = input_text.clone();
 
         // Label
         if let Some(label) = &self.label {
@@ -252,7 +267,7 @@ impl DatePicker {
         // Set popover open state externally
         self.popover.set_open(self.is_open);
 
-        self.popover.show(ui.ctx(), &theme, input_rect, |ui| {
+        let popover_response = self.popover.show(ctx, theme, input_rect, |ui| {
             ui.vertical(|ui| {
                 ui.spacing_mut().item_spacing.y = 8.0;
                 ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
@@ -662,6 +677,11 @@ impl DatePicker {
             });
         });
 
+        // Handle clicking outside the popover to close
+        if popover_response.clicked_outside || popover_response.should_close {
+            self.is_open = false;
+        }
+
         // Handle month navigation
         if prev_month {
             self.previous_month();
@@ -693,6 +713,11 @@ impl DatePicker {
             self.is_open = false;
             response.changed = true;
         }
+
+        // Save internal state back to context
+        ctx.data_mut(|d| {
+            d.insert_temp(state_id, (self.is_open, self.viewing_year, self.viewing_month, self.input_text.clone()));
+        });
 
         response
     }

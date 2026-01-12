@@ -2,11 +2,10 @@
 //!
 //! macOS/VS Code style command palette with fuzzy search
 
+use crate::animation::{Animation, EasingFunction};
 use crate::ext::ArmasContextExt;
-use egui::{
-    vec2, Align, Color32, CornerRadius, Key, Layout, Modifiers, Sense, Stroke, StrokeKind,
-    TextEdit, Ui,
-};
+use crate::{Card, Input};
+use egui::{vec2, Align2, Color32, Key, Modifiers, Sense, Ui};
 
 /// A command that can be executed
 #[derive(Clone, Debug)]
@@ -65,6 +64,7 @@ impl Command {
 }
 
 /// Command menu state
+#[derive(Clone)]
 pub struct CommandMenu {
     commands: Vec<Command>,
     is_open: bool,
@@ -73,6 +73,7 @@ pub struct CommandMenu {
     filtered_commands: Vec<usize>,
     trigger_key: Key,
     trigger_modifiers: Modifiers,
+    fade_animation: Animation<f32>,
 }
 
 impl CommandMenu {
@@ -88,6 +89,7 @@ impl CommandMenu {
             filtered_commands,
             trigger_key: Key::K,
             trigger_modifiers: Modifiers::COMMAND,
+            fade_animation: Animation::new(0.0, 1.0, 0.15).with_easing(EasingFunction::CubicOut),
         }
     }
 
@@ -104,6 +106,7 @@ impl CommandMenu {
         self.search_text.clear();
         self.selected_index = 0;
         self.update_filtered_commands();
+        self.fade_animation.start();
     }
 
     /// Close the command menu
@@ -111,6 +114,7 @@ impl CommandMenu {
         self.is_open = false;
         self.search_text.clear();
         self.selected_index = 0;
+        self.fade_animation.reset();
     }
 
     /// Toggle the command menu
@@ -178,61 +182,198 @@ impl CommandMenu {
             return CommandMenuResponse { executed_command };
         }
 
-        // Overlay background
-        let screen_rect = ui.ctx().viewport_rect();
+        // Update animation
+        let dt = ui.ctx().input(|i| i.unstable_dt);
+        self.fade_animation.update(dt);
 
-        ui.painter().rect_filled(
-            screen_rect,
-            CornerRadius::ZERO,
-            Color32::from_rgba_unmultiplied(0, 0, 0, 180), // Keep black overlay for modal
-        );
-
-        // Command menu panel
-        let panel_width = 600.0;
-        let panel_max_height = 400.0;
-
-        let panel_pos = screen_rect.center() - vec2(panel_width / 2.0, panel_max_height / 2.0);
-        let panel_rect = egui::Rect::from_min_size(panel_pos, vec2(panel_width, panel_max_height));
-
-        // Background - use theme colors
-        ui.painter().rect_filled(
-            panel_rect,
-            CornerRadius::same(theme.spacing.corner_radius as u8),
-            theme.surface(),
-        );
-        ui.painter().rect_stroke(
-            panel_rect,
-            CornerRadius::same(theme.spacing.corner_radius as u8),
-            Stroke::new(1.0, theme.outline()),
-            StrokeKind::Outside,
-        );
-
-        // Create a UI region for the panel
-        let mut panel_ui = ui.new_child(
-            egui::UiBuilder::new()
-                .max_rect(panel_rect)
-                .layout(Layout::top_down(Align::LEFT)),
-        );
-
-        panel_ui.style_mut().spacing.item_spacing = vec2(0.0, 0.0);
-
-        // Search input
-        let search_response = panel_ui.add_sized(
-            vec2(panel_width - 20.0, 40.0),
-            TextEdit::singleline(&mut self.search_text)
-                .hint_text("🔍 Type to search commands...")
-                .font(egui::TextStyle::Body)
-                .frame(false),
-        );
-
-        // Request focus on search input when opened
-        if search_response.changed() {
-            self.update_filtered_commands();
+        if self.fade_animation.is_running() {
+            ui.ctx().request_repaint();
         }
 
-        panel_ui.add_space(theme.spacing.xs);
-        panel_ui.separator();
-        panel_ui.add_space(theme.spacing.xs);
+        let screen_rect = ui.ctx().viewport_rect();
+        let eased = self.fade_animation.value();
+
+        // Draw backdrop using Area
+        let backdrop_alpha = (eased * 180.0) as u8;
+        let backdrop_color = Color32::from_rgba_unmultiplied(0, 0, 0, backdrop_alpha);
+
+        egui::Area::new(ui.id().with("command_menu_backdrop"))
+            .order(egui::Order::Foreground)
+            .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+            .show(ui.ctx(), |ui| {
+                let backdrop_response = ui.allocate_response(screen_rect.size(), Sense::click());
+                ui.painter().rect_filled(screen_rect, 0.0, backdrop_color);
+
+                // Click backdrop to close
+                if backdrop_response.clicked() {
+                    should_close = true;
+                }
+            });
+
+        // Draw modal panel using Area
+        let panel_width = 600.0;
+        let panel_height = 400.0;
+
+        egui::Area::new(ui.id().with("command_menu_panel"))
+            .order(egui::Order::Foreground)
+            .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+            .show(ui.ctx(), |ui| {
+                let panel_rect =
+                    egui::Rect::from_center_size(screen_rect.center(), vec2(panel_width, panel_height));
+
+                ui.scope_builder(egui::UiBuilder::new().max_rect(panel_rect), |ui| {
+                    // Use Card component for consistent styling with secondary border
+                    Card::new()
+                        .stroke(theme.secondary())
+                        .corner_radius(12.0)
+                        .inner_margin(0.0)
+                        .elevation(3)
+                        .show(ui, &theme, |ui| {
+                            ui.vertical(|ui| {
+                                ui.spacing_mut().item_spacing.y = 0.0;
+
+                                // Search input with padding
+                                ui.add_space(theme.spacing.md);
+                                ui.horizontal(|ui| {
+                                    ui.add_space(theme.spacing.md);
+
+                                    let search_response = Input::new("Type to search commands...")
+                                        .with_left_icon("🔍")
+                                        .with_width(panel_width - theme.spacing.md * 2.0)
+                                        .show(ui, &mut self.search_text);
+
+                                    if search_response.changed() {
+                                        self.update_filtered_commands();
+                                    }
+
+                                    // Auto-focus search input
+                                    search_response.request_focus();
+
+                                    ui.add_space(theme.spacing.md);
+                                });
+                                ui.add_space(theme.spacing.sm);
+
+                                // Separator
+                                ui.separator();
+
+                                // Command list with scroll area
+                                egui::ScrollArea::vertical()
+                                    .max_height(panel_height - 100.0)
+                                    .show(ui, |ui| {
+                                        ui.spacing_mut().item_spacing.y = 2.0;
+
+                                        if self.filtered_commands.is_empty() {
+                                            ui.add_space(theme.spacing.xl);
+                                            ui.centered_and_justified(|ui| {
+                                                ui.label(
+                                                    egui::RichText::new("No commands found")
+                                                        .color(theme.on_surface_variant())
+                                                        .size(14.0),
+                                                );
+                                            });
+                                        } else {
+                                            for (display_idx, &cmd_idx) in
+                                                self.filtered_commands.iter().enumerate()
+                                            {
+                                                let command = &self.commands[cmd_idx];
+                                                let is_selected = display_idx == self.selected_index;
+
+                                                let item_height = if command.description.is_some() {
+                                                    56.0
+                                                } else {
+                                                    40.0
+                                                };
+
+                                                let (rect, response) = ui.allocate_exact_size(
+                                                    vec2(ui.available_width(), item_height),
+                                                    Sense::click(),
+                                                );
+
+                                                // Background highlighting - use subtle hover style
+                                                if is_selected || response.hovered() {
+                                                    ui.painter().rect_filled(
+                                                        rect,
+                                                        theme.spacing.corner_radius,
+                                                        theme.hover(),
+                                                    );
+                                                }
+
+                                                // Content
+                                                let content_rect = rect.shrink2(vec2(
+                                                    theme.spacing.md,
+                                                    theme.spacing.sm,
+                                                ));
+
+                                                let mut cursor_x = content_rect.min.x;
+
+                                                // Icon
+                                                if let Some(icon) = &command.icon {
+                                                    ui.painter().text(
+                                                        egui::pos2(cursor_x, content_rect.center().y),
+                                                        Align2::LEFT_CENTER,
+                                                        icon,
+                                                        egui::FontId::proportional(18.0),
+                                                        theme.on_surface(),
+                                                    );
+                                                    cursor_x += 28.0;
+                                                }
+
+                                                // Name
+                                                let name_y = if command.description.is_some() {
+                                                    content_rect.min.y + 4.0
+                                                } else {
+                                                    content_rect.center().y
+                                                };
+
+                                                ui.painter().text(
+                                                    egui::pos2(cursor_x, name_y),
+                                                    Align2::LEFT_TOP,
+                                                    &command.name,
+                                                    egui::FontId::proportional(15.0),
+                                                    theme.on_surface(),
+                                                );
+
+                                                // Description
+                                                if let Some(desc) = &command.description {
+                                                    ui.painter().text(
+                                                        egui::pos2(cursor_x, name_y + 20.0),
+                                                        Align2::LEFT_TOP,
+                                                        desc,
+                                                        egui::FontId::proportional(12.0),
+                                                        theme.on_surface_variant(),
+                                                    );
+                                                }
+
+                                                // Shortcut
+                                                if let Some(shortcut) = &command.shortcut {
+                                                    ui.painter().text(
+                                                        egui::pos2(
+                                                            content_rect.max.x,
+                                                            content_rect.center().y,
+                                                        ),
+                                                        Align2::RIGHT_CENTER,
+                                                        shortcut,
+                                                        egui::FontId::monospace(11.0),
+                                                        theme.on_surface_variant(),
+                                                    );
+                                                }
+
+                                                // Handle interaction
+                                                if response.clicked() {
+                                                    executed_command = Some(command.id.clone());
+                                                    should_close = true;
+                                                } else if response.hovered() {
+                                                    self.selected_index = display_idx;
+                                                }
+                                            }
+                                        }
+
+                                        ui.add_space(theme.spacing.sm);
+                                    });
+                            });
+                        });
+                });
+            });
 
         // Handle keyboard navigation
         ui.input(|i| {
@@ -256,112 +397,6 @@ impl CommandMenu {
                 should_close = true;
             }
         });
-
-        // Command list
-        let max_visible = 8;
-        let visible_count = self.filtered_commands.len().min(max_visible);
-
-        if self.filtered_commands.is_empty() {
-            panel_ui.add_space(theme.spacing.lg);
-            panel_ui.centered_and_justified(|ui| {
-                ui.label(
-                    egui::RichText::new("No commands found")
-                        .color(theme.on_surface_variant())
-                        .size(14.0),
-                );
-            });
-        } else {
-            for (display_idx, &cmd_idx) in self
-                .filtered_commands
-                .iter()
-                .enumerate()
-                .take(visible_count)
-            {
-                let command = &self.commands[cmd_idx];
-                let is_selected = display_idx == self.selected_index;
-
-                let item_height = 50.0;
-                let (rect, response) = panel_ui
-                    .allocate_exact_size(vec2(panel_width - 20.0, item_height), Sense::click());
-
-                // Background - use theme colors
-                if is_selected {
-                    let primary = theme.primary();
-                    ui.painter().rect_filled(
-                        rect,
-                        CornerRadius::same(theme.spacing.xs as u8),
-                        Color32::from_rgba_unmultiplied(primary.r(), primary.g(), primary.b(), 60),
-                    );
-                } else if response.hovered() {
-                    ui.painter().rect_filled(
-                        rect,
-                        CornerRadius::same(theme.spacing.xs as u8),
-                        theme.hover(),
-                    );
-                }
-
-                // Icon
-                let mut cursor_x = rect.min.x + 10.0;
-                if let Some(icon) = &command.icon {
-                    ui.painter().text(
-                        egui::pos2(cursor_x, rect.center().y),
-                        egui::Align2::LEFT_CENTER,
-                        icon,
-                        egui::FontId::proportional(20.0),
-                        theme.on_surface(),
-                    );
-                    cursor_x += 30.0;
-                }
-
-                // Name and description
-                let text_y = if command.description.is_some() {
-                    rect.min.y + 12.0
-                } else {
-                    rect.center().y
-                };
-
-                ui.painter().text(
-                    egui::pos2(cursor_x, text_y),
-                    egui::Align2::LEFT_TOP,
-                    &command.name,
-                    egui::FontId::proportional(16.0),
-                    theme.on_surface(),
-                );
-
-                if let Some(desc) = &command.description {
-                    ui.painter().text(
-                        egui::pos2(cursor_x, text_y + 20.0),
-                        egui::Align2::LEFT_TOP,
-                        desc,
-                        egui::FontId::proportional(12.0),
-                        theme.on_surface_variant(),
-                    );
-                }
-
-                // Shortcut
-                if let Some(shortcut) = &command.shortcut {
-                    ui.painter().text(
-                        egui::pos2(rect.max.x - 10.0, rect.center().y),
-                        egui::Align2::RIGHT_CENTER,
-                        shortcut,
-                        egui::FontId::monospace(12.0),
-                        theme.on_surface_variant(),
-                    );
-                }
-
-                // Handle click
-                if response.clicked() {
-                    executed_command = Some(command.id.clone());
-                    should_close = true;
-                } else if response.hovered() {
-                    self.selected_index = display_idx;
-                }
-            }
-        }
-
-        // Request focus for keyboard input
-        search_response.request_focus();
-        ui.ctx().request_repaint();
 
         // Close if requested
         if should_close {

@@ -17,9 +17,6 @@ pub struct VortexBackground {
     rotation_speed: f32,
     radius_variation: f32,
     particle_size: f32,
-
-    // Internal state
-    time: f32,
 }
 
 impl VortexBackground {
@@ -38,7 +35,6 @@ impl VortexBackground {
             rotation_speed: 0.3,
             radius_variation: 0.2,
             particle_size: 2.0,
-            time: 0.0,
         }
     }
 
@@ -82,8 +78,7 @@ impl VortexBackground {
 
     /// Show the vortex background
     pub fn show(&mut self, ui: &mut Ui) -> Response {
-        let dt = ui.input(|i| i.stable_dt);
-        self.time += dt;
+        let time = ui.input(|i| i.time) as f32;
         ui.ctx().request_repaint();
 
         let (response, painter) =
@@ -100,7 +95,7 @@ impl VortexBackground {
                 let base_radius = max_radius * ring_t;
 
                 // Each ring rotates at different speeds
-                let ring_rotation = self.time * self.rotation_speed * (1.0 + ring as f32 * 0.2);
+                let ring_rotation = time * self.rotation_speed * (1.0 + ring as f32 * 0.2);
 
                 // Color for this ring
                 let color_index = ring % self.colors.len();
@@ -112,7 +107,7 @@ impl VortexBackground {
 
                     // Add radius variation based on time and angle for wobble effect
                     let radius_wobble =
-                        (self.time * 2.0 + angle * 3.0).sin() * self.radius_variation;
+                        (time * 2.0 + angle * 3.0).sin() * self.radius_variation;
                     let radius = base_radius * (1.0 + radius_wobble * 0.3);
 
                     // Calculate particle position
@@ -121,7 +116,7 @@ impl VortexBackground {
                     let pos = Pos2::new(x, y);
 
                     // Fade particles based on their position in the cycle
-                    let fade = ((angle + self.time).sin() * 0.3 + 0.7).clamp(0.3, 1.0);
+                    let fade = ((angle + time).sin() * 0.3 + 0.7).clamp(0.3, 1.0);
                     let particle_color = Color32::from_rgba_unmultiplied(
                         color.r(),
                         color.g(),
@@ -155,11 +150,11 @@ impl VortexBackground {
                             + ring_rotation;
 
                         let radius_wobble1 =
-                            (self.time * 2.0 + angle1 * 3.0).sin() * self.radius_variation;
+                            (time * 2.0 + angle1 * 3.0).sin() * self.radius_variation;
                         let radius1 = base_radius * (1.0 + radius_wobble1 * 0.3);
 
                         let radius_wobble2 =
-                            (self.time * 2.0 + angle2 * 3.0).sin() * self.radius_variation;
+                            (time * 2.0 + angle2 * 3.0).sin() * self.radius_variation;
                         let radius2 = base_radius * (1.0 + radius_wobble2 * 0.3);
 
                         let pos1 = Pos2::new(
@@ -190,7 +185,7 @@ impl VortexBackground {
                 let radius = max_radius * 0.1 * (1.0 - t);
                 let alpha = ((1.0 - t) * 40.0) as u8;
 
-                let color_index = (self.time * 2.0) as usize % self.colors.len();
+                let color_index = (time * 2.0) as usize % self.colors.len();
                 let color = self.colors[color_index];
 
                 let glow_color =

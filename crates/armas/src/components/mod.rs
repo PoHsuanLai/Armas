@@ -5,12 +5,9 @@
 
 pub mod accordion;
 pub mod alert;
-pub mod animated_beam;
 pub mod aurora;
 pub mod avatar;
-pub mod background_beams;
 pub mod badge;
-pub mod bento_grid;
 pub mod breadcrumbs;
 pub mod button;
 pub mod card;
@@ -20,9 +17,7 @@ pub mod date_picker;
 pub mod dot_pattern;
 pub mod drawer;
 pub mod fader;
-pub mod feature_grid;
 pub mod flip_words;
-pub mod floating_dock;
 pub mod floating_navbar;
 pub mod focus_cards;
 pub mod glass_panel;
@@ -33,7 +28,6 @@ pub mod grid_pattern;
 pub mod hover_card;
 pub mod infinite_moving_cards;
 pub mod input;
-pub mod lamp;
 pub mod loading;
 pub mod menu;
 pub mod meteor;
@@ -65,7 +59,6 @@ pub mod toggle;
 pub mod tooltip;
 pub mod typewriter;
 pub mod vortex;
-pub mod wavy_background;
 pub mod wobble_card;
 
 // Re-exports
@@ -74,12 +67,9 @@ pub use alert::{
     alert, alert_error, alert_info, alert_success, alert_warning, Alert, AlertResponse,
     AlertVariant,
 };
-pub use animated_beam::{AnimatedBeam, AnimatedBeams, BeamLoopMode, PathPoint};
 pub use aurora::AuroraBackground;
 pub use avatar::{Avatar, AvatarShape, AvatarSize};
-pub use background_beams::BackgroundBeams;
 pub use badge::{Badge, BadgeColor, BadgeVariant, NotificationBadge};
-pub use bento_grid::{BentoGrid, BentoItem, GridSpan};
 pub use breadcrumbs::{BreadcrumbItem, Breadcrumbs, BreadcrumbsResponse};
 pub use button::{
     BrutalButton, Button, ButtonVariant, FigmaButton, InvertButton, ShimmerButton, SimpleButton,
@@ -92,9 +82,7 @@ pub use date_picker::{Date, DatePicker, DatePickerResponse};
 pub use dot_pattern::DotPattern;
 pub use drawer::{Drawer, DrawerPosition, DrawerResponse, DrawerSize};
 pub use fader::{Fader, FaderStrip};
-pub use feature_grid::{FeatureGrid, FeatureItem};
 pub use flip_words::{FlipStyle, FlipWords};
-pub use floating_dock::{DockItem, DockPosition, DockResponse, FloatingDock};
 pub use floating_navbar::{FloatingNavbar, NavItem, NavbarPosition, NavbarResponse};
 pub use focus_cards::{FocusCard, FocusCardResponse, FocusCards};
 pub use glass_panel::{GlassPanel, GlassPanelResponse};
@@ -105,7 +93,6 @@ pub use grid_pattern::GridPattern;
 pub use hover_card::HoverCard;
 pub use infinite_moving_cards::{InfiniteMovingCards, MovingCard, ScrollSpeed};
 pub use input::{Input, InputState, InputVariant, SearchInput};
-pub use lamp::LampEffect;
 pub use loading::{CircularProgress, LoadingDots, Skeleton, Spinner};
 pub use menu::{Menu, MenuItem, MenuResponse};
 pub use meteor::MeteorShower;
@@ -139,5 +126,4 @@ pub use toggle::{
 pub use tooltip::{tooltip, tooltip_with, Tooltip, TooltipPosition};
 pub use typewriter::{Typewriter, WordTypewriter};
 pub use vortex::VortexBackground;
-pub use wavy_background::WavyBackground;
 pub use wobble_card::WobbleCard;

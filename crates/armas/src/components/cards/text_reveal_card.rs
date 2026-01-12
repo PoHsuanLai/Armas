@@ -2,7 +2,6 @@
 //!
 //! Card component that reveals text on mouse hover with clip-path effect
 
-use crate::animation::{Animation, EasingFunction};
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Text reveal card component
@@ -17,11 +16,13 @@ pub struct TextRevealCard {
     border_color: Color32,
     text_color: Color32,
     reveal_color: Color32,
+    animation_duration: f32,
 
     // Animation state
-    reveal_animation: Animation<f32>,
     mouse_x: f32,
     is_hovered: bool,
+    unhover_start_time: Option<f32>,
+    unhover_start_value: f32,
 }
 
 impl TextRevealCard {
@@ -36,9 +37,11 @@ impl TextRevealCard {
             border_color: Color32::from_rgba_unmultiplied(255, 255, 255, 20),
             text_color: Color32::from_gray(200),
             reveal_color: Color32::from_rgb(100, 200, 255), // Cyan gradient
-            reveal_animation: Animation::new(0.0, 0.0, 0.4).easing(EasingFunction::EaseOut),
+            animation_duration: 0.4,
             mouse_x: 0.0,
             is_hovered: false,
+            unhover_start_time: None,
+            unhover_start_value: 0.0,
         }
     }
 
@@ -71,34 +74,51 @@ impl TextRevealCard {
         let (rect, response) =
             ui.allocate_exact_size(Vec2::new(self.width, self.height), Sense::hover());
 
-        let dt = ui.input(|i| i.stable_dt);
+        let time = ui.input(|i| i.time) as f32;
 
-        // Track mouse position
-        if response.hovered() {
+        // Calculate reveal percentage
+        let reveal_percentage = if response.hovered() {
             if let Some(hover_pos) = response.hover_pos() {
-                self.is_hovered = true;
+                if !self.is_hovered {
+                    // Just started hovering
+                    self.is_hovered = true;
+                    self.unhover_start_time = None;
+                }
+
                 self.mouse_x = hover_pos.x - rect.left();
-
-                // Calculate width percentage
-                let width_percentage = (self.mouse_x / rect.width()).clamp(0.0, 1.0);
-
-                // Update animation target instantly on hover
-                self.reveal_animation.end = width_percentage;
-                self.reveal_animation.start = width_percentage;
-                self.reveal_animation.elapsed = self.reveal_animation.duration; // instant
+                // Calculate width percentage - instantly follow mouse
+                (self.mouse_x / rect.width()).clamp(0.0, 1.0)
+            } else {
+                0.0
             }
-        } else if self.is_hovered {
-            // Mouse left - animate back to 0
-            self.is_hovered = false;
-            self.reveal_animation.start = self.reveal_animation.value();
-            self.reveal_animation.end = 0.0;
-            self.reveal_animation.elapsed = 0.0;
-            self.reveal_animation.start();
-        }
+        } else {
+            if self.is_hovered {
+                // Mouse just left - start unhover animation
+                self.is_hovered = false;
+                self.unhover_start_time = Some(time);
+                self.unhover_start_value = (self.mouse_x / rect.width()).clamp(0.0, 1.0);
+            }
 
-        // Update animation
-        self.reveal_animation.update(dt);
-        let reveal_percentage = self.reveal_animation.value();
+            // Animate back to 0
+            if let Some(start_time) = self.unhover_start_time {
+                let elapsed = time - start_time;
+                let t = (elapsed / self.animation_duration).min(1.0);
+
+                // Apply ease-out easing
+                let eased_t = 1.0 - (1.0 - t).powi(3);
+
+                let current_value = self.unhover_start_value * (1.0 - eased_t);
+
+                if t >= 1.0 {
+                    self.unhover_start_time = None;
+                    0.0
+                } else {
+                    current_value
+                }
+            } else {
+                0.0
+            }
+        };
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
@@ -178,7 +198,7 @@ impl TextRevealCard {
             }
         }
 
-        if !self.reveal_animation.is_complete() {
+        if self.unhover_start_time.is_some() {
             ui.ctx().request_repaint();
         }
 

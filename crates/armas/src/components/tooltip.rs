@@ -5,7 +5,6 @@
 use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{pos2, vec2, FontId, Rect, Response, Shape, Stroke, StrokeKind, Ui, Vec2};
-use std::time::Instant;
 
 /// Tooltip position relative to the target
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -29,7 +28,7 @@ pub struct Tooltip {
     max_width: f32,
     delay_ms: u64,
     show_arrow: bool,
-    hover_start: Option<Instant>,
+    hover_start: Option<f64>, // egui time in seconds
 }
 
 impl Tooltip {
@@ -75,11 +74,12 @@ impl Tooltip {
     pub fn show(&mut self, ui: &mut Ui, target_response: &Response) -> bool {
         let theme = ui.ctx().armas_theme();
         let is_hovered = target_response.hovered();
+        let current_time = ui.ctx().input(|i| i.time);
 
         // Track hover state
         if is_hovered {
             if self.hover_start.is_none() {
-                self.hover_start = Some(Instant::now());
+                self.hover_start = Some(current_time);
             }
         } else {
             self.hover_start = None;
@@ -88,8 +88,8 @@ impl Tooltip {
 
         // Check if delay has elapsed
         let hover_start = self.hover_start.unwrap();
-        let elapsed = hover_start.elapsed().as_millis() as u64;
-        if elapsed < self.delay_ms {
+        let elapsed_ms = ((current_time - hover_start) * 1000.0) as u64;
+        if elapsed_ms < self.delay_ms {
             ui.ctx().request_repaint();
             return false;
         }

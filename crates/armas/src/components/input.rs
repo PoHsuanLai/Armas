@@ -128,8 +128,14 @@ impl Input {
             *text = stored_text;
         }
 
-        ui.vertical(|ui| {
-            ui.spacing_mut().item_spacing.y = 4.0;
+        // Only use vertical layout if we have label or helper text
+        let has_extras = self.label.is_some() || self.helper_text.is_some();
+
+        let mut render_input = |ui: &mut Ui| {
+            if has_extras {
+                ui.spacing_mut().item_spacing.y = 4.0;
+            }
+
             // Label
             if let Some(label) = &self.label {
                 ui.label(
@@ -279,8 +285,13 @@ impl Input {
             }
 
             response
-        })
-        .inner
+        };
+
+        if has_extras {
+            ui.vertical(render_input).inner
+        } else {
+            render_input(ui)
+        }
     }
 }
 

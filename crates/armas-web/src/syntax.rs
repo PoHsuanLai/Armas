@@ -50,7 +50,7 @@ pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                     &chars[start..pos].iter().collect::<String>(),
                     0.0,
                     TextFormat {
-                        font_id: egui::FontId::monospace(14.0),
+                        font_id: egui::FontId::new(14.0, egui::FontFamily::Name("FiraMono".into())),
                         color: default_color,
                         ..Default::default()
                     },
@@ -64,7 +64,7 @@ pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                     &chars[pos..].iter().collect::<String>(),
                     0.0,
                     TextFormat {
-                        font_id: egui::FontId::monospace(14.0),
+                        font_id: egui::FontId::new(14.0, egui::FontFamily::Name("FiraMono".into())),
                         color: comment_color,
                         ..Default::default()
                     },
@@ -90,7 +90,7 @@ pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                     &chars[start..pos].iter().collect::<String>(),
                     0.0,
                     TextFormat {
-                        font_id: egui::FontId::monospace(14.0),
+                        font_id: egui::FontId::new(14.0, egui::FontFamily::Name("FiraMono".into())),
                         color: string_color,
                         ..Default::default()
                     },
@@ -110,7 +110,7 @@ pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                     &chars[start..pos].iter().collect::<String>(),
                     0.0,
                     TextFormat {
-                        font_id: egui::FontId::monospace(14.0),
+                        font_id: egui::FontId::new(14.0, egui::FontFamily::Name("FiraMono".into())),
                         color: number_color,
                         ..Default::default()
                     },
@@ -142,7 +142,7 @@ pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                     &word,
                     0.0,
                     TextFormat {
-                        font_id: egui::FontId::monospace(14.0),
+                        font_id: egui::FontId::new(14.0, egui::FontFamily::Name("FiraMono".into())),
                         color,
                         ..Default::default()
                     },
@@ -156,7 +156,7 @@ pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                 &c,
                 0.0,
                 TextFormat {
-                    font_id: egui::FontId::monospace(14.0),
+                    font_id: egui::FontId::proportional(14.0),
                     color: default_color,
                     ..Default::default()
                 },
@@ -170,7 +170,7 @@ pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                 "\n",
                 0.0,
                 TextFormat {
-                    font_id: egui::FontId::monospace(14.0),
+                    font_id: egui::FontId::proportional(14.0),
                     color: default_color,
                     ..Default::default()
                 },
@@ -202,7 +202,7 @@ pub fn highlight_toml_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                 line,
                 0.0,
                 TextFormat {
-                    font_id: egui::FontId::monospace(14.0),
+                    font_id: egui::FontId::proportional(14.0),
                     color: comment_color,
                     ..Default::default()
                 },
@@ -214,7 +214,7 @@ pub fn highlight_toml_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                 line,
                 0.0,
                 TextFormat {
-                    font_id: egui::FontId::monospace(14.0),
+                    font_id: egui::FontId::proportional(14.0),
                     color: section_color,
                     ..Default::default()
                 },
@@ -227,7 +227,7 @@ pub fn highlight_toml_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                 &line[..eq_pos],
                 0.0,
                 TextFormat {
-                    font_id: egui::FontId::monospace(14.0),
+                    font_id: egui::FontId::proportional(14.0),
                     color: key_color,
                     ..Default::default()
                 },
@@ -238,7 +238,7 @@ pub fn highlight_toml_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                 "=",
                 0.0,
                 TextFormat {
-                    font_id: egui::FontId::monospace(14.0),
+                    font_id: egui::FontId::proportional(14.0),
                     color: default_color,
                     ..Default::default()
                 },
@@ -265,7 +265,7 @@ pub fn highlight_toml_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                 &line[eq_pos + 1..],
                 0.0,
                 TextFormat {
-                    font_id: egui::FontId::monospace(14.0),
+                    font_id: egui::FontId::proportional(14.0),
                     color: value_color,
                     ..Default::default()
                 },
@@ -277,7 +277,7 @@ pub fn highlight_toml_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                 line,
                 0.0,
                 TextFormat {
-                    font_id: egui::FontId::monospace(14.0),
+                    font_id: egui::FontId::proportional(14.0),
                     color: default_color,
                     ..Default::default()
                 },
@@ -290,7 +290,7 @@ pub fn highlight_toml_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
                 "\n",
                 0.0,
                 TextFormat {
-                    font_id: egui::FontId::monospace(14.0),
+                    font_id: egui::FontId::proportional(14.0),
                     color: default_color,
                     ..Default::default()
                 },

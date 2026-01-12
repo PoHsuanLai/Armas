@@ -12,7 +12,6 @@ pub struct GradientText {
     colors: Vec<Color32>,
     animated: bool,
     animation_speed: f32,
-    animation_offset: f32,
     per_character: bool,
     font_id: Option<FontId>,
 }
@@ -25,7 +24,6 @@ impl GradientText {
             colors,
             animated: false,
             animation_speed: 1.0,
-            animation_offset: 0.0,
             per_character: true,
             font_id: None,
         }
@@ -82,15 +80,14 @@ impl GradientText {
             return ui.label(&self.text);
         }
 
-        let dt = ui.input(|i| i.stable_dt);
+        let time = ui.input(|i| i.time) as f32;
 
-        // Update animation
-        if self.animated {
-            self.animation_offset += dt * self.animation_speed;
-            if self.animation_offset > 1.0 {
-                self.animation_offset -= 1.0;
-            }
-        }
+        // Calculate animation offset from absolute time
+        let animation_offset = if self.animated {
+            (time * self.animation_speed) % 1.0
+        } else {
+            0.0
+        };
 
         // Get font
         let font_id = self
@@ -126,7 +123,7 @@ impl GradientText {
                     let x_offset = prefix_galley.size().x;
 
                     // Calculate color for this character
-                    let t = (i as f32 / char_count.max(1) as f32 + self.animation_offset) % 1.0;
+                    let t = (i as f32 / char_count.max(1) as f32 + animation_offset) % 1.0;
                     let color = interpolate_gradient(&self.colors, t);
 
                     // Draw character
@@ -137,7 +134,7 @@ impl GradientText {
                 // Smooth gradient across the entire text
                 // Simplified: just use average color for now
                 // A proper implementation would use mesh with gradient shader
-                let t = self.animation_offset % 1.0;
+                let t = animation_offset % 1.0;
                 let color = interpolate_gradient(&self.colors, t);
 
                 let galley =

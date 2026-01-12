@@ -5,20 +5,34 @@ Floating panels anchored to elements with smooth animations and automatic positi
 ## Basic Usage
 
 ```demo
-let mut popover = Popover::new("my_popover");
+let popover_id = ui.id().with("popover_basic");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("my_popover")
+    })
+});
+
 let state_id = ui.id().with("popover_open");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let button_response = ui.button("Click me");
+let button_response = Button::new("Click me").show(ui);
 if button_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, button_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
     ui.label("Popover content");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
 
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ## Colors
@@ -39,14 +53,18 @@ let state_id = ui.id().with("popover_open_primary");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let button_response = ui.button("Primary");
+let button_response = Button::new("Primary").show(ui);
 if button_response.clicked() {
     is_open = !is_open;
 }
 popover = popover.open(is_open);
-popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
+let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
     ui.label("Primary color theme");
 });
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
 ui.ctx().data_mut(|d| {
     d.insert_temp(state_id, is_open);
     d.insert_temp(popover_id, popover);
@@ -67,14 +85,18 @@ let state_id = ui.id().with("popover_open_success");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let button_response = ui.button("Success");
+let button_response = Button::new("Success").show(ui);
 if button_response.clicked() {
     is_open = !is_open;
 }
 popover = popover.open(is_open);
-popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
+let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
     ui.label("Success color theme");
 });
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
 ui.ctx().data_mut(|d| {
     d.insert_temp(state_id, is_open);
     d.insert_temp(popover_id, popover);
@@ -95,14 +117,18 @@ let state_id = ui.id().with("popover_open_warning");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let button_response = ui.button("Warning");
+let button_response = Button::new("Warning").show(ui);
 if button_response.clicked() {
     is_open = !is_open;
 }
 popover = popover.open(is_open);
-popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
+let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
     ui.label("Warning color theme");
 });
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
 ui.ctx().data_mut(|d| {
     d.insert_temp(state_id, is_open);
     d.insert_temp(popover_id, popover);
@@ -123,14 +149,18 @@ let state_id = ui.id().with("popover_open_error");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let button_response = ui.button("Error");
+let button_response = Button::new("Error").show(ui);
 if button_response.clicked() {
     is_open = !is_open;
 }
 popover = popover.open(is_open);
-popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
+let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
     ui.label("Error color theme");
 });
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
 ui.ctx().data_mut(|d| {
     d.insert_temp(state_id, is_open);
     d.insert_temp(popover_id, popover);
@@ -151,14 +181,18 @@ let state_id = ui.id().with("popover_open_info");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let button_response = ui.button("Info");
+let button_response = Button::new("Info").show(ui);
 if button_response.clicked() {
     is_open = !is_open;
 }
 popover = popover.open(is_open);
-popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
+let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
     ui.label("Info color theme");
 });
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
 ui.ctx().data_mut(|d| {
     d.insert_temp(state_id, is_open);
     d.insert_temp(popover_id, popover);
@@ -172,81 +206,129 @@ Popover comes with multiple visual styles to match different design needs.
 ### Default Style
 
 ```demo
-let mut popover = Popover::new("style_default")
-    .style(PopoverStyle::Default);
+let popover_id = ui.id().with("popover_style_default");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("style_default").style(PopoverStyle::Default)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_style_default");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let button_response = ui.button("Default");
+let button_response = Button::new("Default").show(ui);
 if button_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, button_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
     ui.label("Soft border with moderate rounding");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ### Elevated Style
 
 ```demo
-let mut popover = Popover::new("style_elevated")
-    .style(PopoverStyle::Elevated);
+let popover_id = ui.id().with("popover_style_elevated");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("style_elevated").style(PopoverStyle::Elevated)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_style_elevated");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let button_response = ui.button("Elevated");
+let button_response = Button::new("Elevated").show(ui);
 if button_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, button_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
     ui.label("Lighter border, more rounding, extra padding");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ### Bordered Style
 
 ```demo
-let mut popover = Popover::new("style_bordered")
-    .style(PopoverStyle::Bordered);
+let popover_id = ui.id().with("popover_style_bordered");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("style_bordered").style(PopoverStyle::Bordered)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_style_bordered");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let button_response = ui.button("Bordered");
+let button_response = Button::new("Bordered").show(ui);
 if button_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, button_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
     ui.label("Strong border for emphasis");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ### Flat Style
 
 ```demo
-let mut popover = Popover::new("style_flat")
-    .style(PopoverStyle::Flat);
+let popover_id = ui.id().with("popover_style_flat");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("style_flat").style(PopoverStyle::Flat)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_style_flat");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let button_response = ui.button("Flat");
+let button_response = Button::new("Flat").show(ui);
 if button_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, button_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| {
     ui.label("Minimalist, no border");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ## Positions
@@ -254,198 +336,311 @@ ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
 ### Bottom
 
 ```demo
-let mut popover = Popover::new("bottom")
-    .position(PopoverPosition::Bottom);
+let popover_id = ui.id().with("popover_pos_bottom");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("bottom").position(PopoverPosition::Bottom)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_pos_bottom");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let anchor_response = ui.button("Bottom");
+let anchor_response = Button::new("Bottom").show(ui);
 if anchor_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
     ui.label("Appears below");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ### Top
 
 ```demo
-let mut popover = Popover::new("top")
-    .position(PopoverPosition::Top);
+let popover_id = ui.id().with("popover_pos_top");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("top").position(PopoverPosition::Top)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_pos_top");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let anchor_response = ui.button("Top");
+let anchor_response = Button::new("Top").show(ui);
 if anchor_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
     ui.label("Appears above");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ### Left
 
 ```demo
-let mut popover = Popover::new("left")
-    .position(PopoverPosition::Left);
+let popover_id = ui.id().with("popover_pos_left");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("left").position(PopoverPosition::Left)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_pos_left");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let anchor_response = ui.button("Left");
+let anchor_response = Button::new("Left").show(ui);
 if anchor_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
     ui.label("Appears on left");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ### Right
 
 ```demo
-let mut popover = Popover::new("right")
-    .position(PopoverPosition::Right);
+let popover_id = ui.id().with("popover_pos_right");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("right").position(PopoverPosition::Right)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_pos_right");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let anchor_response = ui.button("Right");
+let anchor_response = Button::new("Right").show(ui);
 if anchor_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
     ui.label("Appears on right");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ### Auto
 
 ```demo
-let mut popover = Popover::new("auto")
-    .position(PopoverPosition::Auto);
+let popover_id = ui.id().with("popover_pos_auto");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("auto").position(PopoverPosition::Auto)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_pos_auto");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let anchor_response = ui.button("Auto");
+let anchor_response = Button::new("Auto").show(ui);
 if anchor_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
     ui.label("Automatically positioned based on space");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ## Fixed Width
 
 ```demo
-let mut popover = Popover::new("fixed_width")
-    .width(200.0);
+let popover_id = ui.id().with("popover_fixed_width");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("fixed_width").width(200.0)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_fixed_width");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let anchor_response = ui.button("Show");
+let anchor_response = Button::new("Show").show(ui);
 if anchor_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
     ui.label("This popover has a fixed width of 200px");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ## Max Width
 
 ```demo
-let mut popover = Popover::new("max_width")
-    .max_width(400.0);
+let popover_id = ui.id().with("popover_max_width");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("max_width").max_width(400.0)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_max_width");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let anchor_response = ui.button("Show");
+let anchor_response = Button::new("Show").show(ui);
 if anchor_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
     ui.label("Maximum width is 400px");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ## Without Arrow
 
 ```demo
-let mut popover = Popover::new("no_arrow")
-    .show_arrow(false);
+let popover_id = ui.id().with("popover_no_arrow");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("no_arrow").show_arrow(false)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_no_arrow");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let anchor_response = ui.button("No Arrow");
+let anchor_response = Button::new("No Arrow").show(ui);
 if anchor_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
     ui.label("No arrow indicator");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ## Custom Offset
 
 ```demo
-let mut popover = Popover::new("offset")
-    .offset(egui::vec2(0.0, 16.0));
+let popover_id = ui.id().with("popover_offset");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("offset").offset(egui::vec2(0.0, 16.0))
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_offset");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let anchor_response = ui.button("Offset");
+let anchor_response = Button::new("Offset").show(ui);
 if anchor_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
     ui.label("Custom offset from anchor");
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ## Rich Content
 
 ```demo
-let mut popover = Popover::new("rich")
-    .width(250.0);
+let popover_id = ui.id().with("popover_rich");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("rich").width(250.0)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_rich");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let anchor_response = ui.button("User Info");
+let anchor_response = Button::new("User Info").show(ui);
 if anchor_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
     ui.vertical(|ui| {
         ui.heading("John Doe");
         ui.label("Software Engineer");
@@ -454,60 +649,88 @@ popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
         ui.label("📍 San Francisco, CA");
     });
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ## With Buttons
 
 ```demo
-let mut popover = Popover::new("with_buttons")
-    .width(200.0);
+let popover_id = ui.id().with("popover_with_buttons");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("with_buttons").width(200.0)
+    })
+});
 
-let state_id = ui.id().with("popover_open");
+let state_id = ui.id().with("popover_open_with_buttons");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-let anchor_response = ui.button("Actions");
+let anchor_response = Button::new("Actions").show(ui);
 if anchor_response.clicked() {
     is_open = !is_open;
 }
-popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
     ui.vertical(|ui| {
-        if ui.button("Edit").clicked() {
+        if Button::new("Edit").show(ui).clicked() {
             // Handle edit
         }
-        if ui.button("Delete").clicked() {
+        if Button::new("Delete").show(ui).clicked() {
             // Handle delete
         }
-        if ui.button("Share").clicked() {
+        if Button::new("Share").show(ui).clicked() {
             // Handle share
         }
     });
 });
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+
+if response.clicked_outside || response.should_close {
+    is_open = false;
+}
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ## Handling Close
 
 ```demo
-let mut popover = Popover::new("close_handling");
-let state_id = ui.id().with("popover_open");
+let popover_id = ui.id().with("popover_close_handling");
+let mut popover = ui.ctx().data_mut(|d| {
+    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
+        Popover::new("close_handling")
+    })
+});
+
+let state_id = ui.id().with("popover_open_close_handling");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
 
-
-let anchor_response = ui.button("Toggle");
+let anchor_response = Button::new("Toggle").show(ui);
 if anchor_response.clicked() {
     is_open = !is_open;
 }
-let response = popover.open(is_open).show(ui.ctx(), &theme, anchor_response.rect, |ui| {
+popover = popover.open(is_open);
+let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
     ui.label("Click outside to close");
 });
 
 if response.clicked_outside {
     // Handle outside click
 }
-ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
+ui.ctx().data_mut(|d| {
+    d.insert_temp(state_id, is_open);
+    d.insert_temp(popover_id, popover);
+});
 ```
 
 ## API Reference

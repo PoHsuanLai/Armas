@@ -13,7 +13,6 @@ use std::f32::consts::PI;
 struct Sparkle {
     position: Pos2,
     size: f32,
-    lifetime: f32,
     max_lifetime: f32,
     delay: f32,
     color: Color32,
@@ -24,41 +23,31 @@ impl Sparkle {
         Self {
             position,
             size,
-            lifetime: 0.0,
             max_lifetime: 1.0 + (delay % 0.5),
             delay,
             color,
         }
     }
 
-    fn update(&mut self, dt: f32) {
-        if self.delay > 0.0 {
-            self.delay -= dt;
-        } else {
-            self.lifetime += dt;
-            if self.lifetime > self.max_lifetime {
-                self.lifetime = 0.0;
-            }
-        }
-    }
-
-    fn opacity(&self) -> f32 {
-        if self.delay > 0.0 {
+    fn opacity(&self, time: f32) -> f32 {
+        let adjusted_time = time - self.delay;
+        if adjusted_time < 0.0 {
             return 0.0;
         }
 
-        let t = self.lifetime / self.max_lifetime;
+        let lifetime = adjusted_time % self.max_lifetime;
+        let t = lifetime / self.max_lifetime;
         // Sine wave for smooth twinkling
         let twinkle = ((t * PI * 2.0).sin() + 1.0) / 2.0;
         twinkle * 0.8 + 0.2
     }
 
-    fn draw(&self, painter: &egui::Painter) {
-        if self.delay > 0.0 {
+    fn draw(&self, painter: &egui::Painter, time: f32) {
+        let opacity = self.opacity(time);
+
+        if opacity <= 0.0 {
             return;
         }
-
-        let opacity = self.opacity();
         let alpha = (self.color.a() as f32 * opacity) as u8;
         let color =
             Color32::from_rgba_unmultiplied(self.color.r(), self.color.g(), self.color.b(), alpha);
@@ -192,12 +181,7 @@ impl Sparkles {
             self.initialize_sparkles();
         }
 
-        let dt = ui.input(|i| i.stable_dt);
-
-        // Update all sparkles
-        for sparkle in &mut self.sparkles {
-            sparkle.update(dt);
-        }
+        let time = ui.input(|i| i.time) as f32;
 
         let (response, painter) =
             ui.allocate_painter(Vec2::new(self.width, self.height), egui::Sense::hover());
@@ -209,7 +193,7 @@ impl Sparkles {
             for sparkle in &self.sparkles {
                 let mut adjusted_sparkle = sparkle.clone();
                 adjusted_sparkle.position = rect.min + (sparkle.position.to_vec2());
-                adjusted_sparkle.draw(&painter);
+                adjusted_sparkle.draw(&painter, time);
             }
         }
 
@@ -236,12 +220,7 @@ impl Sparkles {
             self.initialize_sparkles();
         }
 
-        let dt = ui.input(|i| i.stable_dt);
-
-        // Update all sparkles
-        for sparkle in &mut self.sparkles {
-            sparkle.update(dt);
-        }
+        let time = ui.input(|i| i.time) as f32;
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
@@ -250,7 +229,7 @@ impl Sparkles {
             for sparkle in &self.sparkles {
                 let mut adjusted_sparkle = sparkle.clone();
                 adjusted_sparkle.position = rect.min + sparkle.position.to_vec2();
-                adjusted_sparkle.draw(&painter);
+                adjusted_sparkle.draw(&painter, time);
             }
         }
 
@@ -285,6 +264,7 @@ mod tests {
     #[test]
     fn test_sparkle_opacity() {
         let sparkle = Sparkle::new(Pos2::ZERO, 3.0, 0.0, Color32::WHITE);
-        assert!(sparkle.opacity() >= 0.0 && sparkle.opacity() <= 1.0);
+        let opacity = sparkle.opacity(0.0);
+        assert!(opacity >= 0.0 && opacity <= 1.0);
     }
 }

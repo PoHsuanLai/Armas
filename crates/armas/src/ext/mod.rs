@@ -4,5 +4,7 @@
 //! functionality to egui types.
 
 pub mod context;
+pub mod painter;
 
 pub use context::ArmasContextExt;
+pub use painter::{neon_circle, neon_line, PainterExt};

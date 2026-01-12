@@ -5,8 +5,8 @@ Cyberpunk-style perspective grid with animated lines and horizon glow.
 ## Basic Usage
 
 ```demo
-let mut grid = RetroGrid::new(800.0, 600.0);
-grid.show(ui);
+RetroGrid::new(ui.available_width(), 600.0)
+    .show(ui);
 ```
 
 ## Custom Configuration
@@ -14,14 +14,13 @@ grid.show(ui);
 ```demo
 use egui::Color32;
 
-let mut grid = RetroGrid::new(800.0, 600.0)
-    .grid_color(Color32::from_rgb(0, 255, 255))
-    .horizon_color(Color32::from_rgb(255, 0, 255))
+RetroGrid::new(ui.available_width(), 600.0)
+    .grid_color(Color32::from_rgba_unmultiplied(0, 255, 255, 80))
+    .horizon_color(Color32::from_rgba_unmultiplied(255, 0, 255, 100))
     .cell_size(60.0)
     .perspective_depth(0.7)
-    .animation_speed(30.0);
-
-grid.show(ui);
+    .animation_speed(25.0)
+    .show(ui);
 ```
 
 ## API Reference

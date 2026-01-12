@@ -2,38 +2,56 @@
 //!
 //! Character-by-character text reveal with optional cursor
 
-use egui::{Response, RichText, Ui};
+use egui::{Id, Response, RichText, Ui};
+
+/// Typewriter internal state stored in egui memory
+#[derive(Clone)]
+struct TypewriterState {
+    start_time: f32,
+    loop_start_time: f32,
+}
+
+impl Default for TypewriterState {
+    fn default() -> Self {
+        Self {
+            start_time: 0.0,
+            loop_start_time: 0.0,
+        }
+    }
+}
 
 /// Typewriter text effect
 ///
 /// Reveals text character by character with configurable speed
 /// and optional blinking cursor.
 pub struct Typewriter {
+    id: Id,
     text: String,
-    char_index: f32,
     speed: f32, // characters per second
     cursor_enabled: bool,
     cursor_blink_speed: f32,
-    cursor_time: f32,
     loop_mode: bool,
     delay_before_loop: f32,
-    delay_timer: f32,
 }
 
 impl Typewriter {
     /// Create a new typewriter effect
     pub fn new(text: impl Into<String>) -> Self {
         Self {
+            id: Id::new("typewriter"),
             text: text.into(),
-            char_index: 0.0,
             speed: 20.0,
             cursor_enabled: true,
             cursor_blink_speed: 2.0,
-            cursor_time: 0.0,
             loop_mode: false,
             delay_before_loop: 2.0,
-            delay_timer: 0.0,
         }
+    }
+
+    /// Set unique ID for this typewriter (required for multiple instances)
+    pub fn with_id(mut self, id: impl std::hash::Hash) -> Self {
+        self.id = Id::new(id);
+        self
     }
 
     /// Set typing speed (characters per second)
@@ -66,68 +84,72 @@ impl Typewriter {
         self
     }
 
-    /// Reset the animation
-    pub fn reset(&mut self) {
-        self.char_index = 0.0;
-        self.delay_timer = 0.0;
-        self.cursor_time = 0.0;
-    }
-
-    /// Check if typing is complete
-    pub fn is_complete(&self) -> bool {
-        self.char_index >= self.text.len() as f32
-    }
-
     /// Show the typewriter text
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
         self.show_styled(ui, RichText::new)
     }
 
     /// Show the typewriter text with custom styling
-    pub fn show_styled<F>(&mut self, ui: &mut Ui, style_fn: F) -> Response
+    pub fn show_styled<F>(self, ui: &mut Ui, style_fn: F) -> Response
     where
         F: FnOnce(String) -> RichText,
     {
-        let dt = ui.input(|i| i.stable_dt);
+        let time = ui.input(|i| i.time) as f32;
 
-        // Update animation
-        if !self.is_complete() {
-            self.char_index += dt * self.speed;
-            if self.char_index > self.text.len() as f32 {
-                self.char_index = self.text.len() as f32;
-                self.delay_timer = 0.0;
+        // Get or initialize state
+        let mut state = ui.data_mut(|d| {
+            d.get_temp::<TypewriterState>(self.id)
+                .unwrap_or_default()
+        });
+
+        // Initialize start time on first frame
+        if state.start_time == 0.0 {
+            state.start_time = time;
+            state.loop_start_time = time;
+        }
+
+        // Calculate elapsed time since start
+        let elapsed = time - state.start_time;
+        let char_index = (elapsed * self.speed).min(self.text.len() as f32);
+        let is_complete = char_index >= self.text.len() as f32;
+
+        // Handle looping
+        if is_complete && self.loop_mode {
+            let delay_elapsed = time - state.loop_start_time;
+            if delay_elapsed >= self.delay_before_loop {
+                // Reset for next loop
+                state.start_time = time;
+                state.loop_start_time = time;
             }
-        } else if self.loop_mode {
-            self.delay_timer += dt;
-            if self.delay_timer >= self.delay_before_loop {
-                self.reset();
+        } else if is_complete && !self.loop_mode {
+            // Mark loop start time when complete (for delay)
+            if state.loop_start_time == state.start_time {
+                state.loop_start_time = time;
             }
         }
 
-        // Update cursor blink
-        if self.cursor_enabled {
-            self.cursor_time += dt;
-        }
+        // Store state back
+        ui.data_mut(|d| d.insert_temp(self.id, state.clone()));
 
         // Get visible text
-        let visible_chars = self.char_index.floor() as usize;
+        let visible_chars = char_index.floor() as usize;
         let visible_text = self.text.chars().take(visible_chars).collect::<String>();
 
         // Add cursor if enabled
         let cursor_visible = if self.cursor_enabled {
-            ((self.cursor_time * self.cursor_blink_speed * 2.0) % 2.0) < 1.0
+            ((time * self.cursor_blink_speed * 2.0) % 2.0) < 1.0
         } else {
             false
         };
 
-        let display_text = if cursor_visible && (!self.is_complete() || self.loop_mode) {
+        let display_text = if cursor_visible && (!is_complete || self.loop_mode) {
             format!("{}|", visible_text)
         } else {
             visible_text
         };
 
         // Request repaint
-        if !self.is_complete() || (self.loop_mode && self.is_complete()) || cursor_visible {
+        if !is_complete || (self.loop_mode && is_complete) || cursor_visible {
             ui.ctx().request_repaint();
         }
 
@@ -136,15 +158,30 @@ impl Typewriter {
     }
 }
 
+/// Word typewriter internal state stored in egui memory
+#[derive(Clone)]
+struct WordTypewriterState {
+    start_time: f32,
+    loop_start_time: f32,
+}
+
+impl Default for WordTypewriterState {
+    fn default() -> Self {
+        Self {
+            start_time: 0.0,
+            loop_start_time: 0.0,
+        }
+    }
+}
+
 /// Typewriter with word-by-word reveal
 pub struct WordTypewriter {
+    id: Id,
     _text: String,
     words: Vec<String>,
-    word_index: f32,
     speed: f32, // words per second
     loop_mode: bool,
     delay_before_loop: f32,
-    delay_timer: f32,
 }
 
 impl WordTypewriter {
@@ -154,14 +191,19 @@ impl WordTypewriter {
         let words: Vec<String> = text.split_whitespace().map(String::from).collect();
 
         Self {
+            id: Id::new("word_typewriter"),
             _text: text,
             words,
-            word_index: 0.0,
             speed: 4.0,
             loop_mode: false,
             delay_before_loop: 2.0,
-            delay_timer: 0.0,
         }
+    }
+
+    /// Set unique ID for this typewriter (required for multiple instances)
+    pub fn with_id(mut self, id: impl std::hash::Hash) -> Self {
+        self.id = Id::new(id);
+        self
     }
 
     /// Set typing speed (words per second)
@@ -182,45 +224,55 @@ impl WordTypewriter {
         self
     }
 
-    /// Reset the animation
-    pub fn reset(&mut self) {
-        self.word_index = 0.0;
-        self.delay_timer = 0.0;
-    }
-
-    /// Check if typing is complete
-    pub fn is_complete(&self) -> bool {
-        self.word_index >= self.words.len() as f32
-    }
-
     /// Show the word typewriter
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
         self.show_styled(ui, RichText::new)
     }
 
     /// Show with custom styling
-    pub fn show_styled<F>(&mut self, ui: &mut Ui, style_fn: F) -> Response
+    pub fn show_styled<F>(self, ui: &mut Ui, style_fn: F) -> Response
     where
         F: FnOnce(String) -> RichText,
     {
-        let dt = ui.input(|i| i.stable_dt);
+        let time = ui.input(|i| i.time) as f32;
 
-        // Update animation
-        if !self.is_complete() {
-            self.word_index += dt * self.speed;
-            if self.word_index > self.words.len() as f32 {
-                self.word_index = self.words.len() as f32;
-                self.delay_timer = 0.0;
+        // Get or initialize state
+        let mut state = ui.data_mut(|d| {
+            d.get_temp::<WordTypewriterState>(self.id)
+                .unwrap_or_default()
+        });
+
+        // Initialize start time on first frame
+        if state.start_time == 0.0 {
+            state.start_time = time;
+            state.loop_start_time = time;
+        }
+
+        // Calculate elapsed time since start
+        let elapsed = time - state.start_time;
+        let word_index = (elapsed * self.speed).min(self.words.len() as f32);
+        let is_complete = word_index >= self.words.len() as f32;
+
+        // Handle looping
+        if is_complete && self.loop_mode {
+            let delay_elapsed = time - state.loop_start_time;
+            if delay_elapsed >= self.delay_before_loop {
+                // Reset for next loop
+                state.start_time = time;
+                state.loop_start_time = time;
             }
-        } else if self.loop_mode {
-            self.delay_timer += dt;
-            if self.delay_timer >= self.delay_before_loop {
-                self.reset();
+        } else if is_complete && !self.loop_mode {
+            // Mark loop start time when complete (for delay)
+            if state.loop_start_time == state.start_time {
+                state.loop_start_time = time;
             }
         }
 
+        // Store state back
+        ui.data_mut(|d| d.insert_temp(self.id, state.clone()));
+
         // Get visible words
-        let visible_count = self.word_index.floor() as usize;
+        let visible_count = word_index.floor() as usize;
         let visible_text = self
             .words
             .iter()
@@ -230,7 +282,7 @@ impl WordTypewriter {
             .join(" ");
 
         // Request repaint
-        if !self.is_complete() || (self.loop_mode && self.is_complete()) {
+        if !is_complete || (self.loop_mode && is_complete) {
             ui.ctx().request_repaint();
         }
 
@@ -246,8 +298,8 @@ mod tests {
     #[test]
     fn test_typewriter_creation() {
         let tw = Typewriter::new("Hello");
-        assert_eq!(tw.char_index, 0.0);
         assert_eq!(tw.text, "Hello");
+        assert_eq!(tw.speed, 20.0);
     }
 
     #[test]

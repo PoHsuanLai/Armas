@@ -8,7 +8,6 @@ use crate::ext::ArmasContextExt;
 use crate::{Badge, BadgeColor, Button, ButtonVariant, Card, Theme};
 use egui::{vec2, Align2, Id, Sense, Vec2};
 use std::collections::VecDeque;
-use std::time::{Duration, Instant};
 
 /// Toast notification variant
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -95,14 +94,14 @@ struct Toast {
     title: Option<String>,
     message: String,
     variant: ToastVariant,
-    duration: Duration,
-    created_at: Instant,
+    duration_secs: f32,
+    created_at: f64, // egui time in seconds
     slide_animation: SpringAnimation,
     dismissible: bool,
 }
 
 impl Toast {
-    fn new(message: impl Into<String>, variant: ToastVariant) -> Self {
+    fn new(message: impl Into<String>, variant: ToastVariant, current_time: f64) -> Self {
         static mut NEXT_ID: u64 = 0;
         let id = unsafe {
             NEXT_ID += 1;
@@ -114,8 +113,8 @@ impl Toast {
             title: None,
             message: message.into(),
             variant,
-            duration: Duration::from_secs(3),
-            created_at: Instant::now(),
+            duration_secs: 3.0,
+            created_at: current_time,
             slide_animation: SpringAnimation::new(0.0, 1.0).with_params(250.0, 25.0),
             dismissible: true,
         }
@@ -128,8 +127,8 @@ impl Toast {
     }
 
     #[allow(dead_code)]
-    fn with_duration(mut self, duration: Duration) -> Self {
-        self.duration = duration;
+    fn with_duration_secs(mut self, duration_secs: f32) -> Self {
+        self.duration_secs = duration_secs;
         self
     }
 
@@ -139,12 +138,12 @@ impl Toast {
         self
     }
 
-    fn is_expired(&self) -> bool {
-        self.created_at.elapsed() >= self.duration
+    fn is_expired(&self, current_time: f64) -> bool {
+        (current_time - self.created_at) as f32 >= self.duration_secs
     }
 
-    fn progress(&self) -> f32 {
-        self.created_at.elapsed().as_secs_f32() / self.duration.as_secs_f32()
+    fn progress(&self, current_time: f64) -> f32 {
+        ((current_time - self.created_at) as f32 / self.duration_secs).min(1.0)
     }
 }
 
@@ -179,8 +178,8 @@ impl ToastManager {
     }
 
     /// Add a new toast notification
-    pub fn add(&mut self, message: impl Into<String>, variant: ToastVariant) {
-        let toast = Toast::new(message, variant);
+    pub fn add(&mut self, message: impl Into<String>, variant: ToastVariant, current_time: f64) {
+        let toast = Toast::new(message, variant, current_time);
         self.toasts.push_back(toast);
 
         // Limit number of toasts
@@ -189,24 +188,25 @@ impl ToastManager {
         }
     }
 
-    /// Add an info toast
+    /// Add an info toast (time will be set when show() is called)
     pub fn info(&mut self, message: impl Into<String>) {
-        self.add(message, ToastVariant::Info);
+        // Use 0.0 as placeholder, will be updated in show()
+        self.add(message, ToastVariant::Info, 0.0);
     }
 
-    /// Add a success toast
+    /// Add a success toast (time will be set when show() is called)
     pub fn success(&mut self, message: impl Into<String>) {
-        self.add(message, ToastVariant::Success);
+        self.add(message, ToastVariant::Success, 0.0);
     }
 
-    /// Add a warning toast
+    /// Add a warning toast (time will be set when show() is called)
     pub fn warning(&mut self, message: impl Into<String>) {
-        self.add(message, ToastVariant::Warning);
+        self.add(message, ToastVariant::Warning, 0.0);
     }
 
-    /// Add an error toast
+    /// Add an error toast (time will be set when show() is called)
     pub fn error(&mut self, message: impl Into<String>) {
-        self.add(message, ToastVariant::Error);
+        self.add(message, ToastVariant::Error, 0.0);
     }
 
     /// Add a custom toast with builder pattern
@@ -220,8 +220,17 @@ impl ToastManager {
     /// Show all toasts
     pub fn show(&mut self, ctx: &egui::Context) {
         let theme = ctx.armas_theme();
+        let current_time = ctx.input(|i| i.time);
+
+        // Fix newly created toasts (created_at == 0.0)
+        for toast in self.toasts.iter_mut() {
+            if toast.created_at == 0.0 {
+                toast.created_at = current_time;
+            }
+        }
+
         // Remove expired toasts
-        self.toasts.retain(|toast| !toast.is_expired());
+        self.toasts.retain(|toast| !toast.is_expired(current_time));
 
         if self.toasts.is_empty() {
             return;
@@ -246,7 +255,7 @@ impl ToastManager {
 
         for (index, toast) in toasts_to_render.iter().enumerate() {
             // Fade out animation near end
-            let progress = toast.progress();
+            let progress = toast.progress(current_time);
             let fade_start = 0.9;
             let opacity = if progress > fade_start {
                 1.0 - ((progress - fade_start) / (1.0 - fade_start))
@@ -275,6 +284,7 @@ impl ToastManager {
                 position,
                 offset + slide_offset,
                 opacity,
+                current_time,
             );
 
             if dismissed {
@@ -300,6 +310,7 @@ impl ToastManager {
         position: ToastPosition,
         offset: Vec2,
         opacity: f32,
+        current_time: f64,
     ) -> bool {
         let mut dismissed = false;
 
@@ -350,7 +361,7 @@ impl ToastManager {
                         });
 
                         // Progress bar
-                        let progress = toast.progress().min(1.0);
+                        let progress = toast.progress(current_time).min(1.0);
                         if progress < 1.0 {
                             ui.add_space(4.0);
                             let progress_height = 3.0;
@@ -403,7 +414,7 @@ impl<'a> ToastBuilder<'a> {
         if let Some(toast) = &mut self.toast {
             toast.message = message.into();
         } else {
-            self.toast = Some(Toast::new(message, ToastVariant::Info));
+            self.toast = Some(Toast::new(message, ToastVariant::Info, 0.0));
         }
         self
     }
@@ -421,15 +432,15 @@ impl<'a> ToastBuilder<'a> {
         if let Some(toast) = &mut self.toast {
             toast.variant = variant;
         } else {
-            self.toast = Some(Toast::new("", variant));
+            self.toast = Some(Toast::new("", variant, 0.0));
         }
         self
     }
 
     /// Set the display duration
-    pub fn duration(mut self, duration: Duration) -> Self {
+    pub fn duration(mut self, duration: std::time::Duration) -> Self {
         if let Some(toast) = &mut self.toast {
-            toast.duration = duration;
+            toast.duration_secs = duration.as_secs_f32();
         }
         self
     }

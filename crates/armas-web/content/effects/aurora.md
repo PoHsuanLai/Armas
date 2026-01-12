@@ -2,58 +2,76 @@
 
 Dynamic aurora background with flowing gradients that create a mesmerizing northern lights effect.
 
-## Basic Usage
+## Cyberpunk Theme (Slow)
 
 ```demo
-let mut aurora = AuroraBackground::new(ui.available_width(), 300.0);
-aurora.show(ui);
+AuroraBackground::cyberpunk(ui.available_width(), 300.0)
+    .with_id("aurora_slow")
+    .with_speed(0.2)
+    .show(ui);
 ```
 
-## Custom Height
+## Borealis Theme (Medium)
 
 ```demo
-let mut aurora = AuroraBackground::new(ui.available_width(), 400.0);
-aurora.show(ui);
+AuroraBackground::borealis(ui.available_width(), 300.0)
+    .with_id("aurora_medium")
+    .with_speed(0.5)
+    .with_time_offset(10.0)
+    .show(ui);
 ```
 
-## Compact Aurora
+## Sunset Theme (Normal)
 
 ```demo
-let mut aurora = AuroraBackground::new(ui.available_width(), 200.0);
-aurora.show(ui);
+AuroraBackground::sunset(ui.available_width(), 300.0)
+    .with_id("aurora_normal")
+    .with_speed(1.0)
+    .with_time_offset(20.0)
+    .show(ui);
 ```
 
-## Full Width Aurora
+## Fast Animation
 
 ```demo
-let mut aurora = AuroraBackground::new(ui.available_width(), 250.0);
-aurora.show(ui);
+AuroraBackground::cyberpunk(ui.available_width(), 250.0)
+    .with_id("aurora_fast")
+    .with_speed(3.0)
+    .with_time_offset(30.0)
+    .show(ui);
 ```
 
 ## API Reference
 
 | Constructor | Parameters | Description |
 |-------------|-----------|-------------|
-| `::new()` | `(width: f32, height: f32)` | Create aurora with dimensions |
+| `::new()` | `(width: f32, height: f32)` | Create empty aurora (no blobs) |
+| `::cyberpunk()` | `(width: f32, height: f32)` | Create aurora with cyberpunk colors (cyan, magenta, blue) |
+| `::borealis()` | `(width: f32, height: f32)` | Create aurora with borealis colors (green, teal, purple) |
+| `::sunset()` | `(width: f32, height: f32)` | Create aurora with sunset colors (orange, pink, yellow) |
 
-| Method | Type | Description |
-|--------|------|-------------|
-| `.show()` | `&mut Ui` | Show aurora as background |
+| Method | Type | Default | Description |
+|--------|------|---------|-------------|
+| `.with_speed()` | `f32` | `1.0` | Set animation speed multiplier |
+| `.add_blob()` | `(pos, radius, colors, speed)` | - | Add custom colored blob |
+| `.show()` | `&mut Ui` | - | Render the aurora background |
+
+## Themes
+
+Aurora comes with three built-in color themes:
+
+- **Cyberpunk**: Cyan, magenta, and blue blobs with a futuristic neon feel
+- **Borealis**: Green, teal, and purple like the northern lights
+- **Sunset**: Orange, pink, and yellow for warm, vibrant backgrounds
 
 ## Features
 
-- **Animated**: Continuous flowing gradient animation
-- **Colorful**: Multi-color gradient effects
-- **Auto-play**: Starts animating on render
-- **Performance**: Optimized for 60fps
-- **Responsive**: Adapts to container size
-
-## Animation Details
-
-- **Duration**: Continuous loop
-- **Easing**: Smooth sinusoidal
-- **Colors**: Multiple gradient layers
-- **Speed**: Configurable animation speed
+- **Animated blobs**: Floating gradient spheres with organic motion
+- **Multiple layers**: Up to 3 blobs per theme for depth
+- **Smooth movement**: Sinusoidal motion patterns
+- **Configurable speed**: Adjust animation speed multiplier
+- **Custom blobs**: Add your own colored blobs
+- **Performance**: Optimized 60fps animation
 
 ## Use Cases
 
