@@ -231,7 +231,7 @@ impl AudioMeter {
 
         // Width only controls the meter tube, scale is additional space
         let scale_width = if self.scale_position != ScalePosition::None {
-            25.0 // Space for scale text and tick marks
+            14.0 // Minimal scale width - just enough for text
         } else {
             0.0
         };
@@ -293,9 +293,22 @@ impl AudioMeter {
                 );
             }
 
-            // Inner meter area (with padding)
-            let padding = 6.0;
-            let inner_meter_rect = meter_rect.shrink(padding);
+            // Inner meter area (with padding only on scale side for compact layout)
+            let inner_meter_rect = if self.scale_position == ScalePosition::None {
+                meter_rect // No padding when no scale
+            } else if self.scale_position == ScalePosition::Left {
+                // Pad left side only
+                Rect::from_min_max(
+                    Pos2::new(meter_rect.min.x + 2.0, meter_rect.min.y),
+                    meter_rect.max,
+                )
+            } else {
+                // Pad right side only
+                Rect::from_min_max(
+                    meter_rect.min,
+                    Pos2::new(meter_rect.max.x - 2.0, meter_rect.max.y),
+                )
+            };
 
             // Draw meter fill based on style
             match self.style {
@@ -335,9 +348,9 @@ impl AudioMeter {
                 );
             }
 
-            // Draw scale markings
+            // Draw scale markings (pass full rect which includes scale area)
             if self.scale_position != ScalePosition::None {
-                self.draw_scale(ui, meter_rect, &theme);
+                self.draw_scale(ui, rect, meter_rect, &theme);
             }
         }
 
@@ -361,13 +374,13 @@ impl AudioMeter {
             meter_rect.max,
         );
 
-        // Draw outer glow for the colored fill (more obvious)
+        // Draw outer glow for the colored fill - subtle and consistent
         let glow_intensity = level.powf(1.5);
         let fill_color = self.get_color_at_level(level);
 
-        for layer in 0..5 {
-            let expansion = (layer + 1) as f32 * 1.2;
-            let alpha = (35.0 * glow_intensity * (1.0 - layer as f32 / 5.0)) as u8;
+        for layer in 0..3 {
+            let expansion = (3 - layer) as f32 * 0.8;
+            let alpha = ((20 - layer * 5) as f32 * glow_intensity) as u8; // Consistent: 20, 15, 10
 
             let glow_rect = fill_rect.expand(expansion);
             let glow_with_alpha = Color32::from_rgba_unmultiplied(
@@ -444,10 +457,10 @@ impl AudioMeter {
             if is_lit {
                 let base_color = self.get_color_at_level(t);
 
-                // More obvious outer glow for lit segments
-                for layer in 0..4 {
-                    let expansion = (layer + 1) as f32 * 1.0;
-                    let alpha = (30.0 * glow_intensity * (1.0 - layer as f32 / 4.0)) as u8;
+                // Subtle outer glow for lit segments - consistent with fader and knob
+                for layer in 0..3 {
+                    let expansion = (3 - layer) as f32 * 0.8;
+                    let alpha = ((20 - layer * 5) as f32 * glow_intensity) as u8; // Consistent: 20, 15, 10
 
                     let glow_rect = segment_rect.expand(expansion);
                     let glow_with_alpha = Color32::from_rgba_unmultiplied(
@@ -489,55 +502,51 @@ impl AudioMeter {
     }
 
     /// Draw dB scale markings
-    fn draw_scale(&self, ui: &mut Ui, rect: Rect, theme: &crate::Theme) {
+    /// full_rect: the entire allocated space including scale area
+    /// meter_rect: just the meter bar area (for positioning scale relative to meter)
+    fn draw_scale(&self, ui: &mut Ui, full_rect: Rect, meter_rect: Rect, theme: &crate::Theme) {
         let painter = ui.painter();
         let text_color = theme.on_surface_variant();
 
-        // dB levels: 0, -6, -12, -18, -24, -inf
+        // dB levels with proper logarithmic scaling
+        // Formula: linear = 10^(dB/20)
         let db_marks = [
-            (1.0, "0"),
-            (0.5, "-6"),
-            (0.25, "-12"),
-            (0.125, "-18"),
-            (0.063, "-24"),
-            (0.0, "-∞"),
+            (1.0, "0"),       // 0 dB - digital maximum
+            (0.708, "-3"),    // -3 dB
+            (0.501, "-6"),    // -6 dB - safe headroom
+            (0.251, "-12"),   // -12 dB - good average
+            (0.126, "-18"),   // -18 dB - reference level
+            (0.063, "-24"),   // -24 dB
+            (0.0, "-∞"),      // -inf dB - silence
         ];
 
-        let meter_rect = rect.shrink(6.0);
         let is_left = self.scale_position == ScalePosition::Left;
 
         for (level, label) in db_marks {
             let y = meter_rect.max.y - (level * meter_rect.height());
 
-            // Position text and tick based on scale position
-            let (text_pos, text_align, tick_start_x, tick_end_x) = if is_left {
+            // Position text in the scale area (outside the meter)
+            let (text_pos, text_align) = if is_left {
+                // Scale is on the left side of full_rect, outside the meter
                 (
-                    Pos2::new(rect.min.x - 4.0, y),
-                    egui::Align2::RIGHT_CENTER,
-                    meter_rect.min.x - 3.0,
-                    meter_rect.min.x - 1.0,
+                    Pos2::new(full_rect.min.x + 1.0, y),
+                    egui::Align2::LEFT_CENTER,
                 )
             } else {
+                // Scale is on the right side of full_rect, outside the meter
                 (
-                    Pos2::new(rect.max.x + 4.0, y),
-                    egui::Align2::LEFT_CENTER,
-                    meter_rect.max.x + 1.0,
-                    meter_rect.max.x + 3.0,
+                    Pos2::new(full_rect.max.x - 1.0, y),
+                    egui::Align2::RIGHT_CENTER,
                 )
             };
 
+            // Draw text label only (no tick marks)
             painter.text(
                 text_pos,
                 text_align,
                 label,
                 egui::FontId::proportional(9.0),
                 text_color,
-            );
-
-            // Small tick mark
-            painter.line_segment(
-                [Pos2::new(tick_start_x, y), Pos2::new(tick_end_x, y)],
-                (1.0, text_color),
             );
         }
     }

@@ -39,6 +39,7 @@ pub mod components;
 pub mod effects;
 pub mod ext;
 pub mod fonts;
+pub mod icon;
 pub mod layout;
 pub mod theme;
 

@@ -27,7 +27,8 @@ impl Header {
 
                 // Determine layout based on screen width
                 let is_mobile = screen_width < layout::MOBILE_BREAKPOINT;
-                let is_tablet = (layout::MOBILE_BREAKPOINT..layout::DESKTOP_BREAKPOINT).contains(&screen_width);
+                let is_tablet =
+                    (layout::MOBILE_BREAKPOINT..layout::DESKTOP_BREAKPOINT).contains(&screen_width);
 
                 // Left side: Logo (always visible)
                 let left_rect =
@@ -56,7 +57,7 @@ impl Header {
                         let logo_response = ui.add(
                             egui::Image::new(&logo_texture)
                                 .max_size(logo_size)
-                                .sense(egui::Sense::click())
+                                .sense(egui::Sense::click()),
                         );
 
                         if logo_response.clicked() {
@@ -68,12 +69,15 @@ impl Header {
                         }
 
                         // Make text label clickable too
-                        let text_response = ui.add(egui::Label::new(
-                            egui::RichText::new("Armas")
-                                .size(20.0)
-                                .family(egui::FontFamily::Name("InterBold".into()))
-                                .color(egui::Color32::WHITE)
-                        ).sense(egui::Sense::click()));
+                        let text_response = ui.add(
+                            egui::Label::new(
+                                egui::RichText::new("Armas")
+                                    .size(20.0)
+                                    .family(egui::FontFamily::Name("InterBold".into()))
+                                    .color(egui::Color32::WHITE),
+                            )
+                            .sense(egui::Sense::click()),
+                        );
 
                         if text_response.clicked() {
                             Self::open_website();
@@ -102,12 +106,12 @@ impl Header {
                 let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(right_rect), |ui| {
                     ui.set_height(total_height);
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                        // Mobile: Small search + hamburger
-                        if is_mobile {
+                        // Mobile & Tablet: Small search + hamburger
+                        if is_mobile || is_tablet {
                             Input::new("Search...")
                                 .left_icon("🔍")
                                 .width(100.0)
-                                .variant(InputVariant::Filled)
+                                .variant(InputVariant::Outlined)
                                 .show(ui, search_text);
 
                             ui.add_space(8.0);
@@ -125,7 +129,7 @@ impl Header {
 
                             ui.add_space(32.0); // Match content panel's right padding
                         }
-                        // Tablet & Desktop: Full header (Components + GitHub + Search)
+                        // Desktop: Full header (Components + GitHub + Search)
                         else {
                             if Button::new("Components")
                                 .variant(ButtonVariant::Text)
@@ -135,7 +139,12 @@ impl Header {
                                 .clicked()
                             {
                                 // Navigate to components page
-                                ui.data_mut(|d| d.insert_temp(egui::Id::new("current_view"), "components".to_string()));
+                                ui.data_mut(|d| {
+                                    d.insert_temp(
+                                        egui::Id::new("current_view"),
+                                        "components".to_string(),
+                                    )
+                                });
                             }
 
                             ui.add_space(16.0);

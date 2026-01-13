@@ -3,6 +3,7 @@
 //! Components for navigating through the application.
 
 pub mod breadcrumbs;
+pub mod browser;
 pub mod command_menu;
 pub mod floating_navbar;
 pub mod menu;
@@ -14,6 +15,7 @@ pub mod tabs;
 
 // Re-exports
 pub use breadcrumbs::{Breadcrumbs, BreadcrumbsResponse};
+pub use browser::{Browser, BrowserItem, BrowserResponse, BrowserTab, FileMetadata, SortMode};
 pub use command_menu::{CommandMenu, CommandMenuResponse};
 pub use floating_navbar::{FloatingNavbar, NavbarPosition, NavbarResponse};
 pub use menu::{Menu, MenuResponse};

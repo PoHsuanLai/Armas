@@ -74,8 +74,16 @@ pub struct Card<'a> {
     pub clickable: bool,
     /// Custom width (None = fill available)
     pub width: Option<f32>,
+    /// Custom height (None = determined by content)
+    pub height: Option<f32>,
+    /// Custom min height
+    pub min_height: Option<f32>,
+    /// Custom max height
+    pub max_height: Option<f32>,
     /// Custom inner margin (None = use theme default)
     pub inner_margin: Option<f32>,
+    /// Custom asymmetric margin (overrides inner_margin if set)
+    pub margin: Option<egui::Margin>,
     /// Custom background color (None = use theme default)
     pub fill_color: Option<Color32>,
     /// Custom border color (None = use theme default)
@@ -92,7 +100,11 @@ impl<'a> Card<'a> {
             variant: CardVariant::Filled,
             clickable: false,
             width: None,
+            height: None,
+            min_height: None,
+            max_height: None,
             inner_margin: None,
+            margin: None,
             fill_color: None,
             stroke_color: None,
             corner_radius: None,
@@ -102,6 +114,24 @@ impl<'a> Card<'a> {
     /// Set the card title
     pub fn title(mut self, title: &'a str) -> Self {
         self.title = Some(title);
+        self
+    }
+
+    /// Set custom height (forces exact height regardless of content)
+    pub fn height(mut self, height: f32) -> Self {
+        self.height = Some(height);
+        self
+    }
+
+    /// Set minimum height
+    pub fn min_height(mut self, height: f32) -> Self {
+        self.min_height = Some(height);
+        self
+    }
+
+    /// Set maximum height
+    pub fn max_height(mut self, height: f32) -> Self {
+        self.max_height = Some(height);
         self
     }
 
@@ -126,6 +156,13 @@ impl<'a> Card<'a> {
     /// Set custom inner margin (overrides theme default)
     pub fn inner_margin(mut self, margin: f32) -> Self {
         self.inner_margin = Some(margin);
+        self
+    }
+
+    /// Set custom asymmetric margin (overrides inner_margin)
+    /// Use this for different padding on each side
+    pub fn margin(mut self, margin: egui::Margin) -> Self {
+        self.margin = Some(margin);
         self
     }
 
@@ -204,44 +241,38 @@ impl<'a> Card<'a> {
             egui::Sense::hover()
         };
 
-        let inner_margin = self.inner_margin.unwrap_or(theme.spacing.md);
+        // Use asymmetric margin if provided, otherwise uniform margin
+        let frame_margin = if let Some(margin) = self.margin {
+            margin
+        } else {
+            let margin_val = self.inner_margin.unwrap_or(theme.spacing.md) as i8;
+            egui::Margin::same(margin_val)
+        };
         let mut content_result = None;
 
-        // Create a vertical scope to constrain width if specified
-        let outer_response = if let Some(width) = self.width {
-            ui.vertical(|ui| {
+        // Create a vertical scope to constrain width/height if specified
+        let outer_response = ui.vertical(|ui| {
+            // Apply width constraint
+            if let Some(width) = self.width {
                 ui.set_max_width(width);
+            }
 
-                let frame_response = egui::Frame::new()
-                    .fill(fill_color)
-                    .corner_radius(CornerRadius::same(corner_rad))
-                    .stroke(egui::Stroke::new(border_width, border_color))
-                    .inner_margin(inner_margin)
-                    .show(ui, |ui| {
-                        // Title if provided
-                        if let Some(title) = self.title {
-                            ui.label(
-                                egui::RichText::new(title)
-                                    .size(ui.spacing().interact_size.y * 0.7)
-                                    .color(theme.on_surface())
-                                    .strong(),
-                            );
-                            ui.add_space(theme.spacing.sm);
-                        }
+            // Apply height constraints
+            if let Some(height) = self.height {
+                ui.set_height(height);
+            }
+            if let Some(min_height) = self.min_height {
+                ui.set_min_height(min_height);
+            }
+            if let Some(max_height) = self.max_height {
+                ui.set_max_height(max_height);
+            }
 
-                        // User content
-                        content_result = Some(content(ui));
-                    });
-
-                frame_response
-            })
-            .inner
-        } else {
-            egui::Frame::new()
+            let frame_response = egui::Frame::new()
                 .fill(fill_color)
                 .corner_radius(CornerRadius::same(corner_rad))
                 .stroke(egui::Stroke::new(border_width, border_color))
-                .inner_margin(inner_margin)
+                .inner_margin(frame_margin)
                 .show(ui, |ui| {
                     // Title if provided
                     if let Some(title) = self.title {
@@ -256,8 +287,11 @@ impl<'a> Card<'a> {
 
                     // User content
                     content_result = Some(content(ui));
-                })
-        };
+                });
+
+            frame_response
+        })
+        .inner;
 
         // Make the entire frame interactive if clickable
         let rect = outer_response.response.rect;

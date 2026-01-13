@@ -37,7 +37,7 @@ impl Knob {
             glow_color: None,
             min_angle: -2.5,
             max_angle: 2.5,
-            sensitivity: 0.005,
+            sensitivity: 0.01, // Increased from 0.005 for better control
         }
     }
 
@@ -86,25 +86,59 @@ impl Knob {
 
     /// Show the knob
     pub fn show(self, ui: &mut Ui, value: &mut f32, theme: &Theme) -> Response {
-        let desired_size = Vec2::splat(self.diameter + 40.0); // Extra space for label/value
+        let desired_size = Vec2::splat(self.diameter);
         let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
 
-        // Handle drag interaction
+        // Handle drag interaction with both vertical and horizontal movement
         if response.dragged() {
             let drag_delta = response.drag_delta();
-            let delta = -drag_delta.y * self.sensitivity; // Vertical drag
+
+            // Support both vertical and horizontal drag
+            // Horizontal drag is more intuitive for knobs
+            let delta_y = -drag_delta.y;
+            let delta_x = drag_delta.x;
+
+            // Use whichever axis has more movement
+            let primary_delta = if delta_x.abs() > delta_y.abs() {
+                delta_x
+            } else {
+                delta_y
+            };
+
+            // Fine control with Shift modifier (10x slower)
+            let sensitivity = if ui.input(|i| i.modifiers.shift) {
+                self.sensitivity * 0.1
+            } else {
+                self.sensitivity
+            };
+
+            let delta = primary_delta * sensitivity;
             *value = (*value + delta).clamp(0.0, 1.0);
             response.mark_changed();
+        }
+
+        // Mouse wheel support for fine adjustment
+        // Consume scroll events when hovering to prevent page scrolling
+        if response.hovered() {
+            let scroll_delta = ui.input(|i| i.smooth_scroll_delta.y);
+            if scroll_delta.abs() > 0.0 {
+                let wheel_sensitivity = 0.01;
+                let delta = scroll_delta * wheel_sensitivity;
+                *value = (*value + delta).clamp(0.0, 1.0);
+                response.mark_changed();
+
+                // Consume the scroll event to prevent page scrolling
+                ui.ctx().input_mut(|i| {
+                    i.smooth_scroll_delta = Vec2::ZERO;
+                });
+            }
         }
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
 
-            // Calculate knob center
-            let center = Pos2::new(
-                rect.center().x,
-                rect.min.y + self.diameter / 2.0 + 10.0,
-            );
+            // Calculate knob center - no padding
+            let center = rect.center();
             let radius = self.diameter / 2.0;
 
             // Base knob color (glazed ceramic silver-grey)
@@ -316,30 +350,6 @@ impl Knob {
                 Stroke::new(1.0, Color32::from_rgba_unmultiplied(0, 0, 0, 50)),
             );
 
-            // Label above knob
-            if let Some(label) = &self.label {
-                let label_pos = Pos2::new(center.x, rect.min.y);
-                painter.text(
-                    label_pos,
-                    egui::Align2::CENTER_TOP,
-                    label,
-                    egui::FontId::proportional(11.0),
-                    theme.on_surface(),
-                );
-            }
-
-            // Value below knob
-            if self.show_value {
-                let value_text = format!("{:.0}", *value * 100.0);
-                let value_pos = Pos2::new(center.x, center.y + radius + 8.0);
-                painter.text(
-                    value_pos,
-                    egui::Align2::CENTER_TOP,
-                    value_text,
-                    egui::FontId::proportional(10.0),
-                    theme.on_surface_variant(),
-                );
-            }
         }
 
         response
@@ -388,32 +398,42 @@ impl Knob {
         let current_angle = min_angle + value * (max_angle - min_angle);
         let segments = 48;
 
-        // Draw bright colored arc on the rim showing level
-        for i in 0..segments {
-            let t = i as f32 / segments as f32;
-            let angle = min_angle + t * (current_angle - min_angle);
+        // Draw very subtle glow layers first (behind the solid rim)
+        for glow_layer in 0..3 {
+            let glow_offset = (3 - glow_layer) as f32 * 0.8; // Reduced offset for subtlety
+            let glow_alpha = (20 - glow_layer * 5) as u8; // Consistent: 20, 15, 10
+            let glow_color = Color32::from_rgba_unmultiplied(
+                color.r(),
+                color.g(),
+                color.b(),
+                glow_alpha,
+            );
 
-            if angle > current_angle {
-                break;
+            for i in 0..segments {
+                let t = i as f32 / segments as f32;
+                let angle = min_angle + t * (current_angle - min_angle);
+
+                if angle > current_angle {
+                    break;
+                }
+
+                let next_angle = min_angle + ((i + 1) as f32 / segments as f32) * (current_angle - min_angle);
+
+                let glow_radius = radius - 0.5 + glow_offset;
+                let p1 = Pos2::new(
+                    center.x + angle.cos() * glow_radius,
+                    center.y + angle.sin() * glow_radius,
+                );
+                let p2 = Pos2::new(
+                    center.x + next_angle.cos() * glow_radius,
+                    center.y + next_angle.sin() * glow_radius,
+                );
+
+                painter.line_segment([p1, p2], Stroke::new(2.5 + glow_offset, glow_color)); // Thinner stroke
             }
-
-            let next_angle = min_angle + ((i + 1) as f32 / segments as f32) * (current_angle - min_angle);
-
-            // Draw on the outer edge
-            let outer_radius = radius - 0.5;
-            let p1 = Pos2::new(
-                center.x + angle.cos() * outer_radius,
-                center.y + angle.sin() * outer_radius,
-            );
-            let p2 = Pos2::new(
-                center.x + next_angle.cos() * outer_radius,
-                center.y + next_angle.sin() * outer_radius,
-            );
-
-            painter.line_segment([p1, p2], Stroke::new(4.5, color));
         }
 
-        // Add bright glow on top
+        // Draw solid colored rim on top
         for i in 0..segments {
             let t = i as f32 / segments as f32;
             let angle = min_angle + t * (current_angle - min_angle);
@@ -434,14 +454,8 @@ impl Knob {
                 center.y + next_angle.sin() * outer_radius,
             );
 
-            // Bright overlay
-            let bright_color = Color32::from_rgba_unmultiplied(
-                255,
-                255,
-                255,
-                120,
-            );
-            painter.line_segment([p1, p2], Stroke::new(2.5, bright_color));
+            // Solid colored rim
+            painter.line_segment([p1, p2], Stroke::new(4.5, color));
         }
     }
 }

@@ -1,11 +1,11 @@
-# Timeline
+# Event Timeline
 
 Vertical timeline component for displaying chronological events and milestones.
 
 ## Basic Usage
 
 ```demo
-Timeline::new()
+EventTimeline::new()
     .show(ui, |timeline| {
         timeline.item("Project Started", "January 2024");
         timeline.item("First Release", "March 2024");
@@ -16,7 +16,7 @@ Timeline::new()
 ## With Icons
 
 ```demo
-Timeline::new()
+EventTimeline::new()
     .show(ui, |timeline| {
         timeline.item("Launched", "Day 1").icon("🚀");
         timeline.item("First User", "Day 2").icon("👤");
@@ -27,7 +27,7 @@ Timeline::new()
 ## With Time and Highlighting
 
 ```demo
-Timeline::new()
+EventTimeline::new()
     .dot_size(12.0)
     .show(ui, |timeline| {
         timeline.item("Started", "Project initiated")
@@ -43,7 +43,7 @@ Timeline::new()
 
 ## API Reference
 
-### Timeline
+### EventTimeline
 
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -54,13 +54,13 @@ Timeline::new()
 | `.show_lines()` | `bool` | `true` | Show connecting lines |
 | `.show()` | closure | - | Render with closure-based API |
 
-### TimelineBuilder (in closure)
+### EventTimelineBuilder (in closure)
 
 | Method | Type | Description |
 |--------|------|-------------|
 | `.item()` | `(&str, &str)` | Add item with title and description |
 
-### TimelineItemBuilder (chainable from .item())
+### EventTimelineItemBuilder (chainable from .item())
 
 | Method | Type | Description |
 |--------|------|-------------|

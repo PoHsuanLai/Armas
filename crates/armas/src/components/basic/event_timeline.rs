@@ -55,7 +55,7 @@ impl TimelineItem {
     }
 }
 
-/// Vertical timeline component
+/// Vertical event timeline component
 ///
 /// Displays a chronological sequence of events with connecting lines.
 /// Perfect for activity logs, progress tracking, and history displays.
@@ -65,9 +65,9 @@ impl TimelineItem {
 /// ```rust,no_run
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
-/// use armas::Timeline;
+/// use armas::EventTimeline;
 ///
-/// Timeline::new()
+/// EventTimeline::new()
 ///     .dot_size(12.0)
 ///     .show(ui, |timeline| {
 ///         timeline.item("Started", "Project initiated")
@@ -79,7 +79,7 @@ impl TimelineItem {
 ///     });
 /// # }
 /// ```
-pub struct Timeline {
+pub struct EventTimeline {
     /// Dot size
     dot_size: f32,
     /// Line width
@@ -90,8 +90,8 @@ pub struct Timeline {
     show_lines: bool,
 }
 
-impl Timeline {
-    /// Create a new timeline
+impl EventTimeline {
+    /// Create a new event timeline
     pub fn new() -> Self {
         Self {
             dot_size: 12.0,
@@ -152,7 +152,7 @@ impl Timeline {
     }
 }
 
-impl Default for Timeline {
+impl Default for EventTimeline {
     fn default() -> Self {
         Self::new()
     }

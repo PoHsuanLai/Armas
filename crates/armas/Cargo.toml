@@ -18,3 +18,7 @@ chrono = { version = "0.4", features = ["clock", "wasmbind"] }
 
 [dev-dependencies]
 eframe = "0.33"
+
+[build-dependencies]
+usvg = "0.46"
+lyon_tessellation = "1.0"

@@ -56,14 +56,14 @@ impl<'a> Default for Slot<'a> {
 }
 
 impl<'a> Slot<'a> {
-    /// Create a new empty slot with default dimensions (120x36)
+    /// Create a new empty slot with default dimensions (140x28)
     pub fn new() -> Self {
         Self {
             name: None,
             bypassed: false,
             level: 0.0,
-            width: 120.0,
-            height: 36.0,
+            width: 140.0,
+            height: 28.0,
         }
     }
 
@@ -114,7 +114,7 @@ impl<'a> Slot<'a> {
         let filled = self.name.is_some();
 
         // Determine colors
-        let (box_color, border_color, text_color) = if let Some(name) = self.name {
+        let (mut box_color, mut border_color, mut text_color) = if let Some(name) = self.name {
             let effect_color = get_effect_color(name, &theme);
             let border = if self.bypassed {
                 theme.on_surface_variant()
@@ -130,15 +130,28 @@ impl<'a> Slot<'a> {
             )
         };
 
-        // Background
-        ui.painter()
-            .rect_filled(rect, theme.spacing.corner_radius as f32 * 0.5, box_color);
+        // Hover effect - brighten box, border, and text (especially for empty slots with "+")
+        if response.hovered() {
+            box_color = box_color.gamma_multiply(1.2);
+            // For empty slots, use theme primary for border glow
+            // For filled slots, brighten the existing border color
+            if !filled {
+                border_color = theme.primary();
+            } else {
+                border_color = border_color.gamma_multiply(1.4);
+            }
+            text_color = text_color.gamma_multiply(1.5); // Make text (including "+") brighter
+        }
 
-        // Border
-        let border_width = if filled { 1.5 } else { 1.0 };
+        // Background - flatter style with smaller corner radius
+        ui.painter()
+            .rect_filled(rect, 3.0, box_color);
+
+        // Border - thinner for flatter appearance
+        let border_width = if filled { 1.0 } else { 0.8 };
         ui.painter().rect_stroke(
             rect,
-            theme.spacing.corner_radius as f32 * 0.5,
+            3.0,
             egui::Stroke::new(border_width, border_color),
             egui::StrokeKind::Middle,
         );
@@ -163,18 +176,18 @@ impl<'a> Slot<'a> {
             text_color,
         );
 
-        // Mini meter (if effect is active)
+        // Mini meter (if effect is active) - flatter style
         if filled {
-            const MINI_METER_WIDTH: f32 = 2.5;
+            const MINI_METER_WIDTH: f32 = 2.0;
             let meter_rect = egui::Rect::from_min_size(
                 egui::pos2(
-                    rect.max.x - MINI_METER_WIDTH - theme.spacing.sm,
-                    rect.min.y + theme.spacing.sm * 0.5,
+                    rect.max.x - MINI_METER_WIDTH - theme.spacing.sm * 0.8,
+                    rect.min.y + 4.0,
                 ),
-                egui::vec2(MINI_METER_WIDTH, self.height - theme.spacing.sm),
+                egui::vec2(MINI_METER_WIDTH, self.height - 8.0),
             );
 
-            // Meter fill
+            // Meter fill - no border for cleaner look
             let meter_height = meter_rect.height() * self.level;
             let meter_fill = egui::Rect::from_min_size(
                 egui::pos2(meter_rect.min.x, meter_rect.max.y - meter_height),
@@ -182,15 +195,7 @@ impl<'a> Slot<'a> {
             );
 
             ui.painter()
-                .rect_filled(meter_fill, 0.0, theme.primary().gamma_multiply(0.8));
-
-            // Meter border
-            ui.painter().rect_stroke(
-                meter_rect,
-                0.0,
-                egui::Stroke::new(0.5, theme.outline_variant()),
-                egui::StrokeKind::Middle,
-            );
+                .rect_filled(meter_fill, 1.0, theme.primary());
 
             // Bypass indicator
             if self.bypassed {

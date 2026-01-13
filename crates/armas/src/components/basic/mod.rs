@@ -16,7 +16,7 @@ pub mod section_header;
 pub mod select;
 pub mod slider;
 pub mod textarea;
-pub mod timeline;
+pub mod event_timeline;
 pub mod toggle;
 pub mod tooltip;
 
@@ -38,7 +38,7 @@ pub use section_header::SectionHeader;
 pub use select::{Select, SelectOption, SelectResponse};
 pub use slider::{Slider, SliderResponse};
 pub use textarea::Textarea;
-pub use timeline::Timeline;
+pub use event_timeline::EventTimeline;
 pub use toggle::{
     Toggle, ToggleGroup, ToggleGroupResponse, ToggleGroupState, ToggleResponse, ToggleSize, ToggleVariant,
 };

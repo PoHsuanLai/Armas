@@ -2,8 +2,9 @@
 //!
 //! Modern text input fields with icons, validation, and animations
 
+use crate::components::cards::{Card, CardVariant};
 use crate::ext::ArmasContextExt;
-use egui::{vec2, Color32, CornerRadius, Response, Sense, Stroke, TextEdit, Ui};
+use egui::{Response, TextEdit, Ui};
 
 /// Input field variant
 ///
@@ -53,6 +54,8 @@ pub struct Input {
     right_icon: Option<String>,
     width: Option<f32>,
     password: bool,
+    font_size: f32,
+    text_color: Option<egui::Color32>,
 }
 
 impl Input {
@@ -69,6 +72,8 @@ impl Input {
             right_icon: None,
             width: None,
             password: false,
+            font_size: 14.0,
+            text_color: None,
         }
     }
 
@@ -126,6 +131,18 @@ impl Input {
         self
     }
 
+    /// Set font size
+    pub fn font_size(mut self, size: f32) -> Self {
+        self.font_size = size;
+        self
+    }
+
+    /// Set text color
+    pub fn text_color(mut self, color: egui::Color32) -> Self {
+        self.text_color = Some(color);
+        self
+    }
+
     /// Show the input field
     pub fn show(self, ui: &mut Ui, text: &mut String) -> Response {
         let theme = ui.ctx().armas_theme();
@@ -150,7 +167,11 @@ impl Input {
         };
 
         // For Inline variant, use button height
-        let height = if self.variant == InputVariant::Inline { 28.0 } else { 40.0 };
+        let height = if self.variant == InputVariant::Inline {
+            28.0
+        } else {
+            40.0
+        };
 
         // Only use vertical layout if we have label or helper text
         let has_extras = self.label.is_some() || self.helper_text.is_some();
@@ -169,142 +190,125 @@ impl Input {
                 );
             }
 
-            // Input container
-            let desired_size = vec2(width, height);
-            let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click());
-
-            if ui.is_rect_visible(rect) {
-                let _visuals = ui.style().interact(&response);
-
-                // Determine colors based on state and variant
-                let (bg_color, border_color) = match self.state {
-                    InputState::Normal => match self.variant {
-                        InputVariant::Default => {
-                            let surface = theme.surface_variant();
-                            let bg = Color32::from_rgba_unmultiplied(
-                                surface.r(),
-                                surface.g(),
-                                surface.b(),
-                                180,
-                            );
-                            (bg, theme.primary())
-                        }
-                        InputVariant::Outlined => (
-                            Color32::TRANSPARENT,
-                            if response.has_focus() {
-                                theme.primary()
-                            } else {
-                                theme.outline_variant()
-                            },
-                        ),
-                        InputVariant::Filled => {
-                            let surface = theme.surface_variant();
-                            (surface, theme.primary())
-                        }
-                        InputVariant::Inline => {
-                            // Button-like appearance when not focused
-                            if response.has_focus() {
-                                // Editable state - subtle background
-                                let surface = theme.surface_variant();
-                                (surface, theme.primary())
-                            } else {
-                                // Button-like state
-                                let surface = theme.surface();
-                                (surface, theme.outline())
-                            }
-                        }
-                    },
-                    InputState::Success => {
-                        let success = theme.success();
-                        (
-                            Color32::from_rgba_unmultiplied(
-                                success.r(),
-                                success.g(),
-                                success.b(),
-                                40,
-                            ),
-                            success,
-                        )
-                    }
-                    InputState::Error => {
-                        let error = theme.error();
-                        (
-                            Color32::from_rgba_unmultiplied(error.r(), error.g(), error.b(), 40),
-                            error,
-                        )
-                    }
-                    InputState::Warning => {
-                        let warning = theme.warning();
-                        (
-                            Color32::from_rgba_unmultiplied(
-                                warning.r(),
-                                warning.g(),
-                                warning.b(),
-                                40,
-                            ),
-                            warning,
-                        )
-                    }
-                };
-
-                // Background
-                ui.painter().rect_filled(
-                    rect,
-                    CornerRadius::same(theme.spacing.corner_radius_small),
-                    bg_color,
-                );
-
-                // Border (stronger on focus)
-                let border_width = if response.has_focus() { 2.0 } else { 1.0 };
-                ui.painter().rect_stroke(
-                    rect,
-                    CornerRadius::same(theme.spacing.corner_radius_small),
-                    Stroke::new(border_width, border_color),
-                    egui::StrokeKind::Outside,
-                );
-
-                // Calculate text area considering icons
-                let mut text_rect = rect.shrink2(vec2(12.0, 8.0));
-
+            // For Inline variant, render without card wrapper for minimal visual chrome
+            let response = if self.variant == InputVariant::Inline {
                 // Left icon
                 if let Some(icon) = &self.left_icon {
-                    let icon_pos = rect.left_center() + vec2(12.0, 0.0);
-                    ui.painter().text(
-                        icon_pos,
-                        egui::Align2::LEFT_CENTER,
-                        icon,
-                        egui::FontId::proportional(18.0),
-                        theme.on_surface(),
+                    ui.label(
+                        egui::RichText::new(icon)
+                            .size(16.0)
+                            .color(theme.on_surface_variant()),
                     );
-                    text_rect.min.x += 30.0;
                 }
 
-                // Right icon
-                if let Some(icon) = &self.right_icon {
-                    let icon_pos = rect.right_center() - vec2(12.0, 0.0);
-                    ui.painter().text(
-                        icon_pos,
-                        egui::Align2::RIGHT_CENTER,
-                        icon,
-                        egui::FontId::proportional(18.0),
-                        theme.on_surface(),
-                    );
-                    text_rect.max.x -= 30.0;
+                // Apply font size and text color before creating TextEdit
+                ui.style_mut().text_styles.insert(
+                    egui::TextStyle::Body,
+                    egui::FontId::proportional(self.font_size),
+                );
+                if let Some(color) = self.text_color {
+                    ui.style_mut().visuals.override_text_color = Some(color);
                 }
 
                 // Text input
                 let mut text_edit = TextEdit::singleline(text)
                     .hint_text(&self.placeholder)
-                    .desired_width(text_rect.width())
-                    .frame(false);
+                    .desired_width(width - if self.left_icon.is_some() { 24.0 } else { 0.0 } - if self.right_icon.is_some() { 24.0 } else { 0.0 })
+                    .frame(false)
+                    .font(egui::TextStyle::Body)
+                    .vertical_align(egui::Align::Center);
 
                 if self.password {
                     text_edit = text_edit.password(true);
                 }
 
-                let text_response = ui.put(text_rect, text_edit);
-                response = response.union(text_response);
-            }
+                let text_response = ui.add(text_edit);
+
+                // Right icon
+                if let Some(icon) = &self.right_icon {
+                    ui.label(
+                        egui::RichText::new(icon)
+                            .size(16.0)
+                            .color(theme.on_surface_variant()),
+                    );
+                }
+
+                text_response
+            } else {
+                // For Filled and Outlined variants, use Card
+                let (card_variant, border_color) = match self.state {
+                    InputState::Normal => match self.variant {
+                        InputVariant::Default | InputVariant::Filled => (CardVariant::Filled, None),
+                        InputVariant::Outlined => (CardVariant::Outlined, None),
+                        InputVariant::Inline => unreachable!(), // Already handled above
+                    },
+                    InputState::Success => (CardVariant::Outlined, Some(theme.success())),
+                    InputState::Error => (CardVariant::Outlined, Some(theme.error())),
+                    InputState::Warning => (CardVariant::Outlined, Some(theme.warning())),
+                };
+
+                // Create card for input with minimal padding
+                let mut card = Card::new().variant(card_variant).inner_margin(4.0);
+
+                if let Some(border) = border_color {
+                    card = card.stroke(border);
+                }
+
+                let card_response = card.show(ui, &theme, |ui| {
+                    ui.set_width(width - 8.0); // Account for card padding (4px * 2)
+                    ui.set_height(height - 8.0); // Account for card padding (4px * 2)
+
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                        ui.spacing_mut().item_spacing.x = 8.0;
+
+                        // Left icon
+                        if let Some(icon) = &self.left_icon {
+                            ui.label(
+                                egui::RichText::new(icon)
+                                    .size(16.0)
+                                    .color(theme.on_surface_variant()),
+                            );
+                        }
+
+                        // Text input
+                        let mut text_edit = TextEdit::singleline(text)
+                            .hint_text(&self.placeholder)
+                            .desired_width(
+                                ui.available_width()
+                                    - if self.right_icon.is_some() { 24.0 } else { 0.0 },
+                            )
+                            .frame(false)
+                            .font(egui::TextStyle::Body)
+                            .vertical_align(egui::Align::Center);
+
+                        if self.password {
+                            text_edit = text_edit.password(true);
+                        }
+
+                        // Apply font size and text color
+                        ui.style_mut().text_styles.insert(
+                            egui::TextStyle::Body,
+                            egui::FontId::proportional(self.font_size),
+                        );
+                        if let Some(color) = self.text_color {
+                            ui.style_mut().visuals.override_text_color = Some(color);
+                        }
+
+                        ui.add(text_edit);
+
+                        // Right icon
+                        if let Some(icon) = &self.right_icon {
+                            ui.label(
+                                egui::RichText::new(icon)
+                                    .size(16.0)
+                                    .color(theme.on_surface_variant()),
+                            );
+                        }
+                    });
+                });
+
+                card_response.response
+            };
 
             // Helper text
             if let Some(helper) = &self.helper_text {

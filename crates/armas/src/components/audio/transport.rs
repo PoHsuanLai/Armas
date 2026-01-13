@@ -1,0 +1,419 @@
+//! Transport Control Component
+//!
+//! Professional DAW transport bar with playback controls, time display,
+//! tempo, and loop/metronome controls.
+
+use crate::components::basic::input::{Input, InputVariant};
+use crate::components::button::{ButtonVariant, IconButton};
+use crate::components::cards::{Card, CardVariant};
+use crate::icon::TransportIcon;
+use crate::theme::Theme;
+use egui::{Align, Response, Ui};
+
+/// Transport playback state
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TransportState {
+    /// Transport is stopped
+    Stopped,
+    /// Transport is playing
+    Playing,
+    /// Transport is paused
+    Paused,
+    /// Transport is recording
+    Recording,
+}
+
+/// Response from the transport control
+#[derive(Debug, Clone)]
+pub struct TransportResponse {
+    /// The UI response
+    pub response: Response,
+    /// Play button clicked
+    pub play_clicked: bool,
+    /// Pause button clicked (when playing)
+    pub pause_clicked: bool,
+    /// Stop button clicked
+    pub stop_clicked: bool,
+    /// Record button clicked
+    pub record_clicked: bool,
+    /// Rewind (go to start) clicked
+    pub rewind_clicked: bool,
+    /// Fast forward clicked
+    pub forward_clicked: bool,
+    /// Loop toggle clicked
+    pub loop_toggled: bool,
+    /// Metronome toggle clicked
+    pub metronome_toggled: bool,
+    /// Tempo changed
+    pub tempo_changed: bool,
+    /// New tempo value (if changed)
+    pub new_tempo: Option<f32>,
+}
+
+/// Transport Control component
+///
+/// Professional DAW-style transport bar with playback controls, time display,
+/// tempo controls, and toggles for loop and metronome.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # use armas::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas::components::TransportControl;
+///
+/// let transport = TransportControl::new()
+///     .tempo(120.0)
+///     .time_signature(4, 4);
+///
+/// let (response, transport) = transport.show(ui, theme);
+///
+/// if response.play_clicked {
+///     // Start playback
+/// }
+/// if response.stop_clicked {
+///     // Stop playback
+/// }
+/// # }
+/// ```
+#[derive(Clone)]
+pub struct TransportControl {
+    /// Current playback state
+    state: TransportState,
+    /// Current time in seconds
+    current_time: f64,
+    /// Tempo in BPM
+    tempo: f32,
+    /// Time signature (numerator, denominator)
+    time_signature: (u8, u8),
+    /// Loop enabled
+    loop_enabled: bool,
+    /// Metronome enabled
+    metronome_enabled: bool,
+    /// Width of the transport
+    width: Option<f32>,
+}
+
+impl TransportControl {
+    /// Create a new transport control
+    pub fn new() -> Self {
+        Self {
+            state: TransportState::Stopped,
+            current_time: 0.0,
+            tempo: 120.0,
+            time_signature: (4, 4),
+            loop_enabled: false,
+            metronome_enabled: false,
+            width: None,
+        }
+    }
+
+    /// Set the playback state
+    pub fn state(mut self, state: TransportState) -> Self {
+        self.state = state;
+        self
+    }
+
+    /// Set the current time in seconds
+    pub fn current_time(mut self, time: f64) -> Self {
+        self.current_time = time;
+        self
+    }
+
+    /// Set the tempo in BPM
+    pub fn tempo(mut self, tempo: f32) -> Self {
+        self.tempo = tempo;
+        self
+    }
+
+    /// Set the time signature (numerator, denominator)
+    pub fn time_signature(mut self, numerator: u8, denominator: u8) -> Self {
+        self.time_signature = (numerator, denominator);
+        self
+    }
+
+    /// Set loop enabled state
+    pub fn loop_enabled(mut self, enabled: bool) -> Self {
+        self.loop_enabled = enabled;
+        self
+    }
+
+    /// Set metronome enabled state
+    pub fn metronome_enabled(mut self, enabled: bool) -> Self {
+        self.metronome_enabled = enabled;
+        self
+    }
+
+    /// Set the width of the transport (None = fill available width)
+    pub fn width(mut self, width: f32) -> Self {
+        self.width = Some(width);
+        self
+    }
+
+    // Getter methods
+
+    /// Get current playback state
+    pub fn get_state(&self) -> TransportState {
+        self.state
+    }
+
+    /// Get current time
+    pub fn get_current_time(&self) -> f64 {
+        self.current_time
+    }
+
+    /// Get tempo
+    pub fn get_tempo(&self) -> f32 {
+        self.tempo
+    }
+
+    /// Get time signature
+    pub fn get_time_signature(&self) -> (u8, u8) {
+        self.time_signature
+    }
+
+    /// Check if loop is enabled
+    pub fn is_loop_enabled(&self) -> bool {
+        self.loop_enabled
+    }
+
+    /// Check if metronome is enabled
+    pub fn is_metronome_enabled(&self) -> bool {
+        self.metronome_enabled
+    }
+
+    /// Show the transport control
+    pub fn show(mut self, ui: &mut Ui, theme: &Theme) -> (TransportResponse, Self) {
+        let mut play_clicked = false;
+        let mut pause_clicked = false;
+        let mut stop_clicked = false;
+        let mut record_clicked = false;
+        let mut rewind_clicked = false;
+        let mut forward_clicked = false;
+        let mut loop_toggled = false;
+        let mut metronome_toggled = false;
+        let mut tempo_changed = false;
+        let mut new_tempo = None;
+
+        let card_response = Card::new()
+            .variant(CardVariant::Elevated)
+            .show(ui, theme, |ui| {
+                ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
+                    ui.add_space(theme.spacing.md);
+
+                    // Navigation controls
+                    ui.horizontal_centered(|ui| {
+                        ui.spacing_mut().item_spacing.x = 4.0;
+
+                        // Rewind to start
+                        if IconButton::new(TransportIcon::Rewind)
+                            .variant(ButtonVariant::Text)
+                            .size(24.0)
+                            .padding(4.0)
+                            .show(ui)
+                            .clicked()
+                        {
+                            rewind_clicked = true;
+                            self.current_time = 0.0;
+                        }
+
+                        // Play / Pause toggle
+                        let play_icon = match self.state {
+                            TransportState::Playing | TransportState::Recording => {
+                                TransportIcon::Pause
+                            }
+                            _ => TransportIcon::Play,
+                        };
+
+                        if IconButton::new(play_icon)
+                            .variant(ButtonVariant::Text)
+                            .size(24.0)
+                            .padding(4.0)
+                            .show(ui)
+                            .clicked()
+                        {
+                            match self.state {
+                                TransportState::Playing | TransportState::Recording => {
+                                    pause_clicked = true;
+                                    self.state = TransportState::Paused;
+                                }
+                                _ => {
+                                    play_clicked = true;
+                                    self.state = TransportState::Playing;
+                                }
+                            }
+                        }
+
+                        // Stop
+                        if IconButton::new(TransportIcon::Stop)
+                            .variant(ButtonVariant::Text)
+                            .size(24.0)
+                            .padding(4.0)
+                            .show(ui)
+                            .clicked()
+                        {
+                            stop_clicked = true;
+                            self.state = TransportState::Stopped;
+                            self.current_time = 0.0;
+                        }
+
+                        // Fast forward
+                        if IconButton::new(TransportIcon::Forward)
+                            .variant(ButtonVariant::Text)
+                            .size(24.0)
+                            .padding(4.0)
+                            .show(ui)
+                            .clicked()
+                        {
+                            forward_clicked = true;
+                        }
+                    });
+
+                    ui.add_space(theme.spacing.lg);
+
+                    // Time display
+                    Card::new()
+                        .variant(CardVariant::Filled)
+                        .fill(theme.surface())
+                        .inner_margin(8.0)
+                        .show(ui, theme, |ui| {
+                            let minutes = (self.current_time / 60.0) as u32;
+                            let seconds = (self.current_time % 60.0) as u32;
+                            let millis = ((self.current_time % 1.0) * 1000.0) as u32;
+                            let time_str = format!("{:02}:{:02}.{:03}", minutes, seconds, millis);
+
+                            ui.label(
+                                egui::RichText::new(time_str)
+                                    .size(16.0)
+                                    .family(egui::FontFamily::Proportional)
+                                    .color(theme.on_surface()),
+                            );
+                        });
+
+                    ui.add_space(theme.spacing.lg);
+
+                    // Tempo display
+                    Card::new()
+                        .variant(CardVariant::Filled)
+                        .fill(theme.surface())
+                        .inner_margin(8.0)
+                        .show(ui, theme, |ui| {
+                            ui.spacing_mut().item_spacing.x = 8.0;
+
+                            ui.label(
+                                egui::RichText::new("BPM:")
+                                    .size(16.0)
+                                    .color(theme.on_surface()),
+                            );
+                            let mut tempo_str = format!("{:.1}", self.tempo);
+                            let tempo_response = Input::new("")
+                                .variant(InputVariant::Inline)
+                                .width(60.0)
+                                .font_size(16.0)
+                                .text_color(theme.on_surface())
+                                .show(ui, &mut tempo_str);
+
+                            if tempo_response.changed() {
+                                if let Ok(new_bpm) = tempo_str.parse::<f32>() {
+                                    if new_bpm > 0.0 && new_bpm <= 999.0 {
+                                        self.tempo = new_bpm;
+                                        tempo_changed = true;
+                                        new_tempo = Some(new_bpm);
+                                    }
+                                }
+                            }
+                        });
+
+                    ui.add_space(theme.spacing.md);
+
+                    // Time signature display
+                    Card::new()
+                        .variant(CardVariant::Filled)
+                        .fill(theme.surface())
+                        .inner_margin(8.0)
+                        .show(ui, theme, |ui| {
+                            let time_sig_str =
+                                format!("{}/{}", self.time_signature.0, self.time_signature.1);
+                            ui.label(
+                                egui::RichText::new(time_sig_str)
+                                    .size(16.0)
+                                    .color(theme.on_surface()),
+                            );
+                        });
+
+                    ui.add_space(theme.spacing.lg);
+
+                    // Toggle controls
+                    ui.horizontal_centered(|ui| {
+                        ui.spacing_mut().item_spacing.x = 4.0;
+
+                        // Loop toggle
+                        if IconButton::new(TransportIcon::Loop)
+                            .variant(ButtonVariant::Text)
+                            .size(24.0)
+                            .padding(4.0)
+                            .show(ui)
+                            .clicked()
+                        {
+                            self.loop_enabled = !self.loop_enabled;
+                            loop_toggled = true;
+                        }
+
+                        // Metronome toggle
+                        if IconButton::new(TransportIcon::Metronome)
+                            .variant(ButtonVariant::Text)
+                            .size(24.0)
+                            .padding(4.0)
+                            .show(ui)
+                            .clicked()
+                        {
+                            self.metronome_enabled = !self.metronome_enabled;
+                            metronome_toggled = true;
+                        }
+
+                        // Record button
+                        if IconButton::new(TransportIcon::Record)
+                            .variant(ButtonVariant::Text)
+                            .size(24.0)
+                            .padding(4.0)
+                            .show(ui)
+                            .clicked()
+                        {
+                            record_clicked = true;
+                            if self.state == TransportState::Recording {
+                                self.state = TransportState::Playing;
+                            } else {
+                                self.state = TransportState::Recording;
+                            }
+                        }
+                    });
+
+                    ui.add_space(theme.spacing.md);
+                })
+                .inner
+            });
+
+        let transport_response = TransportResponse {
+            response: card_response.response,
+            play_clicked,
+            pause_clicked,
+            stop_clicked,
+            record_clicked,
+            rewind_clicked,
+            forward_clicked,
+            loop_toggled,
+            metronome_toggled,
+            tempo_changed,
+            new_tempo,
+        };
+
+        (transport_response, self)
+    }
+}
+
+impl Default for TransportControl {
+    fn default() -> Self {
+        Self::new()
+    }
+}
