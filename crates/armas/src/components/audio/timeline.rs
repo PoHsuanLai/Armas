@@ -486,7 +486,8 @@ impl Timeline {
                                 )
                                 .show(ui, |ui| {
                                     ui.vertical(|ui| {
-                                        // Use default item_spacing for automatic consistent spacing
+                                        // Remove item spacing - Cards have their own margins
+                                        ui.spacing_mut().item_spacing.y = 0.0;
                                         let mut rects = Vec::new();
 
                                         // Render each track in flattened order
@@ -526,7 +527,8 @@ impl Timeline {
                                 .scroll_offset(scroll_offset)
                                 .show(ui, |ui| {
                                     ui.vertical(|ui| {
-                                        // Use default item_spacing for automatic consistent spacing
+                                        // Remove item spacing - Cards have their own margins
+                                        ui.spacing_mut().item_spacing.y = 0.0;
                                         let mut rects = Vec::new();
 
                                         // Render each track in flattened order
@@ -568,11 +570,12 @@ impl Timeline {
                         header_rects.iter().zip(timeline_rects.iter())
                     {
                         // Combine header and timeline rects into one
+                        // Use track_height parameter to ensure consistent height
                         let combined_rect = egui::Rect::from_min_max(
                             header_rect.min,
                             egui::Pos2::new(
                                 timeline_rect.max.x,
-                                timeline_rect.max.y.max(header_rect.max.y),
+                                header_rect.min.y + self.track_height,
                             ),
                         );
 
@@ -588,8 +591,11 @@ impl Timeline {
             scroll_offset
         });
 
+        // Get the visible viewport rect before clipping
+        let visible_viewport = vertical_response.response.rect;
+
         // Clip tracks_rect to the actual visible viewport
-        tracks_rect = tracks_rect.intersect(vertical_response.response.rect);
+        tracks_rect = tracks_rect.intersect(visible_viewport);
 
         // Persist the shared scroll offset for next frame
         ui.ctx().data_mut(|d| {
@@ -598,8 +604,10 @@ impl Timeline {
 
         // Render playhead overlay if enabled
         if self.show_playhead && !ruler_rect.is_negative() && !tracks_rect.is_negative() {
-            // Create a combined rect spanning from ruler to end of tracks
-            let playhead_rect = Rect::from_min_max(ruler_rect.min, tracks_rect.max);
+            // Create a combined rect spanning from ruler to visible tracks viewport
+            // Use the visible viewport rect, not the full scrolled content
+            let playhead_rect = Rect::from_min_max(ruler_rect.min,
+                egui::Pos2::new(tracks_rect.max.x, visible_viewport.max.y));
 
             // Calculate total height (ruler + spacing + tracks)
             let total_height = playhead_rect.height();

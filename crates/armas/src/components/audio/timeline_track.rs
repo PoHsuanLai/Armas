@@ -371,16 +371,24 @@ impl TimelineTrack {
         let mut region_clicked = None;
         let mut empty_clicked = None;
 
-        // Use standard theme spacing for padding (matching track_header)
-        let padding = theme.spacing.sm;
-        let region_h = self.region_height.unwrap_or(self.height);
+        // Calculate actual content height needed
+        // The content is the region drawing area - use region_height if specified,
+        // otherwise calculate based on available space with minimal padding
+        let min_padding = 4.0; // Minimum padding we want on top/bottom
+        let default_content_height = (self.height - (min_padding * 2.0)).max(20.0);
+
+        let content_height = self.region_height.unwrap_or(default_content_height);
+        let region_h = content_height;
+
+        // Calculate padding to fill remaining space equally on top/bottom
+        let total_padding = (self.height - content_height).max(0.0);
+        let padding = total_padding / 2.0;
 
         let mut card = Card::new()
             .variant(CardVariant::Filled)
             .width(total_width)
-            .min_height(self.height)
-            .max_height(self.height)
-            .inner_margin(padding);
+            .height(self.height)
+            .inner_margin(0.0); // No card padding - we handle it manually
 
         // Apply custom background color if provided
         if let Some(color) = self.background_color {
@@ -388,8 +396,8 @@ impl TimelineTrack {
         }
 
         let card_response = card.show(ui, theme, |ui| {
-            // Calculate content height (total height minus padding * 2)
-            let content_height = self.height - (padding * 2.0);
+            // Add top padding
+            ui.add_space(padding);
 
             // Allocate space for the track content
             let (rect, response) =
@@ -457,6 +465,9 @@ impl TimelineTrack {
                     }
                 }
             }
+
+            // Add bottom padding
+            ui.add_space(padding);
 
             response
         });

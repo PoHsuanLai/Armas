@@ -247,9 +247,43 @@ impl<'a> Card<'a> {
         };
         let mut content_result = None;
 
-        // Create a vertical scope to constrain width/height if specified
-        let outer_response = ui
-            .vertical(|ui| {
+        // If both width and height are specified, use exact size allocation
+        let outer_response = if let (Some(width), Some(height)) = (self.width, self.height) {
+            let desired_size = egui::Vec2::new(width, height);
+            let (rect, _) = ui.allocate_exact_size(desired_size, sense);
+
+            // Create a child UI at the exact allocated rect with centered vertical layout
+            let mut child_ui = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(rect)
+                    .layout(egui::Layout::centered_and_justified(egui::Direction::TopDown)),
+            );
+
+            let frame_response = egui::Frame::new()
+                .fill(fill_color)
+                .corner_radius(CornerRadius::same(corner_rad))
+                .stroke(egui::Stroke::new(border_width, border_color))
+                .inner_margin(frame_margin)
+                .show(&mut child_ui, |ui| {
+                    // Title if provided
+                    if let Some(title) = self.title {
+                        ui.label(
+                            egui::RichText::new(title)
+                                .size(ui.spacing().interact_size.y * 0.7)
+                                .color(theme.on_surface())
+                                .strong(),
+                        );
+                        ui.add_space(theme.spacing.sm);
+                    }
+
+                    // User content (no wrapping - components handle their own layout)
+                    content_result = Some(content(ui));
+                });
+
+            frame_response
+        } else {
+            // Fallback to flexible sizing for cases where exact size is not specified
+            ui.vertical(|ui| {
                 // Apply width constraint
                 if let Some(width) = self.width {
                     ui.set_max_width(width);
@@ -289,7 +323,8 @@ impl<'a> Card<'a> {
 
                 frame_response
             })
-            .inner;
+            .inner
+        };
 
         // Make the entire frame interactive if clickable
         let rect = outer_response.response.rect;

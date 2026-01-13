@@ -192,29 +192,36 @@ impl TrackHeader {
         let mut arm_clicked = false;
         let mut collapse_clicked = false;
 
-        // Use standard theme spacing for padding
-        // Horizontal: base padding on left/right (indentation handled inside content)
-        // Vertical: standard padding top/bottom
-        let padding = theme.spacing.sm;
+        // Get actual egui measurements
+        let text_height = ui.text_style_height(&egui::TextStyle::Body);
+        let content_spacing = if self.show_controls { spacing / 2.0 } else { 0.0 };
+        let buttons_height = if self.show_controls { button_size } else { 0.0 };
+
+        let content_height = text_height + content_spacing + buttons_height;
+
+        // Calculate padding to fill remaining space equally on top/bottom
+        let total_padding = (self.height - content_height).max(0.0);
+        let padding = total_padding / 2.0;
 
         let mut card = Card::new()
             .variant(CardVariant::Filled)
             .width(self.width)
-            .min_height(self.height)
-            .max_height(self.height)
-            .inner_margin(padding);
+            .height(self.height)
+            .inner_margin(0.0); // No card padding - we handle it manually
 
         // Apply custom card color if provided
         if let Some(color) = self.card_color {
             card = card.fill(color);
         }
 
-        // Calculate content height (total height minus padding * 2)
-        let content_height = self.height - (padding * 2.0);
-
         let card_response = card.show(ui, theme, |ui| {
-            // Use horizontal layout with center alignment
-            ui.horizontal_centered(|ui| {
+            // Add top padding (calculated from remaining space)
+            ui.add_space(padding);
+
+            // Use horizontal layout (without centering - we handle padding manually)
+            ui.horizontal(|ui| {
+                // Add left padding
+                ui.add_space(padding);
                 // Add indentation space for nested tracks
                 if self.indent_level > 0 {
                     ui.add_space(indent_pixels);
@@ -301,8 +308,6 @@ impl TrackHeader {
                 ui.add_space(if self.compact { 4.0 } else { 6.0 });
 
                 ui.vertical(|ui| {
-                    ui.add_space(spacing);
-
                     // Track name - editable text or label
                     if self.editable {
                         // Get card background color for text edit
@@ -329,7 +334,7 @@ impl TrackHeader {
 
                     // Control buttons row
                     if self.show_controls {
-                        ui.add_space(spacing);
+                        ui.add_space(spacing / 2.0); // Reduced spacing between name and buttons
 
                         ui.horizontal(|ui| {
                             ui.spacing_mut().item_spacing.x = spacing;
@@ -386,8 +391,14 @@ impl TrackHeader {
                             }
                         });
                     }
-                })
-            })
+                });
+
+                // Add right padding
+                ui.add_space(padding);
+            });
+
+            // Add bottom padding
+            ui.add_space(padding);
         });
 
         TrackHeaderResponse {
