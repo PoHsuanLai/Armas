@@ -34,9 +34,9 @@ impl TextRevealCard {
             static_text,
             reveal_text,
             background_color: Color32::PLACEHOLDER, // Use theme.surface()
-            border_color: Color32::PLACEHOLDER, // Use theme.outline_variant()
-            text_color: Color32::PLACEHOLDER, // Use theme.on_surface()
-            reveal_color: Color32::PLACEHOLDER, // Use theme.primary()
+            border_color: Color32::PLACEHOLDER,     // Use theme.outline_variant()
+            text_color: Color32::PLACEHOLDER,       // Use theme.on_surface()
+            reveal_color: Color32::PLACEHOLDER,     // Use theme.primary()
             reveal_animation: Animation::new(0.0, 0.0, 0.4).easing(EasingFunction::EaseOut),
             mouse_x: 0.0,
             is_hovered: false,
@@ -200,7 +200,12 @@ impl TextRevealCard {
                     egui::Align2::LEFT_TOP,
                     "Move mouse to reveal →",
                     egui::FontId::proportional(18.0),
-                    Color32::from_rgba_unmultiplied(hint_color.r(), hint_color.g(), hint_color.b(), 100),
+                    Color32::from_rgba_unmultiplied(
+                        hint_color.r(),
+                        hint_color.g(),
+                        hint_color.b(),
+                        100,
+                    ),
                 );
             }
         }

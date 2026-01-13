@@ -193,7 +193,7 @@ impl MixerStrip {
 
     /// Set scale factor for zoom (1.0 = 100%, 0.8 = 80%, 1.2 = 120%)
     pub fn scale(mut self, scale: f32) -> Self {
-        self.scale = scale.max(0.5).min(2.0); // Clamp between 50% and 200%
+        self.scale = scale.clamp(0.5, 2.0); // Clamp between 50% and 200%
         self
     }
 
@@ -410,7 +410,7 @@ impl MixerStrip {
                                     .size(13.0 * scale)
                                     .vertical_padding(4.0 * scale)
                                     .show(ui);
-                            }
+                            },
                         );
                         ui.add_space(theme.spacing.xs * scale);
                     }
@@ -446,10 +446,13 @@ impl MixerStrip {
                     ui.add_space(theme.spacing.xs * scale);
 
                     // Insert slots - compact height for mixer strip
-                    for (_i, insert) in self.inserts.iter().enumerate() {
+                    for insert in self.inserts.iter() {
                         let slot_width = scaled_width - 24.0 * scale;
                         let slot = if let Some(ref name) = insert.name {
-                            Slot::new().effect(name).width(slot_width).height(slot_height)
+                            Slot::new()
+                                .effect(name)
+                                .width(slot_width)
+                                .height(slot_height)
                         } else {
                             Slot::new().width(slot_width).height(slot_height)
                         };
@@ -463,7 +466,9 @@ impl MixerStrip {
                     // Pan knob
                     // Load pan state (if it exists)
                     let pan_state_id = self.id.with("pan_state");
-                    let current_pan = ui.ctx().data_mut(|d| d.get_temp(pan_state_id).unwrap_or(self.pan));
+                    let current_pan = ui
+                        .ctx()
+                        .data_mut(|d| d.get_temp(pan_state_id).unwrap_or(self.pan));
 
                     // Convert pan from -1..1 to 0..1 for knob
                     let mut pan_knob_value = (current_pan + 1.0) / 2.0;
@@ -501,7 +506,8 @@ impl MixerStrip {
                     // Calculate button width: (strip_width - card_inner_margin * 2 - spacing_between) / 2
                     // Card has 2.0 inner margin on each side = 4.0 total
                     // spacing.xs (4.0) between the two buttons in each row
-                    let button_width_grid = (scaled_width - 4.0 * scale - theme.spacing.xs * scale) / 2.0;
+                    let button_width_grid =
+                        (scaled_width - 4.0 * scale - theme.spacing.xs * scale) / 2.0;
 
                     // First row: Mute and Solo
                     ui.horizontal(|ui| {
@@ -564,7 +570,8 @@ impl MixerStrip {
                     // Load the current fader level from state (if it exists)
                     let current_fader_level = {
                         let state_id = self.id.with("fader").with("fader_state");
-                        ui.ctx().data_mut(|d| d.get_temp(state_id).unwrap_or(self.fader_level))
+                        ui.ctx()
+                            .data_mut(|d| d.get_temp(state_id).unwrap_or(self.fader_level))
                     };
 
                     // Gain display (dB) - convert fader position to dB value
@@ -685,7 +692,10 @@ impl MixerStrip {
 
                     if current_view == "list" {
                         // Send list view
-                        ui.colored_label(theme.on_surface(), egui::RichText::new("Add Sends").heading());
+                        ui.colored_label(
+                            theme.on_surface(),
+                            egui::RichText::new("Add Sends").heading(),
+                        );
                         ui.add_space(8.0);
 
                         if ui.button("+ Add Send").clicked() {
@@ -696,7 +706,10 @@ impl MixerStrip {
                         ui.separator();
                         ui.add_space(16.0);
 
-                        ui.colored_label(theme.on_surface(), egui::RichText::new("Existing Sends").heading());
+                        ui.colored_label(
+                            theme.on_surface(),
+                            egui::RichText::new("Existing Sends").heading(),
+                        );
                         ui.add_space(8.0);
 
                         // Dynamic send list

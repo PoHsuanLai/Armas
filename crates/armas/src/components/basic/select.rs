@@ -433,13 +433,20 @@ impl Select {
                                                 ui.spacing_mut().item_spacing.x = theme.spacing.sm;
                                                 if let Some(icon) = &option.icon {
                                                     ui.label(
-                                                        egui::RichText::new(icon)
-                                                            .color(theme.on_surface_variant().linear_multiply(0.5)),
+                                                        egui::RichText::new(icon).color(
+                                                            theme
+                                                                .on_surface_variant()
+                                                                .linear_multiply(0.5),
+                                                        ),
                                                     );
                                                 }
                                                 ui.label(
                                                     egui::RichText::new(&option.label)
-                                                        .color(theme.on_surface_variant().linear_multiply(0.5))
+                                                        .color(
+                                                            theme
+                                                                .on_surface_variant()
+                                                                .linear_multiply(0.5),
+                                                        )
                                                         .size(14.0),
                                                 );
                                             });
@@ -471,7 +478,9 @@ impl Select {
                                             if is_highlighted || option_response.hovered() {
                                                 ui.painter().rect_filled(
                                                     option_rect,
-                                                    CornerRadius::same(theme.spacing.corner_radius_small),
+                                                    CornerRadius::same(
+                                                        theme.spacing.corner_radius_small,
+                                                    ),
                                                     theme.hover(),
                                                 );
                                             }

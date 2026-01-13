@@ -67,23 +67,14 @@ impl<'a> SidebarBuilder<'a> {
     /// Add an item to the sidebar
     pub fn item(&mut self, icon: &str, label: &str) -> SidebarItemBuilder {
         let id = format!("item_{}_{}", self.current_depth, label);
-        let builder = SidebarItemBuilder::new(
-            id,
-            icon.to_string(),
-            label.to_string(),
-            self.current_depth,
-        );
+        let builder =
+            SidebarItemBuilder::new(id, icon.to_string(), label.to_string(), self.current_depth);
         self.items.push(builder.item.clone());
         builder
     }
 
     /// Add a group with nested items
-    pub fn group(
-        &mut self,
-        icon: &str,
-        label: &str,
-        content: impl FnOnce(&mut Self),
-    ) {
+    pub fn group(&mut self, icon: &str, label: &str, content: impl FnOnce(&mut Self)) {
         let group_id = format!("group_{}_{}", self.current_depth, label);
 
         // Load expanded state from memory
@@ -100,7 +91,11 @@ impl<'a> SidebarBuilder<'a> {
             icon: icon.to_string(),
             label: label.to_string(),
             active: false,
-            badge: Some(if is_expanded { "▼".to_string() } else { "▶".to_string() }),
+            badge: Some(if is_expanded {
+                "▼".to_string()
+            } else {
+                "▶".to_string()
+            }),
             depth: self.current_depth,
             is_group_header: true,
         };
@@ -477,14 +472,15 @@ impl Sidebar {
                     } else {
                         // Draw badge circle
                         let badge_size = 18.0;
-                        let badge_pos = if is_expanded && current_width > self.collapsed_width + 20.0 {
-                            Pos2::new(
-                                item_rect.right() - badge_size / 2.0 - 4.0,
-                                item_rect.top() + 8.0,
-                            )
-                        } else {
-                            Pos2::new(icon_pos.x + icon_size / 2.0, item_rect.top() + 8.0)
-                        };
+                        let badge_pos =
+                            if is_expanded && current_width > self.collapsed_width + 20.0 {
+                                Pos2::new(
+                                    item_rect.right() - badge_size / 2.0 - 4.0,
+                                    item_rect.top() + 8.0,
+                                )
+                            } else {
+                                Pos2::new(icon_pos.x + icon_size / 2.0, item_rect.top() + 8.0)
+                            };
 
                         painter.circle(
                             badge_pos,
@@ -536,4 +532,3 @@ impl Default for Sidebar {
         Self::new()
     }
 }
-

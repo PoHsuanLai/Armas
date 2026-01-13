@@ -45,10 +45,11 @@ use crate::theme::Theme;
 use egui::{self, Color32, CornerRadius};
 
 /// Material Design 3 card variant
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum CardVariant {
     /// Filled card - subtle separation with filled background
     /// Uses surface_variant color, no border, no shadow
+    #[default]
     Filled,
     /// Outlined card - clear boundary with stroke
     /// Uses surface color with 1px outline_variant border
@@ -56,12 +57,6 @@ pub enum CardVariant {
     /// Elevated card - visual separation with shadow effect
     /// Uses surface color with simulated shadow (thicker border gradient)
     Elevated,
-}
-
-impl Default for CardVariant {
-    fn default() -> Self {
-        CardVariant::Filled
-    }
 }
 
 /// Material Design 3 card component
@@ -233,7 +228,9 @@ impl<'a> Card<'a> {
             }
         };
 
-        let corner_rad = self.corner_radius.unwrap_or(theme.spacing.corner_radius as f32) as u8;
+        let corner_rad = self
+            .corner_radius
+            .unwrap_or(theme.spacing.corner_radius as f32) as u8;
 
         let sense = if self.clickable {
             egui::Sense::click()
@@ -251,47 +248,48 @@ impl<'a> Card<'a> {
         let mut content_result = None;
 
         // Create a vertical scope to constrain width/height if specified
-        let outer_response = ui.vertical(|ui| {
-            // Apply width constraint
-            if let Some(width) = self.width {
-                ui.set_max_width(width);
-            }
+        let outer_response = ui
+            .vertical(|ui| {
+                // Apply width constraint
+                if let Some(width) = self.width {
+                    ui.set_max_width(width);
+                }
 
-            // Apply height constraints
-            if let Some(height) = self.height {
-                ui.set_height(height);
-            }
-            if let Some(min_height) = self.min_height {
-                ui.set_min_height(min_height);
-            }
-            if let Some(max_height) = self.max_height {
-                ui.set_max_height(max_height);
-            }
+                // Apply height constraints
+                if let Some(height) = self.height {
+                    ui.set_height(height);
+                }
+                if let Some(min_height) = self.min_height {
+                    ui.set_min_height(min_height);
+                }
+                if let Some(max_height) = self.max_height {
+                    ui.set_max_height(max_height);
+                }
 
-            let frame_response = egui::Frame::new()
-                .fill(fill_color)
-                .corner_radius(CornerRadius::same(corner_rad))
-                .stroke(egui::Stroke::new(border_width, border_color))
-                .inner_margin(frame_margin)
-                .show(ui, |ui| {
-                    // Title if provided
-                    if let Some(title) = self.title {
-                        ui.label(
-                            egui::RichText::new(title)
-                                .size(ui.spacing().interact_size.y * 0.7)
-                                .color(theme.on_surface())
-                                .strong(),
-                        );
-                        ui.add_space(theme.spacing.sm);
-                    }
+                let frame_response = egui::Frame::new()
+                    .fill(fill_color)
+                    .corner_radius(CornerRadius::same(corner_rad))
+                    .stroke(egui::Stroke::new(border_width, border_color))
+                    .inner_margin(frame_margin)
+                    .show(ui, |ui| {
+                        // Title if provided
+                        if let Some(title) = self.title {
+                            ui.label(
+                                egui::RichText::new(title)
+                                    .size(ui.spacing().interact_size.y * 0.7)
+                                    .color(theme.on_surface())
+                                    .strong(),
+                            );
+                            ui.add_space(theme.spacing.sm);
+                        }
 
-                    // User content
-                    content_result = Some(content(ui));
-                });
+                        // User content
+                        content_result = Some(content(ui));
+                    });
 
-            frame_response
-        })
-        .inner;
+                frame_response
+            })
+            .inner;
 
         // Make the entire frame interactive if clickable
         let rect = outer_response.response.rect;

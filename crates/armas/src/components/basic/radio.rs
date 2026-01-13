@@ -219,9 +219,7 @@ impl<'a> RadioGroupBuilder<'a> {
             .unwrap_or(false);
 
         // Create radio and show it
-        let mut radio = Radio::new()
-            .label(&builder.label)
-            .disabled(self.disabled);
+        let mut radio = Radio::new().label(&builder.label).disabled(self.disabled);
 
         if let Some(desc) = &builder.description {
             radio = radio.description(desc);

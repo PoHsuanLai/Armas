@@ -284,7 +284,11 @@ impl Toggle {
             theme.surface()
         };
 
-        painter.rect_filled(rect, CornerRadius::same(theme.spacing.corner_radius_small), bg_color);
+        painter.rect_filled(
+            rect,
+            CornerRadius::same(theme.spacing.corner_radius_small),
+            bg_color,
+        );
 
         // Border
         let border_color = if self.disabled {
@@ -557,12 +561,18 @@ mod tests {
         assert_eq!(all_states.len(), 2);
 
         // Check that both toggles are present with correct values
-        assert!(all_states.iter().any(|(id, checked)| id == "option1" && !checked));
-        assert!(all_states.iter().any(|(id, checked)| id == "option2" && *checked));
+        assert!(all_states
+            .iter()
+            .any(|(id, checked)| id == "option1" && !checked));
+        assert!(all_states
+            .iter()
+            .any(|(id, checked)| id == "option2" && *checked));
 
         state.set_checked("option1", true);
         let all_states = state.get_all();
-        assert!(all_states.iter().any(|(id, checked)| id == "option1" && *checked));
+        assert!(all_states
+            .iter()
+            .any(|(id, checked)| id == "option1" && *checked));
     }
 
     #[test]

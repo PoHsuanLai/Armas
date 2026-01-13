@@ -186,11 +186,9 @@ impl AccordionItem {
                 Vec2::new(content_rect.width(), visible_height),
             );
 
-            content_ui.painter().rect_filled(
-                content_bg_rect,
-                0.0,
-                bg_color,
-            );
+            content_ui
+                .painter()
+                .rect_filled(content_bg_rect, 0.0, bg_color);
 
             // Add border
             content_ui.painter().rect_stroke(

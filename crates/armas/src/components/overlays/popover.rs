@@ -299,7 +299,13 @@ impl Popover {
                     PopoverStyle::Elevated => CardVariant::Elevated,
                     PopoverStyle::Bordered => CardVariant::Outlined,
                     PopoverStyle::Flat => CardVariant::Filled,
-                    PopoverStyle::Default => if stroke_width > 0.0 { CardVariant::Outlined } else { CardVariant::Filled },
+                    PopoverStyle::Default => {
+                        if stroke_width > 0.0 {
+                            CardVariant::Outlined
+                        } else {
+                            CardVariant::Filled
+                        }
+                    }
                 };
 
                 Card::new()

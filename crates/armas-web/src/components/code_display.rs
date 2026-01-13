@@ -204,9 +204,7 @@ impl CodeDisplayCard {
                 }
 
                 if self.show_copy_button {
-                    let copy_button = Button::new("📋 Copy")
-                        .variant(ButtonVariant::Text)
-                        .show(ui);
+                    let copy_button = Button::new("📋 Copy").variant(ButtonVariant::Text).show(ui);
 
                     if copy_button.clicked() {
                         // Copy to clipboard (works on both native and WASM)

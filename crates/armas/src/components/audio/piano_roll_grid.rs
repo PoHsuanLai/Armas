@@ -159,10 +159,8 @@ impl PianoRollGrid {
         let grid_width = total_beats * self.beat_width;
 
         // Allocate space
-        let (rect, response) = ui.allocate_exact_size(
-            Vec2::new(grid_width, grid_height),
-            Sense::hover(),
-        );
+        let (rect, response) =
+            ui.allocate_exact_size(Vec2::new(grid_width, grid_height), Sense::hover());
 
         if ui.is_rect_visible(rect) {
             // Draw alternating row backgrounds

@@ -362,7 +362,7 @@ impl TimelineTrack {
     pub fn show(
         self,
         ui: &mut Ui,
-        regions: &mut Vec<Region>,
+        #[allow(clippy::ptr_arg)] regions: &mut Vec<Region>,
         theme: &Theme,
     ) -> TimelineTrackResponse {
         let total_beats = self.measures * self.beats_per_measure;

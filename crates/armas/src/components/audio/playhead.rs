@@ -110,7 +110,13 @@ impl Playhead {
     /// Should be called with the timeline's rect after rendering timeline content.
     ///
     /// Returns Response with `changed()` indicating if position was modified by dragging.
-    pub fn show_in_rect(self, ui: &mut Ui, timeline_rect: Rect, position: &mut f32, theme: &Theme) -> Response {
+    pub fn show_in_rect(
+        self,
+        ui: &mut Ui,
+        timeline_rect: Rect,
+        position: &mut f32,
+        theme: &Theme,
+    ) -> Response {
         // Calculate x position based on beat position
         let x = timeline_rect.min.x + (*position * self.beat_width);
 
@@ -119,7 +125,7 @@ impl Playhead {
         let actual_height = self.height.min(timeline_rect.height());
         let interact_rect = Rect::from_center_size(
             Pos2::new(x, timeline_rect.min.y + actual_height / 2.0),
-            Vec2::new(interact_width, actual_height)
+            Vec2::new(interact_width, actual_height),
         );
 
         let playhead_color = self.color.unwrap_or(Color32::WHITE);
@@ -153,7 +159,7 @@ impl Playhead {
                                     playhead_color.g(),
                                     playhead_color.b(),
                                     alpha,
-                                )
+                                ),
                             ),
                         );
                     }
@@ -173,7 +179,8 @@ impl Playhead {
 
                     // Create interactive handle
                     let handle_id = ui.id().with("playhead_handle");
-                    let handle_response = ui.interact(interact_rect, handle_id, Sense::click_and_drag());
+                    let handle_response =
+                        ui.interact(interact_rect, handle_id, Sense::click_and_drag());
 
                     // Handle color based on interaction
                     let handle_color = if handle_response.hovered() || handle_response.dragged() {
@@ -263,7 +270,14 @@ impl Playhead {
     }
 
     /// Draw a rounded triangle (teardrop shape pointing down)
-    fn draw_rounded_triangle(&self, ui: &mut Ui, top: Pos2, width: f32, height: f32, color: Color32) {
+    fn draw_rounded_triangle(
+        &self,
+        ui: &mut Ui,
+        top: Pos2,
+        width: f32,
+        height: f32,
+        color: Color32,
+    ) {
         use egui::epaint::{PathShape, Shape};
 
         let half_width = width / 2.0;
@@ -286,12 +300,12 @@ impl Playhead {
         let right_ctrl = Pos2::new(top.x + half_width * 0.3, top.y + height * 0.5);
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
-            let x = (1.0 - t).powi(2) * (top.x + half_width) +
-                    2.0 * (1.0 - t) * t * right_ctrl.x +
-                    t.powi(2) * bottom.x;
-            let y = (1.0 - t).powi(2) * (top.y + half_width * top_roundness) +
-                    2.0 * (1.0 - t) * t * right_ctrl.y +
-                    t.powi(2) * bottom.y;
+            let x = (1.0 - t).powi(2) * (top.x + half_width)
+                + 2.0 * (1.0 - t) * t * right_ctrl.x
+                + t.powi(2) * bottom.x;
+            let y = (1.0 - t).powi(2) * (top.y + half_width * top_roundness)
+                + 2.0 * (1.0 - t) * t * right_ctrl.y
+                + t.powi(2) * bottom.y;
             path.push(Pos2::new(x, y));
         }
 
@@ -299,12 +313,12 @@ impl Playhead {
         let left_ctrl = Pos2::new(top.x - half_width * 0.3, top.y + height * 0.5);
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
-            let x = (1.0 - t).powi(2) * bottom.x +
-                    2.0 * (1.0 - t) * t * left_ctrl.x +
-                    t.powi(2) * (top.x - half_width);
-            let y = (1.0 - t).powi(2) * bottom.y +
-                    2.0 * (1.0 - t) * t * left_ctrl.y +
-                    t.powi(2) * (top.y + half_width * top_roundness);
+            let x = (1.0 - t).powi(2) * bottom.x
+                + 2.0 * (1.0 - t) * t * left_ctrl.x
+                + t.powi(2) * (top.x - half_width);
+            let y = (1.0 - t).powi(2) * bottom.y
+                + 2.0 * (1.0 - t) * t * left_ctrl.y
+                + t.powi(2) * (top.y + half_width * top_roundness);
             path.push(Pos2::new(x, y));
         }
 
@@ -313,7 +327,14 @@ impl Playhead {
     }
 
     /// Draw outline of rounded triangle
-    fn draw_rounded_triangle_outline(&self, ui: &mut Ui, top: Pos2, width: f32, height: f32, stroke: Stroke) {
+    fn draw_rounded_triangle_outline(
+        &self,
+        ui: &mut Ui,
+        top: Pos2,
+        width: f32,
+        height: f32,
+        stroke: Stroke,
+    ) {
         use egui::epaint::{PathShape, Shape};
 
         let half_width = width / 2.0;
@@ -335,12 +356,12 @@ impl Playhead {
         let right_ctrl = Pos2::new(top.x + half_width * 0.3, top.y + height * 0.5);
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
-            let x = (1.0 - t).powi(2) * (top.x + half_width) +
-                    2.0 * (1.0 - t) * t * right_ctrl.x +
-                    t.powi(2) * bottom.x;
-            let y = (1.0 - t).powi(2) * (top.y + half_width * top_roundness) +
-                    2.0 * (1.0 - t) * t * right_ctrl.y +
-                    t.powi(2) * bottom.y;
+            let x = (1.0 - t).powi(2) * (top.x + half_width)
+                + 2.0 * (1.0 - t) * t * right_ctrl.x
+                + t.powi(2) * bottom.x;
+            let y = (1.0 - t).powi(2) * (top.y + half_width * top_roundness)
+                + 2.0 * (1.0 - t) * t * right_ctrl.y
+                + t.powi(2) * bottom.y;
             path.push(Pos2::new(x, y));
         }
 
@@ -348,12 +369,12 @@ impl Playhead {
         let left_ctrl = Pos2::new(top.x - half_width * 0.3, top.y + height * 0.5);
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
-            let x = (1.0 - t).powi(2) * bottom.x +
-                    2.0 * (1.0 - t) * t * left_ctrl.x +
-                    t.powi(2) * (top.x - half_width);
-            let y = (1.0 - t).powi(2) * bottom.y +
-                    2.0 * (1.0 - t) * t * left_ctrl.y +
-                    t.powi(2) * (top.y + half_width * top_roundness);
+            let x = (1.0 - t).powi(2) * bottom.x
+                + 2.0 * (1.0 - t) * t * left_ctrl.x
+                + t.powi(2) * (top.x - half_width);
+            let y = (1.0 - t).powi(2) * bottom.y
+                + 2.0 * (1.0 - t) * t * left_ctrl.y
+                + t.powi(2) * (top.y + half_width * top_roundness);
             path.push(Pos2::new(x, y));
         }
 

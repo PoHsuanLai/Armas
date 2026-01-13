@@ -6,14 +6,13 @@
 //! 3. Tessellates paths into triangles using Lyon (properly handles holes)
 //! 4. Generates Rust code with icon data as constants
 
+use lyon_tessellation::{
+    path::Path as TessPath, BuffersBuilder, FillOptions, FillTessellator, FillVertex, VertexBuffers,
+};
 use std::env;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use lyon_tessellation::{
-    BuffersBuilder, FillOptions, FillTessellator, FillVertex, VertexBuffers,
-    path::Path as TessPath,
-};
 use usvg::tiny_skia_path::PathSegment;
 
 fn main() {
@@ -24,13 +23,13 @@ fn main() {
     let mut output = File::create(&dest_path).unwrap();
 
     // Start generating the Rust code
+    writeln!(output, "// Generated icon data - DO NOT EDIT MANUALLY\n").unwrap();
     writeln!(
         output,
-        "// Generated icon data - DO NOT EDIT MANUALLY\n"
+        "use egui::{{epaint::Vertex, Color32, Pos2, Rect, Painter, Mesh}};"
     )
     .unwrap();
-    writeln!(output, "use egui::{{epaint::Vertex, Color32, Pos2, Rect, Painter, Mesh}};").unwrap();
-    writeln!(output, "").unwrap();
+    writeln!(output).unwrap();
 
     // Icon data structure
     writeln!(output, "#[derive(Debug, Clone)]").unwrap();
@@ -43,7 +42,11 @@ fn main() {
     writeln!(output, "}}\n").unwrap();
 
     // Start the icon registry
-    writeln!(output, "pub static TRANSPORT_ICONS: &[(&str, IconData)] = &[").unwrap();
+    writeln!(
+        output,
+        "pub static TRANSPORT_ICONS: &[(&str, IconData)] = &["
+    )
+    .unwrap();
 
     // Parse transport icons
     let icons_dir = PathBuf::from("icons/transport");
@@ -71,7 +74,9 @@ fn main() {
     writeln!(output, "];\n").unwrap();
 
     // Helper function to render icons
-    writeln!(output, r#"
+    writeln!(
+        output,
+        r#"
 pub fn render_icon(painter: &Painter, rect: Rect, icon_data: &IconData, color: Color32) {{
     let scale_x = rect.width() / icon_data.viewbox_width;
     let scale_y = rect.height() / icon_data.viewbox_height;
@@ -100,7 +105,9 @@ pub fn render_icon(painter: &Painter, rect: Rect, icon_data: &IconData, color: C
 
     painter.add(mesh);
 }}
-"#).unwrap();
+"#
+    )
+    .unwrap();
 
     println!("cargo:rustc-env=ICON_DATA_PATH={}", dest_path.display());
 }

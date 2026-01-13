@@ -279,7 +279,8 @@ impl Drawer {
                                 if self.closable {
                                     // Draw close button with X
                                     let close_size = vec2(32.0, 32.0);
-                                    let (close_rect, close_response) = ui.allocate_exact_size(close_size, Sense::click());
+                                    let (close_rect, close_response) =
+                                        ui.allocate_exact_size(close_size, Sense::click());
 
                                     if ui.is_rect_visible(close_rect) {
                                         // Background on hover

@@ -110,19 +110,15 @@ impl ScrambleText {
         let time = ui.input(|i| i.time) as f32;
 
         // Get or initialize state
-        let mut state = ui.data_mut(|d| {
-            d.get_temp::<ScrambleTextState>(self.id)
-                .unwrap_or_default()
-        });
+        let mut state =
+            ui.data_mut(|d| d.get_temp::<ScrambleTextState>(self.id).unwrap_or_default());
 
         // Initialize start time on first frame
         if state.start_time == 0.0 {
             state.start_time = time;
             state.loop_start_time = time;
             state.last_frame_time = time;
-            state.current = (0..self.target.len())
-                .map(|_| self.charset[0])
-                .collect();
+            state.current = (0..self.target.len()).map(|_| self.charset[0]).collect();
         }
 
         // Calculate elapsed time and progress
@@ -138,9 +134,7 @@ impl ScrambleText {
                 state.start_time = time;
                 state.loop_start_time = time;
                 state.last_frame_time = time;
-                state.current = (0..self.target.len())
-                    .map(|_| self.charset[0])
-                    .collect();
+                state.current = (0..self.target.len()).map(|_| self.charset[0]).collect();
             }
         } else if is_complete && !self.loop_mode {
             // Mark loop start time when complete (for delay)

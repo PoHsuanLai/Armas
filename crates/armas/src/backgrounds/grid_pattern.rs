@@ -29,6 +29,12 @@ pub struct GridPattern {
     height: Option<f32>,
 }
 
+impl Default for GridPattern {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GridPattern {
     /// Create a new grid pattern with default settings
     pub fn new() -> Self {
@@ -105,16 +111,12 @@ impl GridPattern {
 
         // Determine size
         let size = if self.width.is_some() || self.height.is_some() {
-            Vec2::new(
-                self.width.unwrap_or(400.0),
-                self.height.unwrap_or(300.0),
-            )
+            Vec2::new(self.width.unwrap_or(400.0), self.height.unwrap_or(300.0))
         } else {
             ui.available_size()
         };
 
-        let (response, painter) =
-            ui.allocate_painter(size, egui::Sense::hover());
+        let (response, painter) = ui.allocate_painter(size, egui::Sense::hover());
 
         let bounds = response.rect;
         let center = bounds.center();
@@ -138,12 +140,8 @@ impl GridPattern {
                 color.a()
             };
 
-            let line_color = Color32::from_rgba_unmultiplied(
-                color.r(),
-                color.g(),
-                color.b(),
-                alpha,
-            );
+            let line_color =
+                Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
 
             if self.perspective {
                 // Perspective effect: lines converge slightly at bottom
@@ -181,12 +179,8 @@ impl GridPattern {
                 color.a()
             };
 
-            let line_color = Color32::from_rgba_unmultiplied(
-                color.r(),
-                color.g(),
-                color.b(),
-                alpha,
-            );
+            let line_color =
+                Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
 
             if self.perspective {
                 // Perspective effect: horizontal lines get closer together at bottom

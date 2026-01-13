@@ -293,7 +293,6 @@ impl TestimonialGrid {
         }
     }
 
-
     /// Set number of columns
     pub fn columns(mut self, columns: usize) -> Self {
         self.columns = Some(columns.max(1));
@@ -319,11 +318,7 @@ impl TestimonialGrid {
     }
 
     /// Show the testimonial grid with closure-based API
-    pub fn show<R>(
-        self,
-        ui: &mut Ui,
-        content: impl FnOnce(&mut TestimonialGridBuilder) -> R,
-    ) {
+    pub fn show<R>(self, ui: &mut Ui, content: impl FnOnce(&mut TestimonialGridBuilder) -> R) {
         let _theme = ui.ctx().armas_theme();
         let available_width = ui.available_width();
 

@@ -204,7 +204,8 @@ impl MeteorShower {
         // Random tail length
         let tail_length = 80.0 + ((hash >> 20) % 100) as f32;
 
-        state.meteors
+        state
+            .meteors
             .push(Meteor::new(start, end, speed, self.color, tail_length, 2.5));
     }
 
@@ -219,10 +220,11 @@ impl MeteorShower {
 
         // Get or initialize state from egui memory
         let mut state = ui.data_mut(|d| {
-            d.get_temp::<MeteorShowerState>(self.id).unwrap_or(MeteorShowerState {
-                meteors: self.meteors.clone(),
-                last_spawn_time: self.last_spawn_time,
-            })
+            d.get_temp::<MeteorShowerState>(self.id)
+                .unwrap_or(MeteorShowerState {
+                    meteors: self.meteors.clone(),
+                    last_spawn_time: self.last_spawn_time,
+                })
         });
 
         // Check if we need to spawn a new meteor based on time

@@ -164,11 +164,8 @@ impl GradientCard {
                         ui.cursor().min,
                         Vec2::new(desired_width - self.border_width * 2.0, 1000.0),
                     );
-                    let mut content_ui = ui.new_child(
-                        egui::UiBuilder::new()
-                            .max_rect(inner_rect)
-                            .layout(layout),
-                    );
+                    let mut content_ui =
+                        ui.new_child(egui::UiBuilder::new().max_rect(inner_rect).layout(layout));
                     content(&mut content_ui);
                 })
                 .response
@@ -193,7 +190,11 @@ impl GradientCard {
         let is_hovered = response.hovered();
 
         // Animate glow on hover using absolute time
-        let target_glow = if self.glow_on_hover && is_hovered { 1.0 } else { 0.0 };
+        let target_glow = if self.glow_on_hover && is_hovered {
+            1.0
+        } else {
+            0.0
+        };
         self.glow_intensity = target_glow; // Instant for stateless rendering
 
         // Render the card
@@ -232,7 +233,13 @@ impl GradientCard {
     }
 
     /// Draw the animated gradient border
-    fn draw_gradient_border(&self, ui: &mut Ui, outer_rect: Rect, inner_rect: Rect, _theme: &Theme) {
+    fn draw_gradient_border(
+        &self,
+        ui: &mut Ui,
+        outer_rect: Rect,
+        inner_rect: Rect,
+        _theme: &Theme,
+    ) {
         let painter = ui.painter();
 
         // Draw gradient border by rendering many small quad segments around the perimeter

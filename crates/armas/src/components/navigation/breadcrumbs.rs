@@ -140,7 +140,6 @@ impl Breadcrumbs {
 
         BreadcrumbsResponse { clicked }
     }
-
 }
 
 /// Builder for adding breadcrumb items
@@ -175,7 +174,7 @@ impl<'a> BreadcrumbsBuilder<'a> {
             is_current: false,
             item_index: self.item_index,
             show_home_icon: self.show_home_icon,
-            clicked: &mut self.clicked,
+            clicked: self.clicked,
         };
 
         item_builder.render();

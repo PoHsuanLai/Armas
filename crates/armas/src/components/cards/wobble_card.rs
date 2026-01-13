@@ -139,7 +139,8 @@ impl WobbleCard {
 
             // Draw shadow (slightly offset)
             if self.is_hovered {
-                let shadow_rect = rect.translate(Vec2::new(theme.spacing.xs / 2.0, theme.spacing.xs / 2.0) + offset);
+                let shadow_rect = rect
+                    .translate(Vec2::new(theme.spacing.xs / 2.0, theme.spacing.xs / 2.0) + offset);
                 painter.rect_filled(
                     shadow_rect,
                     CornerRadius::same(theme.spacing.corner_radius),

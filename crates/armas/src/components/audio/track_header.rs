@@ -8,7 +8,7 @@ use crate::{Button, ButtonVariant, Card, CardVariant};
 use egui::{Color32, Response, Sense, TextEdit, Ui, Vec2};
 
 /// Track control button state
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct TrackControls {
     /// Track is muted
     pub muted: bool,
@@ -16,16 +16,6 @@ pub struct TrackControls {
     pub soloed: bool,
     /// Track is record-armed
     pub armed: bool,
-}
-
-impl Default for TrackControls {
-    fn default() -> Self {
-        Self {
-            muted: false,
-            soloed: false,
-            armed: false,
-        }
-    }
 }
 
 /// Response from track header interaction
@@ -225,14 +215,16 @@ impl TrackHeader {
         let card_response = card.show(ui, theme, |ui| {
             // Use horizontal layout with center alignment
             ui.horizontal_centered(|ui| {
-                    // Add indentation space for nested tracks
-                    if self.indent_level > 0 {
-                        ui.add_space(indent_pixels);
-                    }
+                // Add indentation space for nested tracks
+                if self.indent_level > 0 {
+                    ui.add_space(indent_pixels);
+                }
 
-                    // Color indicator bar with glassmorphism and subtle glow
-                    let (rect, response) =
-                        ui.allocate_exact_size(Vec2::new(color_bar_width, content_height), Sense::click());
+                // Color indicator bar with glassmorphism and subtle glow
+                let (rect, response) = ui.allocate_exact_size(
+                    Vec2::new(color_bar_width, content_height),
+                    Sense::click(),
+                );
 
                 let painter = ui.painter();
 

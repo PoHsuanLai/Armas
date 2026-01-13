@@ -122,8 +122,8 @@ impl BentoGrid {
             } else {
                 0.0
             };
-            let grid_width = self.columns as f32 * self.cell_size
-                + (self.columns - 1) as f32 * self.gap;
+            let grid_width =
+                self.columns as f32 * self.cell_size + (self.columns - 1) as f32 * self.gap;
             ui.allocate_space(Vec2::new(grid_width, total_height));
 
             result
@@ -271,7 +271,11 @@ impl<'a> GridBuilder<'a> {
             .inner;
 
         // Register interaction
-        let _response = self.ui.interact(rect, self.ui.id().with((self.current_col, self.current_row)), Sense::hover());
+        let _response = self.ui.interact(
+            rect,
+            self.ui.id().with((self.current_col, self.current_row)),
+            Sense::hover(),
+        );
 
         // Mark cells as occupied
         self.mark_occupied(self.current_row, self.current_col, cols, rows);

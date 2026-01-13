@@ -23,22 +23,16 @@ fn main() {
         "components/animated",
         "components/audio",
         "components/overlays",
-        "backgrounds"
+        "backgrounds",
     ];
 
     // Define file order within each section (if not specified, alphabetical)
     let mut file_order: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
-    file_order.insert("introduction", vec![
+    file_order.insert(
         "introduction",
-        "why_egui",
-        "philosophy",
-        "attributions",
-    ]);
-    file_order.insert("installation", vec![
-        "quick_start",
-        "cargo_setup",
-        "wasm",
-    ]);
+        vec!["introduction", "why_egui", "philosophy", "attributions"],
+    );
+    file_order.insert("installation", vec!["quick_start", "cargo_setup", "wasm"]);
 
     let mut sections: Vec<(String, Vec<(String, PathBuf)>)> = Vec::new();
 
@@ -68,9 +62,9 @@ fn main() {
                 let b_pos = order.iter().position(|&s| s == b.0.as_str());
                 match (a_pos, b_pos) {
                     (Some(a_idx), Some(b_idx)) => a_idx.cmp(&b_idx),
-                    (Some(_), None) => std::cmp::Ordering::Less,  // Ordered items come first
+                    (Some(_), None) => std::cmp::Ordering::Less, // Ordered items come first
                     (None, Some(_)) => std::cmp::Ordering::Greater,
-                    (None, None) => a.0.cmp(&b.0),  // Both unordered, sort alphabetically
+                    (None, None) => a.0.cmp(&b.0), // Both unordered, sort alphabetically
                 }
             });
         } else {
@@ -93,7 +87,7 @@ fn main() {
     code.push_str("use armas::*;\n");
     code.push_str("use armas_showcase_macros::showcase_page;\n");
     code.push_str("use eframe::egui;\n");
-    code.push_str("\n");
+    code.push('\n');
     code.push_str("// Type aliases for complex types\n");
     code.push_str("type PageShowFn = fn(&mut egui::Ui);\n");
     code.push_str("type Page = (&'static str, PageShowFn);\n");
@@ -151,11 +145,13 @@ fn main() {
     code.push_str("}\n\n");
 
     // Generate get_nested_sections function (hierarchical structure)
+    code.push_str("#[allow(clippy::vec_init_then_push)]\n");
     code.push_str("pub fn get_nested_sections() -> NestedSections {\n");
     code.push_str("    let mut nested = Vec::new();\n\n");
 
     // Group sections by parent, preserving order
-    let mut grouped: Vec<(String, Vec<(String, Vec<(String, PathBuf)>)>)> = Vec::new();
+    type SectionGroup = Vec<(String, Vec<(String, PathBuf)>)>;
+    let mut grouped: Vec<(String, SectionGroup)> = Vec::new();
     let mut seen_parents: Vec<String> = Vec::new();
 
     for (section_name, files) in &sections {
@@ -210,7 +206,9 @@ fn main() {
                             let mut chars = word.chars();
                             match chars.next() {
                                 None => String::new(),
-                                Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+                                Some(first) => {
+                                    first.to_uppercase().collect::<String>() + chars.as_str()
+                                }
                             }
                         })
                         .collect::<Vec<_>>()
@@ -230,7 +228,7 @@ fn main() {
             code.push_str(&format!("    nested.push((\"{}\", vec![\n", parent_display));
 
             for (section_name, files) in subsections {
-                let display_section = section_name.split('/').last().unwrap();
+                let display_section = section_name.split('/').next_back().unwrap();
                 let section_display = display_section.replace("_", " ");
                 let section_display = section_display
                     .split_whitespace()
@@ -238,7 +236,9 @@ fn main() {
                         let mut chars = word.chars();
                         match chars.next() {
                             None => String::new(),
-                            Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+                            Some(first) => {
+                                first.to_uppercase().collect::<String>() + chars.as_str()
+                            }
                         }
                     })
                     .collect::<Vec<_>>()
@@ -257,7 +257,9 @@ fn main() {
                             let mut chars = word.chars();
                             match chars.next() {
                                 None => String::new(),
-                                Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+                                Some(first) => {
+                                    first.to_uppercase().collect::<String>() + chars.as_str()
+                                }
                             }
                         })
                         .collect::<Vec<_>>()

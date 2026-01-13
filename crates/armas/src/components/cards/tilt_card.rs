@@ -183,12 +183,22 @@ impl TiltCard {
                 painter.circle_filled(
                     glare_center,
                     100.0,
-                    Color32::from_rgba_unmultiplied(on_surface.r(), on_surface.g(), on_surface.b(), (glare_strength * 50.0) as u8),
+                    Color32::from_rgba_unmultiplied(
+                        on_surface.r(),
+                        on_surface.g(),
+                        on_surface.b(),
+                        (glare_strength * 50.0) as u8,
+                    ),
                 );
                 painter.circle_filled(
                     glare_center,
                     60.0,
-                    Color32::from_rgba_unmultiplied(on_surface.r(), on_surface.g(), on_surface.b(), (glare_strength * 80.0) as u8),
+                    Color32::from_rgba_unmultiplied(
+                        on_surface.r(),
+                        on_surface.g(),
+                        on_surface.b(),
+                        (glare_strength * 80.0) as u8,
+                    ),
                 );
             }
         }

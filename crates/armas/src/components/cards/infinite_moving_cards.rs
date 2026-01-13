@@ -49,7 +49,7 @@ impl MovingCard {
             subtitle: subtitle.into(),
             author: None,
             background_color: Color32::PLACEHOLDER, // Use theme.surface()
-            text_color: Color32::PLACEHOLDER, // Use theme.on_surface()
+            text_color: Color32::PLACEHOLDER,       // Use theme.on_surface()
         }
     }
 
@@ -114,7 +114,6 @@ impl InfiniteMovingCards {
             pause_on_hover: true,
         }
     }
-
 
     /// Set the card dimensions
     pub fn card_size(mut self, width: f32, height: f32) -> Self {
@@ -235,7 +234,12 @@ impl InfiniteMovingCards {
                             bg_color,
                             egui::Stroke::new(
                                 1.0,
-                                Color32::from_rgba_unmultiplied(outline.r(), outline.g(), outline.b(), 30),
+                                Color32::from_rgba_unmultiplied(
+                                    outline.r(),
+                                    outline.g(),
+                                    outline.b(),
+                                    30,
+                                ),
                             ),
                             egui::StrokeKind::Outside,
                         );
@@ -255,7 +259,10 @@ impl InfiniteMovingCards {
                         // Subtitle
                         let subtitle_color = theme.on_surface_variant();
                         painter.text(
-                            Pos2::new(content_rect.left(), content_rect.top() + theme.spacing.md * 2.5),
+                            Pos2::new(
+                                content_rect.left(),
+                                content_rect.top() + theme.spacing.md * 2.5,
+                            ),
                             egui::Align2::LEFT_TOP,
                             &card.subtitle,
                             egui::FontId::proportional(14.0),
@@ -265,7 +272,10 @@ impl InfiniteMovingCards {
                         // Author (if present)
                         if let Some(author) = &card.author {
                             painter.text(
-                                Pos2::new(content_rect.left(), content_rect.bottom() - theme.spacing.lg),
+                                Pos2::new(
+                                    content_rect.left(),
+                                    content_rect.bottom() - theme.spacing.lg,
+                                ),
                                 egui::Align2::LEFT_TOP,
                                 author,
                                 egui::FontId::proportional(12.0),

@@ -109,11 +109,7 @@ impl MovingBorder {
 
         // Setup gradient colors from theme if not set
         let border_colors = if self.border_colors[0] == Color32::PLACEHOLDER {
-            vec![
-                theme.primary(),
-                theme.secondary(),
-                theme.primary(),
-            ]
+            vec![theme.primary(), theme.secondary(), theme.primary()]
         } else {
             self.border_colors.clone()
         };
@@ -157,8 +153,7 @@ impl MovingBorder {
                 let t = t % 1.0;
 
                 // Calculate color based on position
-                let color_index =
-                    (t * border_colors.len() as f32) as usize % border_colors.len();
+                let color_index = (t * border_colors.len() as f32) as usize % border_colors.len();
                 let next_color_index = (color_index + 1) % border_colors.len();
                 let blend_factor = (t * border_colors.len() as f32) % 1.0;
 
@@ -205,7 +200,12 @@ impl MovingBorder {
                 painter.rect_filled(
                     rect,
                     CornerRadius::same(theme.spacing.corner_radius),
-                    Color32::from_rgba_unmultiplied(on_surface.r(), on_surface.g(), on_surface.b(), 10),
+                    Color32::from_rgba_unmultiplied(
+                        on_surface.r(),
+                        on_surface.g(),
+                        on_surface.b(),
+                        10,
+                    ),
                 );
             }
         }

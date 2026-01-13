@@ -84,7 +84,6 @@ impl Stepper {
         }
     }
 
-
     /// Set the orientation
     pub fn orientation(mut self, orientation: StepperOrientation) -> Self {
         self.orientation = orientation;
@@ -123,10 +122,26 @@ impl Stepper {
 
         match self.orientation {
             StepperOrientation::Horizontal => {
-                Self::show_horizontal(&steps, ui, &theme, current_step, &mut response, self.clickable, self.show_numbers);
+                Self::show_horizontal(
+                    &steps,
+                    ui,
+                    &theme,
+                    current_step,
+                    &mut response,
+                    self.clickable,
+                    self.show_numbers,
+                );
             }
             StepperOrientation::Vertical => {
-                Self::show_vertical(&steps, ui, &theme, current_step, &mut response, self.clickable, self.show_numbers);
+                Self::show_vertical(
+                    &steps,
+                    ui,
+                    &theme,
+                    current_step,
+                    &mut response,
+                    self.clickable,
+                    self.show_numbers,
+                );
             }
         }
 

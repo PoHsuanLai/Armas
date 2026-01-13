@@ -125,7 +125,6 @@ impl Menu {
         self
     }
 
-
     /// Set the menu position
     pub fn position(mut self, position: PopoverPosition) -> Self {
         self.popover = self.popover.position(position);
@@ -189,10 +188,7 @@ impl Menu {
                     Self::navigate_up(&mut self.selected_index, &items);
                 } else if i.key_pressed(Key::Enter) {
                     if let Some(idx) = self.selected_index {
-                        if idx < items.len()
-                            && !items[idx].disabled
-                            && !items[idx].is_separator
-                        {
+                        if idx < items.len() && !items[idx].disabled && !items[idx].is_separator {
                             response.selected = Some(idx);
                             is_open = false;
                             self.selected_index = None;
@@ -314,16 +310,16 @@ impl Menu {
     fn navigate_down(selected_index: &mut Option<usize>, items: &[MenuItemData]) {
         let start_idx = selected_index.map(|i| i + 1).unwrap_or(0);
 
-        for i in start_idx..items.len() {
-            if !items[i].is_separator && !items[i].disabled {
+        for (i, item) in items.iter().enumerate().skip(start_idx) {
+            if !item.is_separator && !item.disabled {
                 *selected_index = Some(i);
                 return;
             }
         }
 
         // Wrap around
-        for i in 0..start_idx {
-            if !items[i].is_separator && !items[i].disabled {
+        for (i, item) in items.iter().enumerate().take(start_idx) {
+            if !item.is_separator && !item.disabled {
                 *selected_index = Some(i);
                 return;
             }
@@ -335,8 +331,7 @@ impl Menu {
 
         for i in (0..=start_idx).rev() {
             let idx = i as usize;
-            if idx < items.len() && !items[idx].is_separator && !items[idx].disabled
-            {
+            if idx < items.len() && !items[idx].is_separator && !items[idx].disabled {
                 *selected_index = Some(idx);
                 return;
             }

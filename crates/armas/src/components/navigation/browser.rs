@@ -264,7 +264,6 @@ impl Browser {
                 is_favorite: false,
                 tags: vec![],
             },
-
             // Drums subfolder
             BrowserItem {
                 name: "Kicks".to_string(),
@@ -290,7 +289,6 @@ impl Browser {
                 is_favorite: false,
                 tags: vec![],
             },
-
             // Kick samples
             BrowserItem {
                 name: "Kick_01.wav".to_string(),
@@ -320,7 +318,6 @@ impl Browser {
                 is_favorite: false,
                 tags: vec!["Kicks".to_string(), "808".to_string(), "Drums".to_string()],
             },
-
             // Snare samples
             BrowserItem {
                 name: "Snare_Heavy.wav".to_string(),
@@ -348,9 +345,12 @@ impl Browser {
                     duration: Some(0.4),
                 }),
                 is_favorite: true,
-                tags: vec!["Snares".to_string(), "Claps".to_string(), "Drums".to_string()],
+                tags: vec![
+                    "Snares".to_string(),
+                    "Claps".to_string(),
+                    "Drums".to_string(),
+                ],
             },
-
             // Hi-Hat samples
             BrowserItem {
                 name: "Hat_Closed.wav".to_string(),
@@ -380,7 +380,6 @@ impl Browser {
                 is_favorite: false,
                 tags: vec!["Hi-Hats".to_string(), "Drums".to_string()],
             },
-
             // Bass samples
             BrowserItem {
                 name: "Bass_Sub.wav".to_string(),
@@ -578,21 +577,22 @@ impl Browser {
                             .iter()
                             .filter(|item| {
                                 // Folder hierarchy filter - only show items in current folder
-                                let in_current_folder = if let Some(ref current) = self.current_folder {
-                                    // Get parent path of the item
-                                    if let Some(parent) = item.path.parent() {
-                                        parent == current.as_path()
+                                let in_current_folder =
+                                    if let Some(ref current) = self.current_folder {
+                                        // Get parent path of the item
+                                        if let Some(parent) = item.path.parent() {
+                                            parent == current.as_path()
+                                        } else {
+                                            false
+                                        }
                                     } else {
-                                        false
-                                    }
-                                } else {
-                                    // At root - show only items in /samples/ (direct children)
-                                    if let Some(parent) = item.path.parent() {
-                                        parent == std::path::Path::new("/samples")
-                                    } else {
-                                        false
-                                    }
-                                };
+                                        // At root - show only items in /samples/ (direct children)
+                                        if let Some(parent) = item.path.parent() {
+                                            parent == std::path::Path::new("/samples")
+                                        } else {
+                                            false
+                                        }
+                                    };
 
                                 // Search filter
                                 let matches_search = if search_query.is_empty() {
@@ -605,9 +605,9 @@ impl Browser {
                                 let matches_tags = if self.filter_tags.is_empty() {
                                     true
                                 } else {
-                                    self.filter_tags.iter().any(|filter_tag| {
-                                        item.tags.contains(filter_tag)
-                                    })
+                                    self.filter_tags
+                                        .iter()
+                                        .any(|filter_tag| item.tags.contains(filter_tag))
                                 };
 
                                 in_current_folder && matches_search && matches_tags

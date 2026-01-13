@@ -189,7 +189,10 @@ impl CommandMenu {
         if !is_open {
             // Save state
             ui.ctx().data_mut(|d| {
-                d.insert_temp(menu_id, (is_open, search_text, selected_index, fade_animation));
+                d.insert_temp(
+                    menu_id,
+                    (is_open, search_text, selected_index, fade_animation),
+                );
             });
             return CommandMenuResponse { executed_command };
         }
@@ -255,8 +258,10 @@ impl CommandMenu {
             .order(egui::Order::Foreground)
             .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
             .show(ui.ctx(), |ui| {
-                let panel_rect =
-                    egui::Rect::from_center_size(screen_rect.center(), vec2(panel_width, panel_height));
+                let panel_rect = egui::Rect::from_center_size(
+                    screen_rect.center(),
+                    vec2(panel_width, panel_height),
+                );
 
                 ui.scope_builder(egui::UiBuilder::new().max_rect(panel_rect), |ui| {
                     // Use Card component with MD3 Elevated variant for floating command palette
@@ -315,7 +320,9 @@ impl CommandMenu {
                                                             ui.add_space(theme.spacing.md);
                                                             ui.label(
                                                                 egui::RichText::new(name)
-                                                                    .color(theme.on_surface_variant())
+                                                                    .color(
+                                                                        theme.on_surface_variant(),
+                                                                    )
                                                                     .size(12.0)
                                                                     .strong(),
                                                             );
@@ -329,7 +336,8 @@ impl CommandMenu {
                                                         icon,
                                                         shortcut,
                                                     } => {
-                                                        let is_selected = command_index == selected_index;
+                                                        let is_selected =
+                                                            command_index == selected_index;
                                                         command_index += 1;
 
                                                         let item_height = if description.is_some() {
@@ -338,10 +346,14 @@ impl CommandMenu {
                                                             40.0
                                                         };
 
-                                                        let (rect, response) = ui.allocate_exact_size(
-                                                            vec2(ui.available_width(), item_height),
-                                                            Sense::click(),
-                                                        );
+                                                        let (rect, response) = ui
+                                                            .allocate_exact_size(
+                                                                vec2(
+                                                                    ui.available_width(),
+                                                                    item_height,
+                                                                ),
+                                                                Sense::click(),
+                                                            );
 
                                                         // Background highlighting
                                                         if is_selected || response.hovered() {
@@ -363,7 +375,10 @@ impl CommandMenu {
                                                         // Icon
                                                         if let Some(icon_text) = icon {
                                                             ui.painter().text(
-                                                                egui::pos2(cursor_x, content_rect.center().y),
+                                                                egui::pos2(
+                                                                    cursor_x,
+                                                                    content_rect.center().y,
+                                                                ),
                                                                 Align2::LEFT_CENTER,
                                                                 icon_text,
                                                                 egui::FontId::proportional(18.0),
@@ -475,7 +490,10 @@ impl CommandMenu {
 
         // Save state
         ui.ctx().data_mut(|d| {
-            d.insert_temp(menu_id, (is_open, search_text, selected_index, fade_animation));
+            d.insert_temp(
+                menu_id,
+                (is_open, search_text, selected_index, fade_animation),
+            );
         });
 
         CommandMenuResponse { executed_command }
@@ -487,4 +505,3 @@ impl Default for CommandMenu {
         Self::new()
     }
 }
-

@@ -98,9 +98,7 @@ impl FocusCards {
 
         // Collect cards from closure
         let mut cards = Vec::new();
-        let mut builder = FocusCardsBuilder {
-            cards: &mut cards,
-        };
+        let mut builder = FocusCardsBuilder { cards: &mut cards };
         content(&mut builder);
 
         let card_count = cards.len();
@@ -112,9 +110,7 @@ impl FocusCards {
                 d.get_temp(cards_id).unwrap_or_else(|| {
                     (
                         (0..card_count)
-                            .map(|_| {
-                                Animation::new(0.0, 0.0, 0.3).easing(EasingFunction::EaseOut)
-                            })
+                            .map(|_| Animation::new(0.0, 0.0, 0.3).easing(EasingFunction::EaseOut))
                             .collect(),
                         None,
                     )
@@ -130,10 +126,9 @@ impl FocusCards {
 
         // Calculate grid dimensions
         let rows = card_count.div_ceil(self.columns);
-        let grid_width = self.columns as f32 * self.card_width
-            + (self.columns - 1) as f32 * self.spacing;
-        let grid_height =
-            rows as f32 * self.card_height + (rows - 1) as f32 * self.spacing;
+        let grid_width =
+            self.columns as f32 * self.card_width + (self.columns - 1) as f32 * self.spacing;
+        let grid_height = rows as f32 * self.card_height + (rows - 1) as f32 * self.spacing;
 
         let (rect, mut response) =
             ui.allocate_exact_size(Vec2::new(grid_width, grid_height), Sense::hover());
@@ -152,10 +147,8 @@ impl FocusCards {
                     rect.min.y + row as f32 * (self.card_height + self.spacing),
                 );
 
-                let card_rect = Rect::from_min_size(
-                    card_pos,
-                    Vec2::new(self.card_width, self.card_height),
-                );
+                let card_rect =
+                    Rect::from_min_size(card_pos, Vec2::new(self.card_width, self.card_height));
 
                 // Get current blur amount
                 let blur_amount = blur_animations[index].value();
@@ -261,6 +254,7 @@ impl Default for FocusCards {
 
 /// Builder for adding cards to the focus cards grid
 pub struct FocusCardsBuilder<'a> {
+    #[allow(clippy::type_complexity)]
     cards: &'a mut Vec<Box<dyn FnOnce(&mut Ui, &Theme, f32) + 'static>>,
 }
 

@@ -3,8 +3,8 @@
 //! Complete DAW-style piano roll with vertical piano keyboard, grid, and interactive note blocks.
 //! Supports clicking to place notes, dragging to resize, and beautiful glassmorphic styling.
 
+use crate::components::audio::{GridDivision, Piano, PianoOrientation};
 use crate::theme::Theme;
-use crate::components::audio::{Piano, PianoOrientation, GridDivision};
 use egui::{Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 
 /// A single note in the piano roll
@@ -248,7 +248,11 @@ impl PianoRoll {
     }
 
     /// Show the grid and notes area
-    fn show_grid_and_notes(&self, ui: &mut Ui, theme: &Theme) -> (Response, Option<NoteInteractions>) {
+    fn show_grid_and_notes(
+        &self,
+        ui: &mut Ui,
+        theme: &Theme,
+    ) -> (Response, Option<NoteInteractions>) {
         // Calculate dimensions
         let total_notes = self.octaves as usize * 12;
         let white_key_count = (0..total_notes)
@@ -263,7 +267,11 @@ impl PianoRoll {
         // Allocate space for the grid - use drag for note placement
         let (rect, response) = ui.allocate_exact_size(
             Vec2::new(grid_width, grid_height),
-            if self.editable { Sense::click_and_drag() } else { Sense::hover() },
+            if self.editable {
+                Sense::click_and_drag()
+            } else {
+                Sense::hover()
+            },
         );
 
         if ui.is_rect_visible(rect) {
@@ -405,7 +413,11 @@ impl PianoRoll {
             };
 
             let alpha_val = 255.0 * 0.2 * opacity_multiplier;
-            let alpha = if alpha_val > 255.0 { 255 } else { alpha_val as u8 };
+            let alpha = if alpha_val > 255.0 {
+                255
+            } else {
+                alpha_val as u8
+            };
             let line_color = Color32::from_rgba_unmultiplied(
                 base_line_color.r(),
                 base_line_color.g(),
@@ -448,7 +460,12 @@ impl PianoRoll {
                     primary.b(),
                     ((intensity as f32 * 1.3).min(255.0)) as u8,
                 );
-                painter.rect_stroke(note_rect, 4.0, Stroke::new(1.0, border_color), egui::StrokeKind::Outside);
+                painter.rect_stroke(
+                    note_rect,
+                    4.0,
+                    Stroke::new(1.0, border_color),
+                    egui::StrokeKind::Outside,
+                );
 
                 // Top highlight for glass effect
                 let highlight_rect = Rect::from_min_size(
@@ -457,7 +474,10 @@ impl PianoRoll {
                 );
                 let highlight_color = Color32::from_rgba_unmultiplied(255, 255, 255, 20);
                 let highlight_rounding = egui::CornerRadius {
-                    nw: 4, ne: 4, sw: 0, se: 0
+                    nw: 4,
+                    ne: 4,
+                    sw: 0,
+                    se: 0,
                 };
                 painter.rect_filled(highlight_rect, highlight_rounding, highlight_color);
             }
@@ -510,7 +530,13 @@ impl PianoRoll {
     }
 
     /// Handle mouse interactions for note placement/removal
-    fn handle_interactions(&self, ui: &Ui, theme: &Theme, rect: Rect, response: &Response) -> Option<NoteInteractions> {
+    fn handle_interactions(
+        &self,
+        ui: &Ui,
+        theme: &Theme,
+        rect: Rect,
+        response: &Response,
+    ) -> Option<NoteInteractions> {
         let mut interactions = NoteInteractions::default();
 
         // Handle click to remove notes
@@ -531,8 +557,8 @@ impl PianoRoll {
                     if let Some(new_note) = self.pos_to_note(pos, rect) {
                         // Check if we already have a note at this exact position
                         let note_exists = self.notes.iter().any(|n| {
-                            n.note == new_note.note &&
-                            (n.start_beat - new_note.start_beat).abs() < 0.01
+                            n.note == new_note.note
+                                && (n.start_beat - new_note.start_beat).abs() < 0.01
                         });
 
                         if !note_exists {
@@ -569,7 +595,12 @@ impl PianoRoll {
                             40,
                         );
                         painter.rect_filled(note_rect, 4.0, ghost_color);
-                        painter.rect_stroke(note_rect, 4.0, Stroke::new(1.0, primary), egui::StrokeKind::Outside);
+                        painter.rect_stroke(
+                            note_rect,
+                            4.0,
+                            Stroke::new(1.0, primary),
+                            egui::StrokeKind::Outside,
+                        );
                     }
                 }
             }
@@ -593,7 +624,11 @@ impl PianoRoll {
         let snap_amount = self.division.beat_fraction();
         let snapped_beat = (beat_pos / snap_amount).floor() * snap_amount;
 
-        Some(Note::new(note_num, snapped_beat, self.default_note_duration))
+        Some(Note::new(
+            note_num,
+            snapped_beat,
+            self.default_note_duration,
+        ))
     }
 
     /// Convert row index to MIDI note

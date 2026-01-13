@@ -119,7 +119,6 @@ impl ScrollingBanner {
         self.paused = false;
     }
 
-
     /// Show the scrolling banner with custom content
     ///
     /// The content function receives the UI and the current repetition index.

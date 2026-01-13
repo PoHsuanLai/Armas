@@ -142,9 +142,9 @@ impl Knob {
             let radius = self.diameter / 2.0;
 
             // Base knob color (glazed ceramic silver-grey)
-            let base_color = self.color.unwrap_or_else(|| {
-                Color32::from_rgb(210, 215, 222)
-            });
+            let base_color = self
+                .color
+                .unwrap_or_else(|| Color32::from_rgb(210, 215, 222));
 
             // === Layer 1: Outer Shadow (Depth) ===
             for i in 0..6 {
@@ -246,7 +246,10 @@ impl Knob {
                 painter.circle_stroke(
                     center,
                     fresnel_radius,
-                    Stroke::new(0.8, Color32::from_rgba_unmultiplied(255, 255, 255, 30 - i * 5)),
+                    Stroke::new(
+                        0.8,
+                        Color32::from_rgba_unmultiplied(255, 255, 255, 30 - i * 5),
+                    ),
                 );
             }
 
@@ -320,7 +323,10 @@ impl Knob {
                 painter.circle_stroke(
                     center,
                     refract_radius,
-                    Stroke::new(0.5, Color32::from_rgba_unmultiplied(235, 240, 255, 20 - i * 5)),
+                    Stroke::new(
+                        0.5,
+                        Color32::from_rgba_unmultiplied(235, 240, 255, 20 - i * 5),
+                    ),
                 );
             }
 
@@ -349,7 +355,6 @@ impl Knob {
                 radius + 0.5,
                 Stroke::new(1.0, Color32::from_rgba_unmultiplied(0, 0, 0, 50)),
             );
-
         }
 
         response
@@ -369,7 +374,8 @@ impl Knob {
         for i in 0..segments {
             let t = i as f32 / segments as f32;
             let angle = start_angle + t * (end_angle - start_angle);
-            let next_angle = start_angle + ((i + 1) as f32 / segments as f32) * (end_angle - start_angle);
+            let next_angle =
+                start_angle + ((i + 1) as f32 / segments as f32) * (end_angle - start_angle);
 
             let p1 = Pos2::new(
                 center.x + angle.cos() * radius,
@@ -385,6 +391,7 @@ impl Knob {
     }
 
     /// Draw level indicator on the rim
+    #[allow(clippy::too_many_arguments)]
     fn draw_rim_indicator(
         &self,
         painter: &egui::Painter,
@@ -402,12 +409,8 @@ impl Knob {
         for glow_layer in 0..3 {
             let glow_offset = (3 - glow_layer) as f32 * 0.8; // Reduced offset for subtlety
             let glow_alpha = (20 - glow_layer * 5) as u8; // Consistent: 20, 15, 10
-            let glow_color = Color32::from_rgba_unmultiplied(
-                color.r(),
-                color.g(),
-                color.b(),
-                glow_alpha,
-            );
+            let glow_color =
+                Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), glow_alpha);
 
             for i in 0..segments {
                 let t = i as f32 / segments as f32;
@@ -417,7 +420,8 @@ impl Knob {
                     break;
                 }
 
-                let next_angle = min_angle + ((i + 1) as f32 / segments as f32) * (current_angle - min_angle);
+                let next_angle =
+                    min_angle + ((i + 1) as f32 / segments as f32) * (current_angle - min_angle);
 
                 let glow_radius = radius - 0.5 + glow_offset;
                 let p1 = Pos2::new(
@@ -429,7 +433,8 @@ impl Knob {
                     center.y + next_angle.sin() * glow_radius,
                 );
 
-                painter.line_segment([p1, p2], Stroke::new(2.5 + glow_offset, glow_color)); // Thinner stroke
+                painter.line_segment([p1, p2], Stroke::new(2.5 + glow_offset, glow_color));
+                // Thinner stroke
             }
         }
 
@@ -442,7 +447,8 @@ impl Knob {
                 break;
             }
 
-            let next_angle = min_angle + ((i + 1) as f32 / segments as f32) * (current_angle - min_angle);
+            let next_angle =
+                min_angle + ((i + 1) as f32 / segments as f32) * (current_angle - min_angle);
 
             let outer_radius = radius - 0.5;
             let p1 = Pos2::new(
@@ -465,4 +471,3 @@ impl Default for Knob {
         Self::new(0.5)
     }
 }
-

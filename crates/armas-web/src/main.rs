@@ -8,8 +8,8 @@ pub mod syntax;
 use armas::*;
 use components::*;
 use eframe::egui;
-use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::SkimMatcherV2;
+use fuzzy_matcher::FuzzyMatcher;
 
 // Type aliases for complex types
 type PageShowFn = fn(&mut egui::Ui);
@@ -126,7 +126,7 @@ struct ShowcaseApp {
     current_view: AppView, // Home or Components
     search_text: String,
     selected_page_index: usize,
-    sidebar_open: bool, // For mobile/tablet hamburger menu
+    sidebar_open: bool,        // For mobile/tablet hamburger menu
     sidebar_just_opened: bool, // Prevent immediate close on same frame
 
     // Available pages from markdown
@@ -153,7 +153,7 @@ impl AppTheme {
         theme.colors.surface = [10, 10, 10];
         theme.colors.surface_variant = [20, 20, 20];
         theme.colors.primary = [255, 255, 255]; // White
-        // Keep on_background as light color for general text
+                                                // Keep on_background as light color for general text
         Self::Dark(theme)
     }
 
@@ -305,7 +305,8 @@ impl ShowcaseApp {
 
         // Responsive layout based on screen width
         let is_mobile = screen_width < layout::MOBILE_BREAKPOINT;
-        let is_tablet = (layout::MOBILE_BREAKPOINT..layout::TABLET_BREAKPOINT).contains(&screen_width);
+        let is_tablet =
+            (layout::MOBILE_BREAKPOINT..layout::TABLET_BREAKPOINT).contains(&screen_width);
 
         if is_mobile {
             // Mobile: Full-screen sidebar with hamburger menu
@@ -327,9 +328,11 @@ impl ShowcaseApp {
                 // Full-screen sidebar
                 let drawer_rect = available_rect;
 
-                let page_was_clicked = ui.scope_builder(egui::UiBuilder::new().max_rect(drawer_rect), |ui| {
-                    self.show_sidebar(ui)
-                }).inner;
+                let page_was_clicked = ui
+                    .scope_builder(egui::UiBuilder::new().max_rect(drawer_rect), |ui| {
+                        self.show_sidebar(ui)
+                    })
+                    .inner;
 
                 // Close sidebar if a page was clicked
                 if page_was_clicked {
@@ -340,7 +343,9 @@ impl ShowcaseApp {
                 if !self.sidebar_just_opened {
                     let click_outside = ui.input(|i| {
                         i.pointer.primary_clicked()
-                            && i.pointer.interact_pos().is_some_and(|pos| !drawer_rect.contains(pos))
+                            && i.pointer
+                                .interact_pos()
+                                .is_some_and(|pos| !drawer_rect.contains(pos))
                     });
 
                     if click_outside {
@@ -363,11 +368,8 @@ impl ShowcaseApp {
                 // Semi-transparent backdrop
                 let backdrop_rect = available_rect;
                 let backdrop_response = ui.allocate_rect(backdrop_rect, egui::Sense::click());
-                ui.painter().rect_filled(
-                    backdrop_rect,
-                    0.0,
-                    egui::Color32::from_black_alpha(150),
-                );
+                ui.painter()
+                    .rect_filled(backdrop_rect, 0.0, egui::Color32::from_black_alpha(150));
 
                 // Floating sidebar on the left
                 let sidebar_rect = egui::Rect::from_min_size(
@@ -376,15 +378,14 @@ impl ShowcaseApp {
                 );
 
                 // Draw sidebar background with glass effect
-                ui.painter().rect_filled(
-                    sidebar_rect,
-                    0.0,
-                    egui::Color32::from_rgb(10, 10, 10),
-                );
+                ui.painter()
+                    .rect_filled(sidebar_rect, 0.0, egui::Color32::from_rgb(10, 10, 10));
 
-                let page_was_clicked = ui.scope_builder(egui::UiBuilder::new().max_rect(sidebar_rect), |ui| {
-                    self.show_sidebar(ui)
-                }).inner;
+                let page_was_clicked = ui
+                    .scope_builder(egui::UiBuilder::new().max_rect(sidebar_rect), |ui| {
+                        self.show_sidebar(ui)
+                    })
+                    .inner;
 
                 // Close sidebar if a page was clicked
                 if page_was_clicked {
@@ -411,7 +412,10 @@ impl ShowcaseApp {
             );
 
             let content_rect = egui::Rect::from_min_size(
-                egui::pos2(available_rect.min.x + sidebar_width + gap, available_rect.min.y),
+                egui::pos2(
+                    available_rect.min.x + sidebar_width + gap,
+                    available_rect.min.y,
+                ),
                 egui::vec2(
                     available_rect.width() - sidebar_width - gap,
                     available_rect.height(),
@@ -463,19 +467,23 @@ impl ShowcaseApp {
                                 // Build sidebar content with nested sections
                                 for (parent_name, subsections) in nested_sections.iter() {
                                     // Check if any subsection has matching pages
-                                    let has_matching_pages = subsections.iter().any(|(_, pages)| {
-                                        if let Some(ref matcher) = matcher {
-                                            pages.iter().any(|(page_name, _)| {
-                                                matcher.fuzzy_match(page_name, &search_text).is_some()
-                                            })
-                                        } else {
-                                            !pages.is_empty()
-                                        }
-                                    });
+                                    let has_matching_pages =
+                                        subsections.iter().any(|(_, pages)| {
+                                            if let Some(ref matcher) = matcher {
+                                                pages.iter().any(|(page_name, _)| {
+                                                    matcher
+                                                        .fuzzy_match(page_name, &search_text)
+                                                        .is_some()
+                                                })
+                                            } else {
+                                                !pages.is_empty()
+                                            }
+                                        });
 
                                     if has_matching_pages {
                                         // Check if this is a flat section (single subsection with pages directly)
-                                        let is_flat = subsections.len() == 1 && subsections[0].1.len() > 0;
+                                        let is_flat =
+                                            subsections.len() == 1 && !subsections[0].1.is_empty();
 
                                         if is_flat {
                                             // Flat section - show pages directly under parent
@@ -483,16 +491,22 @@ impl ShowcaseApp {
                                                 let (_, section_pages) = &subsections[0];
 
                                                 // Filter pages if search is active
-                                                let filtered_pages: Vec<_> = if let Some(ref matcher) = matcher {
-                                                    section_pages
-                                                        .iter()
-                                                        .filter(|(page_name, _)| {
-                                                            matcher.fuzzy_match(page_name, &search_text).is_some()
-                                                        })
-                                                        .collect()
-                                                } else {
-                                                    section_pages.iter().collect()
-                                                };
+                                                let filtered_pages: Vec<_> =
+                                                    if let Some(ref matcher) = matcher {
+                                                        section_pages
+                                                            .iter()
+                                                            .filter(|(page_name, _)| {
+                                                                matcher
+                                                                    .fuzzy_match(
+                                                                        page_name,
+                                                                        &search_text,
+                                                                    )
+                                                                    .is_some()
+                                                            })
+                                                            .collect()
+                                                    } else {
+                                                        section_pages.iter().collect()
+                                                    };
 
                                                 for (page_name, _) in filtered_pages {
                                                     parent_group.item("", page_name);
@@ -501,26 +515,39 @@ impl ShowcaseApp {
                                         } else {
                                             // Nested section - show subsections
                                             sidebar.group("", parent_name, |parent_group| {
-                                                for (section_name, section_pages) in subsections.iter() {
+                                                for (section_name, section_pages) in
+                                                    subsections.iter()
+                                                {
                                                     // Filter pages if search is active
-                                                    let filtered_pages: Vec<_> = if let Some(ref matcher) = matcher {
-                                                        section_pages
-                                                            .iter()
-                                                            .filter(|(page_name, _)| {
-                                                                matcher.fuzzy_match(page_name, &search_text).is_some()
-                                                            })
-                                                            .collect()
-                                                    } else {
-                                                        section_pages.iter().collect()
-                                                    };
+                                                    let filtered_pages: Vec<_> =
+                                                        if let Some(ref matcher) = matcher {
+                                                            section_pages
+                                                                .iter()
+                                                                .filter(|(page_name, _)| {
+                                                                    matcher
+                                                                        .fuzzy_match(
+                                                                            page_name,
+                                                                            &search_text,
+                                                                        )
+                                                                        .is_some()
+                                                                })
+                                                                .collect()
+                                                        } else {
+                                                            section_pages.iter().collect()
+                                                        };
 
                                                     // Only show subsection if it has pages
                                                     if !filtered_pages.is_empty() {
-                                                        parent_group.group("", section_name, |subgroup| {
-                                                            for (page_name, _) in filtered_pages {
-                                                                subgroup.item("", page_name);
-                                                            }
-                                                        });
+                                                        parent_group.group(
+                                                            "",
+                                                            section_name,
+                                                            |subgroup| {
+                                                                for (page_name, _) in filtered_pages
+                                                                {
+                                                                    subgroup.item("", page_name);
+                                                                }
+                                                            },
+                                                        );
                                                     }
                                                 }
                                             });
@@ -538,7 +565,8 @@ impl ShowcaseApp {
                                 clicked_page_name = Some(page_name.to_string());
                             }
                         }
-                    }).inner
+                    })
+                    .inner
             });
 
         // If a page was clicked, find its index in the flat pages list
@@ -566,49 +594,46 @@ impl ShowcaseApp {
                 // Responsive outer padding
                 let screen_width = ui.ctx().viewport_rect().width();
                 let outer_padding = if screen_width < layout::MOBILE_BREAKPOINT {
-                    16.0  // Minimal padding on mobile
-                } else if screen_width < layout::TABLET_BREAKPOINT {
-                    24.0  // Medium padding on tablet
+                    16.0 // Minimal padding on mobile
                 } else {
-                    24.0  // Reduced padding on desktop
+                    24.0 // Medium padding on tablet/desktop
                 };
 
-                let padding_frame = egui::Frame::NONE
-                    .inner_margin(outer_padding);
+                let padding_frame = egui::Frame::NONE.inner_margin(outer_padding);
 
                 padding_frame.show(ui, |ui| {
-                // Clean background with scroll area
-                egui::ScrollArea::vertical().show(ui, |ui| {
-                    let available_width = ui.available_width();
+                    // Clean background with scroll area
+                    egui::ScrollArea::vertical().show(ui, |ui| {
+                        let available_width = ui.available_width();
 
-                    // Responsive content width and padding
-                    let (content_width, padding) = if screen_width < layout::MOBILE_BREAKPOINT {
-                        // Mobile: Full width, no additional constraints
-                        (available_width, 16.0)
-                    } else if screen_width < layout::TABLET_BREAKPOINT {
-                        // Tablet: Slightly narrower with more padding
-                        (available_width.min(layout::CONTENT_MIN_WIDTH), 24.0)
-                    } else {
-                        // Desktop: Max width with optimal reading size
-                        (available_width.min(layout::CONTENT_MAX_WIDTH), 32.0)
-                    };
+                        // Responsive content width and padding
+                        let (content_width, padding) = if screen_width < layout::MOBILE_BREAKPOINT {
+                            // Mobile: Full width, no additional constraints
+                            (available_width, 16.0)
+                        } else if screen_width < layout::TABLET_BREAKPOINT {
+                            // Tablet: Slightly narrower with more padding
+                            (available_width.min(layout::CONTENT_MIN_WIDTH), 24.0)
+                        } else {
+                            // Desktop: Max width with optimal reading size
+                            (available_width.min(layout::CONTENT_MAX_WIDTH), 32.0)
+                        };
 
-                    let margin = (available_width - content_width) / 2.0;
+                        let margin = (available_width - content_width) / 2.0;
 
-                    ui.add_space(margin.max(0.0));
+                        ui.add_space(margin.max(0.0));
 
-                    ui.vertical(|ui| {
-                        ui.set_max_width(content_width);
-                        ui.add_space(padding);
+                        ui.vertical(|ui| {
+                            ui.set_max_width(content_width);
+                            ui.add_space(padding);
 
-                        // Show selected page content
-                        if let Some((_, show_fn)) = self.pages.get(self.selected_page_index) {
-                            show_fn(ui);
-                        }
+                            // Show selected page content
+                            if let Some((_, show_fn)) = self.pages.get(self.selected_page_index) {
+                                show_fn(ui);
+                            }
 
-                        ui.add_space(padding * 2.0);
+                            ui.add_space(padding * 2.0);
+                        });
                     });
-                });
                 });
             });
     }

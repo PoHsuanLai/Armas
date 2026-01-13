@@ -151,9 +151,7 @@ impl TimeRuler {
             scroll = scroll.id_salt(id);
         }
 
-        scroll.show(ui, |ui| {
-            self.show_inner(ui, theme)
-        }).inner
+        scroll.show(ui, |ui| self.show_inner(ui, theme)).inner
     }
 
     /// Show the time ruler without ScrollArea wrapper
@@ -168,10 +166,8 @@ impl TimeRuler {
         let width = total_beats * self.beat_width;
 
         // Allocate space
-        let (rect, response) = ui.allocate_exact_size(
-            Vec2::new(width, self.height),
-            Sense::hover(),
-        );
+        let (rect, response) =
+            ui.allocate_exact_size(Vec2::new(width, self.height), Sense::hover());
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
@@ -193,14 +189,14 @@ impl TimeRuler {
             );
 
             // Draw vertical lines and tick marks
-            self.draw_grid_lines(&painter, theme, rect);
+            self.draw_grid_lines(painter, theme, rect);
 
             // Draw measure numbers
-            self.draw_measure_numbers(&painter, theme, rect);
+            self.draw_measure_numbers(painter, theme, rect);
 
             // Draw beat numbers if enabled
             if self.show_beat_numbers {
-                self.draw_beat_numbers(&painter, theme, rect);
+                self.draw_beat_numbers(painter, theme, rect);
             }
         }
 

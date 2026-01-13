@@ -45,11 +45,7 @@ impl<'a> SectionHeader<'a> {
             ui.spacing_mut().item_spacing.x = 8.0;
 
             // Arrow on the left
-            ui.label(
-                egui::RichText::new(arrow)
-                    .size(14.0)
-                    .color(theme.primary()),
-            );
+            ui.label(egui::RichText::new(arrow).size(14.0).color(theme.primary()));
 
             // Label
             ui.add(
@@ -60,6 +56,7 @@ impl<'a> SectionHeader<'a> {
                 )
                 .sense(egui::Sense::click()),
             )
-        }).inner
+        })
+        .inner
     }
 }

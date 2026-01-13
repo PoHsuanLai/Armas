@@ -154,7 +154,7 @@ impl DatePicker {
                 .position(PopoverPosition::Bottom)
                 .style(crate::PopoverStyle::Elevated)
                 .width(280.0), // Smaller, tighter width (7 * 36px cells + 6 * 2px gaps + padding)
-            viewing_year: 0, // Will be initialized on first show
+            viewing_year: 0,  // Will be initialized on first show
             viewing_month: 0, // Will be initialized on first show
             input_text: String::new(),
             is_open: false,
@@ -176,7 +176,13 @@ impl DatePicker {
     }
 
     /// Show the date picker
-    pub fn show(&mut self, ctx: &egui::Context, theme: &Theme, ui: &mut Ui, selected_date: &mut Option<Date>) -> DatePickerResponse {
+    pub fn show(
+        &mut self,
+        ctx: &egui::Context,
+        theme: &Theme,
+        ui: &mut Ui,
+        selected_date: &mut Option<Date>,
+    ) -> DatePickerResponse {
         let mut response = DatePickerResponse { changed: false };
 
         // Load internal state from context
@@ -184,19 +190,23 @@ impl DatePicker {
 
         // Get or initialize today's date (cached globally once per session)
         let today_id = Id::new("datepicker_today_cache");
-        let today = ctx.data(|d| {
-            d.get_temp::<Date>(today_id)
-        }).unwrap_or_else(|| {
-            let today = Date::today();
-            ctx.data_mut(|d| {
-                d.insert_temp(today_id, today);
+        let today = ctx
+            .data(|d| d.get_temp::<Date>(today_id))
+            .unwrap_or_else(|| {
+                let today = Date::today();
+                ctx.data_mut(|d| {
+                    d.insert_temp(today_id, today);
+                });
+                today
             });
-            today
-        });
 
         let (is_open, viewing_year, viewing_month, mut input_text) = ctx.data(|d| {
-            d.get_temp::<(bool, i32, u32, String)>(state_id)
-                .unwrap_or((false, today.year, today.month, String::new()))
+            d.get_temp::<(bool, i32, u32, String)>(state_id).unwrap_or((
+                false,
+                today.year,
+                today.month,
+                String::new(),
+            ))
         });
 
         // Update input text from selected date
@@ -221,9 +231,7 @@ impl DatePicker {
         }
 
         // Input field with calendar icon
-        let input = Input::new(&self.placeholder)
-            .left_icon("📅")
-            .width(300.0);
+        let input = Input::new(&self.placeholder).left_icon("📅").width(300.0);
         let input_response = input.show(ui, &mut self.input_text);
         let input_rect = input_response.rect;
 
@@ -267,7 +275,7 @@ impl DatePicker {
                     theme.surface().r(),
                     theme.surface().g(),
                     theme.surface().b(),
-                    255
+                    255,
                 ),
             );
 
@@ -719,7 +727,15 @@ impl DatePicker {
 
         // Save internal state back to context
         ctx.data_mut(|d| {
-            d.insert_temp(state_id, (self.is_open, self.viewing_year, self.viewing_month, self.input_text.clone()));
+            d.insert_temp(
+                state_id,
+                (
+                    self.is_open,
+                    self.viewing_year,
+                    self.viewing_month,
+                    self.input_text.clone(),
+                ),
+            );
         });
 
         response

@@ -110,7 +110,9 @@ impl<'a> GlassPanel<'a> {
             )
         };
 
-        let corner_rad = self.corner_radius.unwrap_or(theme.spacing.corner_radius as f32) as u8;
+        let corner_rad = self
+            .corner_radius
+            .unwrap_or(theme.spacing.corner_radius as f32) as u8;
         let inner_margin_val = self.inner_margin.unwrap_or(theme.spacing.md);
         let mut content_result = None;
 
@@ -167,7 +169,8 @@ impl<'a> GlassPanel<'a> {
         let rect = frame_response.response.rect;
 
         // Draw shimmer on top
-        let shimmer_rect = egui::Rect::from_min_size(rect.min, egui::vec2(rect.width(), theme.spacing.xs / 2.0));
+        let shimmer_rect =
+            egui::Rect::from_min_size(rect.min, egui::vec2(rect.width(), theme.spacing.xs / 2.0));
         ui.painter().rect_filled(
             shimmer_rect,
             CornerRadius::same(corner_rad),

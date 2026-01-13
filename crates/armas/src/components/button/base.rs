@@ -263,12 +263,8 @@ impl Button {
             // Create galley with truncation if needed
             let final_galley = if text_width > available_text_width {
                 // Text is too long, truncate with ellipsis
-                ui.painter().layout(
-                    text,
-                    font_id.clone(),
-                    text_color,
-                    available_text_width,
-                )
+                ui.painter()
+                    .layout(text, font_id.clone(), text_color, available_text_width)
             } else {
                 // Text fits, use normal layout
                 text_galley
@@ -281,17 +277,12 @@ impl Button {
 
             let text_pos = match text_align {
                 egui::Align2::LEFT_CENTER => {
-                    egui::pos2(
-                        rect.left() + 12.0,
-                        rect.center().y - galley_height / 2.0,
-                    )
+                    egui::pos2(rect.left() + 12.0, rect.center().y - galley_height / 2.0)
                 }
-                egui::Align2::RIGHT_CENTER => {
-                    egui::pos2(
-                        rect.right() - 12.0 - galley_width,
-                        rect.center().y - galley_height / 2.0,
-                    )
-                }
+                egui::Align2::RIGHT_CENTER => egui::pos2(
+                    rect.right() - 12.0 - galley_width,
+                    rect.center().y - galley_height / 2.0,
+                ),
                 _ => {
                     // CENTER_CENTER
                     egui::pos2(

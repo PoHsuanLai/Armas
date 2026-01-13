@@ -19,11 +19,8 @@ impl Hero {
         );
 
         // Draw aurora background
-        ui.painter().rect_filled(
-            full_rect,
-            0.0,
-            egui::Color32::BLACK,
-        );
+        ui.painter()
+            .rect_filled(full_rect, 0.0, egui::Color32::BLACK);
 
         AuroraBackground::cyberpunk(full_rect.width(), full_rect.height())
             .id("hero_aurora")
@@ -47,7 +44,10 @@ impl Hero {
 
                         // Hero title - centered horizontally
                         ui.horizontal(|ui| {
-                            ui.allocate_space(egui::vec2((ui.available_width() - 200.0) / 2.0, 0.0));
+                            ui.allocate_space(egui::vec2(
+                                (ui.available_width() - 200.0) / 2.0,
+                                0.0,
+                            ));
                             ui.label(
                                 egui::RichText::new("Armas")
                                     .size(72.0)
@@ -61,7 +61,10 @@ impl Hero {
                         // Subtitle - centered
                         ui.horizontal(|ui| {
                             let text_width = 400.0; // Approximate width
-                            ui.allocate_space(egui::vec2((ui.available_width() - text_width) / 2.0, 0.0));
+                            ui.allocate_space(egui::vec2(
+                                (ui.available_width() - text_width) / 2.0,
+                                0.0,
+                            ));
                             ui.label(
                                 egui::RichText::new("Modern UI Components for egui")
                                     .size(24.0)
@@ -74,11 +77,16 @@ impl Hero {
                         // Description - centered
                         ui.horizontal(|ui| {
                             let text_width = 600.0; // Approximate width
-                            ui.allocate_space(egui::vec2((ui.available_width() - text_width) / 2.0, 0.0));
+                            ui.allocate_space(egui::vec2(
+                                (ui.available_width() - text_width) / 2.0,
+                                0.0,
+                            ));
                             ui.label(
-                                egui::RichText::new("Material Design inspired components with smooth animations")
-                                    .size(16.0)
-                                    .color(egui::Color32::from_gray(160)),
+                                egui::RichText::new(
+                                    "Material Design inspired components with smooth animations",
+                                )
+                                .size(16.0)
+                                .color(egui::Color32::from_gray(160)),
                             );
                         });
 
@@ -87,7 +95,10 @@ impl Hero {
                         // CTA Buttons - centered
                         ui.horizontal(|ui| {
                             let buttons_width = 316.0; // 140 + 16 + 160
-                            ui.allocate_space(egui::vec2((ui.available_width() - buttons_width) / 2.0, 0.0));
+                            ui.allocate_space(egui::vec2(
+                                (ui.available_width() - buttons_width) / 2.0,
+                                0.0,
+                            ));
 
                             if Button::new("Get Started")
                                 .variant(ButtonVariant::Filled)
@@ -96,7 +107,12 @@ impl Hero {
                                 .clicked()
                             {
                                 // Navigate to components page
-                                ui.data_mut(|d| d.insert_temp(egui::Id::new("current_view"), "components".to_string()));
+                                ui.data_mut(|d| {
+                                    d.insert_temp(
+                                        egui::Id::new("current_view"),
+                                        "components".to_string(),
+                                    )
+                                });
                             }
 
                             ui.add_space(16.0);

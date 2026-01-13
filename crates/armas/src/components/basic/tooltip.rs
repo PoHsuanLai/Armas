@@ -212,7 +212,14 @@ impl Tooltip {
 
         // Arrow
         if self.show_arrow {
-            self.draw_arrow(&painter, bg_color, border_color, target_rect, tooltip_rect, position);
+            self.draw_arrow(
+                &painter,
+                bg_color,
+                border_color,
+                target_rect,
+                tooltip_rect,
+                position,
+            );
         }
 
         // Text

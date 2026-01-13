@@ -57,12 +57,7 @@ impl CardSpotlight {
     }
 
     /// Show the card spotlight with content
-    pub fn show(
-        self,
-        ui: &mut Ui,
-        theme: &Theme,
-        content: impl FnOnce(&mut Ui),
-    ) -> Response {
+    pub fn show(self, ui: &mut Ui, theme: &Theme, content: impl FnOnce(&mut Ui)) -> Response {
         let desired_width = self.width.unwrap_or_else(|| ui.available_width());
         let desired_height = self.height.unwrap_or(400.0);
 
@@ -72,11 +67,8 @@ impl CardSpotlight {
         if ui.is_rect_visible(rect) {
             // Draw base card background
             let card_bg = theme.surface();
-            ui.painter().rect_filled(
-                rect,
-                theme.spacing.corner_radius,
-                card_bg,
-            );
+            ui.painter()
+                .rect_filled(rect, theme.spacing.corner_radius, card_bg);
 
             // Draw card border
             ui.painter().rect_stroke(
@@ -136,7 +128,7 @@ impl CardSpotlight {
 
             // Add grain/noise effect by randomly varying alpha
             // Use deterministic "random" based on step and time
-            let noise_seed = (i as f32 * 12.9898 + time * 0.5).sin() * 43758.5453;
+            let noise_seed = (i as f32 * 12.9898 + time * 0.5).sin() * 43_758.547;
             let noise = (noise_seed.fract() - 0.5) * 0.3; // -0.15 to +0.15 variation
             alpha = ((alpha as f32) * (1.0 + noise)).clamp(0.0, 255.0) as u8;
 

@@ -144,8 +144,7 @@ impl<'a> Slot<'a> {
         }
 
         // Background - flatter style with smaller corner radius
-        ui.painter()
-            .rect_filled(rect, 3.0, box_color);
+        ui.painter().rect_filled(rect, 3.0, box_color);
 
         // Border - thinner for flatter appearance
         let border_width = if filled { 1.0 } else { 0.8 };
@@ -194,13 +193,12 @@ impl<'a> Slot<'a> {
                 egui::vec2(MINI_METER_WIDTH, meter_height),
             );
 
-            ui.painter()
-                .rect_filled(meter_fill, 1.0, theme.primary());
+            ui.painter().rect_filled(meter_fill, 1.0, theme.primary());
 
             // Bypass indicator
             if self.bypassed {
-                let bypass_pos = rect.right_center()
-                    - egui::vec2(MINI_METER_WIDTH + theme.spacing.md, 0.0);
+                let bypass_pos =
+                    rect.right_center() - egui::vec2(MINI_METER_WIDTH + theme.spacing.md, 0.0);
                 ui.painter().circle_filled(bypass_pos, 3.0, theme.warning());
             }
         }

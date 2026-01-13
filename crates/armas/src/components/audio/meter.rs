@@ -511,13 +511,13 @@ impl AudioMeter {
         // dB levels with proper logarithmic scaling
         // Formula: linear = 10^(dB/20)
         let db_marks = [
-            (1.0, "0"),       // 0 dB - digital maximum
-            (0.708, "-3"),    // -3 dB
-            (0.501, "-6"),    // -6 dB - safe headroom
-            (0.251, "-12"),   // -12 dB - good average
-            (0.126, "-18"),   // -18 dB - reference level
-            (0.063, "-24"),   // -24 dB
-            (0.0, "-∞"),      // -inf dB - silence
+            (1.0, "0"),     // 0 dB - digital maximum
+            (0.708, "-3"),  // -3 dB
+            (0.501, "-6"),  // -6 dB - safe headroom
+            (0.251, "-12"), // -12 dB - good average
+            (0.126, "-18"), // -18 dB - reference level
+            (0.063, "-24"), // -24 dB
+            (0.0, "-∞"),    // -inf dB - silence
         ];
 
         let is_left = self.scale_position == ScalePosition::Left;
@@ -581,7 +581,7 @@ mod tests {
         assert_eq!(meter.width, 40.0);
         assert_eq!(meter.height, 300.0);
         assert_eq!(meter.scale_position, ScalePosition::Right);
-        assert_eq!(meter.glassmorphic, false);
+        assert!(!meter.glassmorphic);
     }
 
     #[test]

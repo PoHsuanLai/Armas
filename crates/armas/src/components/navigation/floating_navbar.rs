@@ -182,11 +182,8 @@ impl FloatingNavbar {
                     let viewport_rect = ctx.viewport_rect();
                     let (rect, response) =
                         ui.allocate_exact_size(viewport_rect.size(), Sense::click());
-                    ui.painter().rect_filled(
-                        rect,
-                        0.0,
-                        Color32::from_black_alpha(180),
-                    );
+                    ui.painter()
+                        .rect_filled(rect, 0.0, Color32::from_black_alpha(180));
                     response
                 });
 
@@ -407,7 +404,8 @@ impl FloatingNavbar {
                     }
 
                     // Initialize animation on first frame if there's an active item
-                    if state.active_position_animation.value() == 0.0 && state.current_active.is_some()
+                    if state.active_position_animation.value() == 0.0
+                        && state.current_active.is_some()
                     {
                         if let Some(active_idx) = state.current_active {
                             let item_x = padding + active_idx as f32 * (item_width + item_spacing);

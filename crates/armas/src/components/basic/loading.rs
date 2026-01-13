@@ -307,7 +307,7 @@ impl Skeleton {
         Self {
             width,
             height,
-            base_color: None, // Will use theme.surface_variant()
+            base_color: None,      // Will use theme.surface_variant()
             highlight_color: None, // Will use theme.surface()
             shimmer_pos: 0.0,
             speed: 0.5,

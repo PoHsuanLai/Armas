@@ -52,11 +52,9 @@ impl InvertButton {
 
         // Measure text to calculate button width
         let font_id = egui::FontId::new(14.0, egui::FontFamily::Name("InterBold".into()));
-        let text_galley = ui.painter().layout_no_wrap(
-            text.clone(),
-            font_id.clone(),
-            Color32::PLACEHOLDER,
-        );
+        let text_galley =
+            ui.painter()
+                .layout_no_wrap(text.clone(), font_id.clone(), Color32::PLACEHOLDER);
         let text_width = text_galley.rect.width();
         let mut button_width = text_width + 24.0;
         button_width = button_width.max(min_size.x);

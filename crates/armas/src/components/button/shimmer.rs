@@ -70,11 +70,9 @@ impl ShimmerButton {
         let horizontal_padding = 24.0; // 12px on each side
 
         // Measure text to determine required width
-        let text_galley = ui.painter().layout_no_wrap(
-            text.clone(),
-            font_id.clone(),
-            Color32::PLACEHOLDER,
-        );
+        let text_galley =
+            ui.painter()
+                .layout_no_wrap(text.clone(), font_id.clone(), Color32::PLACEHOLDER);
         let text_width = text_galley.rect.width();
 
         // Calculate button width: max(min_size.x, text_width + padding)
@@ -168,12 +166,8 @@ impl ShimmerButton {
             // Create galley with truncation if needed
             let final_galley = if text_width > available_text_width {
                 // Text is too long, truncate with ellipsis
-                ui.painter().layout(
-                    text,
-                    font_id.clone(),
-                    text_color,
-                    available_text_width,
-                )
+                ui.painter()
+                    .layout(text, font_id.clone(), text_color, available_text_width)
             } else {
                 // Text fits, use normal layout
                 text_galley

@@ -92,7 +92,14 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
                     }
                 }
                 TagEnd::CodeBlock => {
-                    render_code_block(ui, &code_block_text, &code_block_lang, theme, base_id, element_counter);
+                    render_code_block(
+                        ui,
+                        &code_block_text,
+                        &code_block_lang,
+                        theme,
+                        base_id,
+                        element_counter,
+                    );
                     element_counter += 1;
                     code_block_text.clear();
                     code_block_lang.clear();
@@ -285,7 +292,14 @@ fn render_paragraph(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
     ui.add_space(8.0);
 }
 
-fn render_code_block(ui: &mut egui::Ui, code: &str, language: &str, theme: &Theme, base_id: u64, id: usize) {
+fn render_code_block(
+    ui: &mut egui::Ui,
+    code: &str,
+    language: &str,
+    theme: &Theme,
+    base_id: u64,
+    id: usize,
+) {
     ui.add_space(8.0);
 
     // Left-aligned code block with max width
@@ -323,7 +337,11 @@ fn render_code_block(ui: &mut egui::Ui, code: &str, language: &str, theme: &Them
                             .show(ui, |ui| {
                                 ui.set_width(ui.available_width());
                                 // Use syntax highlighting with detected language
-                                let lang = if language.is_empty() { "rust" } else { language };
+                                let lang = if language.is_empty() {
+                                    "rust"
+                                } else {
+                                    language
+                                };
                                 crate::syntax::highlight_code(ui, code.trim(), lang, theme);
                             });
                     });
@@ -340,7 +358,7 @@ fn render_code_block(ui: &mut egui::Ui, code: &str, language: &str, theme: &Them
                 let button_size = egui::vec2(100.0, 32.0);
                 let button_pos = egui::pos2(
                     available_rect.max.x - button_size.x - 12.0,
-                    available_rect.min.y + 12.0
+                    available_rect.min.y + 12.0,
                 );
                 let button_rect = egui::Rect::from_min_size(button_pos, button_size);
 
@@ -369,17 +387,26 @@ fn render_code_block(ui: &mut egui::Ui, code: &str, language: &str, theme: &Them
 
                 // Request repaint if we're showing the check mark
                 if show_check {
-                    ui.ctx().request_repaint_after(std::time::Duration::from_millis(100));
+                    ui.ctx()
+                        .request_repaint_after(std::time::Duration::from_millis(100));
                 }
 
-                let button_text = if show_check { "✓ Copied" } else { "📋 Copy" };
-                let button_tooltip = if show_check { "Copied to clipboard" } else { "Copy code to clipboard" };
+                let button_text = if show_check {
+                    "✓ Copied"
+                } else {
+                    "📋 Copy"
+                };
+                let button_tooltip = if show_check {
+                    "Copied to clipboard"
+                } else {
+                    "Copy code to clipboard"
+                };
 
                 // Position button in top-right corner
                 let button_size = egui::vec2(100.0, 32.0);
                 let button_pos = egui::pos2(
                     available_rect.max.x - button_size.x - 12.0,
-                    available_rect.min.y + 12.0
+                    available_rect.min.y + 12.0,
                 );
                 let button_rect = egui::Rect::from_min_size(button_pos, button_size);
 

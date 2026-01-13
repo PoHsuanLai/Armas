@@ -72,7 +72,6 @@ impl CardStack {
         self
     }
 
-
     /// Set rotation interval (seconds)
     pub fn rotation_interval(mut self, interval: f32) -> Self {
         self.rotation_interval = interval;
@@ -121,10 +120,11 @@ impl CardStack {
 
         // Get or initialize state from egui memory
         let mut state = ui.data_mut(|d| {
-            d.get_temp::<CardStackState>(self.id).unwrap_or(CardStackState {
-                active_index: 0,
-                last_rotation_time: time,
-            })
+            d.get_temp::<CardStackState>(self.id)
+                .unwrap_or(CardStackState {
+                    active_index: 0,
+                    last_rotation_time: time,
+                })
         });
 
         if response.clicked() && !self.auto_rotate {
@@ -198,7 +198,8 @@ impl CardStack {
             );
 
             // Draw card
-            ui.painter().rect_filled(card_rect, theme.spacing.corner_radius, card.color);
+            ui.painter()
+                .rect_filled(card_rect, theme.spacing.corner_radius, card.color);
 
             // Draw card border - use theme outline with transparency
             let outline = theme.outline();
@@ -255,8 +256,11 @@ impl CardStack {
                 Vec2::new(indicator_width * progress, indicator_height),
             );
 
-            ui.painter()
-                .rect_filled(progress_rect, theme.spacing.corner_radius_small, theme.primary());
+            ui.painter().rect_filled(
+                progress_rect,
+                theme.spacing.corner_radius_small,
+                theme.primary(),
+            );
         }
 
         // Request repaint for animation

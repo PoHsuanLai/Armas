@@ -97,10 +97,7 @@ impl Typewriter {
         let time = ui.input(|i| i.time) as f32;
 
         // Get or initialize state
-        let mut state = ui.data_mut(|d| {
-            d.get_temp::<TypewriterState>(self.id)
-                .unwrap_or_default()
-        });
+        let mut state = ui.data_mut(|d| d.get_temp::<TypewriterState>(self.id).unwrap_or_default());
 
         // Initialize start time on first frame
         if state.start_time == 0.0 {

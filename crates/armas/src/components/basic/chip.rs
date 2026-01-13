@@ -191,7 +191,7 @@ impl Chip {
             let visuals = ui.style().interact(&response);
 
             // Determine colors based on chip type and state
-            let (bg_color, border_color, text_color) = self.get_colors(&theme, &visuals);
+            let (bg_color, border_color, text_color) = self.get_colors(&theme, visuals);
 
             // Draw background
             let rounding = height / 2.0; // Fully rounded ends
@@ -242,7 +242,8 @@ impl Chip {
                     Vec2::splat(remove_size),
                 );
 
-                let remove_response = ui.interact(remove_rect, response.id.with("remove"), Sense::click());
+                let remove_response =
+                    ui.interact(remove_rect, response.id.with("remove"), Sense::click());
 
                 // Draw X
                 let x_color = if remove_response.hovered() {
@@ -285,7 +286,11 @@ impl Chip {
     }
 
     /// Get colors based on chip type and state
-    fn get_colors(&self, theme: &Theme, visuals: &egui::style::WidgetVisuals) -> (Color32, Color32, Color32) {
+    fn get_colors(
+        &self,
+        theme: &Theme,
+        visuals: &egui::style::WidgetVisuals,
+    ) -> (Color32, Color32, Color32) {
         if self.disabled {
             return (
                 theme.surface_variant().linear_multiply(0.5),
@@ -321,11 +326,7 @@ impl Chip {
                         theme.primary(),
                     )
                 } else {
-                    (
-                        theme.surface(),
-                        theme.outline(),
-                        theme.on_surface_variant(),
-                    )
+                    (theme.surface(), theme.outline(), theme.on_surface_variant())
                 }
             }
             ChipType::Input => {
@@ -339,11 +340,7 @@ impl Chip {
             }
             ChipType::Suggestion => {
                 // Outlined style
-                (
-                    theme.surface(),
-                    theme.outline(),
-                    theme.on_surface_variant(),
-                )
+                (theme.surface(), theme.outline(), theme.on_surface_variant())
             }
         }
     }

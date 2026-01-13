@@ -194,11 +194,14 @@ impl IconButton {
             // Draw outline for outlined variant
             if self.variant == ButtonVariant::Outlined {
                 let stroke = egui::Stroke::new(1.0, theme.outline());
-                ui.painter().rect_stroke(rect, 12.0, stroke, egui::epaint::StrokeKind::Outside);
+                ui.painter()
+                    .rect_stroke(rect, 12.0, stroke, egui::epaint::StrokeKind::Outside);
             }
 
             // Draw shadow for elevated variant
-            if self.variant == ButtonVariant::Elevated && !response.is_pointer_button_down_on() && self.enabled
+            if self.variant == ButtonVariant::Elevated
+                && !response.is_pointer_button_down_on()
+                && self.enabled
             {
                 let shadow_rect = rect.translate(egui::vec2(0.0, 2.0));
                 ui.painter().rect_filled(
@@ -209,10 +212,7 @@ impl IconButton {
             }
 
             // Draw icon
-            let icon_rect = egui::Rect::from_center_size(
-                rect.center(),
-                Vec2::splat(self.size),
-            );
+            let icon_rect = egui::Rect::from_center_size(rect.center(), Vec2::splat(self.size));
             if let Some(icon_data) = self.icon.data() {
                 render_icon(ui.painter(), icon_rect, icon_data, icon_color);
             }

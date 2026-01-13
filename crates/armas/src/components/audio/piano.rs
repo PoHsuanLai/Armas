@@ -213,10 +213,8 @@ impl Piano {
         let black_key_width = self.white_key_width * self.black_key_width_ratio;
 
         // Allocate space
-        let (rect, _) = ui.allocate_exact_size(
-            Vec2::new(total_width, total_height),
-            Sense::hover(),
-        );
+        let (rect, _) =
+            ui.allocate_exact_size(Vec2::new(total_width, total_height), Sense::hover());
 
         if ui.is_rect_visible(rect) {
             // Draw white keys first
@@ -233,14 +231,8 @@ impl Piano {
                     );
 
                     let is_pressed = self.pressed_keys.contains(&note);
-                    let key_response = self.draw_white_key(
-                        ui,
-                        theme,
-                        key_rect,
-                        note,
-                        is_pressed,
-                        facing_up,
-                    );
+                    let key_response =
+                        self.draw_white_key(ui, theme, key_rect, note, is_pressed, facing_up);
 
                     // Handle interaction
                     if key_response.clicked() {
@@ -278,14 +270,8 @@ impl Piano {
                     );
 
                     let is_pressed = self.pressed_keys.contains(&note);
-                    let key_response = self.draw_black_key(
-                        ui,
-                        theme,
-                        key_rect,
-                        note,
-                        is_pressed,
-                        facing_up,
-                    );
+                    let key_response =
+                        self.draw_black_key(ui, theme, key_rect, note, is_pressed, facing_up);
 
                     // Handle interaction
                     if key_response.clicked() {
@@ -323,10 +309,8 @@ impl Piano {
         let black_key_height = self.white_key_width * self.black_key_width_ratio;
 
         // Allocate space
-        let (rect, _) = ui.allocate_exact_size(
-            Vec2::new(total_width, total_height),
-            Sense::hover(),
-        );
+        let (rect, _) =
+            ui.allocate_exact_size(Vec2::new(total_width, total_height), Sense::hover());
 
         if ui.is_rect_visible(rect) {
             // Draw white keys first (bottom to top)
@@ -376,7 +360,8 @@ impl Piano {
                     white_key_index += 1;
                 } else {
                     // Position black key between white keys
-                    let key_y = rect.max.y - white_key_index as f32 * self.white_key_width
+                    let key_y = rect.max.y
+                        - white_key_index as f32 * self.white_key_width
                         - black_key_height * 0.5;
                     let key_x = if facing_left {
                         rect.max.x - black_key_width // Position at left for facing left
@@ -499,10 +484,7 @@ impl Piano {
         }
 
         // Draw shimmer on top edge
-        let shimmer_rect = Rect::from_min_size(
-            rect.min,
-            Vec2::new(rect.width(), 2.0),
-        );
+        let shimmer_rect = Rect::from_min_size(rect.min, Vec2::new(rect.width(), 2.0));
         painter.rect_filled(
             shimmer_rect,
             CornerRadius::ZERO,
@@ -562,7 +544,7 @@ impl Piano {
 
         // Pure black with glass transparency
         let glass_color = Color32::from_rgba_unmultiplied(
-            20,  // Very dark, not quite pure black for some depth
+            20, // Very dark, not quite pure black for some depth
             20,
             20,
             (255.0 * opacity) as u8,
@@ -624,10 +606,7 @@ impl Piano {
         }
 
         // Draw subtle shimmer on top edge
-        let shimmer_rect = Rect::from_min_size(
-            rect.min,
-            Vec2::new(rect.width(), 1.5),
-        );
+        let shimmer_rect = Rect::from_min_size(rect.min, Vec2::new(rect.width(), 1.5));
         painter.rect_filled(
             shimmer_rect,
             CornerRadius::ZERO,
@@ -663,12 +642,7 @@ impl Piano {
         };
 
         // Pure white with glass transparency
-        let glass_color = Color32::from_rgba_unmultiplied(
-            255,
-            255,
-            255,
-            (255.0 * opacity) as u8,
-        );
+        let glass_color = Color32::from_rgba_unmultiplied(255, 255, 255, (255.0 * opacity) as u8);
 
         let corner_radius = if facing_left {
             CornerRadius {
@@ -788,12 +762,7 @@ impl Piano {
         };
 
         // Pure black with glass transparency
-        let glass_color = Color32::from_rgba_unmultiplied(
-            20,
-            20,
-            20,
-            (255.0 * opacity) as u8,
-        );
+        let glass_color = Color32::from_rgba_unmultiplied(20, 20, 20, (255.0 * opacity) as u8);
 
         let corner_radius = if facing_left {
             CornerRadius {
@@ -907,12 +876,12 @@ mod tests {
     #[test]
     fn test_is_black_key() {
         assert!(!PianoKey::is_black_key(0)); // C
-        assert!(PianoKey::is_black_key(1));  // C#
+        assert!(PianoKey::is_black_key(1)); // C#
         assert!(!PianoKey::is_black_key(2)); // D
-        assert!(PianoKey::is_black_key(3));  // D#
+        assert!(PianoKey::is_black_key(3)); // D#
         assert!(!PianoKey::is_black_key(4)); // E
         assert!(!PianoKey::is_black_key(5)); // F
-        assert!(PianoKey::is_black_key(6));  // F#
+        assert!(PianoKey::is_black_key(6)); // F#
     }
 
     #[test]

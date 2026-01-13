@@ -205,8 +205,12 @@ impl GlowingDivider {
         // Draw glow layers
         let glow_layers = 5;
         for i in 0..glow_layers {
-            let layer_width = self.thickness + (i as f32 * 2.0 * self.glow_intensity * pulse_factor);
-            let alpha = ((glow_layers - i) as f32 / glow_layers as f32 * 60.0 * self.glow_intensity * pulse_factor) as u8;
+            let layer_width =
+                self.thickness + (i as f32 * 2.0 * self.glow_intensity * pulse_factor);
+            let alpha = ((glow_layers - i) as f32 / glow_layers as f32
+                * 60.0
+                * self.glow_intensity
+                * pulse_factor) as u8;
             let glow = Color32::from_rgba_unmultiplied(
                 glow_color.r(),
                 glow_color.g(),
@@ -241,7 +245,8 @@ impl GlowingDivider {
                     let end = Pos2::new(x2, y);
 
                     // Calculate distance from center (0.0 to 1.0)
-                    let dist_from_center = ((x1 + x2) / 2.0 - center_x).abs() / (rect.width() / 2.0);
+                    let dist_from_center =
+                        ((x1 + x2) / 2.0 - center_x).abs() / (rect.width() / 2.0);
 
                     // Fade alpha based on distance from center
                     let alpha = ((1.0 - dist_from_center) * 255.0) as u8;
@@ -253,7 +258,8 @@ impl GlowingDivider {
                     );
 
                     // Draw glow
-                    let glow_width = self.thickness + self.glow_intensity * 10.0 * (1.0 - dist_from_center);
+                    let glow_width =
+                        self.thickness + self.glow_intensity * 10.0 * (1.0 - dist_from_center);
                     let glow_alpha = (alpha as f32 * 0.3) as u8;
                     let glow = Color32::from_rgba_unmultiplied(
                         glow_color.r(),
@@ -280,7 +286,8 @@ impl GlowingDivider {
                     let end = Pos2::new(x, y2);
 
                     // Calculate distance from center (0.0 to 1.0)
-                    let dist_from_center = ((y1 + y2) / 2.0 - center_y).abs() / (rect.height() / 2.0);
+                    let dist_from_center =
+                        ((y1 + y2) / 2.0 - center_y).abs() / (rect.height() / 2.0);
 
                     // Fade alpha based on distance from center
                     let alpha = ((1.0 - dist_from_center) * 255.0) as u8;
@@ -292,7 +299,8 @@ impl GlowingDivider {
                     );
 
                     // Draw glow
-                    let glow_width = self.thickness + self.glow_intensity * 10.0 * (1.0 - dist_from_center);
+                    let glow_width =
+                        self.thickness + self.glow_intensity * 10.0 * (1.0 - dist_from_center);
                     let glow_alpha = (alpha as f32 * 0.3) as u8;
                     let glow = Color32::from_rgba_unmultiplied(
                         glow_color.r(),

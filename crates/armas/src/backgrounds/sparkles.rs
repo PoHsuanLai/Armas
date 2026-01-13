@@ -205,12 +205,11 @@ impl Sparkles {
     pub fn show(mut self, ui: &mut Ui) -> Response {
         // Get or initialize state from egui memory
         let mut state = ui.data_mut(|d| {
-            d.get_temp::<SparklesState>(self.id).unwrap_or_else(|| {
-                SparklesState {
+            d.get_temp::<SparklesState>(self.id)
+                .unwrap_or_else(|| SparklesState {
                     sparkles: self.sparkles.clone(),
                     initialized: self.initialized,
-                }
-            })
+                })
         });
 
         if !state.initialized {
@@ -264,12 +263,11 @@ impl Sparkles {
 
         // Get or initialize state from egui memory
         let mut state = ui.data_mut(|d| {
-            d.get_temp::<SparklesState>(self.id).unwrap_or_else(|| {
-                SparklesState {
+            d.get_temp::<SparklesState>(self.id)
+                .unwrap_or_else(|| SparklesState {
                     sparkles: self.sparkles.clone(),
                     initialized: self.initialized,
-                }
-            })
+                })
         });
 
         // Then overlay sparkles

@@ -161,7 +161,7 @@ impl Input {
             // Estimate width: ~8px per character for proportional font at size 14
             let char_count = text.len().max(8); // Minimum 8 chars
             let estimated_width = (char_count as f32 * 8.0) + 24.0; // 24px padding
-            estimated_width.min(300.0).max(80.0) // Min 80, max 300
+            estimated_width.clamp(80.0, 300.0) // Min 80, max 300
         } else {
             self.width.unwrap_or(200.0)
         };
@@ -213,7 +213,11 @@ impl Input {
                 // Text input
                 let mut text_edit = TextEdit::singleline(text)
                     .hint_text(&self.placeholder)
-                    .desired_width(width - if self.left_icon.is_some() { 24.0 } else { 0.0 } - if self.right_icon.is_some() { 24.0 } else { 0.0 })
+                    .desired_width(
+                        width
+                            - if self.left_icon.is_some() { 24.0 } else { 0.0 }
+                            - if self.right_icon.is_some() { 24.0 } else { 0.0 },
+                    )
                     .frame(false)
                     .font(egui::TextStyle::Body)
                     .vertical_align(egui::Align::Center);

@@ -303,6 +303,7 @@ impl Timeline {
 
     /// Render a single track and its children recursively
     /// Render a single track header (non-recursive, flat rendering)
+    #[allow(clippy::too_many_arguments)]
     fn render_track_header_flat(
         &self,
         ui: &mut Ui,
@@ -385,6 +386,7 @@ impl Timeline {
     }
 
     /// Show the timeline
+    #[allow(clippy::ptr_arg)]
     pub fn show(
         self,
         ui: &mut Ui,
@@ -489,7 +491,9 @@ impl Timeline {
 
                                         // Render each track in flattened order
                                         for info in &flat_list {
-                                            if let Some(track) = Self::get_track_by_path_mut(tracks, &info.path) {
+                                            if let Some(track) =
+                                                Self::get_track_by_path_mut(tracks, &info.path)
+                                            {
                                                 let rect = self.render_track_header_flat(
                                                     ui,
                                                     track,
@@ -527,7 +531,9 @@ impl Timeline {
 
                                         // Render each track in flattened order
                                         for info in &flat_list {
-                                            if let Some(track) = Self::get_track_by_path_mut(tracks, &info.path) {
+                                            if let Some(track) =
+                                                Self::get_track_by_path_mut(tracks, &info.path)
+                                            {
                                                 let rect = self.render_track_timeline_flat(
                                                     ui,
                                                     track,

@@ -101,7 +101,6 @@ impl EventTimeline {
         }
     }
 
-
     /// Set dot size
     pub fn dot_size(mut self, size: f32) -> Self {
         self.dot_size = size;
@@ -127,11 +126,7 @@ impl EventTimeline {
     }
 
     /// Show the timeline with closure-based API
-    pub fn show<R>(
-        self,
-        ui: &mut Ui,
-        content: impl FnOnce(&mut TimelineBuilder) -> R,
-    ) {
+    pub fn show<R>(self, ui: &mut Ui, content: impl FnOnce(&mut TimelineBuilder) -> R) {
         let theme = ui.ctx().armas_theme();
 
         let mut builder = TimelineBuilder {
@@ -274,7 +269,9 @@ impl<'a> TimelineBuilder<'a> {
                     self.dot_size * 0.6
                 };
 
-                self.ui.painter().circle_filled(dot_center, dot_size, dot_color);
+                self.ui
+                    .painter()
+                    .circle_filled(dot_center, dot_size, dot_color);
 
                 if item.highlighted {
                     // Outer ring for highlighted items
