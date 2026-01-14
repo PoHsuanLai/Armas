@@ -3,11 +3,11 @@
 //! Complete scrollable timeline view combining ruler, playhead, track headers, and tracks.
 
 use crate::components::audio::{
-    LoopRegionMarker, Marker, Playhead, PunchMarker, Region, SelectionRange, SnapGrid, TimeRuler,
-    TimelineTrack, TrackControls, TrackHeader,
+    LoopRegionMarker, Marker, Playhead, PunchMarker, Region, SelectionRange, SnapGrid,
+    TimeRuler, TimelineTrack, TrackControls, TrackHeader,
 };
 use crate::theme::Theme;
-use egui::{Color32, Rect, Response, ScrollArea, Sense, Ui, Vec2};
+use egui::{pos2, vec2, Color32, Rect, Response, Sense, Ui, Vec2};
 
 /// Data for a cue point marker
 #[derive(Debug, Clone)]
@@ -121,6 +121,8 @@ pub struct Track {
     pub collapsed: bool,
     /// Child tracks (for folder tracks)
     pub children: Vec<Track>,
+    /// Whether this track is selected
+    pub selected: bool,
 }
 
 impl Track {
@@ -134,6 +136,7 @@ impl Track {
             is_folder: false,
             collapsed: false,
             children: Vec::new(),
+            selected: false,
         }
     }
 
@@ -147,6 +150,7 @@ impl Track {
             is_folder: true,
             collapsed: false,
             children: Vec::new(),
+            selected: false,
         }
     }
 
@@ -179,6 +183,12 @@ impl Track {
         self.collapsed = collapsed;
         self
     }
+
+    /// Set selected state
+    pub fn selected(mut self, selected: bool) -> Self {
+        self.selected = selected;
+        self
+    }
 }
 
 /// Response from timeline interaction
@@ -188,14 +198,26 @@ pub struct TimelineResponse {
     pub response: Response,
     /// Track index that was clicked (if any)
     pub track_clicked: Option<usize>,
+    /// Track mute button clicked (track_idx)
+    pub track_mute_clicked: Option<usize>,
+    /// Track solo button clicked (track_idx)
+    pub track_solo_clicked: Option<usize>,
+    /// Track record arm button clicked (track_idx)
+    pub track_arm_clicked: Option<usize>,
+    /// Track collapse/expand button clicked (track_idx)
+    pub track_collapse_clicked: Option<usize>,
     /// Region that was clicked (track_idx, region_idx)
     pub region_clicked: Option<(usize, usize)>,
     /// Empty area clicked (track_idx, beat_position)
     pub empty_clicked: Option<(usize, f32)>,
     /// Playhead was moved
     pub playhead_moved: bool,
+    /// Playhead was clicked (not just moved)
+    pub playhead_clicked: bool,
     /// Current playhead position in beats
     pub playhead_position: f32,
+    /// Which marker was moved (if any)
+    pub marker_moved: Option<usize>,
 }
 
 /// Timeline component
@@ -259,6 +281,18 @@ pub struct Timeline<'a> {
     show_snap_grid: bool,
     /// Snap grid subdivision
     snap_grid_subdivision: u32,
+    /// Minimum zoom level (beat_width multiplier)
+    min_zoom: f32,
+    /// Maximum zoom level (beat_width multiplier)
+    max_zoom: f32,
+    /// Auto-follow playhead during playback
+    auto_follow_playhead: bool,
+    /// Margin percent for auto-follow (0.0-1.0)
+    auto_follow_margin: f32,
+    /// Render margin in beats (how far outside viewport to render)
+    visible_render_margin: f32,
+    /// Empty state message
+    empty_message: Option<String>,
 }
 
 /// Info about a track in the flattened hierarchy
@@ -294,6 +328,12 @@ impl<'a> Timeline<'a> {
             punch_region: None,
             show_snap_grid: false,
             snap_grid_subdivision: 4,
+            min_zoom: 0.5,
+            max_zoom: 2.0,
+            auto_follow_playhead: false,
+            auto_follow_margin: 0.25,
+            visible_render_margin: 2.0,
+            empty_message: None,
         }
     }
 
@@ -336,6 +376,18 @@ impl<'a> Timeline<'a> {
     }
 
     /// Get a mutable reference to a track by path
+    fn get_track_by_path<'b>(tracks: &'b [Track], path: &[usize]) -> Option<&'b Track> {
+        if path.is_empty() {
+            return None;
+        }
+
+        let mut current = &tracks[path[0]];
+        for &idx in &path[1..] {
+            current = &current.children[idx];
+        }
+        Some(current)
+    }
+
     fn get_track_by_path_mut<'b>(tracks: &'b mut [Track], path: &[usize]) -> Option<&'b mut Track> {
         if path.is_empty() {
             return None;
@@ -452,6 +504,81 @@ impl<'a> Timeline<'a> {
         self
     }
 
+    /// Set minimum zoom level (beat_width multiplier)
+    ///
+    /// Default is 0.5x (50% of normal beat_width).
+    /// This prevents zooming out too far.
+    ///
+    /// # Example
+    /// ```
+    /// Timeline::new()
+    ///     .min_zoom(0.25)  // Allow zooming to 1/4 size
+    ///     .max_zoom(3.0)   // Allow zooming to 3x size
+    /// ```
+    pub fn min_zoom(mut self, min: f32) -> Self {
+        self.min_zoom = min.max(0.1);
+        self
+    }
+
+    /// Set maximum zoom level (beat_width multiplier)
+    ///
+    /// Default is 2.0x (200% of normal beat_width).
+    /// This prevents zooming in too far.
+    pub fn max_zoom(mut self, max: f32) -> Self {
+        self.max_zoom = max.min(10.0);
+        self
+    }
+
+    /// Enable auto-follow playhead during playback
+    ///
+    /// When enabled, the timeline automatically scrolls to keep the playhead
+    /// visible within the specified margin during playback.
+    ///
+    /// Default is disabled. Use with `.auto_follow_margin()` to control behavior.
+    pub fn auto_follow_playhead(mut self, follow: bool) -> Self {
+        self.auto_follow_playhead = follow;
+        self
+    }
+
+    /// Set the margin percent for auto-follow (0.0-1.0)
+    ///
+    /// Controls how far from the edge the playhead can travel before auto-scrolling.
+    /// - 0.0: Playhead at left edge
+    /// - 0.25: Playhead at 25% from left (default)
+    /// - 0.5: Playhead in center
+    /// - 1.0: Playhead at right edge
+    pub fn auto_follow_margin(mut self, margin: f32) -> Self {
+        self.auto_follow_margin = margin.clamp(0.0, 1.0);
+        self
+    }
+
+    /// Set render margin outside viewport (in beats)
+    ///
+    /// Controls how far outside the visible area content is rendered.
+    /// Larger values = smoother scrolling but more CPU cost.
+    /// Smaller values = lower CPU cost but may see content pop in.
+    ///
+    /// Default is 2.0 beats.
+    pub fn visible_render_margin(mut self, beats: f32) -> Self {
+        self.visible_render_margin = beats.max(0.0);
+        self
+    }
+
+    /// Set empty state message when no tracks exist
+    ///
+    /// Displays a message in the timeline area when there are no tracks.
+    /// This provides helpful guidance to users about what to do next.
+    ///
+    /// # Example
+    /// ```
+    /// Timeline::new()
+    ///     .empty_message("No tracks yet. Click '+' to add a track.")
+    /// ```
+    pub fn empty_message(mut self, message: impl Into<String>) -> Self {
+        self.empty_message = Some(message.into());
+        self
+    }
+
     /// Render a single track and its children recursively
     /// Render a single track header (non-recursive, flat rendering)
     #[allow(clippy::too_many_arguments)]
@@ -463,6 +590,10 @@ impl<'a> Timeline<'a> {
         indent_level: usize,
         parent_color: Option<Color32>,
         track_clicked: &mut Option<usize>,
+        track_mute_clicked: &mut Option<usize>,
+        track_solo_clicked: &mut Option<usize>,
+        track_arm_clicked: &mut Option<usize>,
+        track_collapse_clicked: &mut Option<usize>,
         theme: &Theme,
     ) -> egui::Rect {
         let header_id = self
@@ -493,8 +624,21 @@ impl<'a> Timeline<'a> {
             theme,
         );
 
+        // Capture all track header interactions
         if header_response.response.clicked() {
             *track_clicked = Some(track_idx);
+        }
+        if header_response.mute_clicked {
+            *track_mute_clicked = Some(track_idx);
+        }
+        if header_response.solo_clicked {
+            *track_solo_clicked = Some(track_idx);
+        }
+        if header_response.arm_clicked {
+            *track_arm_clicked = Some(track_idx);
+        }
+        if header_response.collapse_clicked {
+            *track_collapse_clicked = Some(track_idx);
         }
 
         header_response.response.rect
@@ -546,345 +690,533 @@ impl<'a> Timeline<'a> {
         theme: &Theme,
     ) -> TimelineResponse {
         let mut track_clicked = None;
+        let mut track_mute_clicked = None;
+        let mut track_solo_clicked = None;
+        let mut track_arm_clicked = None;
+        let mut track_collapse_clicked = None;
         let mut region_clicked = None;
         let mut empty_clicked = None;
         let mut playhead_moved = false;
-        let mut ruler_rect = Rect::NOTHING;
-        let mut tracks_rect = Rect::NOTHING;
 
-        // Get or create shared scroll offset for synchronization
-        let scroll_id = self.id.unwrap_or_else(|| ui.id()).with("shared_scroll");
+        // Get or create scroll state
+        let scroll_id = self.id.unwrap_or_else(|| ui.id()).with("timeline_scroll");
         let mut scroll_offset = ui
             .ctx()
             .data_mut(|d| d.get_persisted::<Vec2>(scroll_id).unwrap_or(Vec2::ZERO));
 
-        // Track previous scroll_to_beat value to detect changes
-        let prev_beat_id = self.id.unwrap_or_else(|| ui.id()).with("prev_scroll_to_beat");
-        let prev_beat = ui.ctx().data(|d| d.get_temp::<f32>(prev_beat_id));
+        // Build flattened track list
+        let mut flat_list = Vec::new();
+        Self::build_flat_track_list(tracks, Vec::new(), 0, 0, None, &mut flat_list);
 
-        // Apply scroll_to_beat only if it changed from the previous frame
+        // Calculate content dimensions
+        let timeline_content_width =
+            self.measures as f32 * self.beats_per_measure as f32 * self.beat_width;
+        let timeline_content_height = flat_list.len() as f32 * self.track_height;
+
+        // Get available space
+        let available_rect = ui.available_rect_before_wrap();
+        // Ensure minimum dimensions for usability
+        let timeline_width = (available_rect.width() - self.track_header_width).max(100.0);
+        let timeline_height = (available_rect.height() - self.ruler_height).max(100.0);
+
+        // Calculate max scroll
+        let max_scroll_x = (timeline_content_width - timeline_width).max(0.0);
+        let max_scroll_y = (timeline_content_height - timeline_height).max(0.0);
+
+        // Handle scroll_to_beat
         if let Some(beat) = self.scroll_to_beat {
-            // Only update scroll if the beat position changed
-            if prev_beat != Some(beat) {
-                scroll_offset.x = beat * self.beat_width;
-                // Store the new beat value for next frame comparison
-                ui.ctx().data_mut(|d| d.insert_temp(prev_beat_id, beat));
-            }
-        } else {
-            // Clear the stored beat if scroll_to_beat is not set
-            ui.ctx().data_mut(|d| d.remove::<f32>(prev_beat_id));
+            scroll_offset.x = beat * self.beat_width;
         }
 
-        let mut timeline_rects_for_markers = Vec::new();
-        let mut tracks_clip_rect = Rect::NOTHING;
-        let mut header_cell_width = 0.0;
-        let expected_width = self.track_header_width;
+        // Handle auto-follow playhead
+        if self.auto_follow_playhead {
+            let playhead_x = *playhead_position * self.beat_width;
+            let margin_width = timeline_width * self.auto_follow_margin;
 
-        let vertical_response = ui.vertical(|ui| {
-            // Calculate the full available width before Grid constrains it
-            let full_width = ui.available_width();
-            let timeline_width = full_width - self.track_header_width; // Width for ruler/tracks column
+            // If playhead is outside the visible area, auto-scroll to keep it within margin
+            if playhead_x < scroll_offset.x + margin_width {
+                scroll_offset.x = (playhead_x - margin_width).max(0.0);
+            } else if playhead_x > scroll_offset.x + timeline_width - margin_width {
+                scroll_offset.x = (playhead_x - timeline_width + margin_width).min(max_scroll_x);
+            }
+        }
 
-            // Use Grid for perfect alignment between ruler row and tracks row
-            egui::Grid::new(self.id.unwrap_or_else(|| ui.id()).with("timeline_grid"))
-                .spacing([0.0, 0.0]) // No spacing between ruler and tracks
-                .show(ui, |ui| {
-                    // Row 1: Empty space + Ruler
-                    // Wrap first column in fixed-width container
-                    ui.allocate_exact_size(
-                        Vec2::new(self.track_header_width, self.ruler_height),
-                        Sense::hover(),
-                    );
+        // We'll handle scroll input after rendering to ensure we capture events properly
 
-                    // Fixed time ruler area that shows offset content
-                    let ruler_id = self.id.unwrap_or_else(|| ui.id()).with("ruler");
+        // === RENDER WITHOUT GRID (Manual Positioning) ===
+        let response = ui.vertical(|ui| {
+            // Row 1: Corner + Ruler
+            ui.horizontal(|ui| {
+                // Top-left corner
+                ui.allocate_exact_size(Vec2::new(self.track_header_width, self.ruler_height), Sense::hover());
 
-                    // Allocate the calculated timeline width for second column
-                    let (ruler_response, _painter) = ui.allocate_painter(
-                        egui::Vec2::new(timeline_width, self.ruler_height),
-                        Sense::hover(),
-                    );
+                // Ruler
+                let ruler_rect = ui.allocate_exact_size(
+                    Vec2::new(timeline_width, self.ruler_height),
+                    Sense::hover(),
+                ).0;
 
-                    // Store ruler rect for playhead positioning
-                    ruler_rect = ruler_response.rect;
+                // Draw ruler with horizontal scroll
+                ui.painter().with_clip_rect(ruler_rect).rect_filled(
+                    ruler_rect,
+                    0.0,
+                    theme.surface_variant()
+                );
 
-                    // Push a child UI with negative offset to simulate scrolling
-                    let mut child_ui = ui.new_child(
-                        egui::UiBuilder::new()
-                            .max_rect(ruler_response.rect)
-                            .layout(egui::Layout::left_to_right(egui::Align::Min)),
-                    );
+                // Render TimeRuler component with offset and clipping
+                let mut ruler_ui = ui.new_child(
+                    egui::UiBuilder::new()
+                        .max_rect(ruler_rect.translate(Vec2::new(-scroll_offset.x, 0.0)))
+                        .layout(egui::Layout::left_to_right(egui::Align::Min)),
+                );
+                ruler_ui.set_clip_rect(ruler_rect);
+                TimeRuler::new()
+                    .id(self.id.unwrap_or_else(|| ui.id()).with("ruler"))
+                    .height(self.ruler_height)
+                    .beat_width(self.beat_width)
+                    .measures(self.measures)
+                    .beats_per_measure(self.beats_per_measure)
+                    .show(&mut ruler_ui, theme);
+            });
 
-                    // Offset the child UI to simulate scrolling
-                    child_ui.set_clip_rect(ruler_response.rect);
-                    let offset_rect = ruler_response
-                        .rect
-                        .translate(egui::Vec2::new(-scroll_offset.x, 0.0));
-                    let mut offset_ui = child_ui.new_child(
-                        egui::UiBuilder::new()
-                            .max_rect(offset_rect)
-                            .layout(egui::Layout::left_to_right(egui::Align::Min)),
-                    );
+            // Row 2: Headers + Tracks
+            ui.horizontal(|ui| {
+                // Left: Headers container
+                let headers_rect = ui.allocate_exact_size(
+                    Vec2::new(self.track_header_width, timeline_height),
+                    Sense::hover(),
+                ).0;
 
-                    TimeRuler::new()
-                        .id(ruler_id)
-                        .height(self.ruler_height)
-                        .beat_width(self.beat_width)
-                        .measures(self.measures)
-                        .beats_per_measure(self.beats_per_measure)
-                        .show(&mut offset_ui, theme);
+                // Clip and render headers with vertical scroll
+                ui.painter().with_clip_rect(headers_rect);
 
-                    ui.end_row(); // End first grid row
+                // Only render if we have tracks and there's space to render
+                if !flat_list.is_empty() && timeline_height > 0.0 {
+                    // Calculate which tracks are visible
+                    let first_visible = (scroll_offset.y / self.track_height).floor() as usize;
+                    let last_visible = ((scroll_offset.y + timeline_height) / self.track_height).ceil() as usize;
 
-                    // Build flattened track list (includes hierarchy info and path to each track)
-                    let mut flat_list = Vec::new();
-                    Self::build_flat_track_list(tracks, Vec::new(), 0, 0, None, &mut flat_list);
+                    // Clamp to valid range
+                    let first_visible = first_visible.min(flat_list.len().saturating_sub(1));
+                    let last_visible = last_visible.min(flat_list.len().saturating_sub(1));
 
-                    // Row 2: Track Headers + Timeline Tracks
-                    // Left cell: Track headers (match Row 1's allocation style)
-                    let header_cell_response = ui.vertical(|ui| {
-                        ui.set_width(self.track_header_width);
-                        ui.set_min_height(0.0); // Prevent minimum height
-                        ui.style_mut().spacing.item_spacing = egui::Vec2::ZERO; // Remove all spacing
-
-                        let headers_scroll_id =
-                            self.id.unwrap_or_else(|| ui.id()).with("headers_scroll");
-                        let scroll_response = ScrollArea::vertical()
-                            .id_salt(headers_scroll_id)
-                            .scroll_offset(Vec2::new(0.0, scroll_offset.y))
-                            .scroll_bar_visibility(
-                                egui::scroll_area::ScrollBarVisibility::AlwaysHidden,
-                            )
-                            .auto_shrink([false, false]) // Don't shrink to content
-                            .show(ui, |ui| {
-                                // Remove item spacing - Cards have their own margins
-                                ui.spacing_mut().item_spacing.y = 0.0;
-                                // Set max width to prevent headers from extending beyond the cell
-                                ui.set_max_width(self.track_header_width);
-
-                                // Set clip rect to hard-clip any content that exceeds the width
-                                let clip_rect = Rect::from_min_size(
-                                    ui.cursor().min,
-                                    Vec2::new(self.track_header_width, f32::INFINITY)
+                    for idx in first_visible..=last_visible {
+                        if let Some(info) = flat_list.get(idx) {
+                            if let Some(track) = Self::get_track_by_path_mut(tracks, &info.path) {
+                                let y_pos = idx as f32 * self.track_height - scroll_offset.y;
+                                let header_rect = Rect::from_min_size(
+                                    headers_rect.min + Vec2::new(0.0, y_pos),
+                                    Vec2::new(self.track_header_width, self.track_height)
                                 );
-                                ui.set_clip_rect(clip_rect);
 
-                                let mut rects = Vec::new();
+                                // Always render headers that are at least partially visible
+                                if header_rect.max.y > headers_rect.min.y && header_rect.min.y < headers_rect.max.y {
+                                    let mut header_ui = ui.new_child(
+                                        egui::UiBuilder::new()
+                                            .max_rect(header_rect)
+                                            .layout(egui::Layout::top_down(egui::Align::Min)),
+                                    );
+                                    header_ui.set_clip_rect(headers_rect);
 
-                                // Render each track in flattened order
-                                for info in &flat_list {
-                                    if let Some(track) =
-                                        Self::get_track_by_path_mut(tracks, &info.path)
-                                    {
-                                        let rect = self.render_track_header_flat(
-                                            ui,
-                                            track,
-                                            info.track_idx,
-                                            info.indent_level,
-                                            info.parent_color,
-                                            &mut track_clicked,
-                                            theme,
-                                        );
-                                        rects.push(rect);
-                                    }
-                                }
-                                rects
-                            });
-                            (scroll_response.inner, scroll_response.inner_rect)
-                    });
-
-                    let (header_rects, header_viewport) = header_cell_response.inner;
-
-                    // Debug: Check header cell width
-                    header_cell_width = header_cell_response.response.rect.width();
-
-                    // Right cell: Timeline tracks (match Row 1's allocation style)
-                    let tracks_cell_response = ui.vertical(|ui| {
-                        ui.set_width(timeline_width);
-                        ui.set_min_height(0.0); // Prevent minimum height
-                        ui.style_mut().spacing.item_spacing = egui::Vec2::ZERO; // Remove all spacing
-
-                        let tracks_scroll_id =
-                            self.id.unwrap_or_else(|| ui.id()).with("tracks_scroll");
-
-                        // Build the scroll area with viewport
-                        // Always pass the scroll_offset - it will be used if scroll_to_beat was set
-                        let scroll_area = ScrollArea::both()
-                            .id_salt(tracks_scroll_id)
-                            .scroll_offset(scroll_offset)
-                            .auto_shrink([false, false]); // Don't shrink to content
-
-                        let tracks_response = scroll_area.show(ui, |ui| {
-                            // Remove item spacing - Cards have their own margins
-                            ui.spacing_mut().item_spacing.y = 0.0;
-                            let mut rects = Vec::new();
-
-                            // Render each track in flattened order
-                            for info in &flat_list {
-                                if let Some(track) =
-                                    Self::get_track_by_path_mut(tracks, &info.path)
-                                {
-                                    let rect = self.render_track_timeline_flat(
-                                        ui,
+                                    self.render_track_header_flat(
+                                        &mut header_ui,
                                         track,
                                         info.track_idx,
-                                        &mut region_clicked,
-                                        &mut empty_clicked,
+                                        info.indent_level,
+                                        info.parent_color,
+                                        &mut track_clicked,
+                                        &mut track_mute_clicked,
+                                        &mut track_solo_clicked,
+                                        &mut track_arm_clicked,
+                                        &mut track_collapse_clicked,
                                         theme,
                                     );
-                                    rects.push(rect);
+
+                                    // Update track selection state when clicked
+                                    if let Some(clicked_idx) = track_clicked {
+                                        if clicked_idx == info.track_idx {
+                                            track.selected = !track.selected;
+                                            track_clicked = None; // Reset so we don't process it multiple times
+                                        }
+                                    }
                                 }
                             }
-                            rects
-                        });
+                        }
+                    }
+                }
 
-                        tracks_rect = tracks_response.inner_rect;
-                        scroll_offset = tracks_response.state.offset;
-                        (tracks_response.inner, tracks_response.inner_rect)
-                    });
+                // Draw selection borders on selected track headers
+                let painter = ui.painter();
+                if !flat_list.is_empty() {
+                    let first_visible = (scroll_offset.y / self.track_height).floor() as usize;
+                    let last_visible = ((scroll_offset.y + timeline_height) / self.track_height).ceil() as usize;
 
-                    let (timeline_rects, timeline_viewport) = tracks_cell_response.inner;
+                    for idx in first_visible..=last_visible.min(flat_list.len() - 1) {
+                        if let Some(info) = flat_list.get(idx) {
+                            if let Some(track) = Self::get_track_by_path(tracks, &info.path) {
+                                if track.selected {
+                                    let y_pos = idx as f32 * self.track_height - scroll_offset.y;
+                                    let header_rect = egui::Rect::from_min_size(
+                                        headers_rect.min + Vec2::new(0.0, y_pos),
+                                        Vec2::new(self.track_header_width, self.track_height)
+                                    );
 
-                    ui.end_row(); // End second grid row
+                                    if header_rect.intersects(headers_rect) {
+                                        painter.rect_stroke(
+                                            header_rect,
+                                            2.0,
+                                            egui::Stroke::new(2.0, theme.primary()),
+                                            egui::StrokeKind::Outside,
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
-                    // Draw borders around track rows (header + timeline combined)
-                    // Create a combined clip rect from both scroll viewports
-                    let clip_rect =
-                        egui::Rect::from_min_max(header_viewport.min, timeline_viewport.max);
+                // Right: Tracks container
+                let tracks_rect = ui.allocate_exact_size(
+                    Vec2::new(timeline_width, timeline_height),
+                    Sense::hover(),
+                ).0;
 
-                    let painter = ui.painter().with_clip_rect(clip_rect);
-                    for (header_rect, timeline_rect) in
-                        header_rects.iter().zip(timeline_rects.iter())
-                    {
-                        // Combine header and timeline rects into one
-                        // Use actual rect heights to ensure perfect alignment
-                        let combined_rect = egui::Rect::from_min_max(
-                            header_rect.min,
-                            egui::Pos2::new(
-                                timeline_rect.max.x,
-                                header_rect.max.y.max(timeline_rect.max.y), // Use max of both to ensure full coverage
-                            ),
+                // Clip and render tracks with both scrolls
+                ui.painter().with_clip_rect(tracks_rect);
+
+                // Only render if we have tracks and there's space to render
+                if !flat_list.is_empty() && timeline_height > 0.0 {
+                    // Calculate which tracks are visible (same as headers)
+                    let first_visible = (scroll_offset.y / self.track_height).floor() as usize;
+                    let last_visible = ((scroll_offset.y + timeline_height) / self.track_height).ceil() as usize;
+
+                    // Clamp to valid range
+                    let first_visible = first_visible.min(flat_list.len().saturating_sub(1));
+                    let last_visible = last_visible.min(flat_list.len().saturating_sub(1));
+
+                    for idx in first_visible..=last_visible {
+                        if let Some(info) = flat_list.get(idx) {
+                            if let Some(track) = Self::get_track_by_path_mut(tracks, &info.path) {
+                                let y_pos = idx as f32 * self.track_height - scroll_offset.y;
+                                let track_rect = Rect::from_min_size(
+                                    tracks_rect.min + Vec2::new(-scroll_offset.x, y_pos),
+                                    Vec2::new(timeline_content_width, self.track_height)
+                                );
+
+                                // Create child UI with clipping to prevent overflow into header area
+                                let mut track_ui = ui.new_child(
+                                    egui::UiBuilder::new()
+                                        .max_rect(track_rect)
+                                        .layout(egui::Layout::top_down(egui::Align::Min)),
+                                );
+                                track_ui.set_clip_rect(tracks_rect);
+
+                                self.render_track_timeline_flat(
+                                    &mut track_ui,
+                                    track,
+                                    info.track_idx,
+                                    &mut region_clicked,
+                                    &mut empty_clicked,
+                                    theme,
+                                );
+                            }
+                        }
+                    }
+                }
+
+                // Empty state message
+                if flat_list.is_empty() {
+                    if let Some(msg) = &self.empty_message {
+                        let empty_rect = Rect::from_min_size(
+                            tracks_rect.min,
+                            Vec2::new(timeline_width, timeline_height)
                         );
 
-                        painter.rect_stroke(
-                            combined_rect,
-                            4.0,
-                            egui::Stroke::new(1.0, theme.outline()),
-                            egui::StrokeKind::Inside,
+                        // Draw centered empty message
+                        let painter = ui.painter();
+                        painter.rect_filled(empty_rect, 0.0, theme.surface());
+
+                        let text_center = empty_rect.center();
+                        painter.text(
+                            text_center,
+                            egui::Align2::CENTER_CENTER,
+                            msg,
+                            egui::FontId::default(),
+                            theme.on_surface(),
                         );
                     }
+                }
 
-                    // Store timeline_rects for region marker rendering
-                    timeline_rects_for_markers = timeline_rects;
-                    tracks_clip_rect = timeline_viewport; // Only clip to timeline area, not headers
+                // Grid overlay
+                if self.show_snap_grid {
+                    let painter = ui.painter().with_clip_rect(tracks_rect);
+                    for measure in 0..self.measures {
+                        for beat in 0..self.beats_per_measure {
+                            let x = tracks_rect.min.x - scroll_offset.x + (measure * self.beats_per_measure + beat) as f32 * self.beat_width;
+                            if x >= tracks_rect.min.x && x <= tracks_rect.max.x {
+                                let is_measure = beat == 0;
+                                let color = if is_measure {
+                                    theme.outline().linear_multiply(0.3)
+                                } else {
+                                    theme.outline_variant().linear_multiply(0.2)
+                                };
+                                painter.line_segment(
+                                    [pos2(x, tracks_rect.min.y), pos2(x, tracks_rect.max.y)],
+                                    (if is_measure { 1.0 } else { 0.5 }, color),
+                                );
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Handle scroll input (mouse wheel/trackpad)
+            // Create an invisible interaction area over the timeline content
+            let scroll_area_rect = Rect::from_min_size(
+                available_rect.min + Vec2::new(0.0, self.ruler_height),
+                Vec2::new(available_rect.width(), timeline_height)
+            );
+
+            let scroll_response = ui.interact(scroll_area_rect, scroll_id.with("scroll"), Sense::hover());
+            if scroll_response.hovered() {
+                ui.ctx().input(|i| {
+                    let delta = i.smooth_scroll_delta;
+                    if delta != Vec2::ZERO {
+                        scroll_offset.x -= delta.x;
+                        scroll_offset.y -= delta.y;
+                        scroll_offset.x = scroll_offset.x.clamp(0.0, max_scroll_x);
+                        scroll_offset.y = scroll_offset.y.clamp(0.0, max_scroll_y);
+                    }
                 });
+            }
+        }).response;
 
-            scroll_offset
-        });
-
-        // Get the visible viewport rect before clipping
-        let visible_viewport = vertical_response.response.rect;
-
-        // Clip tracks_rect to the actual visible viewport
-        tracks_rect = tracks_rect.intersect(visible_viewport);
-
-        // Persist the shared scroll offset for next frame
+        // Persist scroll offset
         ui.ctx().data_mut(|d| {
             d.insert_persisted(scroll_id, scroll_offset);
         });
 
-        // Calculate marker heights early, before any closures
+        // Get ruler rect for markers (we need to reference the actual allocated ruler rect)
+        let ruler_rect = Rect::from_min_size(
+            available_rect.min + Vec2::new(self.track_header_width, 0.0),
+            Vec2::new(timeline_width, self.ruler_height)
+        );
 
-        // Render point markers (cue, tempo, time signature) as overlays in the ruler area
-        if !ruler_rect.is_negative() {
-            // Create a layer for markers that sits above the ruler
-            let marker_layer_id = egui::LayerId::new(egui::Order::Foreground, self.id.unwrap_or_else(|| ui.id()).with("markers"));
-
-            // Point markers use full ruler height
-            let marker_rect = Rect::from_min_size(
-                egui::Pos2::new(ruler_rect.min.x - scroll_offset.x, ruler_rect.min.y),
-                egui::Vec2::new(self.measures as f32 * self.beats_per_measure as f32 * self.beat_width, ruler_rect.height())
+        // Render point markers in the ruler area
+        if self.markers.is_some() && !ruler_rect.is_negative() {
+            let marker_layer_id = egui::LayerId::new(
+                egui::Order::Foreground,
+                self.id.unwrap_or_else(|| ui.id()).with("markers")
             );
 
-            ui.scope_builder(egui::UiBuilder::new().layer_id(marker_layer_id).max_rect(marker_rect), |ui| {
-                ui.set_clip_rect(ruler_rect); // Clip to visible ruler area
+            let marker_rect = Rect::from_min_size(
+                pos2(ruler_rect.min.x - scroll_offset.x, ruler_rect.min.y),
+                vec2(timeline_content_width, ruler_rect.height())
+            );
 
-                // Render all markers - vertical position determined by content
-                if let Some(markers) = self.markers {
-                    for (i, marker_data) in markers.iter_mut().enumerate() {
-                        // Determine vertical range based on marker type (heuristic: check content)
-                        let vertical_range = if marker_data.content.contains("BPM") {
-                            (0.33, 0.67) // Tempo markers in middle third
-                        } else if marker_data.content.contains('/') && marker_data.content.len() < 6 {
-                            (0.67, 1.0) // Time signature markers in bottom third
-                        } else {
-                            (0.0, 0.33) // Cue point markers in top third
-                        };
+            ui.scope_builder(
+                egui::UiBuilder::new().layer_id(marker_layer_id).max_rect(marker_rect),
+                |ui| {
+                    ui.set_clip_rect(ruler_rect);
 
-                        let mut marker = Marker::new(&mut marker_data.position, &marker_data.content)
+                    if let Some(markers) = self.markers {
+                        for (i, marker_data) in markers.iter_mut().enumerate() {
+                            let vertical_range = if marker_data.content.contains("BPM") {
+                                (0.33, 0.67)
+                            } else if marker_data.content.contains('/') && marker_data.content.len() < 6 {
+                                (0.67, 1.0)
+                            } else {
+                                (0.0, 0.33)
+                            };
+
+                            let mut marker = Marker::new(&mut marker_data.position, &marker_data.content)
+                                .beat_width(self.beat_width)
+                                .measures(self.measures)
+                                .beats_per_measure(self.beats_per_measure)
+                                .height(self.ruler_height)
+                                .vertical_range(vertical_range.0, vertical_range.1)
+                                .id(self.id.unwrap_or_else(|| ui.id()).with("marker").with(i));
+
+                            if let Some(color) = marker_data.color {
+                                marker = marker.color(color);
+                            }
+
+                            marker.show(ui);
+                        }
+                    }
+                },
+            );
+        }
+
+        // Render snap grid overlay if enabled
+        if self.show_snap_grid && timeline_height > 0.0 {
+            let tracks_rect = Rect::from_min_size(
+                available_rect.min + Vec2::new(self.track_header_width, self.ruler_height),
+                Vec2::new(timeline_width, timeline_height)
+            );
+
+            let grid_layer_id = egui::LayerId::new(
+                egui::Order::Middle,
+                self.id.unwrap_or_else(|| ui.id()).with("snap_grid_overlay")
+            );
+
+            let grid_rect = Rect::from_min_size(
+                pos2(tracks_rect.min.x - scroll_offset.x, tracks_rect.min.y - scroll_offset.y),
+                vec2(timeline_content_width, timeline_content_height)
+            );
+
+            ui.scope_builder(
+                egui::UiBuilder::new().layer_id(grid_layer_id).max_rect(grid_rect),
+                |ui| {
+                    ui.set_clip_rect(tracks_rect);
+
+                    SnapGrid::new()
+                        .beat_width(self.beat_width)
+                        .measures(self.measures)
+                        .beats_per_measure(self.beats_per_measure)
+                        .subdivision(self.snap_grid_subdivision)
+                        .show(ui);
+                },
+            );
+        }
+
+        // Render region markers (loop, selection, punch) overlaying tracks
+        if !flat_list.is_empty() && timeline_height > 0.0 {
+            let tracks_rect = Rect::from_min_size(
+                available_rect.min + Vec2::new(self.track_header_width, self.ruler_height),
+                Vec2::new(timeline_width, timeline_height)
+            );
+
+            let markers_rect = Rect::from_min_size(
+                pos2(tracks_rect.min.x - scroll_offset.x, tracks_rect.min.y - scroll_offset.y),
+                vec2(timeline_content_width, timeline_content_height)
+            );
+
+            let z_order_id = self.id.unwrap_or_else(|| ui.id()).with("marker_z_order");
+            let mut top_marker: u8 = ui.ctx().data_mut(|d| d.get_temp(z_order_id).unwrap_or(2));
+
+            // Render loop region
+            if let Some(loop_data) = self.loop_region {
+                let loop_order = if top_marker == 0 {
+                    egui::Order::Foreground
+                } else {
+                    egui::Order::Middle
+                };
+
+                let loop_layer_id = egui::LayerId::new(
+                    loop_order,
+                    self.id.unwrap_or_else(|| ui.id()).with("loop_region_layer")
+                );
+
+                let loop_response = ui.scope_builder(
+                    egui::UiBuilder::new().layer_id(loop_layer_id).max_rect(markers_rect),
+                    |ui| {
+                        ui.set_clip_rect(tracks_rect);
+
+                        LoopRegionMarker::new(&mut loop_data.start, &mut loop_data.end)
                             .beat_width(self.beat_width)
                             .measures(self.measures)
                             .beats_per_measure(self.beats_per_measure)
-                            .height(self.ruler_height)
-                            .vertical_range(vertical_range.0, vertical_range.1)
-                            .id(self.id.unwrap_or_else(|| ui.id()).with("marker").with(i));
+                            .height(timeline_content_height)
+                            .vertical_range(0.0, 0.5)
+                            .id(self.id.unwrap_or_else(|| ui.id()).with("loop_region"))
+                            .show(ui)
+                    },
+                ).inner;
 
-                        if let Some(color) = marker_data.color {
-                            marker = marker.color(color);
-                        }
-
-                        marker.show(ui);
-                    }
+                if loop_response.region_clicked || loop_response.loop_start_changed || loop_response.loop_end_changed {
+                    top_marker = 0;
                 }
-            });
+            }
+
+            // Render selection range
+            if let Some(selection_data) = self.selection_range {
+                let selection_order = if top_marker == 1 {
+                    egui::Order::Foreground
+                } else {
+                    egui::Order::Middle
+                };
+
+                let selection_layer_id = egui::LayerId::new(
+                    selection_order,
+                    self.id.unwrap_or_else(|| ui.id()).with("selection_range_layer")
+                );
+
+                let selection_response = ui.scope_builder(
+                    egui::UiBuilder::new().layer_id(selection_layer_id).max_rect(markers_rect),
+                    |ui| {
+                        ui.set_clip_rect(tracks_rect);
+
+                        SelectionRange::new(&mut selection_data.start, &mut selection_data.end)
+                            .beat_width(self.beat_width)
+                            .measures(self.measures)
+                            .beats_per_measure(self.beats_per_measure)
+                            .height(timeline_content_height)
+                            .vertical_range(0.33, 0.67)
+                            .id(self.id.unwrap_or_else(|| ui.id()).with("selection_range"))
+                            .show(ui)
+                    },
+                ).inner;
+
+                if selection_response.region_clicked || selection_response.selection_start_changed || selection_response.selection_end_changed {
+                    top_marker = 1;
+                }
+            }
+
+            // Render punch region
+            if let Some(punch_data) = self.punch_region {
+                let punch_order = if top_marker == 2 {
+                    egui::Order::Foreground
+                } else {
+                    egui::Order::Middle
+                };
+
+                let punch_layer_id = egui::LayerId::new(
+                    punch_order,
+                    self.id.unwrap_or_else(|| ui.id()).with("punch_region_layer")
+                );
+
+                let punch_response = ui.scope_builder(
+                    egui::UiBuilder::new().layer_id(punch_layer_id).max_rect(markers_rect),
+                    |ui| {
+                        ui.set_clip_rect(tracks_rect);
+
+                        PunchMarker::new(&mut punch_data.punch_in, &mut punch_data.punch_out)
+                            .beat_width(self.beat_width)
+                            .measures(self.measures)
+                            .beats_per_measure(self.beats_per_measure)
+                            .height(timeline_content_height)
+                            .vertical_range(0.5, 1.0)
+                            .id(self.id.unwrap_or_else(|| ui.id()).with("punch_region"))
+                            .show(ui)
+                    },
+                ).inner;
+
+                if punch_response.region_clicked || punch_response.punch_in_changed || punch_response.punch_out_changed {
+                    top_marker = 2;
+                }
+            }
+
+            ui.ctx().data_mut(|d| d.insert_temp(z_order_id, top_marker));
         }
 
-        // Render snap grid as overlay over tracks
-        if self.show_snap_grid && !tracks_rect.is_negative() {
-            let grid_layer_id = egui::LayerId::new(egui::Order::Middle, self.id.unwrap_or_else(|| ui.id()).with("snap_grid"));
+        // Playhead - now using Playhead component
+        if self.show_playhead && timeline_height > 0.0 {
+            let total_height = available_rect.height();
 
-            let grid_rect = Rect::from_min_size(
-                egui::Pos2::new(tracks_rect.min.x - scroll_offset.x, tracks_rect.min.y),
-                egui::Vec2::new(
-                    self.measures as f32 * self.beats_per_measure as f32 * self.beat_width,
-                    tracks_rect.height()
-                )
-            );
-
-            ui.scope_builder(egui::UiBuilder::new().layer_id(grid_layer_id).max_rect(grid_rect), |ui| {
-                ui.set_clip_rect(tracks_rect);
-
-                SnapGrid::new()
-                    .beat_width(self.beat_width)
-                    .measures(self.measures)
-                    .beats_per_measure(self.beats_per_measure)
-                    .subdivision(self.snap_grid_subdivision)
-                    .show(ui);
-            });
-        }
-
-        // Render playhead overlay if enabled (using same approach as region markers)
-        if self.show_playhead && !ruler_rect.is_negative() {
-            // Calculate total height from ruler to bottom of visible viewport
-            let total_height = visible_viewport.max.y - ruler_rect.min.y;
-
-            // Create playhead rect aligned with timeline content area
-            // Offset by scroll to account for horizontal scrolling
             let playhead_rect = Rect::from_min_size(
-                egui::Pos2::new(ruler_rect.min.x - scroll_offset.x, ruler_rect.min.y),
-                egui::Vec2::new(ruler_rect.width(), total_height)
+                pos2(available_rect.min.x + self.track_header_width - scroll_offset.x, available_rect.min.y),
+                vec2(timeline_content_width, total_height)
             );
 
-            // Use a layer like region markers do, with proper clipping
             let playhead_layer_id = egui::LayerId::new(
                 egui::Order::Foreground,
                 self.id.unwrap_or_else(|| ui.id()).with("playhead_layer")
             );
 
-            // Clip rect is the visible viewport (ruler area)
-            let playhead_clip_rect = Rect::from_min_max(
-                ruler_rect.min,
-                egui::Pos2::new(ruler_rect.max.x, visible_viewport.max.y)
+            let playhead_clip_rect = Rect::from_min_size(
+                available_rect.min + Vec2::new(self.track_header_width, 0.0),
+                Vec2::new(timeline_width, total_height)
             );
 
             let playhead_id = self.id.unwrap_or_else(|| ui.id()).with("playhead");
@@ -895,13 +1227,11 @@ impl<'a> Timeline<'a> {
             }
 
             let playhead_response = ui.scope_builder(
-                egui::UiBuilder::new()
-                    .layer_id(playhead_layer_id)
-                    .max_rect(playhead_rect),
+                egui::UiBuilder::new().layer_id(playhead_layer_id).max_rect(playhead_rect),
                 |ui| {
                     ui.set_clip_rect(playhead_clip_rect);
                     playhead.show_in_rect(ui, playhead_rect, playhead_position, theme)
-                }
+                },
             ).inner;
 
             if playhead_response.changed() {
@@ -909,136 +1239,19 @@ impl<'a> Timeline<'a> {
             }
         }
 
-        // Render region markers as overlays across all tracks
-        // Position them starting at the first track and spanning down to cover all tracks
-        if !timeline_rects_for_markers.is_empty() && !tracks_clip_rect.is_negative() {
-            let first_track_rect = &timeline_rects_for_markers[0];
-            let last_track_rect = &timeline_rects_for_markers[timeline_rects_for_markers.len() - 1];
-
-            // Calculate total height from first track to last track
-            let total_tracks_height = last_track_rect.max.y - first_track_rect.min.y;
-            let timeline_width = self.measures as f32 * self.beats_per_measure as f32 * self.beat_width;
-
-            // All markers share the same rect (overlaying like a zstack)
-            // Position markers to start at tracks_rect.min.x (after the header column)
-            let markers_rect = Rect::from_min_size(
-                egui::Pos2::new(tracks_rect.min.x - scroll_offset.x, first_track_rect.min.y),
-                egui::Vec2::new(timeline_width, total_tracks_height)
-            );
-
-            // Load z-order state (which marker is on top)
-            // 0 = loop, 1 = selection, 2 = punch
-            let z_order_id = self.id.unwrap_or_else(|| ui.id()).with("marker_z_order");
-            let mut top_marker: u8 = ui.ctx().data_mut(|d| d.get_temp(z_order_id).unwrap_or(2)); // punch on top by default
-
-            // Render loop region - base layer or brought to front
-            if let Some(loop_data) = self.loop_region {
-                let loop_order = if top_marker == 0 {
-                    egui::Order::Foreground  // On top
-                } else {
-                    egui::Order::Middle      // Behind
-                };
-
-                let loop_layer_id = egui::LayerId::new(loop_order, self.id.unwrap_or_else(|| ui.id()).with("loop_region_layer"));
-
-                let loop_response = ui.scope_builder(egui::UiBuilder::new().layer_id(loop_layer_id).max_rect(markers_rect), |ui| {
-                    LoopRegionMarker::new(&mut loop_data.start, &mut loop_data.end)
-                        .beat_width(self.beat_width)
-                        .measures(self.measures)
-                        .beats_per_measure(self.beats_per_measure)
-                        .height(total_tracks_height)
-                        .vertical_range(0.0, 0.5)  // Top half
-                        .clip_rect(tracks_clip_rect)
-                        .id(self.id.unwrap_or_else(|| ui.id()).with("loop_region"))
-                        .show(ui)
-                }).inner;
-
-                // Bring to front if clicked
-                if loop_response.region_clicked || loop_response.loop_start_changed || loop_response.loop_end_changed {
-                    top_marker = 0;
-                }
-            }
-
-            // Render selection range - middle layer or brought to front
-            if let Some(selection_data) = self.selection_range {
-                let selection_order = if top_marker == 1 {
-                    egui::Order::Foreground
-                } else {
-                    egui::Order::Middle
-                };
-
-                let selection_layer_id = egui::LayerId::new(selection_order, self.id.unwrap_or_else(|| ui.id()).with("selection_range_layer"));
-
-                let selection_response = ui.scope_builder(egui::UiBuilder::new().layer_id(selection_layer_id).max_rect(markers_rect), |ui| {
-                    SelectionRange::new(&mut selection_data.start, &mut selection_data.end)
-                        .beat_width(self.beat_width)
-                        .measures(self.measures)
-                        .beats_per_measure(self.beats_per_measure)
-                        .height(total_tracks_height)
-                        .vertical_range(0.33, 0.67)  // Middle third
-                        .clip_rect(tracks_clip_rect)
-                        .id(self.id.unwrap_or_else(|| ui.id()).with("selection_range"))
-                        .show(ui)
-                }).inner;
-
-                if selection_response.region_clicked || selection_response.selection_start_changed || selection_response.selection_end_changed {
-                    top_marker = 1;
-                }
-            }
-
-            // Render punch region - top layer or brought to front
-            if let Some(punch_data) = self.punch_region {
-                let punch_order = if top_marker == 2 {
-                    egui::Order::Foreground
-                } else {
-                    egui::Order::Middle
-                };
-
-                let punch_layer_id = egui::LayerId::new(punch_order, self.id.unwrap_or_else(|| ui.id()).with("punch_region_layer"));
-
-                let punch_response = ui.scope_builder(egui::UiBuilder::new().layer_id(punch_layer_id).max_rect(markers_rect), |ui| {
-                    PunchMarker::new(&mut punch_data.punch_in, &mut punch_data.punch_out)
-                        .beat_width(self.beat_width)
-                        .measures(self.measures)
-                        .beats_per_measure(self.beats_per_measure)
-                        .height(total_tracks_height)
-                        .vertical_range(0.5, 1.0)  // Bottom half
-                        .clip_rect(tracks_clip_rect)
-                        .id(self.id.unwrap_or_else(|| ui.id()).with("punch_region"))
-                        .show(ui)
-                }).inner;
-
-                if punch_response.region_clicked || punch_response.punch_in_changed || punch_response.punch_out_changed {
-                    top_marker = 2;
-                }
-            }
-
-            // Save z-order state
-            ui.ctx().data_mut(|d| d.insert_temp(z_order_id, top_marker));
-        }
-
-        // Create response
-        let response = ui.allocate_response(Vec2::ZERO, Sense::hover());
-
-        // Debug: Display header width info
-        ui.label(
-            egui::RichText::new(format!(
-                "Header width: {:.1} | Expected: {:.1} | Diff: {:.1}",
-                header_cell_width,
-                expected_width,
-                header_cell_width - expected_width
-            ))
-            .small()
-            .color(egui::Color32::RED)
-        );
-
         TimelineResponse {
             response,
             track_clicked,
+            track_mute_clicked,
+            track_solo_clicked,
+            track_arm_clicked,
+            track_collapse_clicked,
             region_clicked,
             empty_clicked,
             playhead_moved,
+            playhead_clicked: false, // Can be enhanced to detect actual clicks vs drags
             playhead_position: *playhead_position,
+            marker_moved: None, // Can be enhanced to track marker movements
         }
     }
 }

@@ -200,8 +200,7 @@ impl TrackHeader {
         let content_height = text_height + content_spacing + buttons_height;
 
         // Calculate padding for left/right only
-        let total_padding = (self.height - content_height).max(0.0);
-        let horizontal_padding = total_padding / 2.0;
+        let horizontal_padding = 8.0;
 
         let mut card = Card::new()
             .variant(CardVariant::Filled)
@@ -215,187 +214,210 @@ impl TrackHeader {
         }
 
         let card_response = card.show(ui, theme, |ui| {
-            // Use horizontal layout (no vertical padding to match TimelineTrack)
-            ui.horizontal(|ui| {
-                // Add left padding
-                ui.add_space(horizontal_padding);
-                // Add indentation space for nested tracks
-                if self.indent_level > 0 {
-                    ui.add_space(indent_pixels);
-                }
+            // Allocate exact size first (like TimelineTrack does)
+            let (track_rect, _) = ui.allocate_exact_size(
+                Vec2::new(self.width, self.height),
+                Sense::hover(),
+            );
 
-                // Color indicator bar with glassmorphism and subtle glow
-                let (rect, response) = ui.allocate_exact_size(
-                    Vec2::new(color_bar_width, content_height),
-                    Sense::click(),
-                );
+            // Calculate vertical centering
+            let content_y = track_rect.min.y + (self.height - content_height) / 2.0;
 
-                let painter = ui.painter();
+            // Create a scoped UI within a sub-rect for the content
+            let content_rect = egui::Rect::from_min_size(
+                egui::Pos2::new(track_rect.min.x + horizontal_padding, content_y),
+                Vec2::new(self.width - horizontal_padding * 2.0, content_height),
+            );
 
-                if self.is_folder {
-                    // Folder track: Enhanced visual with gradient and stronger glow
+            ui.scope_builder(
+                egui::UiBuilder::new()
+                    .max_rect(content_rect)
+                    .layout(egui::Layout::left_to_right(egui::Align::Min)),
+                |ui| {
+                    // Add indentation space for nested tracks
+                    if self.indent_level > 0 {
+                        ui.add_space(indent_pixels);
+                    }
 
-                    // Vertical gradient: parent color (or theme primary) → track color
-                    // Root folders: primary → self
-                    // Child folders: parent → self
-                    let gradient_start = self.parent_color.unwrap_or(theme.primary());
-                    let top_color = Color32::from_rgba_unmultiplied(
-                        gradient_start.r(),
-                        gradient_start.g(),
-                        gradient_start.b(),
-                        120,
-                    );
-                    let bottom_color = Color32::from_rgba_unmultiplied(
-                        track_color.r(),
-                        track_color.g(),
-                        track_color.b(),
-                        120,
+                    // Color indicator bar with glassmorphism and subtle glow
+                    let (rect, response) = ui.allocate_exact_size(
+                        Vec2::new(color_bar_width, content_height),
+                        Sense::click(),
                     );
 
-                    // Draw gradient using lerp_color interpolation
-                    let num_steps = 10;
-                    let step_height = rect.height() / num_steps as f32;
-                    for i in 0..num_steps {
-                        let t = i as f32 / (num_steps - 1) as f32;
-                        let step_color = lerp_color(top_color, bottom_color, t);
+                    let painter = ui.painter();
 
-                        let step_rect = egui::Rect::from_min_max(
-                            egui::Pos2::new(rect.min.x, rect.min.y + i as f32 * step_height),
-                            egui::Pos2::new(rect.max.x, rect.min.y + (i + 1) as f32 * step_height),
+                    if self.is_folder {
+                        // Folder track: Enhanced visual with gradient and stronger glow
+
+                        // Vertical gradient: parent color (or theme primary) → track color
+                        // Root folders: primary → self
+                        // Child folders: parent → self
+                        let gradient_start = self.parent_color.unwrap_or(theme.primary());
+                        let top_color = Color32::from_rgba_unmultiplied(
+                            gradient_start.r(),
+                            gradient_start.g(),
+                            gradient_start.b(),
+                            120,
                         );
-                        painter.rect_filled(step_rect, 0.0, step_color);
-                    }
+                        let bottom_color = Color32::from_rgba_unmultiplied(
+                            track_color.r(),
+                            track_color.g(),
+                            track_color.b(),
+                            120,
+                        );
 
-                    // Stronger glow for folder tracks
-                    let glow_alpha: u8 = 40;
-                    for i in 0..5 {
-                        let inset = (i + 1) as f32 * 0.4;
-                        let alpha = glow_alpha.saturating_sub((i * 8) as u8);
-                        let inset_rect = rect.shrink(inset);
-                        let glow_color = Color32::from_rgba_unmultiplied(255, 255, 255, alpha);
-                        painter.rect_filled(inset_rect, 0.0, glow_color);
-                    }
+                        // Draw gradient using lerp_color interpolation
+                        let num_steps = 10;
+                        let step_height = rect.height() / num_steps as f32;
+                        for i in 0..num_steps {
+                            let t = i as f32 / (num_steps - 1) as f32;
+                            let step_color = lerp_color(top_color, bottom_color, t);
 
-                    // Check for clicks on the color bar to toggle collapse
-                    if response.clicked() {
-                        *collapsed = !*collapsed;
-                        collapse_clicked = true;
-                    }
-                } else {
-                    // Regular track: Simple glassmorphic color bar
-                    let glass_color = Color32::from_rgba_unmultiplied(
-                        track_color.r(),
-                        track_color.g(),
-                        track_color.b(),
-                        100,
-                    );
-                    painter.rect_filled(rect, 0.0, glass_color);
-
-                    // Subtle inner glow
-                    let glow_alpha: u8 = 20;
-                    for i in 0..3 {
-                        let inset = (i + 1) as f32 * 0.5;
-                        let alpha = glow_alpha.saturating_sub((i * 6) as u8);
-                        let inset_rect = rect.shrink(inset);
-                        let glow_color = Color32::from_rgba_unmultiplied(255, 255, 255, alpha);
-                        painter.rect_filled(inset_rect, 0.0, glow_color);
-                    }
-                }
-
-                ui.add_space(if self.compact { 4.0 } else { 6.0 });
-
-                ui.vertical(|ui| {
-                    // Track name - editable text or label
-                    if self.editable {
-                        // Get card background color for text edit
-                        let card_bg = self.card_color.unwrap_or(theme.surface_variant());
-
-                        // Calculate available width: total - padding - indent - color_bar - spacing
-                        let available_width = self.width - (horizontal_padding * 2.0) - indent_pixels - color_bar_width - (if self.compact { 4.0 } else { 6.0 });
-
-                        let mut text_edit = TextEdit::singleline(name)
-                            .desired_width(available_width.max(50.0)) // Minimum 50px
-                            .hint_text("Track Name")
-                            .text_color(theme.on_surface())
-                            .background_color(card_bg);
-
-                        // Apply custom ID if provided
-                        if let Some(id) = self.id {
-                            text_edit = text_edit.id(id);
+                            let step_rect = egui::Rect::from_min_max(
+                                egui::Pos2::new(rect.min.x, rect.min.y + i as f32 * step_height),
+                                egui::Pos2::new(
+                                    rect.max.x,
+                                    rect.min.y + (i + 1) as f32 * step_height,
+                                ),
+                            );
+                            painter.rect_filled(step_rect, 0.0, step_color);
                         }
 
-                        let response = ui.add(text_edit);
-                        if response.changed() {
-                            name_changed = true;
+                        // Stronger glow for folder tracks
+                        let glow_alpha: u8 = 40;
+                        for i in 0..5 {
+                            let inset = (i + 1) as f32 * 0.4;
+                            let alpha = glow_alpha.saturating_sub((i * 8) as u8);
+                            let inset_rect = rect.shrink(inset);
+                            let glow_color =
+                                Color32::from_rgba_unmultiplied(255, 255, 255, alpha);
+                            painter.rect_filled(inset_rect, 0.0, glow_color);
+                        }
+
+                        // Check for clicks on the color bar to toggle collapse
+                        if response.clicked() {
+                            *collapsed = !*collapsed;
+                            collapse_clicked = true;
                         }
                     } else {
-                        ui.colored_label(theme.on_surface(), name.as_str());
+                        // Regular track: Simple glassmorphic color bar
+                        let glass_color = Color32::from_rgba_unmultiplied(
+                            track_color.r(),
+                            track_color.g(),
+                            track_color.b(),
+                            100,
+                        );
+                        painter.rect_filled(rect, 0.0, glass_color);
+
+                        // Subtle inner glow
+                        let glow_alpha: u8 = 20;
+                        for i in 0..3 {
+                            let inset = (i + 1) as f32 * 0.5;
+                            let alpha = glow_alpha.saturating_sub((i * 6) as u8);
+                            let inset_rect = rect.shrink(inset);
+                            let glow_color =
+                                Color32::from_rgba_unmultiplied(255, 255, 255, alpha);
+                            painter.rect_filled(inset_rect, 0.0, glow_color);
+                        }
                     }
 
-                    // Control buttons row
-                    if self.show_controls {
-                        ui.add_space(spacing / 2.0); // Reduced spacing between name and buttons
+                    ui.add_space(if self.compact { 4.0 } else { 6.0 });
 
-                        ui.horizontal(|ui| {
-                            ui.spacing_mut().item_spacing.x = spacing;
+                    ui.vertical(|ui| {
+                        // Track name - editable text or label
+                        if self.editable {
+                            // Get card background color for text edit
+                            let card_bg = self.card_color.unwrap_or(theme.surface_variant());
 
-                            // Mute button
-                            let mute_variant = if controls.muted {
-                                ButtonVariant::Filled
-                            } else {
-                                ButtonVariant::Outlined
-                            };
+                            // Calculate available width
+                            let used_width = horizontal_padding * 2.0
+                                + indent_pixels
+                                + color_bar_width
+                                + (if self.compact { 4.0 } else { 6.0 });
+                            let available_width = (self.width - used_width).max(50.0);
 
-                            if Button::new("M")
-                                .variant(mute_variant)
-                                .min_size(Vec2::splat(button_size))
-                                .show(ui)
-                                .clicked()
-                            {
-                                controls.muted = !controls.muted;
-                                mute_clicked = true;
+                            let mut text_edit = TextEdit::singleline(name)
+                                .desired_width(available_width)
+                                .hint_text("Track Name")
+                                .text_color(theme.on_surface())
+                                .background_color(card_bg);
+
+                            // Apply custom ID if provided
+                            if let Some(id) = self.id {
+                                text_edit = text_edit.id(id);
                             }
 
-                            // Solo button
-                            let solo_variant = if controls.soloed {
-                                ButtonVariant::Filled
-                            } else {
-                                ButtonVariant::Outlined
-                            };
-
-                            if Button::new("S")
-                                .variant(solo_variant)
-                                .min_size(Vec2::splat(button_size))
-                                .show(ui)
-                                .clicked()
-                            {
-                                controls.soloed = !controls.soloed;
-                                solo_clicked = true;
+                            let response = ui.add(text_edit);
+                            if response.changed() {
+                                name_changed = true;
                             }
+                        } else {
+                            ui.colored_label(theme.on_surface(), name.as_str());
+                        }
 
-                            // Record arm button
-                            let arm_variant = if controls.armed {
-                                ButtonVariant::Filled
-                            } else {
-                                ButtonVariant::Outlined
-                            };
+                        // Control buttons row
+                        if self.show_controls {
+                            ui.add_space(spacing / 2.0);
 
-                            if Button::new("R")
-                                .variant(arm_variant)
-                                .min_size(Vec2::splat(button_size))
-                                .show(ui)
-                                .clicked()
-                            {
-                                controls.armed = !controls.armed;
-                                arm_clicked = true;
-                            }
-                        });
-                    }
-                });
+                            ui.horizontal(|ui| {
+                                ui.spacing_mut().item_spacing.x = spacing;
 
-                // Add right padding
-                ui.add_space(horizontal_padding);
-            });
+                                // Mute button
+                                let mute_variant = if controls.muted {
+                                    ButtonVariant::Filled
+                                } else {
+                                    ButtonVariant::Outlined
+                                };
+
+                                if Button::new("M")
+                                    .variant(mute_variant)
+                                    .min_size(Vec2::splat(button_size))
+                                    .show(ui)
+                                    .clicked()
+                                {
+                                    controls.muted = !controls.muted;
+                                    mute_clicked = true;
+                                }
+
+                                // Solo button
+                                let solo_variant = if controls.soloed {
+                                    ButtonVariant::Filled
+                                } else {
+                                    ButtonVariant::Outlined
+                                };
+
+                                if Button::new("S")
+                                    .variant(solo_variant)
+                                    .min_size(Vec2::splat(button_size))
+                                    .show(ui)
+                                    .clicked()
+                                {
+                                    controls.soloed = !controls.soloed;
+                                    solo_clicked = true;
+                                }
+
+                                // Record arm button
+                                let arm_variant = if controls.armed {
+                                    ButtonVariant::Filled
+                                } else {
+                                    ButtonVariant::Outlined
+                                };
+
+                                if Button::new("R")
+                                    .variant(arm_variant)
+                                    .min_size(Vec2::splat(button_size))
+                                    .show(ui)
+                                    .clicked()
+                                {
+                                    controls.armed = !controls.armed;
+                                    arm_clicked = true;
+                                }
+                            });
+                        }
+                    });
+                },
+            )
         });
 
         TrackHeaderResponse {

@@ -252,11 +252,12 @@ impl<'a> Card<'a> {
             let desired_size = egui::Vec2::new(width, height);
             let (rect, _) = ui.allocate_exact_size(desired_size, sense);
 
-            // Create a child UI at the exact allocated rect with centered vertical layout
+            // Create a child UI at the exact allocated rect
+            // Use top-down layout
             let mut child_ui = ui.new_child(
                 egui::UiBuilder::new()
                     .max_rect(rect)
-                    .layout(egui::Layout::centered_and_justified(egui::Direction::TopDown)),
+                    .layout(egui::Layout::top_down(egui::Align::Min)),
             );
 
             let frame_response = egui::Frame::new()
