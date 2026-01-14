@@ -255,6 +255,7 @@ impl<'a> MidiController<'a> {
                                         .variant(self.wheel_variant)
                                         .label("Mod")
                                         .height(180.0)
+                                        .id("midi_controller_mod_wheel")
                                         .show(ui);
                                     mod_wheel_changed = mod_response.changed();
 
@@ -263,6 +264,7 @@ impl<'a> MidiController<'a> {
                                         .variant(self.wheel_variant)
                                         .label("Pitch")
                                         .height(180.0)
+                                        .id("midi_controller_pitch_wheel")
                                         .show(ui);
                                     pitch_wheel_changed = pitch_response.changed();
                                 });
@@ -281,6 +283,7 @@ impl<'a> MidiController<'a> {
                                         .variant(XYPadVariant::Filled)
                                         .x_label("X")
                                         .y_label("Y")
+                                        .id("midi_controller_xy_pad")
                                         .show(ui);
                                 xy_pad_changed = xy_response.changed();
                             });

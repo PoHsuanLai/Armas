@@ -130,133 +130,120 @@ impl Playhead {
 
         let playhead_color = self.color.unwrap_or(Color32::WHITE);
 
-        // Use egui::Area for overlay
-        // Use custom ID if provided, otherwise generate one
-        let area_id = self.id.unwrap_or_else(|| ui.id().with("playhead_area"));
-        let area_response = egui::Area::new(area_id)
-            .order(egui::Order::Foreground) // Use Foreground instead of Middle to stay below top UI
-            .fixed_pos(timeline_rect.min)
-            .interactable(false) // Let the inner widget handle interaction
-            .constrain(true) // Constrain to parent clip rect
-            .show(ui.ctx(), |ui| {
-                // Set clip rect to timeline_rect to prevent drawing outside visible area
-                ui.set_clip_rect(timeline_rect);
-                let line_start = Pos2::new(x, timeline_rect.min.y);
-                let line_end = Pos2::new(x, timeline_rect.min.y + actual_height);
+        // Draw directly without Area - the caller should set up the layer
+        let line_start = Pos2::new(x, timeline_rect.min.y);
+        let line_end = Pos2::new(x, timeline_rect.min.y + actual_height);
 
-                // Draw glow on entire playhead line if enabled
-                if self.show_glow {
-                    let glow_alpha = (30.0 * self.glow_intensity) as u8; // Much more subtle (was 80)
-                    for i in 0..3 {
-                        let glow_width = self.line_width + (3 - i) as f32 * 1.5;
-                        let alpha = glow_alpha.saturating_sub(i * 8);
-                        ui.painter().line_segment(
-                            [line_start, line_end],
-                            Stroke::new(
-                                glow_width,
-                                Color32::from_rgba_unmultiplied(
-                                    playhead_color.r(),
-                                    playhead_color.g(),
-                                    playhead_color.b(),
-                                    alpha,
-                                ),
-                            ),
-                        );
-                    }
-                }
-
-                // Draw main playhead line
+        // Draw glow on entire playhead line if enabled
+        if self.show_glow {
+            let glow_alpha = (30.0 * self.glow_intensity) as u8; // Much more subtle (was 80)
+            for i in 0..3 {
+                let glow_width = self.line_width + (3 - i) as f32 * 1.5;
+                let alpha = glow_alpha.saturating_sub(i * 8);
                 ui.painter().line_segment(
                     [line_start, line_end],
-                    Stroke::new(self.line_width, playhead_color),
+                    Stroke::new(
+                        glow_width,
+                        Color32::from_rgba_unmultiplied(
+                            playhead_color.r(),
+                            playhead_color.g(),
+                            playhead_color.b(),
+                            alpha,
+                        ),
+                    ),
                 );
+            }
+        }
 
-                // Draw handle at top (rounded triangle/teardrop shape)
-                if self.show_handle {
-                    let handle_top = Pos2::new(x, timeline_rect.min.y);
-                    let handle_height = self.handle_size * 2.0;
-                    let handle_width = self.handle_size * 1.2; // Narrower top
+        // Draw main playhead line
+        ui.painter().line_segment(
+            [line_start, line_end],
+            Stroke::new(self.line_width, playhead_color),
+        );
 
-                    // Create interactive handle
-                    let handle_id = ui.id().with("playhead_handle");
-                    let handle_response =
-                        ui.interact(interact_rect, handle_id, Sense::click_and_drag());
+        // Draw handle at top (rounded triangle/teardrop shape)
+        let mut response = if self.show_handle {
+            let handle_top = Pos2::new(x, timeline_rect.min.y);
+            let handle_height = self.handle_size * 2.0;
+            let handle_width = self.handle_size * 1.2; // Narrower top
 
-                    // Handle color based on interaction
-                    let handle_color = if handle_response.hovered() || handle_response.dragged() {
-                        playhead_color.gamma_multiply(1.2)
-                    } else {
-                        playhead_color
-                    };
+            // Create interactive handle
+            let handle_id = ui.id().with("playhead_handle");
+            let handle_response =
+                ui.interact(interact_rect, handle_id, Sense::click_and_drag());
 
-                    // Draw very subtle glow effect if enabled
-                    if self.show_glow {
-                        let glow_alpha = (30.0 * self.glow_intensity) as u8;
-                        for i in 0..3 {
-                            let glow_offset = (3 - i) as f32 * 1.5;
-                            let alpha = glow_alpha.saturating_sub(i * 8);
-                            let glow_color = Color32::from_rgba_unmultiplied(
-                                playhead_color.r(),
-                                playhead_color.g(),
-                                playhead_color.b(),
-                                alpha,
-                            );
+            // Handle color based on interaction
+            let handle_color = if handle_response.hovered() || handle_response.dragged() {
+                playhead_color.gamma_multiply(1.2)
+            } else {
+                playhead_color
+            };
 
-                            // Draw rounded triangle with glow
-                            self.draw_rounded_triangle(
-                                ui,
-                                handle_top,
-                                handle_width + glow_offset,
-                                handle_height + glow_offset,
-                                glow_color,
-                            );
-                        }
-                    }
-
-                    // Handle shadow for depth
-                    self.draw_rounded_triangle(
-                        ui,
-                        handle_top + Vec2::new(0.0, 1.0),
-                        handle_width,
-                        handle_height,
-                        Color32::from_black_alpha(40),
+            // Draw very subtle glow effect if enabled
+            if self.show_glow {
+                let glow_alpha = (30.0 * self.glow_intensity) as u8;
+                for i in 0..3 {
+                    let glow_offset = (3 - i) as f32 * 1.5;
+                    let alpha = glow_alpha.saturating_sub(i * 8);
+                    let glow_color = Color32::from_rgba_unmultiplied(
+                        playhead_color.r(),
+                        playhead_color.g(),
+                        playhead_color.b(),
+                        alpha,
                     );
 
-                    // Main handle shape
+                    // Draw rounded triangle with glow
                     self.draw_rounded_triangle(
                         ui,
                         handle_top,
-                        handle_width,
-                        handle_height,
-                        handle_color,
+                        handle_width + glow_offset,
+                        handle_height + glow_offset,
+                        glow_color,
                     );
-
-                    // Handle border
-                    self.draw_rounded_triangle_outline(
-                        ui,
-                        handle_top,
-                        handle_width,
-                        handle_height,
-                        Stroke::new(1.5, theme.surface()),
-                    );
-
-                    // Inner highlight for 3D effect (small rounded triangle at top)
-                    self.draw_rounded_triangle(
-                        ui,
-                        handle_top + Vec2::new(0.0, 1.0),
-                        handle_width * 0.5,
-                        handle_height * 0.3,
-                        Color32::from_white_alpha(60),
-                    );
-
-                    handle_response
-                } else {
-                    // No handle, just return a dummy response
-                    ui.interact(interact_rect, ui.id().with("playhead_line"), Sense::hover())
                 }
-            });
+            }
 
-        let mut response = area_response.inner;
+            // Handle shadow for depth
+            self.draw_rounded_triangle(
+                ui,
+                handle_top + Vec2::new(0.0, 1.0),
+                handle_width,
+                handle_height,
+                Color32::from_black_alpha(40),
+            );
+
+            // Main handle shape
+            self.draw_rounded_triangle(
+                ui,
+                handle_top,
+                handle_width,
+                handle_height,
+                handle_color,
+            );
+
+            // Handle border
+            self.draw_rounded_triangle_outline(
+                ui,
+                handle_top,
+                handle_width,
+                handle_height,
+                Stroke::new(1.5, theme.surface()),
+            );
+
+            // Inner highlight for 3D effect (small rounded triangle at top)
+            self.draw_rounded_triangle(
+                ui,
+                handle_top + Vec2::new(0.0, 1.0),
+                handle_width * 0.5,
+                handle_height * 0.3,
+                Color32::from_white_alpha(60),
+            );
+
+            handle_response
+        } else {
+            // No handle, just return a dummy response
+            ui.interact(interact_rect, ui.id().with("playhead_line"), Sense::hover())
+        };
 
         // Handle dragging
         if response.dragged() {

@@ -53,6 +53,7 @@ pub struct XYPad<'a> {
     show_values: bool,
     handle_size: f32,
     glow_intensity: f32,
+    id: Option<egui::Id>,
 }
 
 impl<'a> XYPad<'a> {
@@ -69,7 +70,14 @@ impl<'a> XYPad<'a> {
             show_values: false,
             handle_size: 16.0,
             glow_intensity: 0.8,
+            id: None,
         }
+    }
+
+    /// Set unique ID for state persistence
+    pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
+        self.id = Some(id.into());
+        self
     }
 
     /// Set pad size (width and height)
@@ -123,6 +131,18 @@ impl<'a> XYPad<'a> {
     /// Show the XY pad
     pub fn show(self, ui: &mut Ui) -> Response {
         let theme = ui.ctx().armas_theme();
+
+        // Load previous state if ID is set
+        if let Some(id) = self.id {
+            let state_id_x = id.with("xy_pad_x");
+            let state_id_y = id.with("xy_pad_y");
+            *self.x = ui
+                .ctx()
+                .data_mut(|d| d.get_temp(state_id_x).unwrap_or(*self.x));
+            *self.y = ui
+                .ctx()
+                .data_mut(|d| d.get_temp(state_id_y).unwrap_or(*self.y));
+        }
 
         // Clamp values
         *self.x = self.x.clamp(0.0, 1.0);
@@ -237,6 +257,16 @@ impl<'a> XYPad<'a> {
                     theme.on_surface(),
                 );
             }
+        }
+
+        // Save state to memory if ID is set
+        if let Some(id) = self.id {
+            let state_id_x = id.with("xy_pad_x");
+            let state_id_y = id.with("xy_pad_y");
+            ui.ctx().data_mut(|d| {
+                d.insert_temp(state_id_x, *self.x);
+                d.insert_temp(state_id_y, *self.y);
+            });
         }
 
         response

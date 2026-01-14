@@ -371,33 +371,19 @@ impl TimelineTrack {
         let mut region_clicked = None;
         let mut empty_clicked = None;
 
-        // Calculate actual content height needed
-        // The content is the region drawing area - use region_height if specified,
-        // otherwise calculate based on available space with minimal padding
-        let min_padding = 4.0; // Minimum padding we want on top/bottom
-        let default_content_height = (self.height - (min_padding * 2.0)).max(20.0);
+        // Don't add any padding - allocate full height to match TrackHeader
+        let content_height = self.height;
+        let region_h = self.region_height.unwrap_or((self.height * 0.7).max(20.0));
 
-        let content_height = self.region_height.unwrap_or(default_content_height);
-        let region_h = content_height;
-
-        // Calculate padding to fill remaining space equally on top/bottom
-        let total_padding = (self.height - content_height).max(0.0);
-        let padding = total_padding / 2.0;
-
-        let mut card = Card::new()
+        let card = Card::new()
             .variant(CardVariant::Filled)
             .width(total_width)
             .height(self.height)
-            .inner_margin(0.0); // No card padding - we handle it manually
-
-        // Apply custom background color if provided
-        if let Some(color) = self.background_color {
-            card = card.fill(color);
-        }
+            .inner_margin(0.0) // No card padding
+            .fill(self.background_color.unwrap_or(Color32::TRANSPARENT)); // Transparent by default to show grid
 
         let card_response = card.show(ui, theme, |ui| {
-            // Add top padding
-            ui.add_space(padding);
+            // Allocate full height without any top padding
 
             // Allocate space for the track content
             let (rect, response) =
@@ -465,9 +451,6 @@ impl TimelineTrack {
                     }
                 }
             }
-
-            // Add bottom padding
-            ui.add_space(padding);
 
             response
         });

@@ -144,14 +144,7 @@ impl TimeRuler {
 
     /// Show the time ruler (wrapped in horizontal ScrollArea by default)
     pub fn show(self, ui: &mut Ui, theme: &Theme) -> Response {
-        let mut scroll = egui::ScrollArea::horizontal();
-
-        // Use custom ID if provided, otherwise use auto-generated ID
-        if let Some(id) = self.id {
-            scroll = scroll.id_salt(id);
-        }
-
-        scroll.show(ui, |ui| self.show_inner(ui, theme)).inner
+        self.show_inner(ui, theme)
     }
 
     /// Show the time ruler without ScrollArea wrapper

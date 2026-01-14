@@ -264,6 +264,7 @@ impl<'a> Card<'a> {
                 .corner_radius(CornerRadius::same(corner_rad))
                 .stroke(egui::Stroke::new(border_width, border_color))
                 .inner_margin(frame_margin)
+                .outer_margin(0.0) // No outer margin to prevent spacing issues
                 .show(&mut child_ui, |ui| {
                     // Title if provided
                     if let Some(title) = self.title {
@@ -305,6 +306,7 @@ impl<'a> Card<'a> {
                     .corner_radius(CornerRadius::same(corner_rad))
                     .stroke(egui::Stroke::new(border_width, border_color))
                     .inner_margin(frame_margin)
+                    .outer_margin(0.0) // No outer margin to prevent spacing issues
                     .show(ui, |ui| {
                         // Title if provided
                         if let Some(title) = self.title {

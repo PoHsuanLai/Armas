@@ -1,6 +1,6 @@
 # Timeline
 
-Complete scrollable timeline view combining time ruler, track headers, and timeline tracks. Perfect for DAW arrangement views with multiple tracks and regions.
+Complete DAW-style timeline with tracks, markers, rulers, and playhead. Supports folder tracks, loop regions, markers, tempo/time signature changes, and more.
 
 ## Basic Usage
 
@@ -23,7 +23,9 @@ Timeline::new()
     .show(ui, &mut tracks, &mut playhead_pos, &theme);
 ```
 
-## Multiple Tracks with Regions
+## With Markers
+
+Timeline supports markers for navigation, tempo changes, loop regions, and more:
 
 ```demo
 let theme = ui.ctx().armas_theme();
@@ -32,168 +34,94 @@ let mut tracks = vec![
         .region(Region::new("Verse", 0.0, 2.0))
         .region(Region::new("Chorus", 3.0, 2.0)),
     Track::new("Guitar", egui::Color32::from_rgb(255, 200, 50))
-        .region(Region::new("Riff A", 0.0, 3.0))
-        .region(Region::new("Riff B", 4.0, 2.0)),
-    Track::new("Synth", egui::Color32::from_rgb(100, 150, 255))
-        .region(Region::new("Pad", 0.0, 4.0)),
+        .region(Region::new("Riff", 0.0, 4.0)),
 ];
 
 let mut playhead_pos = 0.0;
 
+// Unified marker data (cue points, tempo, time signatures)
+let mut markers = vec![
+    MarkerData::new(0.0, "Intro"),
+    MarkerData::tempo(1.0, 120.0),
+    MarkerData::new(2.0, "Verse"),
+    MarkerData::new(3.0, "Chorus"),
+];
+
+let mut loop_region = LoopRegionData::new(2.0, 4.0);
+
 Timeline::new()
-    .track_header_width(120.0)
-    .track_height(50.0)
-    .beat_width(40.0)
+    .markers(&mut markers)
+    .loop_region(&mut loop_region)
+    .beat_width(50.0)
     .measures(4)
     .show(ui, &mut tracks, &mut playhead_pos, &theme);
 ```
 
-## Custom Track Heights
+## All Marker Types
 
-```demo
-let theme = ui.ctx().armas_theme();
-let mut tracks = vec![
-    Track::new("Drums", egui::Color32::from_rgb(255, 100, 100))
-        .region(Region::new("Beat", 0.0, 4.0)),
-    Track::new("Bass", egui::Color32::from_rgb(100, 255, 100))
-        .region(Region::new("Groove", 0.0, 4.0)),
-];
-
-let mut playhead_pos = 0.0;
-
-ui.vertical(|ui| {
-    ui.label("Compact (40px tracks)");
-    Timeline::new()
-        .id("compact_timeline")
-        .track_header_width(120.0)
-        .track_height(40.0)
-        .beat_width(50.0)
-        .measures(4)
-        .show(ui, &mut tracks.clone(), &mut playhead_pos, &theme);
-
-    ui.add_space(12.0);
-
-    ui.label("Standard (70px tracks)");
-    Timeline::new()
-        .id("standard_timeline")
-        .track_header_width(120.0)
-        .track_height(70.0)
-        .beat_width(50.0)
-        .measures(4)
-        .show(ui, &mut tracks.clone(), &mut playhead_pos, &theme);
-});
-```
-
-## Different Zoom Levels
+Timeline supports ruler markers (cue points, tempo, time signatures) and region markers (loop, selection, punch):
 
 ```demo
 let theme = ui.ctx().armas_theme();
 let mut tracks = vec![
     Track::new("Track 1", egui::Color32::from_rgb(100, 180, 255))
-        .region(Region::new("Clip", 0.0, 3.0)),
+        .region(Region::new("Clip", 0.0, 8.0)),
 ];
 
 let mut playhead_pos = 0.0;
 
-ui.vertical(|ui| {
-    ui.label("Zoomed Out (30px per beat)");
-    Timeline::new()
-        .id("zoomed_out")
-        .track_header_width(120.0)
-        .track_height(50.0)
-        .beat_width(30.0)
-        .measures(4)
-        .show(ui, &mut tracks.clone(), &mut playhead_pos, &theme);
+// Unified ruler markers (cue points, tempo, time signatures)
+let mut markers = vec![
+    MarkerData::new(0.0, "Intro"),               // Cue point (top third)
+    MarkerData::tempo(0.0, 120.0),                // Tempo (middle third)
+    MarkerData::time_signature(0.0, 4, 4),        // Time sig (bottom third)
+    MarkerData::new(4.0, "Verse"),
+    MarkerData::tempo(4.0, 140.0),
+];
 
-    ui.add_space(8.0);
+// Loop region (for playback looping)
+let mut loop_region = LoopRegionData::new(2.0, 6.0);
 
-    ui.label("Zoomed In (70px per beat)");
-    Timeline::new()
-        .id("zoomed_in")
-        .track_header_width(120.0)
-        .track_height(50.0)
-        .beat_width(70.0)
-        .measures(4)
-        .show(ui, &mut tracks.clone(), &mut playhead_pos, &theme);
-});
+// Selection range (for editing)
+let mut selection_range = SelectionRangeData::new(4.0, 8.0);
+
+// Punch region (for recording)
+let mut punch_region = PunchRegionData::new(3.0, 7.0);
+
+Timeline::new()
+    .markers(&mut markers)
+    .loop_region(&mut loop_region)
+    .selection_range(&mut selection_range)
+    .punch_region(&mut punch_region)
+    .beat_width(40.0)
+    .measures(8)
+    .show(ui, &mut tracks, &mut playhead_pos, &theme);
 ```
 
-## Handling Interactions
+## With Snap Grid
+
+Enable snap grid for visual alignment:
 
 ```demo
 let theme = ui.ctx().armas_theme();
 let mut tracks = vec![
     Track::new("Track 1", egui::Color32::from_rgb(255, 150, 100))
-        .region(Region::new("Clip A", 0.0, 2.0))
-        .region(Region::new("Clip B", 3.0, 2.0)),
-    Track::new("Track 2", egui::Color32::from_rgb(100, 200, 255))
-        .region(Region::new("Clip C", 1.0, 3.0)),
+        .region(Region::new("Clip", 0.0, 4.0)),
 ];
 
 let mut playhead_pos = 0.0;
 
-let response = Timeline::new()
-    .track_header_width(120.0)
-    .track_height(60.0)
-    .beat_width(50.0)
+Timeline::new()
+    .show_snap_grid(true)
+    .snap_grid_subdivision(4)  // 16th notes
+    .beat_width(60.0)
     .measures(4)
     .show(ui, &mut tracks, &mut playhead_pos, &theme);
-
-ui.add_space(8.0);
-if let Some(track_idx) = response.track_clicked {
-    ui.label(format!("Track clicked: {} ({})", track_idx, tracks[track_idx].name));
-}
-if let Some((track_idx, region_idx)) = response.region_clicked {
-    ui.label(format!("Region clicked: Track {}, Region {} ({})",
-        track_idx, region_idx, tracks[track_idx].regions[region_idx].name));
-}
-if let Some((track_idx, beat_pos)) = response.empty_clicked {
-    ui.label(format!("Empty area clicked: Track {}, Beat {:.2}", track_idx, beat_pos));
-}
-```
-
-## Scrolling to Playhead Position
-
-Use `.scroll_to_beat()` to programmatically scroll the timeline to show a specific beat position. This is useful for following playhead during playback or jumping to a specific location.
-
-```demo
-let theme = ui.ctx().armas_theme();
-let mut tracks = vec![
-    Track::new("Track 1", egui::Color32::from_rgb(255, 100, 100))
-        .region(Region::new("Clip A", 0.0, 2.0))
-        .region(Region::new("Clip B", 8.0, 2.0)),
-    Track::new("Track 2", egui::Color32::from_rgb(100, 255, 100))
-        .region(Region::new("Clip C", 4.0, 3.0))
-        .region(Region::new("Clip D", 12.0, 2.0)),
-];
-
-let mut playhead_pos = 10.0; // Start at beat 10
-
-Timeline::new()
-    .track_header_width(120.0)
-    .track_height(60.0)
-    .beat_width(50.0)
-    .measures(16)
-    .scroll_to_beat(playhead_pos) // Scroll to show playhead
-    .show(ui, &mut tracks, &mut playhead_pos, &theme);
-
-ui.add_space(8.0);
-ui.horizontal(|ui| {
-    if ui.button("Jump to Start").clicked() {
-        playhead_pos = 0.0;
-    }
-    if ui.button("Jump to Beat 8").clicked() {
-        playhead_pos = 8.0;
-    }
-    if ui.button("Jump to Beat 16").clicked() {
-        playhead_pos = 16.0;
-    }
-});
 ```
 
 ## Folder Tracks
 
-Create hierarchical track structures with collapsible folders to organize your arrangement. Folder tracks can contain child tracks that are shown/hidden with collapse/expand controls.
+Organize tracks hierarchically with folders:
 
 ```demo
 let theme = ui.ctx().armas_theme();
@@ -203,140 +131,132 @@ let mut tracks = vec![
         .child(
             Track::new("Lead Vocal", egui::Color32::from_rgb(255, 120, 120))
                 .region(Region::new("Verse 1", 0.0, 4.0))
-                .region(Region::new("Chorus", 4.0, 4.0))
         )
         .child(
             Track::new("Backing Vocal", egui::Color32::from_rgb(255, 140, 140))
                 .region(Region::new("Harmonies", 4.0, 4.0))
         ),
-    Track::new_folder("Guitars", egui::Color32::from_rgb(255, 200, 50))
-        .child(
-            Track::new("Rhythm Guitar", egui::Color32::from_rgb(255, 210, 70))
-                .region(Region::new("Strumming", 0.0, 8.0))
-        )
-        .child(
-            Track::new("Lead Guitar", egui::Color32::from_rgb(255, 220, 90))
-                .region(Region::new("Solo", 4.0, 4.0))
-        ),
     Track::new("Bass", egui::Color32::from_rgb(100, 150, 255))
         .region(Region::new("Bassline", 0.0, 8.0)),
-    Track::new("Drums", egui::Color32::from_rgb(150, 255, 150))
-        .region(Region::new("Beat", 0.0, 8.0)),
 ];
 
 let mut playhead_pos = 0.0;
 
 Timeline::new()
     .track_header_width(160.0)
-    .track_height(50.0)
     .beat_width(45.0)
     .measures(8)
     .show(ui, &mut tracks, &mut playhead_pos, &theme);
 ```
 
-### Nested Folders
+## Zoom Control Integration
 
-You can nest folders within folders for complex project organization:
-
-```demo
-let theme = ui.ctx().armas_theme();
-
-let mut tracks = vec![
-    Track::new_folder("Instruments", egui::Color32::from_rgb(150, 150, 255))
-        .child(
-            Track::new_folder("Strings", egui::Color32::from_rgb(160, 160, 255))
-                .child(
-                    Track::new("Violin", egui::Color32::from_rgb(170, 170, 255))
-                        .region(Region::new("Melody", 0.0, 4.0))
-                )
-                .child(
-                    Track::new("Cello", egui::Color32::from_rgb(180, 180, 255))
-                        .region(Region::new("Bass", 0.0, 4.0))
-                )
-        )
-        .child(
-            Track::new("Piano", egui::Color32::from_rgb(190, 190, 255))
-                .region(Region::new("Chords", 0.0, 4.0))
-        ),
-    Track::new("Drums", egui::Color32::from_rgb(255, 150, 150))
-        .region(Region::new("Beat", 0.0, 4.0)),
-];
-
-let mut playhead_pos = 0.0;
-
-Timeline::new()
-    .track_header_width(160.0)
-    .track_height(45.0)
-    .beat_width(50.0)
-    .measures(4)
-    .show(ui, &mut tracks, &mut playhead_pos, &theme);
-```
-
-### Collapsed State
-
-Folders can start collapsed to save screen space:
+Combine with ZoomControl for interactive zooming:
 
 ```demo
 let theme = ui.ctx().armas_theme();
-
 let mut tracks = vec![
-    Track::new_folder("Group 1", egui::Color32::from_rgb(255, 100, 100))
-        .collapsed(true) // Start collapsed
-        .child(Track::new("Track 1A", egui::Color32::from_rgb(255, 120, 120)))
-        .child(Track::new("Track 1B", egui::Color32::from_rgb(255, 140, 140))),
-    Track::new_folder("Group 2", egui::Color32::from_rgb(100, 255, 100))
-        .child(Track::new("Track 2A", egui::Color32::from_rgb(120, 255, 120)))
-        .child(Track::new("Track 2B", egui::Color32::from_rgb(140, 255, 140))),
-    Track::new("Solo Track", egui::Color32::from_rgb(100, 150, 255))
+    Track::new("Track 1", egui::Color32::from_rgb(100, 180, 255))
         .region(Region::new("Clip", 0.0, 4.0)),
 ];
 
 let mut playhead_pos = 0.0;
+let mut zoom = 1.0;
+
+// Zoom control
+ZoomControl::new(&mut zoom)
+    .id("timeline_zoom")
+    .min_zoom(0.5)
+    .max_zoom(2.0)
+    .show(ui);
+
+ui.add_space(8.0);
+
+// Apply zoom to beat_width
+let zoomed_beat_width = 50.0 * zoom;
 
 Timeline::new()
-    .track_header_width(140.0)
-    .track_height(45.0)
-    .beat_width(50.0)
+    .beat_width(zoomed_beat_width)
     .measures(4)
     .show(ui, &mut tracks, &mut playhead_pos, &theme);
 ```
 
-## API Reference
+## Scrolling to Position
 
-### Track Struct
+Use `.scroll_to_beat()` to follow playhead or jump to positions:
 
-```rust
-pub struct Track {
-    pub name: String,          // Track name
-    pub controls: TrackControls, // M/S/R controls
-    pub color: Color32,        // Track color
-    pub regions: Vec<Region>,  // Regions on track
-    pub is_folder: bool,       // Is this a folder track?
-    pub collapsed: bool,       // Is folder collapsed?
-    pub children: Vec<Track>,  // Child tracks (for folders)
+```demo
+let theme = ui.ctx().armas_theme();
+let mut tracks = vec![
+    Track::new("Track 1", egui::Color32::from_rgb(255, 100, 100))
+        .region(Region::new("Clip A", 0.0, 2.0))
+        .region(Region::new("Clip B", 8.0, 2.0)),
+];
+
+// Use persisted state for playhead position
+let mut playhead_pos = ui.ctx().data_mut(|d| {
+    d.get_persisted(egui::Id::new("playhead_pos")).unwrap_or(10.0)
+});
+
+ui.horizontal(|ui| {
+    if ui.button("Jump to Start").clicked() {
+        playhead_pos = 0.0;
+    }
+    if ui.button("Jump to Beat 8").clicked() {
+        playhead_pos = 8.0;
+    }
+});
+
+ui.add_space(8.0);
+
+Timeline::new()
+    .beat_width(50.0)
+    .measures(16)
+    .scroll_to_beat(playhead_pos)
+    .show(ui, &mut tracks, &mut playhead_pos, &theme);
+
+// Persist playhead position for next frame
+ui.ctx().data_mut(|d| {
+    d.insert_persisted(egui::Id::new("playhead_pos"), playhead_pos);
+});
+```
+
+## Handling Interactions
+
+Timeline returns detailed interaction information:
+
+```demo
+let theme = ui.ctx().armas_theme();
+let mut tracks = vec![
+    Track::new("Track 1", egui::Color32::from_rgb(255, 150, 100))
+        .region(Region::new("Clip A", 0.0, 2.0)),
+    Track::new("Track 2", egui::Color32::from_rgb(100, 200, 255))
+        .region(Region::new("Clip B", 1.0, 3.0)),
+];
+
+let mut playhead_pos = 0.0;
+
+let response = Timeline::new()
+    .beat_width(50.0)
+    .measures(4)
+    .show(ui, &mut tracks, &mut playhead_pos, &theme);
+
+ui.add_space(8.0);
+if let Some(track_idx) = response.track_clicked {
+    ui.label(format!("Track clicked: {}", tracks[track_idx].name));
+}
+if let Some((track_idx, region_idx)) = response.region_clicked {
+    ui.label(format!("Region clicked: {}", tracks[track_idx].regions[region_idx].name));
+}
+if let Some((track_idx, beat_pos)) = response.empty_clicked {
+    ui.label(format!("Empty area clicked: Track {}, Beat {:.2}", track_idx, beat_pos));
+}
+if response.playhead_moved {
+    ui.label(format!("Playhead moved to: {:.2}", playhead_pos));
 }
 ```
 
-#### Track Methods
-
-```rust
-Track::new(name: impl Into<String>, color: Color32) -> Self
-```
-
-Creates a new regular track with the specified name and color.
-
-```rust
-Track::new_folder(name: impl Into<String>, color: Color32) -> Self
-```
-
-Creates a new folder track that can contain child tracks.
-
-**Builder methods:**
-- `.region(region: Region)` - Add a single region
-- `.regions(regions: Vec<Region>)` - Set all regions
-- `.child(child: Track)` - Add a child track (for folders)
-- `.children(children: Vec<Track>)` - Set all child tracks (for folders)
-- `.collapsed(collapsed: bool)` - Set initial collapsed state
+## API Reference
 
 ### Timeline Constructor
 
@@ -344,13 +264,13 @@ Creates a new folder track that can contain child tracks.
 Timeline::new() -> Self
 ```
 
-Creates a new timeline with default settings (200px headers, 80px tracks, 60px beats, 16 measures, 4/4 time).
+Creates a new timeline with default settings.
 
 ### Builder Methods
 
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
-| `.id()` | `impl Into<egui::Id>` | Auto-generated | Custom ID (important for multiple timelines) |
+| `.id()` | `impl Into<egui::Id>` | Auto | Custom ID (important for multiple timelines) |
 | `.track_header_width()` | `f32` | `200.0` | Width of track header column |
 | `.track_height()` | `f32` | `80.0` | Height of each track row |
 | `.beat_width()` | `f32` | `60.0` | Pixels per beat (zoom level) |
@@ -359,7 +279,13 @@ Creates a new timeline with default settings (200px headers, 80px tracks, 60px b
 | `.ruler_height()` | `f32` | `40.0` | Height of time ruler at top |
 | `.show_playhead()` | `bool` | `true` | Show playhead indicator |
 | `.playhead_color()` | `Color32` | `theme.primary()` | Playhead color |
-| `.scroll_to_beat()` | `f32` | `None` | Scroll timeline to show this beat position |
+| `.scroll_to_beat()` | `f32` | `None` | Scroll to show this beat position |
+| `.markers()` | `&mut Vec<MarkerData>` | `None` | Unified markers (cue points, tempo, time sigs) |
+| `.loop_region()` | `&mut LoopRegionData` | `None` | Loop region |
+| `.selection_range()` | `&mut SelectionRangeData` | `None` | Selection range |
+| `.punch_region()` | `&mut PunchRegionData` | `None` | Punch in/out region |
+| `.show_snap_grid()` | `bool` | `false` | Show snap grid |
+| `.snap_grid_subdivision()` | `u32` | `4` | Snap grid subdivision (lines per beat) |
 
 ### Show Method
 
@@ -373,27 +299,53 @@ pub fn show(
 ) -> TimelineResponse
 ```
 
-Shows the complete timeline view with all tracks.
-
-**Parameters:**
-- `ui` - egui UI context
-- `tracks` - Mutable reference to tracks vector
-- `playhead_position` - Mutable reference to playhead position in beats
-- `theme` - Armas theme for styling
-
-**Returns:** `TimelineResponse` with interaction details
-
-### TimelineResponse Struct
+### TimelineResponse
 
 ```rust
 pub struct TimelineResponse {
-    pub response: Response,                    // egui Response
-    pub track_clicked: Option<usize>,          // Track index clicked
-    pub region_clicked: Option<(usize, usize)>, // (track_idx, region_idx)
-    pub empty_clicked: Option<(usize, f32)>,   // (track_idx, beat_position)
-    pub playhead_moved: bool,                  // Playhead was dragged
-    pub playhead_position: f32,                // Current playhead position
+    pub response: Response,
+    pub track_clicked: Option<usize>,
+    pub region_clicked: Option<(usize, usize)>,
+    pub empty_clicked: Option<(usize, f32)>,
+    pub playhead_moved: bool,
+    pub playhead_position: f32,
 }
+```
+
+### Track Data Structures
+
+```rust
+// Create tracks
+Track::new(name: impl Into<String>, color: Color32) -> Self
+Track::new_folder(name: impl Into<String>, color: Color32) -> Self
+
+// Builder methods
+.region(region: Region)
+.regions(regions: Vec<Region>)
+.child(child: Track)  // For folders
+.children(children: Vec<Track>)  // For folders
+.collapsed(collapsed: bool)  // For folders
+```
+
+### Marker Data Structures
+
+```rust
+// Unified ruler markers (automatically positioned by type)
+MarkerData::new(position: f32, label: impl Into<String>)  // Cue point (blue, top third)
+    .color(color: Color32)
+
+MarkerData::tempo(position: f32, bpm: f32)  // Tempo marker (teal, middle third)
+    .color(color: Color32)
+
+MarkerData::time_signature(position: f32, numerator: u32, denominator: u32)  // Time sig (purple, bottom third)
+    .color(color: Color32)
+
+// Region markers
+LoopRegionData::new(start: f32, end: f32)
+
+SelectionRangeData::new(start: f32, end: f32)
+
+PunchRegionData::new(punch_in: f32, punch_out: f32)
 ```
 
 ## Visual Design
@@ -402,7 +354,7 @@ pub struct TimelineResponse {
 
 ```
 ┌─────────────┬─────────────────────────────────────┐
-│             │         Time Ruler                  │
+│             │         Time Ruler + Markers        │
 │   (empty)   │  (horizontal scroll)                │
 ├─────────────┼─────────────────────────────────────┤
 │   Track     │                                     │
@@ -415,25 +367,36 @@ pub struct TimelineResponse {
 └─────────────┴─────────────────────────────────────┘
 ```
 
-### Components Used
+### Marker Visual Hierarchy
 
-- **TimeRuler**: Horizontal ruler showing bars and beats
-- **TrackHeader**: Left column showing track name and controls
-- **TimelineTrack**: Timeline row displaying audio/MIDI/automation regions
-- **ScrollArea**: Synchronized scrolling for horizontal (time) and vertical (tracks)
+Markers are rendered as overlays in the ruler area. The unified marker system positions different marker types vertically to prevent overlapping:
 
-### Synchronization
+- **Ruler Markers** (vertical thirds):
+  - Top third: Cue points (blue) - "Intro", "Chorus", etc.
+  - Middle third: Tempo markers (teal) - "120 BPM", "140 BPM"
+  - Bottom third: Time signatures (purple) - "4/4", "3/4", "7/8"
 
-All components use the same timing parameters:
-- `.beat_width()` - Pixels per beat (must match across all components)
-- `.measures()` - Number of measures
-- `.beats_per_measure()` - Time signature
+- **Region Markers** (vertical halves in track area):
+  - Top half: Loop regions (yellow/secondary)
+  - Middle third: Selection ranges (gray)
+  - Bottom half: Punch regions (red)
 
-This ensures perfect alignment between ruler, tracks, and grid lines.
+- **Interactions**: All markers are draggable with snap-to-grid support
+- **Height**: Ruler area is 40px tall by default, markers occupy their designated thirds
+
+### Components Used Internally
+
+- **TimeRuler**: Bar and beat numbers
+- **TrackHeader**: Track name and controls (M/S/R)
+- **TimelineTrack**: Audio/MIDI regions
+- **Playhead**: Vertical line with time display
+- **Marker**: Unified component for cue points, tempo, and time signatures
+- **SnapGrid**: Visual alignment grid
+- **LoopRegionMarker**, **SelectionRange**, **PunchMarker**: Region markers
 
 ## Use Cases
 
-### DAW Arrangement View
+### Full DAW Arrangement View
 
 ```demo
 let theme = ui.ctx().armas_theme();
@@ -441,27 +404,28 @@ let mut tracks = vec![
     Track::new("Lead Vocals", egui::Color32::from_rgb(255, 100, 100))
         .regions(vec![
             Region::new("Verse 1", 0.0, 4.0),
-            Region::new("Chorus 1", 4.0, 3.0),
+            Region::new("Chorus", 4.0, 3.0),
             Region::new("Verse 2", 8.0, 4.0),
         ]),
-    Track::new("Backing Vocals", egui::Color32::from_rgb(255, 150, 150))
-        .region(Region::new("Harmonies", 4.0, 3.0)),
-    Track::new("Acoustic Guitar", egui::Color32::from_rgb(200, 150, 100))
+    Track::new("Guitar", egui::Color32::from_rgb(255, 200, 50))
         .region(Region::new("Strumming", 0.0, 8.0)),
-    Track::new("Electric Guitar", egui::Color32::from_rgb(255, 200, 50))
-        .regions(vec![
-            Region::new("Lead A", 4.0, 3.0),
-            Region::new("Lead B", 8.0, 2.0),
-        ]),
     Track::new("Bass", egui::Color32::from_rgb(100, 150, 255))
         .region(Region::new("Bassline", 0.0, 8.0)),
-    Track::new("Drums", egui::Color32::from_rgb(150, 255, 150))
-        .region(Region::new("Beat", 0.0, 8.0)),
 ];
 
 let mut playhead_pos = 0.0;
 
+let mut markers = vec![
+    MarkerData::new(0.0, "Verse 1"),
+    MarkerData::new(4.0, "Chorus"),
+];
+
+let mut loop_region = LoopRegionData::new(4.0, 7.0);
+
 Timeline::new()
+    .markers(&mut markers)
+    .loop_region(&mut loop_region)
+    .show_snap_grid(true)
     .track_header_width(140.0)
     .track_height(50.0)
     .beat_width(45.0)
@@ -469,72 +433,23 @@ Timeline::new()
     .show(ui, &mut tracks, &mut playhead_pos, &theme);
 ```
 
-### Compact Mixer Timeline View
-
-```demo
-let theme = ui.ctx().armas_theme();
-let mut tracks = vec![
-    Track::new("Ch 1", egui::Color32::from_rgb(255, 100, 100))
-        .region(Region::new("Take 1", 0.0, 4.0)),
-    Track::new("Ch 2", egui::Color32::from_rgb(100, 255, 100))
-        .region(Region::new("Take 2", 0.0, 4.0)),
-    Track::new("Ch 3", egui::Color32::from_rgb(100, 100, 255))
-        .region(Region::new("Take 3", 0.0, 4.0)),
-    Track::new("Ch 4", egui::Color32::from_rgb(255, 200, 50))
-        .region(Region::new("Take 4", 0.0, 4.0)),
-];
-
-let mut playhead_pos = 0.0;
-
-Timeline::new()
-    .track_header_width(80.0)
-    .track_height(35.0)
-    .beat_width(40.0)
-    .measures(4)
-    .ruler_height(30.0)
-    .show(ui, &mut tracks, &mut playhead_pos, &theme);
-```
-
 ## Performance
 
-- **Efficient scrolling**: Uses egui's optimized ScrollArea
-- **Synchronized rendering**: Single scroll state for all tracks
-- **Minimal allocations**: Direct painting with no intermediate buffers
-- **Scalable**: Handles 50+ tracks smoothly
-- **Visibility culling**: Only renders visible regions and tracks
+- Efficient scrolling with egui's ScrollArea
+- Visibility culling for tracks and regions
+- Synchronized scroll state
+- Handles 50+ tracks smoothly
+- Minimal allocations during rendering
 
-## Integration Notes
+## Related Components
 
-### With TrackControls
-
-Track headers include M/S/R controls. Access them through the `Track.controls` field:
-
-```rust
-let mut track = Track::new("Audio 1", Color32::from_rgb(255, 100, 100));
-
-// Read control state
-if track.controls.muted {
-    println!("Track is muted");
-}
-
-// Modify controls
-track.controls.soloed = true;
-```
-
-### With Region Data
-
-Regions support audio, MIDI, and automation data. See the `TimelineTrack` documentation for details on:
-- `WaveformData` for audio regions
-- `MidiData` for MIDI regions
-- `AutomationData` for automation regions
-
-### With Playhead
-
-Currently, the playhead position is managed externally. Future versions may include integrated playhead dragging and transport controls.
-
-## Dependencies
-
-- `egui = "0.33"`
-- Uses Armas components: `TimeRuler`, `TrackHeader`, `TimelineTrack`
-- Theme colors: `surface`, `outline`, `primary`
-- Minimum version: `armas 0.1.0`
+- **Marker**: Unified ruler markers (cue points, tempo, time signatures)
+- **LoopRegionMarker**: Loop regions for playback
+- **SelectionRange**: Selection ranges for editing
+- **PunchMarker**: Punch in/out regions for recording
+- **SnapGrid**: Visual alignment grid
+- **ZoomControl**: Zoom UI control
+- **TimeRuler**: Bar/beat display
+- **Playhead**: Position indicator
+- **TrackHeader**: Track controls (M/S/R)
+- **TimelineTrack**: Audio/MIDI region display

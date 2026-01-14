@@ -199,15 +199,15 @@ impl TrackHeader {
 
         let content_height = text_height + content_spacing + buttons_height;
 
-        // Calculate padding to fill remaining space equally on top/bottom
+        // Calculate padding for left/right only
         let total_padding = (self.height - content_height).max(0.0);
-        let padding = total_padding / 2.0;
+        let horizontal_padding = total_padding / 2.0;
 
         let mut card = Card::new()
             .variant(CardVariant::Filled)
             .width(self.width)
             .height(self.height)
-            .inner_margin(0.0); // No card padding - we handle it manually
+            .inner_margin(0.0); // No card padding
 
         // Apply custom card color if provided
         if let Some(color) = self.card_color {
@@ -215,13 +215,10 @@ impl TrackHeader {
         }
 
         let card_response = card.show(ui, theme, |ui| {
-            // Add top padding (calculated from remaining space)
-            ui.add_space(padding);
-
-            // Use horizontal layout (without centering - we handle padding manually)
+            // Use horizontal layout (no vertical padding to match TimelineTrack)
             ui.horizontal(|ui| {
                 // Add left padding
-                ui.add_space(padding);
+                ui.add_space(horizontal_padding);
                 // Add indentation space for nested tracks
                 if self.indent_level > 0 {
                     ui.add_space(indent_pixels);
@@ -313,8 +310,11 @@ impl TrackHeader {
                         // Get card background color for text edit
                         let card_bg = self.card_color.unwrap_or(theme.surface_variant());
 
+                        // Calculate available width: total - padding - indent - color_bar - spacing
+                        let available_width = self.width - (horizontal_padding * 2.0) - indent_pixels - color_bar_width - (if self.compact { 4.0 } else { 6.0 });
+
                         let mut text_edit = TextEdit::singleline(name)
-                            .desired_width(self.width - color_bar_width - 20.0)
+                            .desired_width(available_width.max(50.0)) // Minimum 50px
                             .hint_text("Track Name")
                             .text_color(theme.on_surface())
                             .background_color(card_bg);
@@ -394,11 +394,8 @@ impl TrackHeader {
                 });
 
                 // Add right padding
-                ui.add_space(padding);
+                ui.add_space(horizontal_padding);
             });
-
-            // Add bottom padding
-            ui.add_space(padding);
         });
 
         TrackHeaderResponse {

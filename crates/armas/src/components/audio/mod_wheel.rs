@@ -62,6 +62,7 @@ pub struct ModWheel<'a> {
     show_value: bool,
     show_center_line: bool,
     glow_intensity: f32,
+    id: Option<egui::Id>,
 }
 
 impl<'a> ModWheel<'a> {
@@ -77,7 +78,14 @@ impl<'a> ModWheel<'a> {
             show_value: false,
             show_center_line: false,
             glow_intensity: 0.8,
+            id: None,
         }
+    }
+
+    /// Set unique ID for state persistence
+    pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
+        self.id = Some(id.into());
+        self
     }
 
     /// Set wheel type
@@ -135,6 +143,14 @@ impl<'a> ModWheel<'a> {
     /// Show the mod wheel
     pub fn show(self, ui: &mut Ui) -> Response {
         let theme = ui.ctx().armas_theme();
+
+        // Load previous state if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("mod_wheel_state");
+            *self.value = ui
+                .ctx()
+                .data_mut(|d| d.get_temp(state_id).unwrap_or(*self.value));
+        }
 
         // For pitch bend, value ranges from -1.0 to 1.0, otherwise 0.0 to 1.0
         let (min_val, max_val) = match self.wheel_type {
@@ -230,6 +246,14 @@ impl<'a> ModWheel<'a> {
                     theme.on_surface(),
                 );
             }
+        }
+
+        // Save state to memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("mod_wheel_state");
+            ui.ctx().data_mut(|d| {
+                d.insert_temp(state_id, *self.value);
+            });
         }
 
         response
