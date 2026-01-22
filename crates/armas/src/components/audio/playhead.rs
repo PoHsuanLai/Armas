@@ -6,6 +6,19 @@
 use crate::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 
+/// Playhead handle shape variant
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PlayheadHandleShape {
+    /// Triangle/teardrop pointing down (default)
+    Triangle,
+    /// Rounded rectangle
+    RoundedRect,
+    /// Circle/dot
+    Circle,
+    /// Diamond shape
+    Diamond,
+}
+
 /// Playhead indicator for DAW timeline
 ///
 /// Shows the current playback position as a vertical line with a draggable handle.
@@ -18,10 +31,10 @@ use egui::{Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 ///
 /// fn ui(ui: &mut egui::Ui, theme: &armas::Theme) {
 ///     let mut position = 4.5; // Current beat position
-///     let beat_width = 60.0;
-///     let height = 400.0;
 ///
-///     Playhead::new(beat_width, height)
+///     Playhead::new()
+///         .beat_width(60.0)
+///         .height(400.0)
 ///         .show(ui, &mut position, theme);
 /// }
 /// ```
@@ -44,22 +57,40 @@ pub struct Playhead {
     show_glow: bool,
     /// Glow intensity (0.0-1.0)
     glow_intensity: f32,
+    /// Handle shape variant
+    handle_shape: PlayheadHandleShape,
+    /// Snap to grid (in beats)
+    snap_to_beat: Option<f32>,
 }
 
 impl Playhead {
-    /// Create a new playhead indicator
-    pub fn new(beat_width: f32, height: f32) -> Self {
+    /// Create a new playhead indicator with default settings
+    pub fn new() -> Self {
         Self {
             id: None,
-            beat_width,
-            height,
+            beat_width: 60.0,
+            height: 400.0,
             color: None,
             line_width: 2.0,
-            show_handle: true,
+            show_handle: false,  // Just a line, no triangle
             handle_size: 6.0,
             show_glow: true,
             glow_intensity: 0.3,
+            handle_shape: PlayheadHandleShape::Triangle,
+            snap_to_beat: None,
         }
+    }
+
+    /// Set width per beat in pixels (must match TimeRuler)
+    pub fn beat_width(mut self, width: f32) -> Self {
+        self.beat_width = width;
+        self
+    }
+
+    /// Set height of the playhead indicator
+    pub fn height(mut self, height: f32) -> Self {
+        self.height = height;
+        self
     }
 
     /// Set custom ID (important when using multiple playheads)
@@ -101,6 +132,19 @@ impl Playhead {
     /// Set glow intensity (0.0-1.0)
     pub fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
+        self
+    }
+
+    /// Set handle shape variant
+    pub fn handle_shape(mut self, shape: PlayheadHandleShape) -> Self {
+        self.handle_shape = shape;
+        self
+    }
+
+    /// Enable snap-to-grid with specified beat division
+    /// E.g., snap_to_beat(0.25) snaps to 16th notes
+    pub fn snap_to_beat(mut self, beat_division: f32) -> Self {
+        self.snap_to_beat = Some(beat_division.max(0.001));
         self
     }
 
@@ -227,7 +271,7 @@ impl Playhead {
                 handle_top,
                 handle_width,
                 handle_height,
-                Stroke::new(1.5, theme.surface()),
+                Stroke::new(1.5, theme.card()),
             );
 
             // Inner highlight for 3D effect (small rounded triangle at top)
@@ -372,6 +416,6 @@ impl Playhead {
 
 impl Default for Playhead {
     fn default() -> Self {
-        Self::new(60.0, 400.0)
+        Self::new()
     }
 }

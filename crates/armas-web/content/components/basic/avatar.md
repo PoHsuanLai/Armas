@@ -97,11 +97,11 @@ Avatar::new("AM")
     .show(ui);
 ui.add_space(8.0);
 Avatar::new("JD")
-    .color(theme.success())
+    .color(theme.chart_2())
     .show(ui);
 ui.add_space(8.0);
 Avatar::new("KL")
-    .color(theme.error())
+    .color(theme.destructive())
     .show(ui);
 ```
 
@@ -119,7 +119,7 @@ Avatar::new("BD")
 
 ```demo
 Avatar::new("ON")
-    .status(BadgeColor::Success)
+    .status(theme.chart_2())
     .show(ui);
 ```
 
@@ -127,7 +127,7 @@ Avatar::new("ON")
 
 ```demo
 Avatar::new("BY")
-    .status(BadgeColor::Warning)
+    .status(theme.chart_3())
     .show(ui);
 ```
 
@@ -135,7 +135,7 @@ Avatar::new("BY")
 
 ```demo
 Avatar::new("OF")
-    .status(BadgeColor::Neutral)
+    .status(theme.muted_foreground())
     .show(ui);
 ```
 
@@ -176,7 +176,7 @@ ui.horizontal(|ui| {
 ui.horizontal(|ui| {
     Avatar::new("JD")
         .size(AvatarSize::Large)
-        .status(BadgeColor::Success)
+        .status(theme.chart_2())
         .show(ui);
 
     ui.vertical(|ui| {
@@ -199,13 +199,13 @@ ui.horizontal(|ui| {
     ui.add_space(8.0);
 
     Avatar::new("BK")
-        .color(theme.success())
+        .color(theme.chart_2())
         .border(true)
         .show(ui);
     ui.add_space(8.0);
 
     Avatar::new("CL")
-        .color(theme.info())
+        .color(theme.chart_4())
         .border(true)
         .show(ui);
 });
@@ -233,7 +233,7 @@ ui.horizontal(|ui| {
 | `.text_color()` | `Color32` | White | Custom text color |
 | `.border()` | `bool` | `false` | Show border |
 | `.clickable()` | - | `false` | Enable click interaction |
-| `.status()` | `BadgeColor` | `None` | Show status badge |
+| `.status()` | `Color32` | `None` | Show status badge |
 
 ## Sizes
 

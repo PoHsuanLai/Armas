@@ -252,7 +252,7 @@ impl ScrollingBanner {
     /// Draw fade effects at the edges
     fn draw_fade_effects(&self, ui: &mut Ui, rect: Rect, theme: &Theme) {
         let painter = ui.painter();
-        let background = theme.surface();
+        let background = theme.card();
 
         match self.direction {
             ScrollDirection::Left | ScrollDirection::Right => {

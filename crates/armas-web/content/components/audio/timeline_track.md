@@ -232,12 +232,118 @@ TimelineTrack::new()
     .show(ui, &mut regions, &theme);
 ```
 
+## Clip Editing Features
+
+### Fade In/Out
+
+Regions support fade curves with multiple curve types:
+
+```demo
+let theme = ui.ctx().armas_theme();
+
+// Create S-curve fade settings
+let s_curve_fades = FadeSettings::new(0.4, 0.4)
+    .fade_in_curve(FadeCurve::SCurve)
+    .fade_out_curve(FadeCurve::SCurve);
+
+let mut regions = vec![
+    Region::new("Linear Fade", 0.0, 2.0)
+        .fade_in(0.5)
+        .fade_out(0.5)
+        .selected(true),
+    Region::new("S-Curve Fade", 2.5, 2.0)
+        .fades(s_curve_fades)
+        .selected(true),
+];
+
+let response = TimelineTrack::new()
+    .height(80.0)
+    .beat_width(60.0)
+    .measures(2)
+    .track_color(egui::Color32::from_rgb(100, 180, 255))
+    .show(ui, &mut regions, &theme);
+
+// Handle selection
+if let Some(idx) = response.region_clicked {
+    for (i, r) in regions.iter_mut().enumerate() {
+        r.selected = i == idx;
+    }
+}
+```
+
+### Clip Gain
+
+Adjust region gain with visual indicators:
+
+```demo
+let theme = ui.ctx().armas_theme();
+let mut regions = vec![
+    Region::new("Normal", 0.0, 1.5)
+        .selected(true),
+    Region::new("Boosted", 1.5, 1.5)
+        .gain_db(6.0)
+        .selected(true),
+    Region::new("Reduced", 3.0, 1.5)
+        .gain_db(-6.0)
+        .selected(true),
+];
+
+let response = TimelineTrack::new()
+    .height(80.0)
+    .beat_width(60.0)
+    .measures(2)
+    .track_color(egui::Color32::from_rgb(255, 150, 100))
+    .show(ui, &mut regions, &theme);
+
+// Handle selection
+if let Some(idx) = response.region_clicked {
+    for (i, r) in regions.iter_mut().enumerate() {
+        r.selected = i == idx;
+    }
+}
+```
+
+### Playback Settings
+
+Complete playback control per region:
+
+```demo
+let theme = ui.ctx().armas_theme();
+
+// Create playback settings with pitch shift
+let mut pitched_playback = PlaybackSettings::new();
+pitched_playback.pitch_shift = 5;  // +5 semitones
+pitched_playback.gain = 1.4;       // ~3dB boost
+
+let mut regions = vec![
+    Region::new("Original", 0.0, 2.0),
+    Region::new("Pitched Up", 2.5, 2.0)
+        .playback(pitched_playback)
+        .selected(true),
+];
+
+let response = TimelineTrack::new()
+    .height(80.0)
+    .beat_width(60.0)
+    .measures(2)
+    .track_color(egui::Color32::from_rgb(150, 100, 255))
+    .show(ui, &mut regions, &theme);
+
+// Handle selection
+if let Some(idx) = response.region_clicked {
+    for (i, r) in regions.iter_mut().enumerate() {
+        r.selected = i == idx;
+    }
+}
+```
+
 ## Handling Interactions
 
 ```demo
 let theme = ui.ctx().armas_theme();
 let mut regions = vec![
-    Region::new("Clip 1", 0.0, 2.0),
+    Region::new("Clip 1", 0.0, 2.0)
+        .fade_in(0.3),
     Region::new("Clip 2", 3.0, 2.0),
 ];
 
@@ -248,12 +354,18 @@ let response = TimelineTrack::new()
     .track_color(egui::Color32::from_rgb(120, 180, 255))
     .show(ui, &mut regions, &theme);
 
-ui.add_space(8.0);
-if let Some(region_idx) = response.region_clicked {
-    ui.label(format!("Clicked region: {} ({})", region_idx, regions[region_idx].name));
+// Handle region selection - THIS IS REQUIRED!
+if let Some(clicked_idx) = response.region_clicked {
+    for (i, region) in regions.iter_mut().enumerate() {
+        region.selected = i == clicked_idx;
+    }
 }
-if let Some(beat_pos) = response.empty_clicked {
-    ui.label(format!("Clicked empty area at beat: {:.2}", beat_pos));
+
+// Handle empty area click (deselect all)
+if response.empty_clicked.is_some() {
+    for region in &mut regions {
+        region.selected = false;
+    }
 }
 ```
 
@@ -302,6 +414,8 @@ pub struct Region {
     pub color: Option<Color32>,  // Region color
     pub selected: bool,          // Whether selected
     pub muted: bool,             // Whether muted
+    pub fades: FadeSettings,     // Fade in/out settings
+    pub playback: PlaybackSettings, // Gain, pitch, time stretch
 }
 ```
 
@@ -329,6 +443,62 @@ Region::automation_with_data(name, start, duration, data: AutomationData) -> Sel
 - `.color(color: Color32)` - Set region color
 - `.selected(selected: bool)` - Set selected state
 - `.muted(muted: bool)` - Set muted state
+- `.fade_in(duration: f32)` - Set fade in duration in beats
+- `.fade_out(duration: f32)` - Set fade out duration in beats
+- `.fades(settings: FadeSettings)` - Set complete fade settings
+- `.gain(gain: f32)` - Set clip gain (linear, 1.0 = 0dB)
+- `.gain_db(db: f32)` - Set clip gain in decibels
+- `.playback(settings: PlaybackSettings)` - Set complete playback settings
+
+#### FadeSettings Struct
+
+```rust
+pub struct FadeSettings {
+    pub fade_in: f32,              // Fade in duration (beats)
+    pub fade_out: f32,             // Fade out duration (beats)
+    pub fade_in_curve: FadeCurve,  // Fade in curve type
+    pub fade_out_curve: FadeCurve, // Fade out curve type
+}
+```
+
+**Constructors:**
+```rust
+FadeSettings::new(fade_in: f32, fade_out: f32) -> Self
+    .fade_in_curve(curve: FadeCurve)
+    .fade_out_curve(curve: FadeCurve)
+```
+
+**Fade Curve Types:**
+- `FadeCurve::Linear` - Linear fade
+- `FadeCurve::Exponential` - Fast start, slow end
+- `FadeCurve::Logarithmic` - Slow start, fast end
+- `FadeCurve::SCurve` - Smooth S-curve (default for pro DAWs)
+
+#### PlaybackSettings Struct
+
+```rust
+pub struct PlaybackSettings {
+    pub gain: f32,           // Linear gain (1.0 = 0dB)
+    pub time_stretch: f32,   // Speed (1.0 = normal, 0.5 = half)
+    pub pitch_shift: i32,    // Semitones (-24 to +24)
+    pub reversed: bool,      // Play backwards
+    pub source_offset: f32,  // Offset in beats
+}
+```
+
+**Methods:**
+- `.gain_db()` - Get gain in decibels
+- `.set_gain_db(db: f32)` - Set gain from decibels
+
+**Constructors:**
+```rust
+PlaybackSettings::new() -> Self
+    .gain(gain: f32)
+    .time_stretch(ratio: f32)
+    .pitch_shift(semitones: i32)
+    .reversed(bool)
+    .source_offset(beats: f32)
+```
 
 ### Region Types
 
@@ -419,7 +589,7 @@ Creates a new timeline track with default settings (80px height, 60px per beat, 
 | `.measures()` | `u32` | `8` | Number of measures to display |
 | `.beats_per_measure()` | `u32` | `4` | Time signature numerator |
 | `.track_color()` | `Color32` | `None` | Default color for regions |
-| `.background_color()` | `Color32` | `theme.surface()` | Track background color |
+| `.background_color()` | `Color32` | `theme.card()` | Track background color |
 
 ### Show Method
 
@@ -448,14 +618,30 @@ pub struct TimelineTrackResponse {
     pub response: Response,           // egui Response for track
     pub region_clicked: Option<usize>, // Index of clicked region
     pub empty_clicked: Option<f32>,   // Beat position of empty click
+    pub region_edge_dragged: Option<(usize, RegionEdge, f32)>, // (idx, edge, new_pos)
+    pub fade_handle_dragged: Option<(usize, FadeHandle, f32)>, // (idx, handle, new_duration)
+    pub region_dragged: Option<(usize, f32)>, // (idx, new_start)
+    pub region_double_clicked: Option<usize>, // Region double-clicked for rename
 }
 ```
+
+**Interaction Events:**
+
+- **region_clicked** - Region was clicked (for selection)
+- **empty_clicked** - Empty track area clicked (beat position)
+- **region_edge_dragged** - Region edge is being dragged for trimming
+  - Returns: `(region_idx, RegionEdge::Start | RegionEdge::End, new_position)`
+- **fade_handle_dragged** - Fade handle is being adjusted
+  - Returns: `(region_idx, FadeHandle::In | FadeHandle::Out, new_duration)`
+- **region_dragged** - Region body is being moved horizontally
+  - Returns: `(region_idx, new_start_position)`
+- **region_double_clicked** - Region was double-clicked (for name editing)
 
 ## Visual Design
 
 ### Track Background
 
-- Default: `theme.surface()`
+- Default: `theme.card()`
 - Customizable with `.background_color()`
 - Corner radius: `theme.spacing.corner_radius_small` (8px)
 - Shows subtle beat grid lines (measure lines at 30% alpha, beat lines at 15% alpha)
@@ -464,12 +650,12 @@ pub struct TimelineTrackResponse {
 
 **Measure Lines:**
 - 1.0px width
-- 30% opacity of `theme.outline()`
+- 30% opacity of `theme.border()`
 - Mark measure boundaries
 
 **Beat Lines:**
 - 0.5px width
-- 15% opacity of `theme.outline_variant()`
+- 15% opacity of `theme.border()`
 - Mark individual beats
 
 ### Regions
@@ -489,7 +675,7 @@ pub struct TimelineTrackResponse {
 - Region name displayed at top-left
 - 12px font size
 - White text for active regions
-- `theme.on_surface_variant()` for muted regions
+- `theme.muted_foreground()` for muted regions
 - 6px padding from edges
 
 **Waveform Visualization:**
@@ -498,6 +684,41 @@ pub struct TimelineTrackResponse {
 - 100 alpha (translucent)
 - Not shown for muted regions
 - Gives visual sense of audio content
+
+### Clip Editing Visuals
+
+**Edge Resize Handles (Selected Regions):**
+- 3px wide colored bars on left/right edges
+- `theme.primary()` color
+- Full height of region
+- Visible when region is selected
+
+**Fade Curves:**
+- Rendered as smooth curves overlaying region
+- Line: 2px stroke at 40% opacity of `theme.primary()`
+- Fill: Semi-transparent area under curve (30 alpha)
+- Only visible when fade_in or fade_out > 0
+
+**Fade Handles (Selected Regions):**
+- 3px radius hollow circular handles
+- `theme.secondary()` stroke (1.5px width)
+- No fill - just outline for minimal visual impact
+- Positioned at fade in/out endpoints
+- Fade in handle at 25% height, fade out at 75% height
+
+**Clip Gain Display:**
+- Text displayed directly after region name
+- Format: " +3.5dB" or " -6.0dB"
+- 10px font size
+- `theme.secondary()` color
+- Only shown when gain ≠ 0dB (1.0 linear)
+- No wrapping - flows inline with name
+
+**Fade Curve Types:**
+- **Linear**: Straight diagonal line
+- **Exponential**: Fast start, slow end (squared curve)
+- **Logarithmic**: Slow start, fast end (sqrt curve)
+- **S-Curve**: Smooth acceleration/deceleration (smoothstep)
 
 ### Interaction States
 

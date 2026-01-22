@@ -2,6 +2,15 @@
 //!
 //! Components for audio production interfaces.
 
+pub mod automation_canvas;
+pub mod automation_curve_selector;
+pub mod automation_editor;
+pub mod automation_point_handle;
+pub mod automation_value_display;
+pub mod waveform_display;
+pub mod sampler_playback_params;
+pub mod sampler_envelope_section;
+pub mod sampler_zone;
 pub mod fader;
 pub mod knob;
 pub mod loop_region_marker;
@@ -23,6 +32,7 @@ pub mod piano_roll_grid;
 pub mod playhead;
 pub mod slot;
 pub mod step_sequencer;
+pub mod drum_sequencer;
 pub mod time_ruler;
 pub mod timeline;
 pub mod timeline_track;
@@ -54,16 +64,30 @@ pub use piano_roll::{Note, PianoRoll, PianoRollResponse};
 pub use piano_roll_grid::{GridDivision, PianoRollGrid};
 pub use playhead::Playhead;
 pub use slot::Slot;
-pub use step_sequencer::{StepSequencer, StepSequencerVariant};
+pub use step_sequencer::StepSequencer;
+pub use drum_sequencer::{
+    DrumSequencer, DrumRow, DrumStep, DrumSequencerResponse, DrumSequencerVariant,
+    DrumSequencerColorScheme,
+};
 pub use time_ruler::{TimeDisplayMode, TimeRuler};
 pub use timeline::{
     LoopRegionData, MarkerData, PunchRegionData, SelectionRangeData, Timeline, TimelineResponse,
     Track,
 };
 pub use timeline_track::{
-    AutomationData, AutomationPoint, MidiData, MidiNote, Region, RegionType, TimelineTrack,
-    TimelineTrackResponse, WaveformData,
+    AutomationData, AutomationPoint, FadeCurve, FadeHandle, FadeSettings, MidiData, MidiNote,
+    PlaybackSettings, Region, RegionEdge, RegionType, TimelineTrack, TimelineTrackResponse,
+    WaveformData,
 };
 pub use track_header::{TrackControls, TrackHeader, TrackHeaderResponse};
 pub use transport::{TransportControl, TransportResponse, TransportState};
 pub use xy_pad::{XYPad, XYPadVariant};
+pub use automation_canvas::{AutomationCanvas, CanvasConfig, CanvasResponse};
+pub use automation_editor::{AutomationEditor, AutomationEditorResponse};
+pub use automation_point_handle::{PointHandle, PointHandleResponse};
+pub use automation_curve_selector::{CurveTypeSelector, CurveTypeSelectorResponse};
+pub use automation_value_display::ValueRangeDisplay;
+pub use waveform_display::{WaveformDisplay, WaveformConfig, WaveformResponse, MarkerType};
+pub use sampler_playback_params::{PlaybackParams, PlaybackParamsUI, PlaybackParamsResponse};
+pub use sampler_envelope_section::{ADSREnvelope, EnvelopeSection, EnvelopeSectionResponse};
+pub use sampler_zone::{SampleZone, SampleZoneResponse};

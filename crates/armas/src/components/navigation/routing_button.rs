@@ -84,9 +84,9 @@ impl<'a> RoutingButton<'a> {
 
         // Background color (output slightly lighter)
         let bg_color = if self.is_output {
-            theme.surface()
+            theme.card()
         } else {
-            theme.surface().gamma_multiply(0.9)
+            theme.card().gamma_multiply(0.9)
         };
 
         ui.painter()
@@ -95,7 +95,7 @@ impl<'a> RoutingButton<'a> {
         ui.painter().rect_stroke(
             rect,
             theme.spacing.corner_radius as f32 * 0.5,
-            egui::Stroke::new(1.0, theme.outline_variant()),
+            egui::Stroke::new(1.0, theme.border()),
             egui::StrokeKind::Middle,
         );
 
@@ -104,7 +104,7 @@ impl<'a> RoutingButton<'a> {
             egui::Align2::LEFT_CENTER,
             self.label,
             egui::FontId::proportional(font_size),
-            theme.on_surface(),
+            theme.foreground(),
         );
 
         response

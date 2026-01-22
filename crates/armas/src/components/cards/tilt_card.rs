@@ -30,10 +30,10 @@ pub struct TiltCard {
 impl TiltCard {
     /// Create a new tilt card with theme-based defaults
     pub fn new(width: f32, height: f32, theme: &Theme) -> Self {
-        let outline = theme.outline_variant();
+        let outline = theme.border();
         let primary = theme.primary();
         // Use primary color with low alpha over surface for a lighter, themed background
-        let surface = theme.surface();
+        let surface = theme.card();
         let background = Color32::from_rgba_unmultiplied(
             ((surface.r() as u16 * 200 + primary.r() as u16 * 55) / 255) as u8,
             ((surface.g() as u16 * 200 + primary.g() as u16 * 55) / 255) as u8,
@@ -178,7 +178,7 @@ impl TiltCard {
                     tilted_rect.center().y - tilt_x * 3.0,
                 );
 
-                let on_surface = theme.on_surface();
+                let on_surface = theme.foreground();
                 // Draw multiple glare layers for more visibility
                 painter.circle_filled(
                     glare_center,

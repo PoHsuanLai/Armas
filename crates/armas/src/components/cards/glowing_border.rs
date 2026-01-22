@@ -33,7 +33,7 @@ impl GlowingBorder {
             width: None,
             height: None,
             glow_color: None, // Will use theme.primary()
-            background: None, // Will use theme.surface()
+            background: None, // Will use theme.card()
             corner_radius: 12.0,
             border_width: 2.0,
             glow_intensity: 1.0,
@@ -107,7 +107,7 @@ impl GlowingBorder {
 
         // Use theme colors if not set
         let glow_color = self.glow_color.unwrap_or_else(|| theme.primary());
-        let background = self.background.unwrap_or_else(|| theme.surface());
+        let background = self.background.unwrap_or_else(|| theme.card());
 
         if self.pulse {
             let dt = ui.input(|i| i.stable_dt);

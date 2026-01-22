@@ -1,6 +1,6 @@
 # Toast
 
-Temporary notification messages with auto-dismiss, animations, and multiple severity levels.
+Temporary notification messages with auto-dismiss and animations.
 
 ## Basic Usage
 
@@ -10,8 +10,8 @@ let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
     d.get_temp(state_id).unwrap_or_else(ToastManager::new)
 });
 
-if Button::new("Show Info Toast").show(ui).clicked() {
-    toasts.info("Operation completed successfully");
+if Button::new("Show Toast").show(ui).clicked() {
+    toasts.toast("Operation completed successfully");
 }
 
 toasts.show(ui.ctx());
@@ -20,7 +20,7 @@ ui.ctx().data_mut(|d| d.insert_temp(state_id, toasts));
 
 ## Variants
 
-### Info
+### Default
 
 ```demo
 let state_id = egui::Id::new("toast_manager_2");
@@ -28,47 +28,15 @@ let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
     d.get_temp(state_id).unwrap_or_else(ToastManager::new)
 });
 
-if Button::new("Show Info").show(ui).clicked() {
-    toasts.info("This is an informational message");
+if Button::new("Show Default").show(ui).clicked() {
+    toasts.toast("This is a notification");
 }
 
 toasts.show(ui.ctx());
 ui.ctx().data_mut(|d| d.insert_temp(state_id, toasts));
 ```
 
-### Success
-
-```demo
-let state_id = egui::Id::new("toast_manager_3");
-let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
-    d.get_temp(state_id).unwrap_or_else(ToastManager::new)
-});
-
-if Button::new("Show Success").show(ui).clicked() {
-    toasts.success("Changes saved successfully");
-}
-
-toasts.show(ui.ctx());
-ui.ctx().data_mut(|d| d.insert_temp(state_id, toasts));
-```
-
-### Warning
-
-```demo
-let state_id = egui::Id::new("toast_manager_4");
-let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
-    d.get_temp(state_id).unwrap_or_else(ToastManager::new)
-});
-
-if Button::new("Show Warning").show(ui).clicked() {
-    toasts.warning("Please review before continuing");
-}
-
-toasts.show(ui.ctx());
-ui.ctx().data_mut(|d| d.insert_temp(state_id, toasts));
-```
-
-### Error
+### Destructive (Error)
 
 ```demo
 let state_id = egui::Id::new("toast_manager_5");
@@ -95,39 +63,7 @@ let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
 });
 
 if Button::new("Show Top Right").show(ui).clicked() {
-    toasts.info("Top right notification");
-}
-
-toasts.show(ui.ctx());
-ui.ctx().data_mut(|d| d.insert_temp(state_id, toasts));
-```
-
-### Top Center
-
-```demo
-let state_id = egui::Id::new("toast_manager_7");
-let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
-    d.get_temp(state_id).unwrap_or_else(|| ToastManager::new().position(ToastPosition::TopCenter))
-});
-
-if Button::new("Show Top Center").show(ui).clicked() {
-    toasts.info("Top center notification");
-}
-
-toasts.show(ui.ctx());
-ui.ctx().data_mut(|d| d.insert_temp(state_id, toasts));
-```
-
-### Top Left
-
-```demo
-let state_id = egui::Id::new("toast_manager_8");
-let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
-    d.get_temp(state_id).unwrap_or_else(|| ToastManager::new().position(ToastPosition::TopLeft))
-});
-
-if Button::new("Show Top Left").show(ui).clicked() {
-    toasts.info("Top left notification");
+    toasts.toast("Top right notification");
 }
 
 toasts.show(ui.ctx());
@@ -143,39 +79,7 @@ let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
 });
 
 if Button::new("Show Bottom Right").show(ui).clicked() {
-    toasts.info("Bottom right notification");
-}
-
-toasts.show(ui.ctx());
-ui.ctx().data_mut(|d| d.insert_temp(state_id, toasts));
-```
-
-### Bottom Center
-
-```demo
-let state_id = egui::Id::new("toast_manager_10");
-let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
-    d.get_temp(state_id).unwrap_or_else(|| ToastManager::new().position(ToastPosition::BottomCenter))
-});
-
-if Button::new("Show Bottom Center").show(ui).clicked() {
-    toasts.info("Bottom center notification");
-}
-
-toasts.show(ui.ctx());
-ui.ctx().data_mut(|d| d.insert_temp(state_id, toasts));
-```
-
-### Bottom Left
-
-```demo
-let state_id = egui::Id::new("toast_manager_11");
-let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
-    d.get_temp(state_id).unwrap_or_else(|| ToastManager::new().position(ToastPosition::BottomLeft))
-});
-
-if Button::new("Show Bottom Left").show(ui).clicked() {
-    toasts.info("Bottom left notification");
+    toasts.toast("Bottom right notification");
 }
 
 toasts.show(ui.ctx());
@@ -194,7 +98,7 @@ if Button::new("Show Custom Toast").show(ui).clicked() {
     toasts.custom()
         .message("Custom notification")
         .title("Important")
-        .variant(ToastVariant::Warning)
+        .destructive()
         .duration(std::time::Duration::from_secs(5))
         .dismissible(true)
         .show();
@@ -216,7 +120,6 @@ if Button::new("Show With Title").show(ui).clicked() {
     toasts.custom()
         .message("Your profile has been updated")
         .title("Success")
-        .variant(ToastVariant::Success)
         .show();
 }
 
@@ -235,7 +138,6 @@ let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
 if Button::new("Show 10 Second Toast").show(ui).clicked() {
     toasts.custom()
         .message("This toast stays for 10 seconds")
-        .variant(ToastVariant::Info)
         .duration(std::time::Duration::from_secs(10))
         .show();
 }
@@ -255,7 +157,6 @@ let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
 if Button::new("Show Non-Dismissible").show(ui).clicked() {
     toasts.custom()
         .message("This toast auto-dismisses")
-        .variant(ToastVariant::Info)
         .dismissible(false)
         .show();
 }
@@ -273,28 +174,10 @@ let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
 });
 
 if Button::new("Show Multiple Toasts").show(ui).clicked() {
-    toasts.info("First notification");
-    toasts.info("Second notification");
-    toasts.info("Third notification");
-    toasts.info("Fourth replaces first");
-}
-
-toasts.show(ui.ctx());
-ui.ctx().data_mut(|d| d.insert_temp(state_id, toasts));
-```
-
-## Multiple Toasts
-
-```demo
-let state_id = egui::Id::new("toast_manager_17");
-let mut toasts: ToastManager = ui.ctx().data_mut(|d| {
-    d.get_temp(state_id).unwrap_or_else(ToastManager::new)
-});
-
-if Button::new("Show Multiple Variants").show(ui).clicked() {
-    toasts.success("File uploaded");
-    toasts.warning("Storage almost full");
-    toasts.info("3 new messages");
+    toasts.toast("First notification");
+    toasts.toast("Second notification");
+    toasts.toast("Third notification");
+    toasts.toast("Fourth replaces first");
 }
 
 toasts.show(ui.ctx());
@@ -309,10 +192,8 @@ ui.ctx().data_mut(|d| d.insert_temp(state_id, toasts));
 |--------|------|---------|-------------|
 | `.position()` | `ToastPosition` | `TopRight` | Toast position |
 | `.max_toasts()` | `usize` | `5` | Maximum visible toasts |
-| `.info()` | `&str` | - | Add info toast |
-| `.success()` | `&str` | - | Add success toast |
-| `.warning()` | `&str` | - | Add warning toast |
-| `.error()` | `&str` | - | Add error toast |
+| `.toast()` | `&str` | - | Add default toast |
+| `.error()` | `&str` | - | Add error/destructive toast |
 | `.custom()` | - | - | Create custom toast |
 
 ### ToastBuilder
@@ -321,14 +202,8 @@ ui.ctx().data_mut(|d| d.insert_temp(state_id, toasts));
 |--------|------|---------|-------------|
 | `.message()` | `&str` | Required | Toast message |
 | `.title()` | `&str` | `None` | Toast title |
-| `.variant()` | `ToastVariant` | `Info` | Toast severity |
+| `.variant()` | `ToastVariant` | `Default` | Toast variant |
+| `.destructive()` | - | - | Make destructive |
+| `.color()` | `Color32` | theme | Custom color |
 | `.duration()` | `Duration` | `3s` | Display duration |
 | `.dismissible()` | `bool` | `true` | Allow manual dismiss |
-
-## Dependencies
-
-- `egui = "0.33"`
-- Theme colors: `primary`, `success`, `warning`, `error`, `surface_variant`
-- Card component for consistent styling
-- Badge component for icons
-- SpringAnimation for slide-in effects

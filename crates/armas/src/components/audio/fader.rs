@@ -18,6 +18,17 @@ pub enum FaderScalePosition {
     None,
 }
 
+/// Fader response curve for different control types
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum FaderCurve {
+    /// Linear response (0.0 to 1.0 mapped directly)
+    Linear,
+    /// Logarithmic response (useful for gain/volume, more sensitive at lower values)
+    Logarithmic,
+    /// Exponential response (useful for filter cutoff, more sensitive at higher values)
+    Exponential,
+}
+
 // Fader (minimal) default dimensions - just the track
 const FADER_DEFAULT_WIDTH: f32 = 30.0; // Track width from original
 const FADER_DEFAULT_HEIGHT: f32 = 240.0; // Track height from original
@@ -50,6 +61,12 @@ pub struct Fader {
     height: f32,
     value: f32,
     scale_position: FaderScalePosition,
+    /// Response curve for value mapping
+    curve: FaderCurve,
+    /// Track/background color
+    track_color: Option<Color32>,
+    /// Value range (min, max) for dB or other units
+    value_range: (f32, f32),
 }
 
 impl Fader {
@@ -61,6 +78,9 @@ impl Fader {
             height: FADER_DEFAULT_HEIGHT,
             value: value.clamp(0.0, 1.0),
             scale_position: FaderScalePosition::None,
+            curve: FaderCurve::Linear,
+            track_color: None,
+            value_range: (-96.0, 6.0), // Professional dB range default
         }
     }
 
@@ -92,6 +112,25 @@ impl Fader {
     /// Show scale on the right
     pub fn scale_right(mut self) -> Self {
         self.scale_position = FaderScalePosition::Right;
+        self
+    }
+
+    /// Set fader response curve for different control types
+    pub fn response_curve(mut self, curve: FaderCurve) -> Self {
+        self.curve = curve;
+        self
+    }
+
+    /// Set track/background color
+    pub fn track_color(mut self, color: Color32) -> Self {
+        self.track_color = Some(color);
+        self
+    }
+
+    /// Set value range for dB or other units (min, max)
+    /// This affects the scale display but not the internal 0.0-1.0 value mapping
+    pub fn db_range(mut self, min: f32, max: f32) -> Self {
+        self.value_range = (min.min(max), min.max(max));
         self
     }
 
@@ -206,7 +245,7 @@ impl Fader {
             painter.rect_stroke(
                 channel_rect,
                 CHANNEL_CORNER_RADIUS * scale,
-                (1.0 * scale, theme.outline()),
+                (1.0 * scale, theme.border()),
                 egui::StrokeKind::Middle,
             );
 
@@ -250,7 +289,7 @@ impl Fader {
     /// Draw dB scale markings for fader
     fn draw_scale(&self, ui: &mut Ui, fader_rect: Rect, full_rect: Rect, theme: &crate::Theme) {
         let painter = ui.painter();
-        let text_color = theme.on_surface_variant();
+        let text_color = theme.muted_foreground();
 
         // Fader dB scale (fader represents gain/volume control)
         // 0 dB at 75% (unity gain), with boost above and attenuation below
@@ -500,8 +539,8 @@ impl FaderStrip {
             let scale = scale_x.min(scale_y);
 
             // Housing gradient colors from theme
-            let housing_top = theme.surface_variant();
-            let housing_bottom = theme.surface();
+            let housing_top = theme.muted();
+            let housing_bottom = theme.card();
 
             // Draw outer housing with gradient
             // First draw a base rounded rect for the shape
@@ -534,7 +573,7 @@ impl FaderStrip {
             painter.rect_stroke(
                 rect,
                 HOUSING_CORNER_RADIUS * scale,
-                (0.5 * scale, theme.outline()),
+                (0.5 * scale, theme.border()),
                 egui::StrokeKind::Middle,
             );
 

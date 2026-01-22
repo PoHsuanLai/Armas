@@ -142,88 +142,91 @@ impl<'a> ZoomControl<'a> {
         let mut zoomed_out = false;
         let mut reset = false;
 
-        let response = ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = theme.spacing.sm;
+        let response = ui
+            .horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = theme.spacing.sm;
 
-            // Vertically center all items
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                // Label
-                if self.show_label {
-                    ui.label("Zoom:");
-                }
+                // Vertically center all items
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                    // Label
+                    if self.show_label {
+                        ui.label("Zoom:");
+                    }
 
-                // Zoom out button
-                if self.show_buttons {
-                    if Button::new("−")
-                        .variant(ButtonVariant::FilledTonal)
-                        .min_size(egui::vec2(28.0, 28.0))
+                    // Zoom out button
+                    if self.show_buttons {
+                        if Button::new("−")
+                            .variant(ButtonVariant::FilledTonal)
+                            .min_size(egui::vec2(28.0, 28.0))
+                            .show(ui)
+                            .clicked()
+                        {
+                            *self.zoom_level =
+                                (*self.zoom_level - self.button_step).max(self.min_zoom);
+                            zoomed_out = true;
+                            changed = true;
+                        }
+                    }
+
+                    // Slider
+                    if self.show_slider {
+                        // Note: Armas Slider doesn't support logarithmic yet, but we can still use it
+                        let slider_response = Slider::new(self.min_zoom, self.max_zoom)
+                            .width(self.slider_width)
+                            .show_value(false)
+                            .show(ui, self.zoom_level);
+
+                        if slider_response.changed {
+                            changed = true;
+                        }
+                    }
+
+                    // Zoom in button
+                    if self.show_buttons {
+                        if Button::new("+")
+                            .variant(ButtonVariant::FilledTonal)
+                            .min_size(egui::vec2(28.0, 28.0))
+                            .show(ui)
+                            .clicked()
+                        {
+                            *self.zoom_level =
+                                (*self.zoom_level + self.button_step).min(self.max_zoom);
+                            zoomed_in = true;
+                            changed = true;
+                        }
+                    }
+
+                    // Zoom level display
+                    if self.show_label {
+                        ui.label(format!("{:.1}x", self.zoom_level));
+                    }
+
+                    // Reset button (1:1)
+                    if Button::new("1:1")
+                        .variant(ButtonVariant::Text)
+                        .min_size(egui::vec2(36.0, 28.0))
                         .show(ui)
                         .clicked()
                     {
-                        *self.zoom_level = (*self.zoom_level - self.button_step).max(self.min_zoom);
-                        zoomed_out = true;
+                        *self.zoom_level = 1.0;
+                        reset = true;
                         changed = true;
                     }
-                }
 
-                // Slider
-                if self.show_slider {
-                    // Note: Armas Slider doesn't support logarithmic yet, but we can still use it
-                    let slider_response = Slider::new(self.min_zoom, self.max_zoom)
-                        .width(self.slider_width)
-                        .show_value(false)
-                        .show(ui, self.zoom_level);
-
-                    if slider_response.changed {
-                        changed = true;
-                    }
-                }
-
-                // Zoom in button
-                if self.show_buttons {
-                    if Button::new("+")
-                        .variant(ButtonVariant::FilledTonal)
-                        .min_size(egui::vec2(28.0, 28.0))
+                    // Fit button (could zoom to fit content)
+                    if Button::new("Fit")
+                        .variant(ButtonVariant::Text)
+                        .min_size(egui::vec2(36.0, 28.0))
                         .show(ui)
                         .clicked()
                     {
-                        *self.zoom_level = (*self.zoom_level + self.button_step).min(self.max_zoom);
-                        zoomed_in = true;
+                        *self.zoom_level = 1.0; // Placeholder - would calculate based on content
+                        reset = true;
                         changed = true;
                     }
-                }
-
-                // Zoom level display
-                if self.show_label {
-                    ui.label(format!("{:.1}x", self.zoom_level));
-                }
-
-                // Reset button (1:1)
-                if Button::new("1:1")
-                    .variant(ButtonVariant::Text)
-                    .min_size(egui::vec2(36.0, 28.0))
-                    .show(ui)
-                    .clicked()
-                {
-                    *self.zoom_level = 1.0;
-                    reset = true;
-                    changed = true;
-                }
-
-                // Fit button (could zoom to fit content)
-                if Button::new("Fit")
-                    .variant(ButtonVariant::Text)
-                    .min_size(egui::vec2(36.0, 28.0))
-                    .show(ui)
-                    .clicked()
-                {
-                    *self.zoom_level = 1.0; // Placeholder - would calculate based on content
-                    reset = true;
-                    changed = true;
-                }
-            });
-
-        }).response;
+                });
+            })
+            .response;
 
         // Ensure zoom is within bounds
         *self.zoom_level = self.zoom_level.clamp(self.min_zoom, self.max_zoom);
@@ -278,12 +281,10 @@ mod tests {
     #[test]
     fn test_zoom_bounds() {
         let mut zoom = 1.0;
-        let control = ZoomControl::new(&mut zoom)
-            .min_zoom(0.5)
-            .max_zoom(2.0);
+        let control = ZoomControl::new(&mut zoom).min_zoom(0.5).max_zoom(2.0);
 
         // Simulate setting out of bounds
-        zoom = 10.0;
+        let mut zoom: f32 = 10.0;
         let clamped = zoom.clamp(control.min_zoom, control.max_zoom);
         assert_eq!(clamped, 2.0);
 

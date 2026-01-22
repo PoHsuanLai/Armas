@@ -232,7 +232,7 @@ impl Select {
                 ui.label(
                     egui::RichText::new(label)
                         .size(14.0)
-                        .color(theme.on_surface()),
+                        .color(theme.foreground()),
                 );
             }
 
@@ -244,10 +244,10 @@ impl Select {
             if ui.is_rect_visible(button_rect) {
                 let hovered = response.hovered();
                 let bg_color = if hovered {
-                    let hover = theme.hover();
+                    let hover = theme.accent();
                     Color32::from_rgba_unmultiplied(hover.r(), hover.g(), hover.b(), 200)
                 } else {
-                    let surface = theme.surface_variant();
+                    let surface = theme.muted();
                     Color32::from_rgba_unmultiplied(surface.r(), surface.g(), surface.b(), 180)
                 };
 
@@ -262,9 +262,9 @@ impl Select {
                 let border_color = if self.is_open {
                     theme.primary()
                 } else if hovered {
-                    theme.outline()
+                    theme.border()
                 } else {
-                    theme.outline_variant()
+                    theme.border()
                 };
 
                 ui.painter().rect_stroke(
@@ -286,9 +286,9 @@ impl Select {
                 };
 
                 let text_color = if self.selected_value.is_some() {
-                    theme.on_surface()
+                    theme.foreground()
                 } else {
-                    theme.on_surface_variant()
+                    theme.muted_foreground()
                 };
 
                 let text_pos = button_rect.left_center() + vec2(12.0, 0.0);
@@ -308,7 +308,7 @@ impl Select {
                     egui::Align2::RIGHT_CENTER,
                     arrow,
                     egui::FontId::proportional(12.0),
-                    theme.on_surface_variant(),
+                    theme.muted_foreground(),
                 );
             }
 
@@ -377,13 +377,13 @@ impl Select {
             .fixed_pos(button_rect.left_bottom() + vec2(0.0, 4.0))
             .order(egui::Order::Foreground)
             .show(ui.ctx(), |ui| {
-                let surface = theme.surface();
+                let surface = theme.card();
                 let bg_color =
                     Color32::from_rgba_unmultiplied(surface.r(), surface.g(), surface.b(), 250);
 
                 egui::Frame::new()
                     .fill(bg_color)
-                    .stroke(Stroke::new(1.0, theme.outline_variant()))
+                    .stroke(Stroke::new(1.0, theme.border()))
                     .corner_radius(CornerRadius::same(theme.spacing.corner_radius_small))
                     .inner_margin(theme.spacing.sm)
                     .show(ui, |ui| {
@@ -420,7 +420,7 @@ impl Select {
                                 if self.filtered_indices.is_empty() {
                                     ui.label(
                                         egui::RichText::new("No matches found")
-                                            .color(theme.on_surface_variant())
+                                            .color(theme.muted_foreground())
                                             .size(14.0),
                                     );
                                 } else {
@@ -435,7 +435,7 @@ impl Select {
                                                     ui.label(
                                                         egui::RichText::new(icon).color(
                                                             theme
-                                                                .on_surface_variant()
+                                                                .muted_foreground()
                                                                 .linear_multiply(0.5),
                                                         ),
                                                     );
@@ -444,7 +444,7 @@ impl Select {
                                                     egui::RichText::new(&option.label)
                                                         .color(
                                                             theme
-                                                                .on_surface_variant()
+                                                                .muted_foreground()
                                                                 .linear_multiply(0.5),
                                                         )
                                                         .size(14.0),
@@ -481,7 +481,7 @@ impl Select {
                                                     CornerRadius::same(
                                                         theme.spacing.corner_radius_small,
                                                     ),
-                                                    theme.hover(),
+                                                    theme.accent(),
                                                 );
                                             }
 
@@ -497,7 +497,7 @@ impl Select {
                                                     egui::Align2::LEFT_CENTER,
                                                     icon,
                                                     egui::FontId::proportional(16.0),
-                                                    theme.on_surface(),
+                                                    theme.foreground(),
                                                 );
                                                 content_rect.min.x += 24.0;
                                             }
@@ -510,7 +510,7 @@ impl Select {
                                                     egui::Align2::LEFT_TOP,
                                                     &option.label,
                                                     egui::FontId::proportional(14.0),
-                                                    theme.on_surface(),
+                                                    theme.foreground(),
                                                 );
 
                                                 let desc_pos = label_pos + vec2(0.0, 18.0);
@@ -519,7 +519,7 @@ impl Select {
                                                     egui::Align2::LEFT_TOP,
                                                     description,
                                                     egui::FontId::proportional(12.0),
-                                                    theme.on_surface_variant(),
+                                                    theme.muted_foreground(),
                                                 );
                                             } else {
                                                 let label_pos = content_rect.left_center();
@@ -528,7 +528,7 @@ impl Select {
                                                     egui::Align2::LEFT_CENTER,
                                                     &option.label,
                                                     egui::FontId::proportional(14.0),
-                                                    theme.on_surface(),
+                                                    theme.foreground(),
                                                 );
                                             }
 

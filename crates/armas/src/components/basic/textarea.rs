@@ -6,6 +6,17 @@ use crate::ext::ArmasContextExt;
 use crate::{InputState, InputVariant};
 use egui::{Color32, Response, TextEdit, Ui};
 
+/// Response from the textarea
+#[derive(Debug, Clone)]
+pub struct TextareaResponse {
+    /// The UI response
+    pub response: Response,
+    /// Current text value
+    pub text: String,
+    /// Whether text changed this frame
+    pub changed: bool,
+}
+
 /// Multi-line text input field
 ///
 /// Uses `InputVariant` for styling. See `InputVariant` documentation for MD3 compliance notes.
@@ -95,7 +106,7 @@ impl Textarea {
     }
 
     /// Show the textarea
-    pub fn show(self, ui: &mut Ui, text: &mut String) -> Response {
+    pub fn show(self, ui: &mut Ui, text: &mut String) -> TextareaResponse {
         let theme = ui.ctx().armas_theme();
 
         // Load state from memory if ID is set
@@ -121,11 +132,11 @@ impl Textarea {
                             ui.allocate_space(ui.available_size());
 
                             let count_color = if text.len() > max {
-                                theme.error()
+                                theme.destructive()
                             } else if text.len() as f32 / max as f32 > 0.9 {
-                                theme.warning()
+                                theme.chart_3()
                             } else {
-                                theme.on_surface_variant()
+                                theme.muted_foreground()
                             };
 
                             ui.colored_label(count_color, format!("{}/{}", text.len(), max));
@@ -141,10 +152,10 @@ impl Textarea {
 
                 // Background and border colors based on state
                 let (bg_color, border_color) = match self.state {
-                    InputState::Normal => (theme.surface(), theme.outline()),
-                    InputState::Success => (theme.surface(), theme.success()),
-                    InputState::Error => (theme.surface(), theme.error()),
-                    InputState::Warning => (theme.surface(), theme.warning()),
+                    InputState::Normal => (theme.card(), theme.border()),
+                    InputState::Success => (theme.card(), theme.chart_2()),
+                    InputState::Error => (theme.card(), theme.destructive()),
+                    InputState::Warning => (theme.card(), theme.chart_3()),
                 };
 
                 let (bg_color, border_color) = match self.variant {
@@ -191,10 +202,10 @@ impl Textarea {
                 if let Some(helper) = &self.helper_text {
                     ui.add_space(4.0);
                     let color = match self.state {
-                        InputState::Normal => theme.on_surface_variant(),
-                        InputState::Success => theme.success(),
-                        InputState::Error => theme.error(),
-                        InputState::Warning => theme.warning(),
+                        InputState::Normal => theme.muted_foreground(),
+                        InputState::Success => theme.chart_2(),
+                        InputState::Error => theme.destructive(),
+                        InputState::Warning => theme.chart_3(),
                     };
                     ui.colored_label(color, helper);
                 }
@@ -211,6 +222,13 @@ impl Textarea {
             });
         }
 
-        response
+        let changed = response.changed();
+        let text_clone = text.clone();
+
+        TextareaResponse {
+            response,
+            text: text_clone,
+            changed,
+        }
     }
 }

@@ -268,7 +268,7 @@ impl Sidebar {
             let painter = ui.painter();
 
             // Draw sidebar background
-            painter.rect_filled(rect, 0.0, theme.surface());
+            painter.rect_filled(rect, 0.0, theme.card());
 
             // Conditionally draw toggle button if collapsible
             let items_start_y = if self.collapsible {
@@ -297,9 +297,9 @@ impl Sidebar {
 
                 // Draw toggle button background
                 let toggle_bg_color = if toggle_response.hovered() {
-                    theme.hover()
+                    theme.accent()
                 } else {
-                    theme.surface_variant()
+                    theme.muted()
                 };
 
                 painter.rect(
@@ -319,7 +319,7 @@ impl Sidebar {
                     egui::Align2::CENTER_CENTER,
                     "☰",
                     egui::FontId::proportional(20.0),
-                    theme.on_surface(),
+                    theme.foreground(),
                 );
 
                 rect.top() + padding * 2.0 + item_height + padding
@@ -396,7 +396,7 @@ impl Sidebar {
                     painter.rect(
                         item_rect,
                         theme.spacing.corner_radius_small,
-                        theme.hover(),
+                        theme.accent(),
                         egui::Stroke::NONE,
                         egui::StrokeKind::Outside,
                     );
@@ -406,9 +406,9 @@ impl Sidebar {
                     || current_active.as_ref() == Some(&item.id)
                     || item_response.hovered()
                 {
-                    theme.on_surface()
+                    theme.foreground()
                 } else {
-                    theme.on_surface_variant()
+                    theme.muted_foreground()
                 };
 
                 // Calculate icon position
@@ -466,7 +466,7 @@ impl Sidebar {
                                 egui::Align2::CENTER_CENTER,
                                 badge,
                                 egui::FontId::proportional(10.0),
-                                theme.on_surface_variant(),
+                                theme.muted_foreground(),
                             );
                         }
                     } else {
@@ -485,8 +485,8 @@ impl Sidebar {
                         painter.circle(
                             badge_pos,
                             badge_size / 2.0,
-                            theme.error(),
-                            egui::Stroke::new(2.0, theme.surface()),
+                            theme.destructive(),
+                            egui::Stroke::new(2.0, theme.card()),
                         );
 
                         painter.text(
@@ -494,7 +494,7 @@ impl Sidebar {
                             egui::Align2::CENTER_CENTER,
                             badge,
                             egui::FontId::proportional(10.0),
-                            theme.on_surface(),
+                            theme.foreground(),
                         );
                     }
                 }

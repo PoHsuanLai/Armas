@@ -203,7 +203,7 @@ impl<'a> Card<'a> {
             CardVariant::Filled => {
                 // Filled: surface_variant background, no border
                 (
-                    self.fill_color.unwrap_or_else(|| theme.surface_variant()),
+                    self.fill_color.unwrap_or_else(|| theme.muted()),
                     0.0,
                     Color32::TRANSPARENT,
                 )
@@ -211,19 +211,19 @@ impl<'a> Card<'a> {
             CardVariant::Outlined => {
                 // Outlined: surface background with 1px outline_variant border
                 (
-                    self.fill_color.unwrap_or_else(|| theme.surface()),
+                    self.fill_color.unwrap_or_else(|| theme.card()),
                     1.0,
-                    self.stroke_color.unwrap_or_else(|| theme.outline_variant()),
+                    self.stroke_color.unwrap_or_else(|| theme.border()),
                 )
             }
             CardVariant::Elevated => {
                 // Elevated: surface background with thicker border to simulate shadow
                 // Since egui doesn't have real shadows, we use a 2px border with outline color
                 (
-                    self.fill_color.unwrap_or_else(|| theme.surface()),
+                    self.fill_color.unwrap_or_else(|| theme.card()),
                     2.0,
                     self.stroke_color
-                        .unwrap_or_else(|| theme.outline().linear_multiply(0.5)),
+                        .unwrap_or_else(|| theme.border().linear_multiply(0.5)),
                 )
             }
         };
@@ -272,7 +272,7 @@ impl<'a> Card<'a> {
                         ui.label(
                             egui::RichText::new(title)
                                 .size(ui.spacing().interact_size.y * 0.7)
-                                .color(theme.on_surface())
+                                .color(theme.foreground())
                                 .strong(),
                         );
                         ui.add_space(theme.spacing.sm);
@@ -314,7 +314,7 @@ impl<'a> Card<'a> {
                             ui.label(
                                 egui::RichText::new(title)
                                     .size(ui.spacing().interact_size.y * 0.7)
-                                    .color(theme.on_surface())
+                                    .color(theme.foreground())
                                     .strong(),
                             );
                             ui.add_space(theme.spacing.sm);
@@ -340,7 +340,7 @@ impl<'a> Card<'a> {
         // Apply hover background if clickable and hovered
         if self.clickable && response.hovered() {
             ui.painter()
-                .rect_filled(rect, CornerRadius::same(corner_rad), theme.hover());
+                .rect_filled(rect, CornerRadius::same(corner_rad), theme.accent());
         }
 
         CardResponse {

@@ -51,9 +51,11 @@ pub struct ColorPalette {
 }
 
 /// Spacing configuration for layouts
-/// Following a consistent 4px/8px scale
+/// Following a consistent 2px/4px/8px scale
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Spacing {
+    /// 2XS spacing (2px) - minimal spacing, tight track headers
+    pub xxs: f32,
     /// Extra small spacing (4px) - tight spacing
     pub xs: f32,
     /// Small spacing (8px) - compact layouts
@@ -67,11 +69,15 @@ pub struct Spacing {
     /// 2XL spacing (48px) - section separators
     pub xxl: f32,
 
-    /// Standard corner radius (12px)
-    pub corner_radius: u8,
-    /// Small corner radius (8px)
+    /// Micro corner radius (2px) - very tight/sharp elements, timeline clips
+    pub corner_radius_micro: u8,
+    /// Tiny corner radius (4px) - compact controls, DAW-style buttons
+    pub corner_radius_tiny: u8,
+    /// Small corner radius (8px) - buttons, small cards (BACKWARD COMPAT)
     pub corner_radius_small: u8,
-    /// Large corner radius (16px)
+    /// Standard corner radius (12px) - panels, dialogs (BACKWARD COMPAT)
+    pub corner_radius: u8,
+    /// Large corner radius (16px) - prominent elements (BACKWARD COMPAT)
     pub corner_radius_large: u8,
 }
 
@@ -104,14 +110,17 @@ impl Theme {
                 info: [175, 221, 255],               // Info blue
             },
             spacing: Spacing {
+                xxs: 2.0,
                 xs: 4.0,
                 sm: 8.0,
                 md: 16.0,
                 lg: 24.0,
                 xl: 32.0,
                 xxl: 48.0,
-                corner_radius: 12,
+                corner_radius_micro: 2,
+                corner_radius_tiny: 4,
                 corner_radius_small: 8,
+                corner_radius: 12,
                 corner_radius_large: 16,
             },
         }
@@ -139,14 +148,17 @@ impl Theme {
                 info: [33, 150, 243],             // Info blue
             },
             spacing: Spacing {
+                xxs: 2.0,
                 xs: 4.0,
                 sm: 8.0,
                 md: 16.0,
                 lg: 24.0,
                 xl: 32.0,
                 xxl: 48.0,
-                corner_radius: 12,
+                corner_radius_micro: 2,
+                corner_radius_tiny: 4,
                 corner_radius_small: 8,
+                corner_radius: 12,
                 corner_radius_large: 16,
             },
         }

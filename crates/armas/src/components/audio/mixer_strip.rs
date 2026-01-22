@@ -480,9 +480,9 @@ impl MixerStrip {
                         .show_value(false)
                         .glow_color(glow_color);
 
-                    knob.show(ui, &mut pan_knob_value, &theme);
+                    let knob_resp = knob.show(ui, &mut pan_knob_value, &theme);
                     // Convert back from 0..1 to -1..1
-                    self.pan = (pan_knob_value * 2.0 - 1.0).clamp(-1.0, 1.0);
+                    self.pan = (knob_resp.value * 2.0 - 1.0).clamp(-1.0, 1.0);
 
                     // Save pan state
                     ui.ctx().data_mut(|d| {
@@ -497,7 +497,7 @@ impl MixerStrip {
                     } else {
                         format!("R{}", (self.pan * 100.0) as i32) // Right
                     };
-                    ui.colored_label(theme.on_surface_variant(), pan_text);
+                    ui.colored_label(theme.muted_foreground(), pan_text);
 
                     // Compensate for knob's extra space allocation
                     ui.add_space(theme.spacing.xs * scale);
@@ -604,7 +604,7 @@ impl MixerStrip {
                         db
                     };
 
-                    ui.colored_label(theme.on_surface(), format!("{:+.1}", db_value));
+                    ui.colored_label(theme.foreground(), format!("{:+.1}", db_value));
 
                     ui.add_space(theme.spacing.xs * scale);
 
@@ -623,7 +623,7 @@ impl MixerStrip {
                             meter_color,                // Resolved color at top
                         );
 
-                        meter.show(ui);
+                        let _ = meter.show(ui);
 
                         // Fader (same height as meter - both now use full height)
                         // No scale needed - the dB value is displayed above
@@ -637,7 +637,7 @@ impl MixerStrip {
                     ui.add_space(8.0 * scale);
 
                     // Channel number and name
-                    ui.colored_label(theme.on_surface(), &self.name);
+                    ui.colored_label(theme.foreground(), &self.name);
                 });
             });
 
@@ -693,7 +693,7 @@ impl MixerStrip {
                     if current_view == "list" {
                         // Send list view
                         ui.colored_label(
-                            theme.on_surface(),
+                            theme.foreground(),
                             egui::RichText::new("Add Sends").heading(),
                         );
                         ui.add_space(8.0);
@@ -707,7 +707,7 @@ impl MixerStrip {
                         ui.add_space(16.0);
 
                         ui.colored_label(
-                            theme.on_surface(),
+                            theme.foreground(),
                             egui::RichText::new("Existing Sends").heading(),
                         );
                         ui.add_space(8.0);
@@ -724,9 +724,9 @@ impl MixerStrip {
                         }
                     } else {
                         // Individual send edit view
-                        ui.colored_label(theme.on_surface(), "Level:");
+                        ui.colored_label(theme.foreground(), "Level:");
                         let mut send_level = 0.5;
-                        Knob::new(send_level).diameter(60.0).label("dB").show(
+                        let _ = Knob::new(send_level).diameter(60.0).label("dB").show(
                             ui,
                             &mut send_level,
                             &theme,
@@ -736,7 +736,7 @@ impl MixerStrip {
 
                         // Pre/Post fader
                         ui.horizontal(|ui| {
-                            ui.colored_label(theme.on_surface(), "Routing:");
+                            ui.colored_label(theme.foreground(), "Routing:");
                             ui.add_space(8.0);
                             if ui.button("Pre-Fader").clicked() {
                                 // TODO: Set pre-fader
@@ -751,7 +751,7 @@ impl MixerStrip {
 
                         // Mute button
                         ui.horizontal(|ui| {
-                            ui.colored_label(theme.on_surface(), "Status:");
+                            ui.colored_label(theme.foreground(), "Status:");
                             ui.add_space(8.0);
                             if ui.button("Mute").clicked() {
                                 // TODO: Toggle mute

@@ -248,12 +248,12 @@ impl<'a> RowBuilder<'a> {
                         egui::Label::new(
                             egui::RichText::new(&text)
                                 .strong()
-                                .color(self.theme.on_surface()),
+                                .color(self.theme.foreground()),
                         )
                         .wrap()
                     } else {
                         egui::Label::new(
-                            egui::RichText::new(&text).color(self.theme.on_surface_variant()),
+                            egui::RichText::new(&text).color(self.theme.muted_foreground()),
                         )
                         .wrap()
                     };
@@ -265,11 +265,11 @@ impl<'a> RowBuilder<'a> {
                 egui::Label::new(
                     egui::RichText::new(&text)
                         .strong()
-                        .color(self.theme.on_surface()),
+                        .color(self.theme.foreground()),
                 )
                 .wrap()
             } else {
-                egui::Label::new(egui::RichText::new(&text).color(self.theme.on_surface_variant()))
+                egui::Label::new(egui::RichText::new(&text).color(self.theme.muted_foreground()))
                     .wrap()
             };
             self.ui.add(label)

@@ -16,10 +16,10 @@ pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
     let keyword_color = egui::Color32::from_rgb(100, 149, 237); // Navy blue (cornflower blue) for keywords
     let string_color = egui::Color32::from_rgb(206, 145, 120); // Orange/peach
     let comment_color = egui::Color32::from_rgb(106, 153, 85); // Green (muted)
-    let function_color = theme.on_surface_variant(); // Use theme color instead of yellow
+    let function_color = theme.muted_foreground(); // Use theme color instead of yellow
     let number_color = egui::Color32::from_rgb(181, 206, 168); // Light green
     let type_color = egui::Color32::from_rgb(180, 60, 60); // Dark red for types
-    let default_color = theme.on_surface(); // Theme's text color
+    let default_color = theme.foreground(); // Theme's text color
 
     let keywords = [
         "let", "mut", "fn", "if", "else", "for", "while", "loop", "match", "return", "struct",
@@ -191,7 +191,7 @@ pub fn highlight_toml_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
     let section_color = egui::Color32::from_rgb(180, 60, 60); // Dark red for sections
     let boolean_color = egui::Color32::from_rgb(180, 60, 60); // Dark red for booleans
     let number_color = egui::Color32::from_rgb(181, 206, 168); // Light green
-    let default_color = theme.on_surface(); // Theme's text color
+    let default_color = theme.foreground(); // Theme's text color
 
     for (line_idx, line) in code.lines().enumerate() {
         let trimmed = line.trim_start();

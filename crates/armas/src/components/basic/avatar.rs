@@ -2,7 +2,7 @@
 //!
 //! User profile images and initials
 
-use crate::{ext::ArmasContextExt, BadgeColor};
+use crate::ext::ArmasContextExt;
 use egui::{vec2, Color32, Rect, Response, Sense, Stroke, Ui};
 
 /// Avatar size presets
@@ -66,6 +66,11 @@ pub enum AvatarShape {
 ///     .size(AvatarSize::Medium)
 ///     .color(theme.primary())
 ///     .show(ui);
+///
+/// // Avatar with status indicator
+/// Avatar::new("JD")
+///     .status(egui::Color32::GREEN)
+///     .show(ui);
 /// # }
 /// ```
 pub struct Avatar {
@@ -76,7 +81,7 @@ pub struct Avatar {
     text_color: Option<Color32>,
     show_border: bool,
     clickable: bool,
-    status_badge: Option<BadgeColor>,
+    status_color: Option<Color32>,
 }
 
 impl Avatar {
@@ -90,7 +95,7 @@ impl Avatar {
             text_color: None,
             show_border: false,
             clickable: false,
-            status_badge: None,
+            status_color: None,
         }
     }
 
@@ -130,9 +135,9 @@ impl Avatar {
         self
     }
 
-    /// Show a status badge (e.g., online indicator)
-    pub fn status(mut self, status: BadgeColor) -> Self {
-        self.status_badge = Some(status);
+    /// Show a status badge with custom color (e.g., online indicator)
+    pub fn status(mut self, color: Color32) -> Self {
+        self.status_color = Some(color);
         self
     }
 
@@ -183,7 +188,7 @@ impl Avatar {
                 ui.painter().rect_stroke(
                     rect,
                     rounding,
-                    Stroke::new(2.0, theme.outline()),
+                    Stroke::new(2.0, theme.border()),
                     egui::StrokeKind::Outside,
                 );
             }
@@ -205,7 +210,7 @@ impl Avatar {
             ui.painter().galley(text_pos, galley, text_color);
 
             // Status badge
-            if let Some(status_color) = self.status_badge {
+            if let Some(status_color) = self.status_color {
                 let badge_size = size * 0.25;
                 let badge_pos = rect.right_bottom() - vec2(badge_size * 0.3, badge_size * 0.3);
                 let badge_rect = Rect::from_center_size(badge_pos, vec2(badge_size, badge_size));
@@ -214,22 +219,14 @@ impl Avatar {
                 ui.painter().circle_filled(
                     badge_rect.center(),
                     badge_size / 2.0 + 1.5,
-                    theme.surface(),
+                    theme.card(),
                 );
 
                 // Status color
-                let status_theme_color = match status_color {
-                    BadgeColor::Success => theme.success(),
-                    BadgeColor::Error => theme.error(),
-                    BadgeColor::Warning => theme.warning(),
-                    BadgeColor::Info | BadgeColor::Primary => theme.primary(),
-                    BadgeColor::Neutral => theme.on_surface_variant(),
-                };
-
                 ui.painter().circle_filled(
                     badge_rect.center(),
                     badge_size / 2.0,
-                    status_theme_color,
+                    status_color,
                 );
             }
         }

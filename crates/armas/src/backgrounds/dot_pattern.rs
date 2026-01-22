@@ -90,7 +90,7 @@ impl DotPattern {
     pub fn show(&mut self, ui: &mut Ui) -> Response {
         let theme = ui.ctx().armas_theme();
         // Apply theme defaults - use outline color for subtle dot pattern
-        let color = self.color.unwrap_or_else(|| theme.outline());
+        let color = self.color.unwrap_or_else(|| theme.border());
 
         // Determine size
         let size = if self.width.is_some() || self.height.is_some() {

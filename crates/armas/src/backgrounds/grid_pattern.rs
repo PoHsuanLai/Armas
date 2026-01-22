@@ -104,7 +104,7 @@ impl GridPattern {
     pub fn show(&mut self, ui: &mut Ui) -> Response {
         let theme = ui.ctx().armas_theme();
         // Apply theme defaults
-        let outline = theme.outline_variant();
+        let outline = theme.border();
         let color = self.color.unwrap_or_else(|| {
             Color32::from_rgba_unmultiplied(outline.r(), outline.g(), outline.b(), 50)
         });

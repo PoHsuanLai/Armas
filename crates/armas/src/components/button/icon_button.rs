@@ -117,7 +117,7 @@ impl IconButton {
                     } else {
                         theme.primary()
                     };
-                    (Some(bg), theme.on_surface())
+                    (Some(bg), theme.foreground())
                 }
                 ButtonVariant::FilledTonal => {
                     let bg = if response.is_pointer_button_down_on() {
@@ -129,23 +129,23 @@ impl IconButton {
                     } else {
                         theme.secondary()
                     };
-                    (Some(bg), theme.on_surface())
+                    (Some(bg), theme.foreground())
                 }
                 ButtonVariant::Elevated => {
                     let bg = if response.is_pointer_button_down_on() {
-                        theme.surface()
+                        theme.card()
                     } else if response.hovered() {
-                        let mut color = theme.surface();
+                        let mut color = theme.card();
                         color = color.linear_multiply(1.05);
                         color
                     } else {
-                        theme.surface()
+                        theme.card()
                     };
                     (Some(bg), theme.primary())
                 }
                 ButtonVariant::Outlined => {
                     let bg = if response.hovered() {
-                        Some(theme.surface_variant().linear_multiply(0.5))
+                        Some(theme.muted().linear_multiply(0.5))
                     } else {
                         None
                     };
@@ -193,7 +193,7 @@ impl IconButton {
 
             // Draw outline for outlined variant
             if self.variant == ButtonVariant::Outlined {
-                let stroke = egui::Stroke::new(1.0, theme.outline());
+                let stroke = egui::Stroke::new(1.0, theme.border());
                 ui.painter()
                     .rect_stroke(rect, 12.0, stroke, egui::epaint::StrokeKind::Outside);
             }

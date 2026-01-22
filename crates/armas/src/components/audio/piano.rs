@@ -451,9 +451,9 @@ impl Piano {
         let border_color = if is_actively_pressed {
             theme.primary()
         } else if response.hovered() {
-            theme.outline()
+            theme.border()
         } else {
-            theme.outline_variant()
+            theme.border()
         };
         painter.rect_stroke(
             rect,
@@ -573,9 +573,9 @@ impl Piano {
         let border_color = if is_actively_pressed {
             theme.primary()
         } else if response.hovered() {
-            theme.outline()
+            theme.border()
         } else {
-            theme.outline_variant()
+            theme.border()
         };
         painter.rect_stroke(
             rect,
@@ -667,9 +667,9 @@ impl Piano {
         let border_color = if is_actively_pressed {
             theme.primary()
         } else if response.hovered() {
-            theme.outline()
+            theme.border()
         } else {
-            theme.outline_variant()
+            theme.border()
         };
         painter.rect_stroke(
             rect,
@@ -787,9 +787,9 @@ impl Piano {
         let border_color = if is_actively_pressed {
             theme.primary()
         } else if response.hovered() {
-            theme.outline()
+            theme.border()
         } else {
-            theme.outline_variant()
+            theme.border()
         };
         painter.rect_stroke(
             rect,

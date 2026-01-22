@@ -209,62 +209,62 @@ impl Popover {
 
         // Get colors based on color theme
         let (bg_color, border_color) = match self.color {
-            PopoverColor::Surface => (theme.surface(), theme.outline()),
+            PopoverColor::Surface => (theme.card(), theme.border()),
             PopoverColor::Primary => {
                 let base = theme.primary();
                 (
                     egui::Color32::from_rgba_premultiplied(
-                        (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                        (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                        (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
+                        (theme.card().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
+                        (theme.card().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
+                        (theme.card().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
                         255,
                     ),
                     base,
                 )
             }
             PopoverColor::Success => {
-                let base = theme.success();
+                let base = theme.chart_2();
                 (
                     egui::Color32::from_rgba_premultiplied(
-                        (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                        (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                        (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
+                        (theme.card().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
+                        (theme.card().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
+                        (theme.card().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
                         255,
                     ),
                     base,
                 )
             }
             PopoverColor::Warning => {
-                let base = theme.warning();
+                let base = theme.chart_3();
                 (
                     egui::Color32::from_rgba_premultiplied(
-                        (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                        (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                        (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
+                        (theme.card().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
+                        (theme.card().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
+                        (theme.card().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
                         255,
                     ),
                     base,
                 )
             }
             PopoverColor::Error => {
-                let base = theme.error();
+                let base = theme.destructive();
                 (
                     egui::Color32::from_rgba_premultiplied(
-                        (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                        (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                        (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
+                        (theme.card().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
+                        (theme.card().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
+                        (theme.card().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
                         255,
                     ),
                     base,
                 )
             }
             PopoverColor::Info => {
-                let base = theme.info();
+                let base = theme.chart_4();
                 (
                     egui::Color32::from_rgba_premultiplied(
-                        (theme.surface().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                        (theme.surface().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                        (theme.surface().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
+                        (theme.card().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
+                        (theme.card().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
+                        (theme.card().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
                         255,
                     ),
                     base,

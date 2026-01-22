@@ -1,48 +1,35 @@
 # Alert
 
-Inline alert messages with icons and multiple severity levels.
+Inline alert messages with icons.
 
 ## Basic Usage
 
 ```demo
-Alert::new("This is an informational alert", AlertVariant::Info)
+Alert::new("This is an informational alert")
     .show(ui);
 ```
 
 ## Variants
 
-### Info
+### Default (Info)
 
 ```demo
-Alert::new("This is informational", AlertVariant::Info)
+Alert::new("This is informational")
     .show(ui);
 ```
 
-### Success
+### Destructive
 
 ```demo
-Alert::new("Operation completed successfully", AlertVariant::Success)
-    .show(ui);
-```
-
-### Warning
-
-```demo
-Alert::new("Please review before continuing", AlertVariant::Warning)
-    .show(ui);
-```
-
-### Error
-
-```demo
-Alert::new("Something went wrong", AlertVariant::Error)
+Alert::new("Something went wrong")
+    .destructive()
     .show(ui);
 ```
 
 ## With Title
 
 ```demo
-Alert::new("Your changes have been saved to the server", AlertVariant::Success)
+Alert::new("Your changes have been saved to the server")
     .title("Success")
     .show(ui);
 ```
@@ -50,7 +37,7 @@ Alert::new("Your changes have been saved to the server", AlertVariant::Success)
 ## Dismissible
 
 ```demo
-Alert::new("Click the X to dismiss this alert", AlertVariant::Info)
+Alert::new("Click the X to dismiss this alert")
     .dismissible(true)
     .show(ui);
 ```
@@ -58,7 +45,7 @@ Alert::new("Click the X to dismiss this alert", AlertVariant::Info)
 ## Without Icon
 
 ```demo
-Alert::new("Alert without an icon", AlertVariant::Warning)
+Alert::new("Alert without an icon")
     .show_icon(false)
     .show(ui);
 ```
@@ -66,8 +53,16 @@ Alert::new("Alert without an icon", AlertVariant::Warning)
 ## Custom Width
 
 ```demo
-Alert::new("This alert has a custom width", AlertVariant::Info)
+Alert::new("This alert has a custom width")
     .width(400.0)
+    .show(ui);
+```
+
+## Custom Color
+
+```demo
+Alert::new("Alert with custom color")
+    .color(Color32::from_rgb(100, 200, 150))
     .show(ui);
 ```
 
@@ -75,13 +70,15 @@ Alert::new("This alert has a custom width", AlertVariant::Info)
 
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
-| `.variant()` | `AlertVariant` | Required | Alert severity level |
+| `.variant()` | `AlertVariant` | `Info` | Alert variant |
+| `.destructive()` | - | - | Make destructive |
+| `.color()` | `Color32` | theme | Custom accent color |
 | `.title()` | `&str` | `None` | Optional alert title |
 | `.dismissible()` | `bool` | `false` | Show dismiss button |
 | `.show_icon()` | `bool` | `true` | Show variant icon |
 | `.width()` | `f32` | `full` | Custom width |
 
-## Dependencies
+## AlertVariant
 
-- `egui = "0.33"`
-- Theme colors: `primary`, `success`, `warning`, `error`
+- `AlertVariant::Info` - Default informational (default)
+- `AlertVariant::Destructive` - Red for errors/danger

@@ -262,7 +262,7 @@ tooltip.show(ui, &response);
 ui.horizontal(|ui| {
     ui.label("Server Status:");
     let status = ui.colored_label(
-        ui.ctx().armas_theme().success(),
+        ui.ctx().armas_theme().chart_2(),
         "● Online"
     );
     let mut tooltip = Tooltip::new("All systems operational")

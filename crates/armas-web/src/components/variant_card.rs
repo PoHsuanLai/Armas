@@ -70,7 +70,7 @@ impl VariantCard {
                                 egui::RichText::new(code)
                                     .monospace()
                                     .size(11.0)
-                                    .color(theme.on_surface_variant()),
+                                    .color(theme.muted_foreground()),
                             );
                         }
                     });

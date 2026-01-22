@@ -25,8 +25,8 @@ pub use crate::layout::{AspectRatio, ContentMode, Table, TableStyle};
 
 // Common component enums
 pub use crate::components::{
-    AlertVariant, BadgeColor, BadgeVariant, ButtonVariant, DrawerSize, InputState, InputVariant,
-    ModalSize, PopoverPosition, ToastVariant, ToggleSize, ToggleVariant, TooltipPosition,
+    AlertVariant, BadgeVariant, ButtonVariant, DrawerSize, InputState, InputVariant, ModalSize,
+    PopoverPosition, ToastVariant, ToggleSize, ToggleVariant, TooltipPosition,
 };
 
 // Essential interactive components

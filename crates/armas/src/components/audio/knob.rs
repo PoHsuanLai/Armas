@@ -6,6 +6,35 @@
 use crate::theme::Theme;
 use egui::{Color32, Pos2, Response, Sense, Stroke, Ui, Vec2};
 
+/// Response from the knob control
+#[derive(Debug, Clone)]
+pub struct KnobResponse {
+    /// The UI response
+    pub response: Response,
+    /// New knob value (0.0 to 1.0)
+    pub value: f32,
+    /// Whether the value changed this frame
+    pub changed: bool,
+}
+
+impl KnobResponse {
+    /// Check if the value changed this frame
+    pub fn changed(&self) -> bool {
+        self.changed
+    }
+}
+
+/// Knob response curve for different control types
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum KnobCurve {
+    /// Linear response (0.0 to 1.0 mapped directly)
+    Linear,
+    /// Logarithmic response (useful for frequencies, more sensitive at lower values)
+    Logarithmic,
+    /// Exponential response (useful for amplitude, more sensitive at higher values)
+    Exponential,
+}
+
 /// Polished metallic knob with inner glow indicator
 pub struct Knob {
     /// Knob diameter
@@ -24,6 +53,12 @@ pub struct Knob {
     max_angle: f32,
     /// Sensitivity multiplier
     sensitivity: f32,
+    /// Response curve for value mapping
+    curve: KnobCurve,
+    /// Value range (min, max)
+    value_range: (f32, f32),
+    /// Show tick marks
+    show_ticks: bool,
 }
 
 impl Knob {
@@ -38,6 +73,9 @@ impl Knob {
             min_angle: -2.5,
             max_angle: 2.5,
             sensitivity: 0.01, // Increased from 0.005 for better control
+            curve: KnobCurve::Linear,
+            value_range: (0.0, 1.0),
+            show_ticks: false,
         }
     }
 
@@ -84,10 +122,30 @@ impl Knob {
         self
     }
 
+    /// Set knob response curve for different control types
+    pub fn response_curve(mut self, curve: KnobCurve) -> Self {
+        self.curve = curve;
+        self
+    }
+
+    /// Set value range (min, max) for display purposes
+    pub fn value_range(mut self, min: f32, max: f32) -> Self {
+        self.value_range = (min.min(max), min.max(max));
+        self
+    }
+
+    /// Show tick marks at regular intervals
+    pub fn show_ticks(mut self, show: bool) -> Self {
+        self.show_ticks = show;
+        self
+    }
+
     /// Show the knob
-    pub fn show(self, ui: &mut Ui, value: &mut f32, theme: &Theme) -> Response {
+    pub fn show(self, ui: &mut Ui, value: &mut f32, theme: &Theme) -> KnobResponse {
         let desired_size = Vec2::splat(self.diameter);
         let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
+
+        let mut changed = false;
 
         // Handle drag interaction with both vertical and horizontal movement
         if response.dragged() {
@@ -114,6 +172,7 @@ impl Knob {
 
             let delta = primary_delta * sensitivity;
             *value = (*value + delta).clamp(0.0, 1.0);
+            changed = true;
             response.mark_changed();
         }
 
@@ -125,6 +184,7 @@ impl Knob {
                 let wheel_sensitivity = 0.01;
                 let delta = scroll_delta * wheel_sensitivity;
                 *value = (*value + delta).clamp(0.0, 1.0);
+                changed = true;
                 response.mark_changed();
 
                 // Consume the scroll event to prevent page scrolling
@@ -357,7 +417,11 @@ impl Knob {
             );
         }
 
-        response
+        KnobResponse {
+            response,
+            value: *value,
+            changed,
+        }
     }
 
     /// Draw gradient arc for ceramic depth

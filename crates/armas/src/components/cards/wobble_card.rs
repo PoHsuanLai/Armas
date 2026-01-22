@@ -30,8 +30,8 @@ impl WobbleCard {
         Self {
             width,
             height,
-            background: Color32::PLACEHOLDER, // Use theme.surface()
-            border: Some(Color32::PLACEHOLDER), // Use theme.outline_variant()
+            background: Color32::PLACEHOLDER, // Use theme.card()
+            border: Some(Color32::PLACEHOLDER), // Use theme.border()
             corner_radius: 12.0,
             wobble_intensity: 1.0,
             wobble_speed: 8.0,
@@ -82,13 +82,13 @@ impl WobbleCard {
 
         // Use theme colors if not explicitly set
         let background = if self.background == Color32::PLACEHOLDER {
-            theme.surface()
+            theme.card()
         } else {
             self.background
         };
         let border = self.border.map(|b| {
             if b == Color32::PLACEHOLDER {
-                theme.outline_variant()
+                theme.border()
             } else {
                 b
             }

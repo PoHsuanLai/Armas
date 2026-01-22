@@ -46,7 +46,7 @@ impl FlipWords {
             transition_duration: 0.5,
             style: FlipStyle::Vertical,
             font_size: 24.0,
-            color: Color32::PLACEHOLDER, // Will be replaced with theme.on_background()
+            color: Color32::PLACEHOLDER, // Will be replaced with theme.foreground()
             highlight_color: None,
         }
     }
@@ -90,7 +90,7 @@ impl FlipWords {
         let theme = ui.ctx().armas_theme();
         // Use theme color if not explicitly set
         let text_color = if self.color == Color32::PLACEHOLDER {
-            theme.on_background()
+            theme.foreground()
         } else {
             self.color
         };

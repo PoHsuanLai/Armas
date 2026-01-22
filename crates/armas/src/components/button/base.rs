@@ -166,31 +166,31 @@ impl Button {
             // Determine colors and shadow based on variant and state
             let (bg_color, mut text_color, border_color, draw_shadow) = if !enabled {
                 // Disabled state
-                let disabled_bg = theme.surface_variant();
-                let disabled_text = theme.on_surface_variant();
-                (disabled_bg, disabled_text, theme.outline_variant(), false)
+                let disabled_bg = theme.muted();
+                let disabled_text = theme.muted_foreground();
+                (disabled_bg, disabled_text, theme.border(), false)
             } else if response.hovered() {
                 // Hover state
                 match variant {
                     ButtonVariant::Filled => {
-                        let hover_bg = theme.primary().interpolate(&theme.hover(), 0.2);
+                        let hover_bg = theme.primary().interpolate(&theme.accent(), 0.2);
                         // Calculate contrasting text color based on primary color brightness
                         let text_color = Self::contrasting_text_color(theme.primary());
                         (hover_bg, text_color, theme.primary(), false)
                     }
                     ButtonVariant::FilledTonal => {
-                        let hover_bg = theme.secondary().interpolate(&theme.hover(), 0.15);
-                        (hover_bg, theme.on_surface(), theme.secondary(), false)
+                        let hover_bg = theme.secondary().interpolate(&theme.accent(), 0.15);
+                        (hover_bg, theme.foreground(), theme.secondary(), false)
                     }
                     ButtonVariant::Elevated => {
-                        let hover_bg = theme.secondary().interpolate(&theme.hover(), 0.15);
-                        (hover_bg, theme.on_surface(), theme.secondary(), true)
+                        let hover_bg = theme.secondary().interpolate(&theme.accent(), 0.15);
+                        (hover_bg, theme.foreground(), theme.secondary(), true)
                     }
                     ButtonVariant::Outlined => {
-                        (theme.hover(), theme.primary(), theme.primary(), false)
+                        (theme.accent(), theme.primary(), theme.primary(), false)
                     }
                     ButtonVariant::Text => {
-                        (theme.hover(), theme.primary(), Color32::TRANSPARENT, false)
+                        (theme.accent(), theme.primary(), Color32::TRANSPARENT, false)
                     }
                 }
             } else {
@@ -203,21 +203,21 @@ impl Button {
                     }
                     ButtonVariant::FilledTonal => {
                         let tonal_bg = theme.secondary();
-                        (tonal_bg, theme.on_surface(), theme.secondary(), false)
+                        (tonal_bg, theme.foreground(), theme.secondary(), false)
                     }
                     ButtonVariant::Elevated => {
                         let tonal_bg = theme.secondary();
-                        (tonal_bg, theme.on_surface(), theme.secondary(), true)
+                        (tonal_bg, theme.foreground(), theme.secondary(), true)
                     }
                     ButtonVariant::Outlined => (
                         Color32::TRANSPARENT,
-                        theme.on_surface(),
+                        theme.foreground(),
                         theme.primary(),
                         false,
                     ),
                     ButtonVariant::Text => (
                         Color32::TRANSPARENT,
-                        theme.on_surface(),
+                        theme.foreground(),
                         Color32::TRANSPARENT,
                         false,
                     ),

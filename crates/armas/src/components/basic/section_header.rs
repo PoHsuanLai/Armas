@@ -52,7 +52,7 @@ impl<'a> SectionHeader<'a> {
                 egui::Label::new(
                     egui::RichText::new(self.label)
                         .size(16.0)
-                        .color(theme.on_surface()),
+                        .color(theme.foreground()),
                 )
                 .sense(egui::Sense::click()),
             )

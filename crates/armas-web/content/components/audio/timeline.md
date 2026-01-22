@@ -375,6 +375,46 @@ if selected_tracks.is_empty() {
 }
 ```
 
+## Clip Editing Features
+
+Timeline supports professional clip editing with fades, gain, and interactive handles:
+
+```demo
+let theme = ui.ctx().armas_theme();
+
+// Create fade settings with S-curve
+let s_curve_fades = FadeSettings::new(0.4, 0.4)
+    .fade_in_curve(FadeCurve::SCurve)
+    .fade_out_curve(FadeCurve::SCurve);
+
+let mut tracks = vec![
+    Track::new("Audio", egui::Color32::from_rgb(100, 180, 255))
+        .regions(vec![
+            Region::new("With Fades", 0.0, 3.0)
+                .fade_in(0.5)
+                .fade_out(0.5)
+                .selected(true),
+            Region::new("Boosted", 4.0, 2.0)
+                .gain_db(6.0)
+                .selected(true),
+        ]),
+    Track::new("MIDI", egui::Color32::from_rgb(255, 150, 100))
+        .region(Region::midi("Piano", 0.0, 6.0)
+            .fades(s_curve_fades)
+            .selected(true)),
+];
+
+let mut playhead_pos = 0.0;
+
+Timeline::new()
+    .id(ui.id().with("clip_editing_timeline"))
+    .track_header_width(100.0)
+    .track_height(80.0)
+    .beat_width(60.0)
+    .measures(8)
+    .show(ui, &mut tracks, &mut playhead_pos, &theme);
+```
+
 ## Advanced Features
 
 ### Auto-Follow Playhead

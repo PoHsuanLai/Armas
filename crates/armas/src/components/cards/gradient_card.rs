@@ -209,7 +209,7 @@ impl GradientCard {
         }
 
         // Draw background
-        let bg_color = self.background_color.unwrap_or(theme.surface());
+        let bg_color = self.background_color.unwrap_or(theme.card());
         ui.painter().rect_filled(
             inner_rect,
             (theme.spacing.corner_radius as f32 - self.border_width / 2.0).max(0.0),

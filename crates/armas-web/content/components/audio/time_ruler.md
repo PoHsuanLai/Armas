@@ -291,32 +291,32 @@ The ruler uses three levels of visual emphasis:
 **Measure Lines (Strongest):**
 - 2.0px stroke width
 - Full height (100%)
-- `theme.outline()` color
+- `theme.border()` color
 - Marks measure boundaries
 
 **Beat Lines (Medium):**
 - 1.5px stroke width
 - 60% height
-- `theme.outline()` color
+- `theme.border()` color
 - Marks each beat within measures
 
 **Subdivision Lines (Subtle):**
 - 0.5px stroke width
 - 30% height
-- `theme.outline_variant()` color
+- `theme.border()` color
 - Marks subdivisions based on `.division()`
 
 ### Typography
 
-- **Measure numbers**: 11px, `theme.on_surface()` (prominent)
-- **Beat numbers**: 9px, `theme.on_surface_variant()` (subtle)
+- **Measure numbers**: 11px, `theme.foreground()` (prominent)
+- **Beat numbers**: 9px, `theme.muted_foreground()` (subtle)
 - **Alignment**: Left-aligned with small offset
 
 ### Background
 
-- Color: `theme.surface()`
+- Color: `theme.card()`
 - Corner radius: `theme.spacing.corner_radius_small` (8px)
-- Bottom border: 1px `theme.outline_variant()`
+- Bottom border: 1px `theme.border()`
 
 ## Synchronization with PianoRollGrid
 

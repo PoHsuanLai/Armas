@@ -27,7 +27,7 @@ impl GlowingBorder {
             width: None,
             height: None,
             glow_color: Color32::PLACEHOLDER, // Will use theme.primary()
-            background: Color32::PLACEHOLDER, // Will use theme.surface()
+            background: Color32::PLACEHOLDER, // Will use theme.card()
             corner_radius: 12.0,
             border_width: 2.0,
             glow_intensity: 1.0,
@@ -106,7 +106,7 @@ impl GlowingBorder {
             self.glow_color
         };
         let background = if self.background == Color32::PLACEHOLDER {
-            theme.surface()
+            theme.card()
         } else {
             self.background
         };

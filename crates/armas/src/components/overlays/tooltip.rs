@@ -107,7 +107,7 @@ impl Tooltip {
         let text_galley = ui.painter().layout(
             self.text.clone(),
             font_id,
-            theme.on_surface(),
+            theme.foreground(),
             self.max_width - 16.0, // Account for padding
         );
 
@@ -127,13 +127,13 @@ impl Tooltip {
         let painter = ui.ctx().layer_painter(layer_id);
 
         // Background
-        painter.rect_filled(tooltip_rect, 4.0, theme.surface_variant());
+        painter.rect_filled(tooltip_rect, 4.0, theme.muted());
 
         // Border
         painter.rect_stroke(
             tooltip_rect,
             4.0,
-            Stroke::new(1.0, theme.outline().linear_multiply(0.3)),
+            Stroke::new(1.0, theme.border().linear_multiply(0.3)),
             StrokeKind::Outside,
         );
 
@@ -143,7 +143,7 @@ impl Tooltip {
         }
 
         // Text
-        painter.galley(tooltip_rect.min + padding, text_galley, theme.on_surface());
+        painter.galley(tooltip_rect.min + padding, text_galley, theme.foreground());
 
         // Allocate a response for the tooltip area
         ui.allocate_rect(tooltip_rect, egui::Sense::hover())
@@ -233,8 +233,8 @@ impl Tooltip {
         position: TooltipPosition,
     ) {
         let arrow_size = 6.0;
-        let color = theme.surface_variant();
-        let border_color = theme.outline().linear_multiply(0.3);
+        let color = theme.muted();
+        let border_color = theme.border().linear_multiply(0.3);
 
         let (tip, base1, base2) = match position {
             TooltipPosition::Top => {

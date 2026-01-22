@@ -10,6 +10,13 @@ use crate::ext::ArmasContextExt;
 use crate::theme::Theme;
 use egui;
 
+/// Response from the slot component
+#[derive(Debug, Clone)]
+pub struct SlotResponse {
+    /// The UI response
+    pub response: egui::Response,
+}
+
 /// Plugin/effect insert slot component
 ///
 /// Displays a plugin or effect insert with:
@@ -105,7 +112,7 @@ impl<'a> Slot<'a> {
     }
 
     /// Show the slot component
-    pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
+    pub fn show(self, ui: &mut egui::Ui) -> SlotResponse {
         let theme = ui.ctx().armas_theme();
         let font_size = ui.spacing().interact_size.y * 0.4;
         let (rect, response) =
@@ -117,16 +124,16 @@ impl<'a> Slot<'a> {
         let (mut box_color, mut border_color, mut text_color) = if let Some(name) = self.name {
             let effect_color = get_effect_color(name, &theme);
             let border = if self.bypassed {
-                theme.on_surface_variant()
+                theme.muted_foreground()
             } else {
                 effect_color.gamma_multiply(1.3)
             };
-            (effect_color, border, theme.on_surface())
+            (effect_color, border, theme.foreground())
         } else {
             (
-                theme.surface(),
-                theme.outline_variant(),
-                theme.on_surface_variant(),
+                theme.card(),
+                theme.border(),
+                theme.muted_foreground(),
             )
         };
 
@@ -199,11 +206,11 @@ impl<'a> Slot<'a> {
             if self.bypassed {
                 let bypass_pos =
                     rect.right_center() - egui::vec2(MINI_METER_WIDTH + theme.spacing.md, 0.0);
-                ui.painter().circle_filled(bypass_pos, 3.0, theme.warning());
+                ui.painter().circle_filled(bypass_pos, 3.0, theme.chart_3());
             }
         }
 
-        response
+        SlotResponse { response }
     }
 }
 
@@ -212,15 +219,15 @@ fn get_effect_color(name: &str, theme: &Theme) -> egui::Color32 {
     let lower = name.to_lowercase();
 
     if lower.contains("reverb") || lower.contains("delay") || lower.contains("echo") {
-        theme.info() // Blue - spatial/time-based effects
+        theme.chart_4() // Blue - spatial/time-based effects
     } else if lower.contains("eq") || lower.contains("filter") {
-        theme.success() // Green - corrective/clean effects
+        theme.chart_2() // Green - corrective/clean effects
     } else if lower.contains("comp") || lower.contains("limit") || lower.contains("gate") {
-        theme.warning() // Orange - dynamic effects
+        theme.chart_3() // Orange - dynamic effects
     } else if lower.contains("chorus") || lower.contains("flanger") || lower.contains("phaser") {
         theme.secondary() // Purple - modulation effects
     } else if lower.contains("dist") || lower.contains("drive") || lower.contains("satur") {
-        theme.error() // Red - distortion/aggressive effects
+        theme.destructive() // Red - distortion/aggressive effects
     } else {
         theme.primary()
     }

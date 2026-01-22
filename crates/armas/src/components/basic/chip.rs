@@ -166,7 +166,7 @@ impl Chip {
         let label_galley = ui.painter().layout_no_wrap(
             self.label.clone(),
             egui::FontId::proportional(font_size),
-            theme.on_surface(),
+            theme.foreground(),
         );
         content_width += label_galley.size().x;
 
@@ -293,9 +293,9 @@ impl Chip {
     ) -> (Color32, Color32, Color32) {
         if self.disabled {
             return (
-                theme.surface_variant().linear_multiply(0.5),
-                theme.outline_variant().linear_multiply(0.5),
-                theme.on_surface().linear_multiply(0.4),
+                theme.muted().linear_multiply(0.5),
+                theme.border().linear_multiply(0.5),
+                theme.foreground().linear_multiply(0.4),
             );
         }
 
@@ -305,15 +305,15 @@ impl Chip {
                 let bg = if self.selected {
                     theme.primary().linear_multiply(0.2)
                 } else if visuals.bg_fill != Color32::TRANSPARENT {
-                    theme.surface_variant().linear_multiply(1.1)
+                    theme.muted().linear_multiply(1.1)
                 } else {
-                    theme.surface_variant()
+                    theme.muted()
                 };
-                let border = theme.outline_variant();
+                let border = theme.border();
                 let text = if self.selected {
                     theme.primary()
                 } else {
-                    theme.on_surface()
+                    theme.foreground()
                 };
                 (bg, border, text)
             }
@@ -326,21 +326,21 @@ impl Chip {
                         theme.primary(),
                     )
                 } else {
-                    (theme.surface(), theme.outline(), theme.on_surface_variant())
+                    (theme.card(), theme.border(), theme.muted_foreground())
                 }
             }
             ChipType::Input => {
                 // Similar to Assist but with remove button
                 let bg = if visuals.bg_fill != Color32::TRANSPARENT {
-                    theme.surface_variant().linear_multiply(1.1)
+                    theme.muted().linear_multiply(1.1)
                 } else {
-                    theme.surface_variant()
+                    theme.muted()
                 };
-                (bg, theme.outline_variant(), theme.on_surface())
+                (bg, theme.border(), theme.foreground())
             }
             ChipType::Suggestion => {
                 // Outlined style
-                (theme.surface(), theme.outline(), theme.on_surface_variant())
+                (theme.card(), theme.border(), theme.muted_foreground())
             }
         }
     }

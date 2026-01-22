@@ -34,8 +34,8 @@ impl MovingBorder {
                 Color32::PLACEHOLDER,
                 Color32::PLACEHOLDER,
             ],
-            background: Color32::PLACEHOLDER, // Will use theme.surface()
-            text_color: Color32::PLACEHOLDER, // Will use theme.on_surface()
+            background: Color32::PLACEHOLDER, // Will use theme.card()
+            text_color: Color32::PLACEHOLDER, // Will use theme.foreground()
             corner_radius: 8.0,
             animation_speed: 1.0,
         }
@@ -97,12 +97,12 @@ impl MovingBorder {
 
         // Use theme colors if not explicitly set
         let background = if self.background == Color32::PLACEHOLDER {
-            theme.surface()
+            theme.card()
         } else {
             self.background
         };
         let text_color = if self.text_color == Color32::PLACEHOLDER {
-            theme.on_surface()
+            theme.foreground()
         } else {
             self.text_color
         };
@@ -196,7 +196,7 @@ impl MovingBorder {
 
             // Add hover effect
             if response.hovered() {
-                let on_surface = theme.on_surface();
+                let on_surface = theme.foreground();
                 painter.rect_filled(
                     rect,
                     CornerRadius::same(theme.spacing.corner_radius),

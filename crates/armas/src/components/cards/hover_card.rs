@@ -27,13 +27,13 @@ pub struct HoverCard {
 impl HoverCard {
     /// Create a new hover card with theme-based defaults
     pub fn new(width: f32, height: f32, theme: &Theme) -> Self {
-        let outline = theme.outline_variant();
+        let outline = theme.border();
         Self {
             width,
             height,
             corner_radius: 12.0,
-            background: theme.surface(),
-            hover_background: theme.surface_variant(),
+            background: theme.card(),
+            hover_background: theme.muted(),
             border_color: Some(Color32::from_rgba_unmultiplied(
                 outline.r(),
                 outline.g(),

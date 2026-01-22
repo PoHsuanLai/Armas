@@ -307,8 +307,8 @@ impl Skeleton {
         Self {
             width,
             height,
-            base_color: None,      // Will use theme.surface_variant()
-            highlight_color: None, // Will use theme.surface()
+            base_color: None,      // Will use theme.muted()
+            highlight_color: None, // Will use theme.card()
             shimmer_pos: 0.0,
             speed: 0.5,
             corner_radius: None, // Will use theme.spacing.xs
@@ -370,8 +370,8 @@ impl Skeleton {
         let painter = ui.painter();
 
         // Use custom colors or theme defaults
-        let base_color = self.base_color.unwrap_or_else(|| theme.surface_variant());
-        let highlight_color = self.highlight_color.unwrap_or_else(|| theme.surface());
+        let base_color = self.base_color.unwrap_or_else(|| theme.muted());
+        let highlight_color = self.highlight_color.unwrap_or_else(|| theme.card());
         let corner_radius = self.corner_radius.unwrap_or(theme.spacing.xs);
 
         // Draw base rectangle

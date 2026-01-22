@@ -40,51 +40,26 @@ Badge::new("Soft")
 
 ## Colors
 
-### Primary
+### Default (Primary)
 
 ```demo
 Badge::new("Primary")
-    .color(BadgeColor::Primary)
     .show(ui);
 ```
 
-### Success
-
-```demo
-Badge::new("Success")
-    .color(BadgeColor::Success)
-    .show(ui);
-```
-
-### Warning
-
-```demo
-Badge::new("Warning")
-    .color(BadgeColor::Warning)
-    .show(ui);
-```
-
-### Error
+### Destructive
 
 ```demo
 Badge::new("Error")
-    .color(BadgeColor::Error)
+    .destructive()
     .show(ui);
 ```
 
-### Info
+### Custom Color
 
 ```demo
-Badge::new("Info")
-    .color(BadgeColor::Info)
-    .show(ui);
-```
-
-### Neutral
-
-```demo
-Badge::new("Neutral")
-    .color(BadgeColor::Neutral)
+Badge::new("Custom")
+    .color(Color32::from_rgb(100, 200, 150))
     .show(ui);
 ```
 
@@ -97,7 +72,7 @@ Badge::new("New")
 ui.add_space(8.0);
 Badge::new("5 Notifications")
     .dot()
-    .color(BadgeColor::Error)
+    .destructive()
     .show(ui);
 ```
 
@@ -137,17 +112,16 @@ if response.removed {
 ui.horizontal(|ui| {
     Badge::new("Active")
         .variant(BadgeVariant::Filled)
-        .color(BadgeColor::Success)
+        .color(theme.chart_2())
         .show(ui);
     ui.add_space(8.0);
-    Badge::new("Pending")
+    Badge::new("Error")
         .variant(BadgeVariant::Soft)
-        .color(BadgeColor::Warning)
+        .destructive()
         .show(ui);
     ui.add_space(8.0);
     Badge::new("Inactive")
         .variant(BadgeVariant::Outlined)
-        .color(BadgeColor::Neutral)
         .show(ui);
 });
 ```
@@ -159,7 +133,7 @@ ui.horizontal(|ui| {
     ui.label("Messages");
     Badge::new("12")
         .variant(BadgeVariant::Filled)
-        .color(BadgeColor::Error)
+        .destructive()
         .show(ui);
 });
 ```
@@ -183,7 +157,8 @@ ui.horizontal(|ui| {
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
 | `.variant()` | `BadgeVariant` | `Soft` | Visual style variant |
-| `.color()` | `BadgeColor` | `Primary` | Color theme |
+| `.color()` | `Color32` | `primary` | Custom color |
+| `.destructive()` | - | - | Make destructive (red) |
 | `.dot()` | - | `false` | Show dot indicator |
 | `.size()` | `f32` | `13.0` | Font size |
 | `.removable()` | - | `false` | Show remove button |
@@ -194,23 +169,9 @@ ui.horizontal(|ui| {
 - `BadgeVariant::Outlined` - Border only
 - `BadgeVariant::Soft` - Subtle background (default)
 
-## Colors
-
-- `BadgeColor::Primary` - Primary theme color
-- `BadgeColor::Success` - Green (positive)
-- `BadgeColor::Warning` - Yellow (caution)
-- `BadgeColor::Error` - Red (danger)
-- `BadgeColor::Info` - Blue (informational)
-- `BadgeColor::Neutral` - Gray (default)
-
 ## Response
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `removed` | `bool` | Whether remove button was clicked |
 | `response` | `Response` | Underlying egui response |
-
-## Dependencies
-
-- `egui = "0.33"`
-- Theme colors: `primary`, `success`, `warning`, `error`, `info`, `outline`

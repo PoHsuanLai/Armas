@@ -6,6 +6,17 @@ use crate::components::cards::{Card, CardVariant};
 use crate::ext::ArmasContextExt;
 use egui::{Response, TextEdit, Ui};
 
+/// Response from the input field
+#[derive(Debug, Clone)]
+pub struct InputResponse {
+    /// The UI response
+    pub response: Response,
+    /// Current text value
+    pub text: String,
+    /// Whether text changed this frame
+    pub changed: bool,
+}
+
 /// Input field variant
 ///
 /// Material Design 3 specifies two primary text field variants:
@@ -144,7 +155,7 @@ impl Input {
     }
 
     /// Show the input field
-    pub fn show(self, ui: &mut Ui, text: &mut String) -> Response {
+    pub fn show(self, ui: &mut Ui, text: &mut String) -> InputResponse {
         let theme = ui.ctx().armas_theme();
 
         // Load state from memory if ID is set
@@ -186,7 +197,7 @@ impl Input {
                 ui.label(
                     egui::RichText::new(label)
                         .size(14.0)
-                        .color(theme.on_surface()),
+                        .color(theme.foreground()),
                 );
             }
 
@@ -197,7 +208,7 @@ impl Input {
                     ui.label(
                         egui::RichText::new(icon)
                             .size(16.0)
-                            .color(theme.on_surface_variant()),
+                            .color(theme.muted_foreground()),
                     );
                 }
 
@@ -233,7 +244,7 @@ impl Input {
                     ui.label(
                         egui::RichText::new(icon)
                             .size(16.0)
-                            .color(theme.on_surface_variant()),
+                            .color(theme.muted_foreground()),
                     );
                 }
 
@@ -246,9 +257,9 @@ impl Input {
                         InputVariant::Outlined => (CardVariant::Outlined, None),
                         InputVariant::Inline => unreachable!(), // Already handled above
                     },
-                    InputState::Success => (CardVariant::Outlined, Some(theme.success())),
-                    InputState::Error => (CardVariant::Outlined, Some(theme.error())),
-                    InputState::Warning => (CardVariant::Outlined, Some(theme.warning())),
+                    InputState::Success => (CardVariant::Outlined, Some(theme.chart_2())),
+                    InputState::Error => (CardVariant::Outlined, Some(theme.destructive())),
+                    InputState::Warning => (CardVariant::Outlined, Some(theme.chart_3())),
                 };
 
                 // Create card for input with minimal padding
@@ -270,7 +281,7 @@ impl Input {
                             ui.label(
                                 egui::RichText::new(icon)
                                     .size(16.0)
-                                    .color(theme.on_surface_variant()),
+                                    .color(theme.muted_foreground()),
                             );
                         }
 
@@ -305,7 +316,7 @@ impl Input {
                             ui.label(
                                 egui::RichText::new(icon)
                                     .size(16.0)
-                                    .color(theme.on_surface_variant()),
+                                    .color(theme.muted_foreground()),
                             );
                         }
                     });
@@ -318,10 +329,10 @@ impl Input {
             if let Some(helper) = &self.helper_text {
                 ui.add_space(theme.spacing.xs);
                 let helper_color = match self.state {
-                    InputState::Normal => theme.on_surface_variant(),
-                    InputState::Success => theme.success(),
-                    InputState::Error => theme.error(),
-                    InputState::Warning => theme.warning(),
+                    InputState::Normal => theme.muted_foreground(),
+                    InputState::Success => theme.chart_2(),
+                    InputState::Error => theme.destructive(),
+                    InputState::Warning => theme.chart_3(),
                 };
                 ui.label(egui::RichText::new(helper).size(12.0).color(helper_color));
             }
@@ -337,10 +348,19 @@ impl Input {
             response
         };
 
-        if has_extras {
+        let response = if has_extras {
             ui.vertical(render_input).inner
         } else {
             render_input(ui)
+        };
+
+        let changed = response.changed();
+        let text_clone = text.clone();
+
+        InputResponse {
+            response,
+            text: text_clone,
+            changed,
         }
     }
 }
@@ -381,7 +401,7 @@ impl SearchInput {
     }
 
     /// Show the search input
-    pub fn show(self, ui: &mut Ui, text: &mut String) -> Response {
+    pub fn show(self, ui: &mut Ui, text: &mut String) -> InputResponse {
         let mut input = Input::new(&self.placeholder)
             .variant(InputVariant::Filled)
             .left_icon("🔍")

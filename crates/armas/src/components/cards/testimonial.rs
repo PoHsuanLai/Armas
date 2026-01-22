@@ -154,9 +154,9 @@ impl TestimonialCard {
 
         // Background - use standard style
         let bg_color = if self.hover_effect && is_hovered {
-            theme.surface_variant()
+            theme.muted()
         } else {
-            theme.surface()
+            theme.card()
         };
 
         ui.painter().rect_filled(rect, 8.0, bg_color);
@@ -166,7 +166,7 @@ impl TestimonialCard {
             ui.painter().rect_stroke(
                 rect,
                 8.0,
-                egui::Stroke::new(1.0, theme.outline_variant()),
+                egui::Stroke::new(1.0, theme.border()),
                 egui::StrokeKind::Middle,
             );
         }
@@ -179,14 +179,14 @@ impl TestimonialCard {
         let quote_galley = ui.painter().layout(
             self.item.quote.clone(),
             egui::FontId::proportional(15.0),
-            theme.on_surface(),
+            theme.foreground(),
             content_rect.width(),
         );
         let quote_height = quote_galley.rect.height();
         ui.painter().galley(
             Pos2::new(content_rect.min.x, y),
             quote_galley,
-            theme.on_surface(),
+            theme.foreground(),
         );
         y += quote_height + 20.0;
 
@@ -218,14 +218,14 @@ impl TestimonialCard {
                 egui::Align2::LEFT_TOP,
                 &self.item.author,
                 egui::FontId::proportional(14.0),
-                theme.on_surface(),
+                theme.foreground(),
             );
             ui.painter().text(
                 Pos2::new(info_x, y + 24.0),
                 egui::Align2::LEFT_TOP,
                 &self.item.role,
                 egui::FontId::proportional(12.0),
-                theme.on_surface_variant(),
+                theme.muted_foreground(),
             );
         } else {
             // No avatar, just text
@@ -234,14 +234,14 @@ impl TestimonialCard {
                 egui::Align2::LEFT_TOP,
                 &self.item.author,
                 egui::FontId::proportional(14.0),
-                theme.on_surface(),
+                theme.foreground(),
             );
             ui.painter().text(
                 Pos2::new(author_x, y + 18.0),
                 egui::Align2::LEFT_TOP,
                 &self.item.role,
                 egui::FontId::proportional(12.0),
-                theme.on_surface_variant(),
+                theme.muted_foreground(),
             );
         }
 

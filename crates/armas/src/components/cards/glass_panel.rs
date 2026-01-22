@@ -14,6 +14,8 @@ pub struct GlassPanel<'a> {
     pub glow_intensity: f32,
     /// Custom width (None = fill available)
     pub width: Option<f32>,
+    /// Custom height (None = fill available)
+    pub height: Option<f32>,
     /// Blur amount (cosmetic, egui doesn't support actual blur)
     pub blur_amount: f32,
     /// Opacity level (0.0-1.0)
@@ -31,6 +33,7 @@ impl<'a> GlassPanel<'a> {
             title: None,
             glow_intensity: 0.3,
             width: None,
+            height: None,
             blur_amount: 10.0,
             opacity: 0.7,
             corner_radius: None,
@@ -53,6 +56,12 @@ impl<'a> GlassPanel<'a> {
     /// Set custom width
     pub fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
+        self
+    }
+
+    /// Set custom height
+    pub fn height(mut self, height: f32) -> Self {
+        self.height = Some(height);
         self
     }
 
@@ -90,7 +99,7 @@ impl<'a> GlassPanel<'a> {
         // Translucent background (glassmorphic effect)
         // Note: egui doesn't support backdrop blur, so we simulate with semi-transparent surface
         let glass_color = {
-            let surface = theme.surface();
+            let surface = theme.card();
             egui::Color32::from_rgba_unmultiplied(
                 surface.r(),
                 surface.g(),
@@ -116,38 +125,65 @@ impl<'a> GlassPanel<'a> {
         let inner_margin_val = self.inner_margin.unwrap_or(theme.spacing.md);
         let mut content_result = None;
 
-        // Create a vertical scope to constrain width if specified
-        let frame_response = if let Some(width) = self.width {
-            ui.vertical(|ui| {
-                ui.set_max_width(width);
+        // Create a scope to constrain width and/or height if specified
+        let frame_response = if self.width.is_some() || self.height.is_some() {
+            let (width, height) = (
+                self.width.unwrap_or(ui.available_width()),
+                self.height.unwrap_or(ui.available_height()),
+            );
 
-                egui::Frame::new()
-                    .fill(glass_color)
-                    .corner_radius(CornerRadius::same(corner_rad))
-                    .stroke(egui::Stroke::new(1.0, theme.outline_variant()))
-                    .inner_margin(inner_margin_val)
-                    .show(ui, |ui| {
-                        // Title if provided
-                        if let Some(title) = self.title {
-                            ui.label(
-                                egui::RichText::new(title)
-                                    .size(ui.spacing().interact_size.y * 0.7)
-                                    .color(theme.on_surface())
-                                    .strong(),
-                            );
-                            ui.add_space(theme.spacing.sm);
-                        }
+            // Generate a unique ID for this scroll area based on the title or position
+            let scroll_id = if let Some(title) = self.title {
+                egui::Id::new("glass_panel_scroll").with(title)
+            } else {
+                ui.next_auto_id()
+            };
 
-                        // User content
-                        content_result = Some(content(ui));
+            ui.allocate_ui_with_layout(
+                egui::vec2(width, height),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| {
+                    // Use ScrollArea with fixed size to strictly enforce dimensions
+                    egui::ScrollArea::both()
+                        .id_source(scroll_id)
+                        .auto_shrink([false; 2])
+                        .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysHidden)
+                        .max_width(width)
+                        .max_height(height)
+                        .show(ui, |ui| {
+                        ui.set_width(width);
+                        ui.set_height(height);
+
+                        egui::Frame::new()
+                            .fill(glass_color)
+                            .corner_radius(CornerRadius::same(corner_rad))
+                            .stroke(egui::Stroke::new(1.0, theme.border()))
+                            .inner_margin(inner_margin_val)
+                            .show(ui, |ui| {
+                                // Title if provided
+                                if let Some(title) = self.title {
+                                    ui.label(
+                                        egui::RichText::new(title)
+                                            .size(ui.spacing().interact_size.y * 0.7)
+                                            .color(theme.foreground())
+                                            .strong(),
+                                    );
+                                    ui.add_space(theme.spacing.sm);
+                                }
+
+                                // User content
+                                content_result = Some(content(ui));
+                            })
                     })
-            })
+                },
+            )
+            .inner
             .inner
         } else {
             egui::Frame::new()
                 .fill(glass_color)
                 .corner_radius(CornerRadius::same(corner_rad))
-                .stroke(egui::Stroke::new(1.0, theme.outline_variant()))
+                .stroke(egui::Stroke::new(1.0, theme.border()))
                 .inner_margin(inner_margin_val)
                 .show(ui, |ui| {
                     // Title if provided
@@ -155,7 +191,7 @@ impl<'a> GlassPanel<'a> {
                         ui.label(
                             egui::RichText::new(title)
                                 .size(ui.spacing().interact_size.y * 0.7)
-                                .color(theme.on_surface())
+                                .color(theme.foreground())
                                 .strong(),
                         );
                         ui.add_space(theme.spacing.sm);
@@ -174,7 +210,7 @@ impl<'a> GlassPanel<'a> {
         ui.painter().rect_filled(
             shimmer_rect,
             CornerRadius::same(corner_rad),
-            theme.outline_variant(),
+            theme.border(),
         );
 
         // Draw glow border if intensity > 0

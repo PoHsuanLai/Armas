@@ -102,9 +102,9 @@ if button_response.clicked() {
 
 let mut menu = Menu::new("badges").open(is_open);
 let response = menu.show(ui.ctx(), button_response.rect, |menu| {
-    menu.item("Messages").badge("5", BadgeColor::Primary);
-    menu.item("Notifications").badge("12", BadgeColor::Error);
-    menu.item("Updates").badge("New", BadgeColor::Success);
+    menu.item("Messages").badge("5", theme.primary());
+    menu.item("Notifications").badge("12", theme.destructive());
+    menu.item("Updates").badge("New", theme.chart_2());
 });
 
 if response.clicked_outside || response.selected.is_some() {
@@ -233,7 +233,7 @@ ui.ctx().data_mut(|d| {
 |--------|------|-------------|
 | `.icon()` | `&str` | Add icon (emoji) |
 | `.shortcut()` | `&str` | Add keyboard shortcut |
-| `.badge()` | `(&str, BadgeColor)` | Add badge |
+| `.badge()` | `(&str, Color32)` | Add badge with color |
 | `.disabled()` | `bool` | Disable item |
 
 ### MenuResponse

@@ -8,6 +8,17 @@ use crate::color::{lerp_color, with_alpha, ColorStop, Gradient};
 use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
+/// Response from the audio meter
+#[derive(Debug, Clone)]
+pub struct MeterResponse {
+    /// The UI response
+    pub response: Response,
+    /// Current meter level (0.0 to 1.0)
+    pub level: f32,
+    /// Current peak hold value
+    pub peak: f32,
+}
+
 /// Visual style for the meter display
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MeterStyle {
@@ -96,6 +107,10 @@ pub struct AudioMeter {
     background_opacity: f32,
     /// Enable glassmorphic background
     glassmorphic: bool,
+    /// Animation stiffness (higher = faster response)
+    animation_stiffness: f32,
+    /// Animation damping (higher = less oscillation)
+    animation_damping: f32,
 }
 
 impl AudioMeter {
@@ -118,6 +133,8 @@ impl AudioMeter {
             corner_radius: 16.0,
             background_opacity: 0.3,
             glassmorphic: true,
+            animation_stiffness: 250.0,
+            animation_damping: 18.0,
         }
     }
 
@@ -156,9 +173,9 @@ impl AudioMeter {
     /// Preset: Traditional VU meter colors (green -> yellow -> red)
     pub fn vu_colors(mut self, theme: &crate::Theme) -> Self {
         self.gradient = Some(Gradient::new(vec![
-            ColorStop::new(0.0, theme.success()),
-            ColorStop::new(0.7, theme.warning()),
-            ColorStop::new(0.9, theme.error()),
+            ColorStop::new(0.0, theme.chart_2()),
+            ColorStop::new(0.7, theme.chart_3()),
+            ColorStop::new(0.9, theme.destructive()),
         ]));
         self
     }
@@ -219,6 +236,20 @@ impl AudioMeter {
         self
     }
 
+    /// Set animation speed (stiffness parameter, higher = faster response)
+    /// Default is 250.0, try 150.0 for slower, 400.0 for very fast
+    pub fn animation_speed(mut self, stiffness: f32) -> Self {
+        self.animation_stiffness = stiffness.max(10.0);
+        self
+    }
+
+    /// Set animation damping (higher = less oscillation/bounce)
+    /// Default is 18.0, try 12.0 for more responsive, 25.0 for smoother
+    pub fn animation_damping(mut self, damping: f32) -> Self {
+        self.animation_damping = damping.max(1.0);
+        self
+    }
+
     /// Update the target level (call this when audio level changes)
     pub fn set_level(&mut self, level: f32) {
         self.target_level = level.clamp(0.0, 1.0);
@@ -226,7 +257,7 @@ impl AudioMeter {
     }
 
     /// Show the meter and return the response
-    pub fn show(mut self, ui: &mut Ui) -> Response {
+    pub fn show(mut self, ui: &mut Ui) -> MeterResponse {
         let theme = ui.ctx().armas_theme();
 
         // Width only controls the meter tube, scale is additional space
@@ -284,7 +315,7 @@ impl AudioMeter {
             // Draw glassmorphic background
             if self.glassmorphic {
                 // Brighter border for glass edge
-                let border_color = with_alpha(theme.outline_variant(), 150);
+                let border_color = with_alpha(theme.border(), 150);
                 ui.painter().rect_stroke(
                     meter_rect,
                     self.corner_radius,
@@ -354,7 +385,11 @@ impl AudioMeter {
             }
         }
 
-        response
+        MeterResponse {
+            response,
+            level: current_level,
+            peak: self.peak_hold,
+        }
     }
 
     /// Draw smooth gradient meter fill
@@ -506,7 +541,7 @@ impl AudioMeter {
     /// meter_rect: just the meter bar area (for positioning scale relative to meter)
     fn draw_scale(&self, ui: &mut Ui, full_rect: Rect, meter_rect: Rect, theme: &crate::Theme) {
         let painter = ui.painter();
-        let text_color = theme.on_surface_variant();
+        let text_color = theme.muted_foreground();
 
         // dB levels with proper logarithmic scaling
         // Formula: linear = 10^(dB/20)

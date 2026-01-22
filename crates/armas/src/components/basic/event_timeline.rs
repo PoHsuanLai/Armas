@@ -213,7 +213,7 @@ impl<'a> TimelineBuilder<'a> {
                 let galley = self.ui.painter().layout_no_wrap(
                     item.description.clone(),
                     egui::FontId::proportional(14.0),
-                    theme.on_surface_variant(),
+                    theme.muted_foreground(),
                 );
                 galley.rect.height().min(100.0)
             };
@@ -234,7 +234,7 @@ impl<'a> TimelineBuilder<'a> {
 
                 self.ui.painter().line_segment(
                     [line_start, line_end],
-                    egui::Stroke::new(self.line_width, theme.outline_variant()),
+                    egui::Stroke::new(self.line_width, theme.border()),
                 );
             }
 
@@ -242,7 +242,7 @@ impl<'a> TimelineBuilder<'a> {
             let dot_color = if item.highlighted {
                 theme.primary()
             } else {
-                theme.outline()
+                theme.border()
             };
 
             if let Some(icon) = &item.icon {
@@ -294,15 +294,15 @@ impl<'a> TimelineBuilder<'a> {
                     egui::Align2::RIGHT_TOP,
                     time,
                     egui::FontId::proportional(12.0),
-                    theme.on_surface_variant(),
+                    theme.muted_foreground(),
                 );
             }
 
             // Title
             let title_color = if item.highlighted {
-                theme.on_surface()
+                theme.foreground()
             } else {
-                theme.on_surface_variant()
+                theme.muted_foreground()
             };
 
             self.ui.painter().text(
@@ -319,14 +319,14 @@ impl<'a> TimelineBuilder<'a> {
             let desc_galley = self.ui.painter().layout(
                 item.description.clone(),
                 egui::FontId::proportional(14.0),
-                theme.on_surface_variant(),
+                theme.muted_foreground(),
                 content_width,
             );
 
             self.ui.painter().galley(
                 Pos2::new(content_x, content_y),
                 desc_galley,
-                theme.on_surface_variant(),
+                theme.muted_foreground(),
             );
 
             // Add spacing between items

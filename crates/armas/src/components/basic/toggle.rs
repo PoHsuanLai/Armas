@@ -170,9 +170,9 @@ impl Toggle {
                         ui.spacing_mut().item_spacing.y = theme.spacing.xs;
                         if let Some(label) = &self.label {
                             let label_color = if self.disabled {
-                                theme.on_surface_variant().linear_multiply(0.5)
+                                theme.muted_foreground().linear_multiply(0.5)
                             } else {
-                                theme.on_surface()
+                                theme.foreground()
                             };
 
                             ui.label(egui::RichText::new(label).size(14.0).color(label_color));
@@ -182,7 +182,7 @@ impl Toggle {
                             ui.label(
                                 egui::RichText::new(description)
                                     .size(12.0)
-                                    .color(theme.on_surface_variant()),
+                                    .color(theme.muted_foreground()),
                             );
                         }
                     });
@@ -213,7 +213,7 @@ impl Toggle {
 
         // Background track
         let bg_color = if self.disabled {
-            theme.surface_variant().linear_multiply(0.5)
+            theme.muted().linear_multiply(0.5)
         } else if checked {
             let primary = theme.primary();
             Color32::from_rgba_unmultiplied(
@@ -223,7 +223,7 @@ impl Toggle {
                 (200.0 + 55.0 * t) as u8,
             )
         } else {
-            theme.surface_variant()
+            theme.muted()
         };
 
         let track_radius = rect.height() / 2.0;
@@ -234,7 +234,7 @@ impl Toggle {
             painter.rect_stroke(
                 rect,
                 CornerRadius::same(track_radius as u8),
-                Stroke::new(1.0, theme.outline()),
+                Stroke::new(1.0, theme.border()),
                 egui::StrokeKind::Outside,
             );
         }
@@ -247,9 +247,9 @@ impl Toggle {
         let thumb_center = pos2(thumb_x, rect.center().y);
 
         let thumb_color = if self.disabled {
-            theme.on_surface_variant()
+            theme.muted_foreground()
         } else {
-            theme.on_surface()
+            theme.foreground()
         };
 
         painter.circle_filled(thumb_center, thumb_radius, thumb_color);
@@ -271,7 +271,7 @@ impl Toggle {
 
         // Background
         let bg_color = if self.disabled {
-            theme.surface_variant().linear_multiply(0.5)
+            theme.muted().linear_multiply(0.5)
         } else if checked {
             let primary = theme.primary();
             Color32::from_rgba_unmultiplied(
@@ -281,7 +281,7 @@ impl Toggle {
                 (200.0 + 55.0 * t) as u8,
             )
         } else {
-            theme.surface()
+            theme.card()
         };
 
         painter.rect_filled(
@@ -292,11 +292,11 @@ impl Toggle {
 
         // Border
         let border_color = if self.disabled {
-            theme.outline_variant()
+            theme.border()
         } else if checked {
             theme.primary()
         } else {
-            theme.outline()
+            theme.border()
         };
 
         painter.rect_stroke(
@@ -318,9 +318,9 @@ impl Toggle {
             let check_end = center + vec2(size * 0.4, -size * 0.4);
 
             let check_color = if self.disabled {
-                theme.on_surface_variant()
+                theme.muted_foreground()
             } else {
-                theme.on_surface()
+                theme.foreground()
             };
 
             painter.line_segment([check_start, check_middle], Stroke::new(2.0, check_color));
@@ -489,7 +489,7 @@ impl<'a> ToggleGroup<'a> {
                     egui::RichText::new(label)
                         .size(14.0)
                         .strong()
-                        .color(theme.on_surface()),
+                        .color(theme.foreground()),
                 );
             }
 

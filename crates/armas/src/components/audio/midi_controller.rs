@@ -5,7 +5,7 @@
 
 use crate::components::audio::{
     MidiPad, MidiPadResponse, ModWheel, PadColorScheme, PadConfig, PadState, PadVariant, Piano,
-    PianoOrientation, PianoResponse, StepSequencer, StepSequencerVariant, WheelType, WheelVariant,
+    PianoOrientation, PianoResponse, StepSequencer, WheelType, WheelVariant,
     XYPad, XYPadVariant,
 };
 use crate::components::cards::{Card, CardVariant};
@@ -285,7 +285,7 @@ impl<'a> MidiController<'a> {
                                         .y_label("Y")
                                         .id("midi_controller_xy_pad")
                                         .show(ui);
-                                xy_pad_changed = xy_response.changed();
+                                xy_pad_changed = xy_response.changed;
                             });
                         }
 
@@ -357,11 +357,10 @@ impl<'a> MidiController<'a> {
                             .steps(self.sequencer_steps)
                             .step_size(theme.spacing.xl, theme.spacing.xl)
                             .gap(theme.spacing.xs) // Tighter gap
-                            .variant(StepSequencerVariant::Filled)
                             .show_step_numbers(true)
                             .show(ui);
 
-                        sequencer_changed = seq_response.changed();
+                        sequencer_changed = seq_response.changed;
                     });
 
                     ui.add_space(theme.spacing.lg);

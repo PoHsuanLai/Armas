@@ -20,10 +20,10 @@ let (rect, _) = ui.allocate_exact_size(
 );
 
 // Draw timeline background
-ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
+ui.painter().rect_filled(rect, 4.0, theme.muted());
 
 // Render playhead overlay
-Playhead::new(beat_width, timeline_height)
+Playhead::new().beat_width(beat_width).height(timeline_height)
     .show_in_rect(ui, rect, &mut position, &theme);
 
 ui.label(format!("Position: {:.2} beats", position));
@@ -58,10 +58,10 @@ egui::ScrollArea::horizontal()
             egui::vec2(timeline_width, height),
             egui::Sense::hover()
         );
-        ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
+        ui.painter().rect_filled(rect, 4.0, theme.muted());
 
         // Render playhead overlay
-        Playhead::new(beat_width, height)
+        Playhead::new().beat_width(beat_width).height(height)
             .show_in_rect(ui, rect, &mut position, &theme);
     });
 
@@ -84,8 +84,8 @@ ui.horizontal(|ui| {
             egui::vec2(beat_width * 8.0, timeline_height),
             egui::Sense::hover()
         );
-        ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
-        Playhead::new(beat_width, timeline_height)
+        ui.painter().rect_filled(rect, 4.0, theme.muted());
+        Playhead::new().beat_width(beat_width).height(timeline_height)
             .id("red_playhead")
             .color(egui::Color32::from_rgb(255, 80, 80))
             .show_in_rect(ui, rect, &mut pos1, &theme);
@@ -97,8 +97,8 @@ ui.horizontal(|ui| {
             egui::vec2(beat_width * 8.0, timeline_height),
             egui::Sense::hover()
         );
-        ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
-        Playhead::new(beat_width, timeline_height)
+        ui.painter().rect_filled(rect, 4.0, theme.muted());
+        Playhead::new().beat_width(beat_width).height(timeline_height)
             .id("green_playhead")
             .color(egui::Color32::from_rgb(80, 255, 120))
             .show_in_rect(ui, rect, &mut pos2, &theme);
@@ -117,8 +117,8 @@ let timeline_width = beat_width * 8.0;
 ui.vertical(|ui| {
     ui.label("Thin Line");
     let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, 100.0), egui::Sense::hover());
-    ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
-    Playhead::new(beat_width, 100.0)
+    ui.painter().rect_filled(rect, 4.0, theme.muted());
+    Playhead::new().beat_width(beat_width).height(100.0)
         .id("thin_line")
         .line_width(1.0)
         .show_in_rect(ui, rect, &mut position, &theme);
@@ -127,8 +127,8 @@ ui.vertical(|ui| {
 
     ui.label("Thick Line");
     let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, 100.0), egui::Sense::hover());
-    ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
-    Playhead::new(beat_width, 100.0)
+    ui.painter().rect_filled(rect, 4.0, theme.muted());
+    Playhead::new().beat_width(beat_width).height(100.0)
         .id("thick_line")
         .line_width(4.0)
         .show_in_rect(ui, rect, &mut position, &theme);
@@ -137,8 +137,8 @@ ui.vertical(|ui| {
 
     ui.label("No Handle");
     let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, 100.0), egui::Sense::hover());
-    ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
-    Playhead::new(beat_width, 100.0)
+    ui.painter().rect_filled(rect, 4.0, theme.muted());
+    Playhead::new().beat_width(beat_width).height(100.0)
         .id("no_handle")
         .show_handle(false)
         .show_in_rect(ui, rect, &mut position, &theme);
@@ -160,8 +160,8 @@ ui.horizontal(|ui| {
     ui.vertical(|ui| {
         ui.label("Small");
         let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, timeline_height), egui::Sense::hover());
-        ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
-        Playhead::new(beat_width, timeline_height)
+        ui.painter().rect_filled(rect, 4.0, theme.muted());
+        Playhead::new().beat_width(beat_width).height(timeline_height)
             .id("small_handle")
             .handle_size(4.0)
             .show_in_rect(ui, rect, &mut pos1, &theme);
@@ -170,8 +170,8 @@ ui.horizontal(|ui| {
     ui.vertical(|ui| {
         ui.label("Medium");
         let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, timeline_height), egui::Sense::hover());
-        ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
-        Playhead::new(beat_width, timeline_height)
+        ui.painter().rect_filled(rect, 4.0, theme.muted());
+        Playhead::new().beat_width(beat_width).height(timeline_height)
             .id("medium_handle")
             .handle_size(6.0)
             .show_in_rect(ui, rect, &mut pos2, &theme);
@@ -180,8 +180,8 @@ ui.horizontal(|ui| {
     ui.vertical(|ui| {
         ui.label("Large");
         let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, timeline_height), egui::Sense::hover());
-        ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
-        Playhead::new(beat_width, timeline_height)
+        ui.painter().rect_filled(rect, 4.0, theme.muted());
+        Playhead::new().beat_width(beat_width).height(timeline_height)
             .id("large_handle")
             .handle_size(9.0)
             .show_in_rect(ui, rect, &mut pos3, &theme);
@@ -204,8 +204,8 @@ ui.horizontal(|ui| {
     ui.vertical(|ui| {
         ui.label("No Glow");
         let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, timeline_height), egui::Sense::hover());
-        ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
-        Playhead::new(beat_width, timeline_height)
+        ui.painter().rect_filled(rect, 4.0, theme.muted());
+        Playhead::new().beat_width(beat_width).height(timeline_height)
             .id("no_glow")
             .show_glow(false)
             .show_in_rect(ui, rect, &mut pos1, &theme);
@@ -214,8 +214,8 @@ ui.horizontal(|ui| {
     ui.vertical(|ui| {
         ui.label("Subtle Glow");
         let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, timeline_height), egui::Sense::hover());
-        ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
-        Playhead::new(beat_width, timeline_height)
+        ui.painter().rect_filled(rect, 4.0, theme.muted());
+        Playhead::new().beat_width(beat_width).height(timeline_height)
             .id("subtle_glow")
             .glow_intensity(0.3)
             .show_in_rect(ui, rect, &mut pos2, &theme);
@@ -224,8 +224,8 @@ ui.horizontal(|ui| {
     ui.vertical(|ui| {
         ui.label("Strong Glow");
         let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, timeline_height), egui::Sense::hover());
-        ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
-        Playhead::new(beat_width, timeline_height)
+        ui.painter().rect_filled(rect, 4.0, theme.muted());
+        Playhead::new().beat_width(beat_width).height(timeline_height)
             .id("strong_glow")
             .glow_intensity(0.8)
             .show_in_rect(ui, rect, &mut pos3, &theme);
@@ -243,9 +243,9 @@ let timeline_width = beat_width * 8.0;
 let timeline_height = 150.0;
 
 let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, timeline_height), egui::Sense::hover());
-ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
+ui.painter().rect_filled(rect, 4.0, theme.muted());
 
-let response = Playhead::new(beat_width, timeline_height)
+let response = Playhead::new().beat_width(beat_width).height(timeline_height)
     .show_in_rect(ui, rect, &mut position, &theme);
 
 if response.changed() {
@@ -276,7 +276,7 @@ ui.vertical(|ui| {
     let timeline_height = 300.0;
 
     let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, timeline_height), egui::Sense::hover());
-    ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
+    ui.painter().rect_filled(rect, 4.0, theme.muted());
 
     // Track placeholders
     for i in 0..3 {
@@ -286,12 +286,12 @@ ui.vertical(|ui| {
             egui::Align2::LEFT_TOP,
             format!("Track {}", i + 1),
             egui::FontId::proportional(14.0),
-            theme.on_surface()
+            theme.foreground()
         );
     }
 
     // Playhead overlay on top
-    Playhead::new(beat_width, timeline_height)
+    Playhead::new().beat_width(beat_width).height(timeline_height)
         .show_in_rect(ui, rect, &mut playback_position, &theme);
 
     ui.label(format!("Playing at beat {:.1}", playback_position));
@@ -303,20 +303,19 @@ ui.vertical(|ui| {
 ### Constructor
 
 ```rust
-Playhead::new(beat_width: f32, height: f32) -> Self
+Playhead::new() -> Self
 ```
 
-Creates a new playhead indicator.
-
-- `beat_width`: Pixels per beat (must match TimeRuler)
-- `height`: Height of the vertical line
+Creates a new playhead indicator with default settings (60px beat width, 400px height).
 
 ### Builder Methods
 
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
+| `.beat_width()` | `f32` | `60.0` | Pixels per beat (must match TimeRuler) |
+| `.height()` | `f32` | `400.0` | Height of the vertical line |
 | `.id()` | `impl Into<egui::Id>` | Auto-generated | Custom ID (important for multiple playheads) |
-| `.color()` | `Color32` | `theme.error()` | Playhead line color |
+| `.color()` | `Color32` | `theme.destructive()` | Playhead line color |
 | `.line_width()` | `f32` | `2.0` | Width of the vertical line |
 | `.show_handle()` | `bool` | `true` | Show draggable handle at top |
 | `.handle_size()` | `f32` | `6.0` | Handle radius in pixels |
@@ -347,7 +346,7 @@ Renders the playhead as an overlay within the specified rect.
 ## Visual Design
 
 ### Line Style
-- **Color**: `theme.error()` (red) by default for high visibility
+- **Color**: `theme.destructive()` (red) by default for high visibility
 - **Width**: 2.0px for clear visibility without being obtrusive
 - **Full height**: Spans entire timeline height
 
@@ -403,9 +402,9 @@ ui.vertical(|ui| {
     let timeline_height = 250.0;
 
     let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, timeline_height), egui::Sense::hover());
-    ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
+    ui.painter().rect_filled(rect, 4.0, theme.muted());
 
-    Playhead::new(beat_width, timeline_height)
+    Playhead::new().beat_width(beat_width).height(timeline_height)
         .show_in_rect(ui, rect, &mut playhead_pos, &theme);
 
     ui.horizontal(|ui| {
@@ -445,16 +444,16 @@ ui.vertical(|ui| {
     let timeline_height = 200.0;
 
     let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, timeline_height), egui::Sense::hover());
-    ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
+    ui.painter().rect_filled(rect, 4.0, theme.muted());
 
     // Loop start marker (green)
-    Playhead::new(beat_width, timeline_height)
+    Playhead::new().beat_width(beat_width).height(timeline_height)
         .id("loop_start")
         .color(egui::Color32::from_rgb(100, 255, 100))
         .show_in_rect(ui, rect, &mut loop_start, &theme);
 
     // Loop end marker (red)
-    Playhead::new(beat_width, timeline_height)
+    Playhead::new().beat_width(beat_width).height(timeline_height)
         .id("loop_end")
         .color(egui::Color32::from_rgb(255, 100, 100))
         .show_in_rect(ui, rect, &mut loop_end, &theme);
@@ -485,9 +484,9 @@ ui.vertical(|ui| {
     let timeline_height = 180.0;
 
     let (rect, _) = ui.allocate_exact_size(egui::vec2(timeline_width, timeline_height), egui::Sense::hover());
-    ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
+    ui.painter().rect_filled(rect, 4.0, theme.muted());
 
-    Playhead::new(beat_width, timeline_height)
+    Playhead::new().beat_width(beat_width).height(timeline_height)
         .color(theme.primary())
         .line_width(1.5)
         .handle_size(5.0)

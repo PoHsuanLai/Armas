@@ -33,9 +33,9 @@ impl TextRevealCard {
             height,
             static_text,
             reveal_text,
-            background_color: Color32::PLACEHOLDER, // Use theme.surface()
-            border_color: Color32::PLACEHOLDER,     // Use theme.outline_variant()
-            text_color: Color32::PLACEHOLDER,       // Use theme.on_surface()
+            background_color: Color32::PLACEHOLDER, // Use theme.card()
+            border_color: Color32::PLACEHOLDER,     // Use theme.border()
+            text_color: Color32::PLACEHOLDER,       // Use theme.foreground()
             reveal_color: Color32::PLACEHOLDER,     // Use theme.primary()
             reveal_animation: Animation::new(0.0, 0.0, 0.4).easing(EasingFunction::EaseOut),
             mouse_x: 0.0,
@@ -73,18 +73,18 @@ impl TextRevealCard {
 
         // Use theme colors if not explicitly set
         let background_color = if self.background_color == Color32::PLACEHOLDER {
-            theme.surface()
+            theme.card()
         } else {
             self.background_color
         };
         let border_color = if self.border_color == Color32::PLACEHOLDER {
-            let outline = theme.outline_variant();
+            let outline = theme.border();
             Color32::from_rgba_unmultiplied(outline.r(), outline.g(), outline.b(), 20)
         } else {
             self.border_color
         };
         let text_color = if self.text_color == Color32::PLACEHOLDER {
-            theme.on_surface_variant()
+            theme.muted_foreground()
         } else {
             self.text_color
         };
@@ -194,7 +194,7 @@ impl TextRevealCard {
 
             // Draw subtle instruction text
             if !self.is_hovered {
-                let hint_color = theme.on_surface_variant();
+                let hint_color = theme.muted_foreground();
                 painter.text(
                     Pos2::new(reveal_rect.left(), reveal_y + theme.spacing.sm),
                     egui::Align2::LEFT_TOP,

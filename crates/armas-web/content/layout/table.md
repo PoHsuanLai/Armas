@@ -268,12 +268,12 @@ Table::new()
             row.cell("Website Redesign");
             row.cell_ui(|ui| {
                 Badge::new("In Progress")
-                    .color(BadgeColor::Info)
+                    .color(theme.chart_4())
                     .show(ui);
             });
             row.cell_ui(|ui| {
                 Badge::new("High")
-                    .color(BadgeColor::Error)
+                    .destructive()
                     .show(ui);
             });
         });
@@ -282,12 +282,12 @@ Table::new()
             row.cell("API Migration");
             row.cell_ui(|ui| {
                 Badge::new("Completed")
-                    .color(BadgeColor::Success)
+                    .color(theme.chart_2())
                     .show(ui);
             });
             row.cell_ui(|ui| {
                 Badge::new("High")
-                    .color(BadgeColor::Error)
+                    .destructive()
                     .show(ui);
             });
         });
@@ -296,12 +296,12 @@ Table::new()
             row.cell("Documentation");
             row.cell_ui(|ui| {
                 Badge::new("Pending")
-                    .color(BadgeColor::Warning)
+                    .color(theme.chart_3())
                     .show(ui);
             });
             row.cell_ui(|ui| {
                 Badge::new("Low")
-                    .color(BadgeColor::Info)
+                    .color(theme.chart_4())
                     .show(ui);
             });
         });

@@ -328,7 +328,7 @@ impl TrackHeader {
                         // Track name - editable text or label
                         if self.editable {
                             // Get card background color for text edit
-                            let card_bg = self.card_color.unwrap_or(theme.surface_variant());
+                            let card_bg = self.card_color.unwrap_or(theme.muted());
 
                             // Calculate available width
                             let used_width = horizontal_padding * 2.0
@@ -340,7 +340,7 @@ impl TrackHeader {
                             let mut text_edit = TextEdit::singleline(name)
                                 .desired_width(available_width)
                                 .hint_text("Track Name")
-                                .text_color(theme.on_surface())
+                                .text_color(theme.foreground())
                                 .background_color(card_bg);
 
                             // Apply custom ID if provided
@@ -353,7 +353,7 @@ impl TrackHeader {
                                 name_changed = true;
                             }
                         } else {
-                            ui.colored_label(theme.on_surface(), name.as_str());
+                            ui.colored_label(theme.foreground(), name.as_str());
                         }
 
                         // Control buttons row

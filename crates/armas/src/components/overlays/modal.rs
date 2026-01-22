@@ -180,7 +180,7 @@ impl Modal {
                     // Use Card with MD3 Elevated variant for visual separation
                     Card::new()
                         .variant(CardVariant::Elevated) // Use Elevated for strong visual separation
-                        .stroke(theme.outline().linear_multiply(0.3))
+                        .stroke(theme.border().linear_multiply(0.3))
                         .corner_radius(theme.spacing.corner_radius_small as f32)
                         .inner_margin(0.0) // We'll handle margins manually for title bar
                         .show(ui, theme, |ui| {

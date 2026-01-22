@@ -103,10 +103,10 @@ impl HoverCard {
         // Apply theme defaults
         let width = self.width.unwrap_or(300.0);
         let height = self.height.unwrap_or(200.0);
-        let background = self.background.unwrap_or_else(|| theme.surface());
-        let hover_background = self.hover_background.unwrap_or_else(|| theme.surface_variant());
+        let background = self.background.unwrap_or_else(|| theme.card());
+        let hover_background = self.hover_background.unwrap_or_else(|| theme.muted());
         let border_color = self.border_color.or_else(|| {
-            let outline = theme.outline_variant();
+            let outline = theme.border();
             Some(Color32::from_rgba_unmultiplied(
                 outline.r(),
                 outline.g(),

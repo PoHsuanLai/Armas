@@ -357,7 +357,7 @@ impl<'a> PunchMarker<'a> {
                     egui::Align2::CENTER_BOTTOM,
                     in_text,
                     egui::FontId::proportional(10.0),
-                    theme.on_surface(),
+                    theme.foreground(),
                 );
 
                 // Punch out label
@@ -367,7 +367,7 @@ impl<'a> PunchMarker<'a> {
                     egui::Align2::CENTER_BOTTOM,
                     out_text,
                     egui::FontId::proportional(10.0),
-                    theme.on_surface(),
+                    theme.foreground(),
                 );
             }
         }

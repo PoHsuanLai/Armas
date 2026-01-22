@@ -116,6 +116,168 @@ impl Default for RegionType {
     }
 }
 
+/// Fade curve types for region fades
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FadeCurve {
+    /// Linear fade
+    Linear,
+    /// Exponential fade (fast start, slow end)
+    Exponential,
+    /// Logarithmic fade (slow start, fast end)
+    Logarithmic,
+    /// S-curve fade (smooth acceleration/deceleration)
+    SCurve,
+}
+
+impl Default for FadeCurve {
+    fn default() -> Self {
+        Self::Linear
+    }
+}
+
+impl FadeCurve {
+    /// Apply the fade curve to a normalized position (0.0 to 1.0)
+    /// Returns gain value (0.0 to 1.0)
+    pub fn apply(&self, t: f32) -> f32 {
+        let t = t.clamp(0.0, 1.0);
+        match self {
+            FadeCurve::Linear => t,
+            FadeCurve::Exponential => t * t,
+            FadeCurve::Logarithmic => t.sqrt(),
+            FadeCurve::SCurve => {
+                // Smoothstep function
+                t * t * (3.0 - 2.0 * t)
+            }
+        }
+    }
+}
+
+/// Fade settings for region
+#[derive(Debug, Clone)]
+pub struct FadeSettings {
+    /// Fade in duration in beats
+    pub fade_in: f32,
+    /// Fade out duration in beats
+    pub fade_out: f32,
+    /// Fade in curve type
+    pub fade_in_curve: FadeCurve,
+    /// Fade out curve type
+    pub fade_out_curve: FadeCurve,
+}
+
+impl Default for FadeSettings {
+    fn default() -> Self {
+        Self {
+            fade_in: 0.0,
+            fade_out: 0.0,
+            fade_in_curve: FadeCurve::Linear,
+            fade_out_curve: FadeCurve::Linear,
+        }
+    }
+}
+
+impl FadeSettings {
+    /// Create new fade settings with specified durations
+    pub fn new(fade_in: f32, fade_out: f32) -> Self {
+        Self {
+            fade_in,
+            fade_out,
+            ..Default::default()
+        }
+    }
+
+    /// Set fade in curve type
+    pub fn fade_in_curve(mut self, curve: FadeCurve) -> Self {
+        self.fade_in_curve = curve;
+        self
+    }
+
+    /// Set fade out curve type
+    pub fn fade_out_curve(mut self, curve: FadeCurve) -> Self {
+        self.fade_out_curve = curve;
+        self
+    }
+}
+
+/// Playback settings for region
+#[derive(Debug, Clone)]
+pub struct PlaybackSettings {
+    /// Clip gain in linear scale (1.0 = 0dB, 2.0 = +6dB, 0.5 = -6dB)
+    pub gain: f32,
+    /// Time stretch ratio (1.0 = normal, 0.5 = half speed, 2.0 = double speed)
+    pub time_stretch: f32,
+    /// Pitch shift in semitones (-12 to +12)
+    pub pitch_shift: i32,
+    /// Play region in reverse
+    pub reversed: bool,
+    /// Offset into source audio/MIDI file in beats
+    /// (where in the original file this region starts)
+    pub source_offset: f32,
+}
+
+impl Default for PlaybackSettings {
+    fn default() -> Self {
+        Self {
+            gain: 1.0,
+            time_stretch: 1.0,
+            pitch_shift: 0,
+            reversed: false,
+            source_offset: 0.0,
+        }
+    }
+}
+
+impl PlaybackSettings {
+    /// Create new playback settings with specified gain
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Set clip gain (linear, 1.0 = 0dB)
+    pub fn gain(mut self, gain: f32) -> Self {
+        self.gain = gain.max(0.0);
+        self
+    }
+
+    /// Set time stretch ratio
+    pub fn time_stretch(mut self, ratio: f32) -> Self {
+        self.time_stretch = ratio.clamp(0.25, 4.0);
+        self
+    }
+
+    /// Set pitch shift in semitones
+    pub fn pitch_shift(mut self, semitones: i32) -> Self {
+        self.pitch_shift = semitones.clamp(-24, 24);
+        self
+    }
+
+    /// Set reversed playback
+    pub fn reversed(mut self, reversed: bool) -> Self {
+        self.reversed = reversed;
+        self
+    }
+
+    /// Set source offset
+    pub fn source_offset(mut self, offset: f32) -> Self {
+        self.source_offset = offset.max(0.0);
+        self
+    }
+
+    /// Convert gain to decibels
+    pub fn gain_db(&self) -> f32 {
+        if self.gain > 0.0 {
+            20.0 * self.gain.log10()
+        } else {
+            -std::f32::INFINITY
+        }
+    }
+
+    /// Set gain from decibels
+    pub fn set_gain_db(&mut self, db: f32) {
+        self.gain = 10.0_f32.powf(db / 20.0);
+    }
+}
+
 /// A region (audio clip or MIDI clip) on the timeline
 #[derive(Debug, Clone)]
 pub struct Region {
@@ -133,6 +295,10 @@ pub struct Region {
     pub selected: bool,
     /// Whether the region is muted
     pub muted: bool,
+    /// Fade settings
+    pub fades: FadeSettings,
+    /// Playback settings
+    pub playback: PlaybackSettings,
 }
 
 impl Region {
@@ -146,6 +312,8 @@ impl Region {
             color: None,
             selected: false,
             muted: false,
+            fades: FadeSettings::default(),
+            playback: PlaybackSettings::default(),
         }
     }
 
@@ -159,6 +327,8 @@ impl Region {
             color: None,
             selected: false,
             muted: false,
+            fades: FadeSettings::default(),
+            playback: PlaybackSettings::default(),
         }
     }
 
@@ -172,6 +342,8 @@ impl Region {
             color: None,
             selected: false,
             muted: false,
+            fades: FadeSettings::default(),
+            playback: PlaybackSettings::default(),
         }
     }
 
@@ -190,6 +362,8 @@ impl Region {
             color: None,
             selected: false,
             muted: false,
+            fades: FadeSettings::default(),
+            playback: PlaybackSettings::default(),
         }
     }
 
@@ -203,6 +377,8 @@ impl Region {
             color: None,
             selected: false,
             muted: false,
+            fades: FadeSettings::default(),
+            playback: PlaybackSettings::default(),
         }
     }
 
@@ -221,6 +397,8 @@ impl Region {
             color: None,
             selected: false,
             muted: false,
+            fades: FadeSettings::default(),
+            playback: PlaybackSettings::default(),
         }
     }
 
@@ -241,6 +419,60 @@ impl Region {
         self.muted = muted;
         self
     }
+
+    /// Set fade settings
+    pub fn fades(mut self, fades: FadeSettings) -> Self {
+        self.fades = fades;
+        self
+    }
+
+    /// Set fade in duration
+    pub fn fade_in(mut self, duration: f32) -> Self {
+        self.fades.fade_in = duration.max(0.0);
+        self
+    }
+
+    /// Set fade out duration
+    pub fn fade_out(mut self, duration: f32) -> Self {
+        self.fades.fade_out = duration.max(0.0);
+        self
+    }
+
+    /// Set playback settings
+    pub fn playback(mut self, playback: PlaybackSettings) -> Self {
+        self.playback = playback;
+        self
+    }
+
+    /// Set clip gain (linear, 1.0 = 0dB)
+    pub fn gain(mut self, gain: f32) -> Self {
+        self.playback.gain = gain.max(0.0);
+        self
+    }
+
+    /// Set clip gain in decibels
+    pub fn gain_db(mut self, db: f32) -> Self {
+        self.playback.set_gain_db(db);
+        self
+    }
+}
+
+/// Region edge handle for resizing
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RegionEdge {
+    /// Left edge of region
+    Start,
+    /// Right edge of region
+    End,
+}
+
+/// Fade handle for adjusting fade curves
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FadeHandle {
+    /// Fade in handle
+    In,
+    /// Fade out handle
+    Out,
 }
 
 /// Response from timeline track interaction
@@ -252,6 +484,14 @@ pub struct TimelineTrackResponse {
     pub region_clicked: Option<usize>,
     /// Empty area clicked (position in beats)
     pub empty_clicked: Option<f32>,
+    /// Region edge being dragged (region_idx, edge, new_position)
+    pub region_edge_dragged: Option<(usize, RegionEdge, f32)>,
+    /// Fade handle being dragged (region_idx, handle, new_duration)
+    pub fade_handle_dragged: Option<(usize, FadeHandle, f32)>,
+    /// Region body dragged (region_idx, new_start_position)
+    pub region_dragged: Option<(usize, f32)>,
+    /// Region double-clicked for name editing
+    pub region_double_clicked: Option<usize>,
 }
 
 /// Timeline track component for DAW
@@ -370,6 +610,10 @@ impl TimelineTrack {
 
         let mut region_clicked = None;
         let mut empty_clicked = None;
+        let mut region_edge_dragged = None;
+        let mut fade_handle_dragged = None;
+        let mut region_dragged = None;
+        let mut region_double_clicked = None;
 
         // Don't add any padding - allocate full height to match TrackHeader
         let content_height = self.height;
@@ -387,7 +631,7 @@ impl TimelineTrack {
 
             // Allocate space for the track content
             let (rect, response) =
-                ui.allocate_exact_size(Vec2::new(total_width, content_height), Sense::click());
+                ui.allocate_exact_size(Vec2::new(total_width, content_height), Sense::click_and_drag());
 
             if ui.is_rect_visible(rect) {
                 let painter = ui.painter();
@@ -399,16 +643,16 @@ impl TimelineTrack {
 
                     let line_color = if is_measure {
                         Color32::from_rgba_unmultiplied(
-                            theme.outline().r(),
-                            theme.outline().g(),
-                            theme.outline().b(),
+                            theme.border().r(),
+                            theme.border().g(),
+                            theme.border().b(),
                             30,
                         )
                     } else {
                         Color32::from_rgba_unmultiplied(
-                            theme.outline_variant().r(),
-                            theme.outline_variant().g(),
-                            theme.outline_variant().b(),
+                            theme.border().r(),
+                            theme.border().g(),
+                            theme.border().b(),
                             15,
                         )
                     };
@@ -422,6 +666,11 @@ impl TimelineTrack {
                 // Draw regions (centered vertically within the allocated rect)
                 let rect_height = rect.height();
                 let region_y_offset = (rect_height - region_h) / 2.0;
+
+                // Handle zones (in pixels)
+                const EDGE_HANDLE_WIDTH: f32 = 8.0;
+                const FADE_HANDLE_WIDTH: f32 = 12.0;
+
                 for (i, region) in regions.iter().enumerate() {
                     let region_x = rect.min.x + region.start * self.beat_width;
                     let region_width = region.duration * self.beat_width;
@@ -430,17 +679,77 @@ impl TimelineTrack {
                         Vec2::new(region_width, region_h),
                     );
 
-                    // Check if this region was clicked
-                    if response.clicked() {
-                        if let Some(pos) = response.interact_pointer_pos() {
-                            if region_rect.contains(pos) {
+                    // Check interactions
+                    if let Some(pos) = response.interact_pointer_pos() {
+                        if region_rect.contains(pos) {
+                            let rel_x = pos.x - region_rect.min.x;
+
+                            // Check for double click
+                            if response.double_clicked() {
+                                region_double_clicked = Some(i);
+                            }
+                            // Check for dragging edge handles
+                            else if response.dragged() {
+                                let mut handled = false;
+
+                                // Left edge resize handle
+                                if rel_x <= EDGE_HANDLE_WIDTH && region.selected {
+                                    let new_start = (pos.x - rect.min.x) / self.beat_width;
+                                    region_edge_dragged = Some((i, RegionEdge::Start, new_start));
+                                    handled = true;
+                                }
+                                // Right edge resize handle
+                                else if rel_x >= region_width - EDGE_HANDLE_WIDTH && region.selected {
+                                    let new_end = (pos.x - rect.min.x) / self.beat_width;
+                                    region_edge_dragged = Some((i, RegionEdge::End, new_end));
+                                    handled = true;
+                                }
+
+                                // Check fade handles (only for selected regions)
+                                if !handled && region.selected {
+                                    // Fade in handle (if fade exists)
+                                    if region.fades.fade_in > 0.0 {
+                                        let fade_in_x = region.fades.fade_in * self.beat_width;
+                                        if rel_x >= fade_in_x - FADE_HANDLE_WIDTH / 2.0
+                                            && rel_x <= fade_in_x + FADE_HANDLE_WIDTH / 2.0 {
+                                            let new_fade = rel_x / self.beat_width;
+                                            fade_handle_dragged = Some((i, FadeHandle::In, new_fade));
+                                            handled = true;
+                                        }
+                                    }
+
+                                    // Fade out handle (if fade exists)
+                                    if !handled && region.fades.fade_out > 0.0 {
+                                        let fade_out_x = region_width - (region.fades.fade_out * self.beat_width);
+                                        if rel_x >= fade_out_x - FADE_HANDLE_WIDTH / 2.0
+                                            && rel_x <= fade_out_x + FADE_HANDLE_WIDTH / 2.0 {
+                                            let new_fade = (region_width - rel_x) / self.beat_width;
+                                            fade_handle_dragged = Some((i, FadeHandle::Out, new_fade));
+                                            handled = true;
+                                        }
+                                    }
+                                }
+
+                                // Region body drag (move entire region) - only if no handle was grabbed
+                                if !handled {
+                                    let new_start = (pos.x - region_width / 2.0 - rect.min.x) / self.beat_width;
+                                    region_dragged = Some((i, new_start));
+                                }
+                            }
+                            // Single click (select)
+                            else if response.clicked() {
                                 region_clicked = Some(i);
                             }
                         }
                     }
 
-                    // Draw region
+                    // Draw region with handles
                     self.draw_region(painter, region_rect, region, theme);
+
+                    // Draw interactive handles if region is selected
+                    if region.selected {
+                        self.draw_region_handles(painter, region_rect, region, theme, self.beat_width);
+                    }
                 }
 
                 // Check for empty area click
@@ -459,6 +768,10 @@ impl TimelineTrack {
             response: card_response.response,
             region_clicked,
             empty_clicked,
+            region_edge_dragged,
+            fade_handle_dragged,
+            region_dragged,
+            region_double_clicked,
         }
     }
 
@@ -510,18 +823,42 @@ impl TimelineTrack {
 
         // Draw region name
         let text_color = if region.muted {
-            theme.on_surface_variant()
+            theme.muted_foreground()
         } else {
             Color32::WHITE
         };
 
-        painter.text(
-            Pos2::new(rect.min.x + 6.0, rect.min.y + 6.0),
-            egui::Align2::LEFT_TOP,
-            &region.name,
+        let name_galley = painter.layout_no_wrap(
+            region.name.clone(),
             egui::FontId::proportional(12.0),
             text_color,
         );
+
+        let name_pos = Pos2::new(rect.min.x + 6.0, rect.min.y + 6.0);
+        painter.galley(name_pos, name_galley.clone(), text_color);
+
+        // Draw clip gain indicator right after name (if not unity)
+        if (region.playback.gain - 1.0).abs() > 0.01 {
+            let gain_db = region.playback.gain_db();
+            let gain_text = if gain_db > 0.0 {
+                format!(" +{:.1}dB", gain_db)
+            } else {
+                format!(" {:.1}dB", gain_db)
+            };
+
+            let gain_pos = Pos2::new(
+                name_pos.x + name_galley.rect.width() + 4.0,
+                name_pos.y,
+            );
+
+            painter.text(
+                gain_pos,
+                egui::Align2::LEFT_TOP,
+                gain_text,
+                egui::FontId::proportional(10.0),
+                theme.secondary(),
+            );
+        }
 
         // Draw visualization based on region type
         if !region.muted {
@@ -749,6 +1086,177 @@ impl TimelineTrack {
                     egui::Stroke::new(1.0, Color32::from_black_alpha(60)),
                 );
             }
+        }
+    }
+
+    /// Draw interactive handles for selected regions
+    fn draw_region_handles(
+        &self,
+        painter: &egui::Painter,
+        rect: Rect,
+        region: &Region,
+        theme: &Theme,
+        beat_width: f32,
+    ) {
+        const HANDLE_WIDTH: f32 = 3.0;
+        let handle_color = theme.primary();
+        let handle_highlight = theme.secondary();
+
+        // Draw edge resize handles
+        // Left edge handle
+        let left_handle = Rect::from_min_max(
+            Pos2::new(rect.min.x, rect.min.y),
+            Pos2::new(rect.min.x + HANDLE_WIDTH, rect.max.y),
+        );
+        painter.rect_filled(
+            left_handle,
+            0.0,
+            handle_color,
+        );
+
+        // Right edge handle
+        let right_handle = Rect::from_min_max(
+            Pos2::new(rect.max.x - HANDLE_WIDTH, rect.min.y),
+            Pos2::new(rect.max.x, rect.max.y),
+        );
+        painter.rect_filled(
+            right_handle,
+            0.0,
+            handle_color,
+        );
+
+        // Draw fade curves if they exist
+        if region.fades.fade_in > 0.0 {
+            self.draw_fade_curve(
+                painter,
+                rect,
+                region.fades.fade_in,
+                region.fades.fade_in_curve,
+                true,
+                theme,
+                beat_width,
+            );
+
+            // Draw fade in handle (hollow circle at fade end point)
+            let fade_in_x = rect.min.x + region.fades.fade_in * beat_width;
+            let fade_handle_y = rect.min.y + rect.height() * 0.25;
+            painter.circle_stroke(
+                Pos2::new(fade_in_x, fade_handle_y),
+                3.0,
+                egui::Stroke::new(1.5, handle_highlight),
+            );
+        }
+
+        if region.fades.fade_out > 0.0 {
+            self.draw_fade_curve(
+                painter,
+                rect,
+                region.fades.fade_out,
+                region.fades.fade_out_curve,
+                false,
+                theme,
+                beat_width,
+            );
+
+            // Draw fade out handle (hollow circle at fade start point)
+            let fade_out_x = rect.max.x - region.fades.fade_out * beat_width;
+            let fade_handle_y = rect.min.y + rect.height() * 0.75;
+            painter.circle_stroke(
+                Pos2::new(fade_out_x, fade_handle_y),
+                3.0,
+                egui::Stroke::new(1.5, handle_highlight),
+            );
+        }
+    }
+
+    /// Draw fade curve overlay
+    fn draw_fade_curve(
+        &self,
+        painter: &egui::Painter,
+        rect: Rect,
+        fade_duration: f32,
+        fade_curve: FadeCurve,
+        is_fade_in: bool,
+        theme: &Theme,
+        beat_width: f32,
+    ) {
+        let fade_width = fade_duration * beat_width;
+        if fade_width < 1.0 {
+            return;
+        }
+
+        let num_points = (fade_width / 2.0).max(10.0) as usize;
+        let mut points = Vec::with_capacity(num_points);
+
+        let fade_color = theme.primary().gamma_multiply(0.4);
+
+        for i in 0..num_points {
+            let t = i as f32 / (num_points - 1) as f32;
+
+            let x = if is_fade_in {
+                rect.min.x + t * fade_width
+            } else {
+                rect.max.x - fade_width + t * fade_width
+            };
+
+            // Apply fade curve to get gain (0.0 to 1.0)
+            let gain = if is_fade_in {
+                fade_curve.apply(t)
+            } else {
+                fade_curve.apply(1.0 - t)
+            };
+
+            // Convert gain to y position (fade from top to bottom for fade in, or vice versa)
+            let y = if is_fade_in {
+                rect.max.y - (gain * rect.height())
+            } else {
+                rect.min.y + ((1.0 - gain) * rect.height())
+            };
+
+            points.push(Pos2::new(x, y));
+        }
+
+        // Draw the fade curve line
+        for i in 0..points.len().saturating_sub(1) {
+            painter.line_segment(
+                [points[i], points[i + 1]],
+                egui::Stroke::new(2.0, fade_color),
+            );
+        }
+
+        // Draw filled area under/over the curve for visual emphasis
+        if is_fade_in {
+            // For fade in, fill from bottom to curve
+            let mut fill_points = vec![Pos2::new(rect.min.x, rect.max.y)];
+            fill_points.extend(points.iter());
+            fill_points.push(Pos2::new(rect.min.x + fade_width, rect.max.y));
+
+            painter.add(egui::Shape::convex_polygon(
+                fill_points,
+                Color32::from_rgba_unmultiplied(
+                    fade_color.r(),
+                    fade_color.g(),
+                    fade_color.b(),
+                    30,
+                ),
+                egui::Stroke::NONE,
+            ));
+        } else {
+            // For fade out, fill from top to curve
+            let mut fill_points = vec![Pos2::new(rect.max.x - fade_width, rect.min.y)];
+            fill_points.extend(points.iter());
+            fill_points.push(Pos2::new(rect.max.x, rect.min.y));
+
+            painter.add(egui::Shape::convex_polygon(
+                fill_points,
+                Color32::from_rgba_unmultiplied(
+                    fade_color.r(),
+                    fade_color.g(),
+                    fade_color.b(),
+                    30,
+                ),
+                egui::Stroke::NONE,
+            ));
         }
     }
 }

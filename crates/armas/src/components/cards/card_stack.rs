@@ -202,7 +202,7 @@ impl CardStack {
                 .rect_filled(card_rect, theme.spacing.corner_radius, card.color);
 
             // Draw card border - use theme outline with transparency
-            let outline = theme.outline();
+            let outline = theme.border();
             ui.painter().rect_stroke(
                 card_rect,
                 theme.spacing.corner_radius,
@@ -244,7 +244,7 @@ impl CardStack {
                 Vec2::new(indicator_width, indicator_height),
             );
 
-            let surface = theme.surface_variant();
+            let surface = theme.muted();
             ui.painter().rect_filled(
                 bg_rect,
                 theme.spacing.corner_radius_small,

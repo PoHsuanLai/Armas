@@ -285,7 +285,7 @@ impl CommandMenu {
                                         .show(ui, &mut search_text);
 
                                     // Auto-focus search input
-                                    search_response.request_focus();
+                                    search_response.response.request_focus();
 
                                     ui.add_space(theme.spacing.md);
                                 });
@@ -305,7 +305,7 @@ impl CommandMenu {
                                             ui.centered_and_justified(|ui| {
                                                 ui.label(
                                                     egui::RichText::new("No commands found")
-                                                        .color(theme.on_surface_variant())
+                                                        .color(theme.muted_foreground())
                                                         .size(14.0),
                                                 );
                                             });
@@ -321,7 +321,7 @@ impl CommandMenu {
                                                             ui.label(
                                                                 egui::RichText::new(name)
                                                                     .color(
-                                                                        theme.on_surface_variant(),
+                                                                        theme.muted_foreground(),
                                                                     )
                                                                     .size(12.0)
                                                                     .strong(),
@@ -360,7 +360,7 @@ impl CommandMenu {
                                                             ui.painter().rect_filled(
                                                                 rect,
                                                                 theme.spacing.corner_radius,
-                                                                theme.hover(),
+                                                                theme.accent(),
                                                             );
                                                         }
 
@@ -382,7 +382,7 @@ impl CommandMenu {
                                                                 Align2::LEFT_CENTER,
                                                                 icon_text,
                                                                 egui::FontId::proportional(18.0),
-                                                                theme.on_surface(),
+                                                                theme.foreground(),
                                                             );
                                                             cursor_x += 28.0;
                                                         }
@@ -399,7 +399,7 @@ impl CommandMenu {
                                                             Align2::LEFT_TOP,
                                                             name,
                                                             egui::FontId::proportional(15.0),
-                                                            theme.on_surface(),
+                                                            theme.foreground(),
                                                         );
 
                                                         // Description
@@ -409,7 +409,7 @@ impl CommandMenu {
                                                                 Align2::LEFT_TOP,
                                                                 desc,
                                                                 egui::FontId::proportional(12.0),
-                                                                theme.on_surface_variant(),
+                                                                theme.muted_foreground(),
                                                             );
                                                         }
 
@@ -423,7 +423,7 @@ impl CommandMenu {
                                                                 Align2::RIGHT_CENTER,
                                                                 shortcut_text,
                                                                 egui::FontId::monospace(11.0),
-                                                                theme.on_surface_variant(),
+                                                                theme.muted_foreground(),
                                                             );
                                                         }
 

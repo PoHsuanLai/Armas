@@ -51,19 +51,19 @@ impl TooltipColor {
     /// Get the background color from theme
     pub fn background_color(&self, theme: &Theme) -> Color32 {
         match self {
-            TooltipColor::Surface => theme.surface_variant(),
+            TooltipColor::Surface => theme.muted(),
             TooltipColor::Primary => theme.primary(),
-            TooltipColor::Success => theme.success(),
-            TooltipColor::Warning => theme.warning(),
-            TooltipColor::Error => theme.error(),
-            TooltipColor::Info => theme.info(),
+            TooltipColor::Success => theme.chart_2(),
+            TooltipColor::Warning => theme.chart_3(),
+            TooltipColor::Error => theme.destructive(),
+            TooltipColor::Info => theme.chart_4(),
         }
     }
 
     /// Get the text color from theme (ensures contrast)
     pub fn text_color(&self, theme: &Theme) -> Color32 {
         match self {
-            TooltipColor::Surface => theme.on_surface(),
+            TooltipColor::Surface => theme.foreground(),
             _ => Color32::WHITE, // High contrast on colored backgrounds
         }
     }
@@ -189,7 +189,7 @@ impl Tooltip {
         // Get colors based on color variant
         let bg_color = self.color.background_color(&theme);
         let border_color = match self.color {
-            TooltipColor::Surface => theme.outline().linear_multiply(0.3),
+            TooltipColor::Surface => theme.border().linear_multiply(0.3),
             _ => bg_color.linear_multiply(1.2), // Slightly lighter border for colored tooltips
         };
 

@@ -45,41 +45,6 @@ StepSequencer::new(&mut steps)
     .show(ui);
 ```
 
-## Variants
-
-### Filled (Default)
-
-```demo
-let mut steps = vec![true, false, true, false, false, true, false, true];
-
-StepSequencer::new(&mut steps)
-    .steps(8)
-    .variant(StepSequencerVariant::Filled)
-    .show(ui);
-```
-
-### Outlined
-
-```demo
-let mut steps = vec![true, false, true, false, false, true, false, true];
-
-StepSequencer::new(&mut steps)
-    .steps(8)
-    .variant(StepSequencerVariant::Outlined)
-    .show(ui);
-```
-
-### Elevated
-
-```demo
-let mut steps = vec![true, false, true, false, false, true, false, true];
-
-StepSequencer::new(&mut steps)
-    .steps(8)
-    .variant(StepSequencerVariant::Elevated)
-    .show(ui);
-```
-
 ## Custom Step Size
 
 ```demo
@@ -197,12 +162,13 @@ Creates a new step sequencer with mutable reference to step pattern.
 |--------|------|---------|-------------|
 | `.steps()` | `usize` | `16` | Number of steps to display |
 | `.current_step()` | `Option<usize>` | None | Current playback step (0-indexed) |
-| `.variant()` | `StepSequencerVariant` | `Filled` | Visual variant |
 | `.step_size()` | `(f32, f32)` | `(40.0, 40.0)` | Step width and height in pixels |
 | `.gap()` | `f32` | `4.0` | Gap between steps in pixels |
 | `.accent_color()` | `Color32` | `theme.primary()` | Color for active steps |
 | `.show_step_numbers()` | `bool` | `false` | Show step numbers (1-indexed) |
 | `.glow_intensity()` | `f32` | `0.8` | Glow intensity for current step (0.0-1.0) |
+| `.velocities()` | `&Vec<f32>` | None | Optional velocity data for visualization |
+| `.measure_accent()` | `usize` | None | Show accents every N steps for rhythm structure |
 
 ### Show Method
 
@@ -211,16 +177,6 @@ pub fn show(self, ui: &mut egui::Ui) -> Response
 ```
 
 Returns an egui `Response`. The steps vector is automatically resized to match the number of steps.
-
-### StepSequencerVariant
-
-```rust
-pub enum StepSequencerVariant {
-    Filled,   // Solid backgrounds
-    Outlined, // Transparent with borders
-    Elevated, // Shadow effect
-}
-```
 
 ## Step Pattern
 
@@ -297,19 +253,6 @@ ui.vertical(|ui| {
     ui.label("OH:");
     StepSequencer::new(&mut oh).steps(8).show(ui);
 });
-```
-
-### Euclidean Rhythms
-
-```demo
-// 5 hits over 8 steps (euclidean rhythm)
-let mut euclidean = vec![true, false, true, false, true, false, true, true];
-
-StepSequencer::new(&mut euclidean)
-    .steps(8)
-    .variant(StepSequencerVariant::Elevated)
-    .show_step_numbers(true)
-    .show(ui);
 ```
 
 ### Melody Sequencer

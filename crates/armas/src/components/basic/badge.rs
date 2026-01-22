@@ -3,31 +3,15 @@ use crate::Theme;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 
 /// Badge variant styles
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum BadgeVariant {
     /// Solid fill background
     Filled,
     /// Outline style
     Outlined,
-    /// Subtle background
+    /// Subtle background (default)
+    #[default]
     Soft,
-}
-
-/// Badge color themes
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum BadgeColor {
-    /// Primary theme color
-    Primary,
-    /// Success/positive (green)
-    Success,
-    /// Warning/caution (yellow)
-    Warning,
-    /// Error/danger (red)
-    Error,
-    /// Informational (blue)
-    Info,
-    /// Neutral/default (gray)
-    Neutral,
 }
 
 /// Small status indicator badge
@@ -38,13 +22,18 @@ pub enum BadgeColor {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::components::{Badge, BadgeVariant, BadgeColor};
+/// use armas::components::{Badge, BadgeVariant};
+/// use egui::Color32;
 ///
 /// fn ui(ui: &mut egui::Ui) {
-///     Badge::new("New")
-///         .variant(BadgeVariant::Filled)
-///         .color(BadgeColor::Success)
-///         .show(ui);
+///     // Default badge
+///     Badge::new("New").show(ui);
+///
+///     // Destructive badge
+///     Badge::new("Error").destructive().show(ui);
+///
+///     // Custom color
+///     Badge::new("Custom").color(Color32::from_rgb(255, 100, 50)).show(ui);
 /// }
 /// ```
 pub struct Badge {
@@ -52,8 +41,10 @@ pub struct Badge {
     text: String,
     /// Visual variant
     variant: BadgeVariant,
-    /// Color theme
-    color: BadgeColor,
+    /// Custom color (None = use theme primary)
+    custom_color: Option<Color32>,
+    /// Whether this is a destructive badge
+    is_destructive: bool,
     /// Show dot indicator
     show_dot: bool,
     /// Custom size
@@ -71,8 +62,9 @@ impl Badge {
     pub fn new(text: impl Into<String>) -> Self {
         Self {
             text: text.into(),
-            variant: BadgeVariant::Soft,
-            color: BadgeColor::Primary,
+            variant: BadgeVariant::default(),
+            custom_color: None,
+            is_destructive: false,
             show_dot: false,
             size: 13.0,
             removable: false,
@@ -87,9 +79,15 @@ impl Badge {
         self
     }
 
-    /// Set badge color
-    pub fn color(mut self, color: BadgeColor) -> Self {
-        self.color = color;
+    /// Set custom color (overrides default and destructive)
+    pub fn color(mut self, color: Color32) -> Self {
+        self.custom_color = Some(color);
+        self
+    }
+
+    /// Make this a destructive badge (red)
+    pub fn destructive(mut self) -> Self {
+        self.is_destructive = true;
         self
     }
 
@@ -238,26 +236,19 @@ impl Badge {
         }
     }
 
-    /// Get colors based on variant and color theme
+    /// Get colors based on variant and color
     fn get_colors(&self, theme: &Theme) -> (Color32, Color32, Color32) {
-        let base_color = match self.color {
-            BadgeColor::Primary => theme.primary(),
-            BadgeColor::Success => theme.success(),
-            BadgeColor::Warning => theme.warning(),
-            BadgeColor::Error => theme.error(),
-            BadgeColor::Info => theme.info(),
-            BadgeColor::Neutral => theme.outline(),
+        let base_color = if let Some(color) = self.custom_color {
+            color
+        } else if self.is_destructive {
+            theme.destructive()
+        } else {
+            theme.primary()
         };
 
         match self.variant {
             BadgeVariant::Filled => {
-                // Use theme-aware text color for filled badges
-                // For filled badges, we need high contrast text
-                let text_color = if self.color == BadgeColor::Warning {
-                    theme.on_surface() // Dark text on yellow
-                } else {
-                    theme.on_background() // Light text on dark colors
-                };
+                let text_color = theme.primary_foreground();
                 (base_color, text_color, base_color)
             }
             BadgeVariant::Outlined => (Color32::TRANSPARENT, base_color, base_color),
@@ -289,7 +280,7 @@ pub struct NotificationBadge {
     count: usize,
     /// Maximum count to show (e.g., 99+ for counts > max)
     max_count: Option<usize>,
-    /// Badge color (None = use theme error color)
+    /// Badge color (None = use theme destructive color)
     color: Option<Color32>,
     /// Size
     size: f32,
@@ -297,12 +288,12 @@ pub struct NotificationBadge {
 
 impl NotificationBadge {
     /// Create a new notification badge with count
-    /// Color defaults to theme error color
+    /// Color defaults to theme destructive color
     pub fn new(count: usize) -> Self {
         Self {
             count,
             max_count: Some(99),
-            color: None, // Will use theme.error()
+            color: None,
             size: 18.0,
         }
     }
@@ -329,8 +320,7 @@ impl NotificationBadge {
     pub fn show(&self, ui: &mut Ui) -> Response {
         let theme = ui.ctx().armas_theme();
 
-        // Use custom color or theme error
-        let color = self.color.unwrap_or_else(|| theme.error());
+        let color = self.color.unwrap_or_else(|| theme.destructive());
 
         let text = if let Some(max) = self.max_count {
             if self.count > max {
@@ -348,13 +338,13 @@ impl NotificationBadge {
         ui.painter()
             .circle_filled(rect.center(), self.size / 2.0, color);
 
-        // Count text - use theme color for better contrast
+        // Count text
         ui.painter().text(
             rect.center(),
             egui::Align2::CENTER_CENTER,
             &text,
             egui::FontId::proportional(self.size * 0.6),
-            theme.on_background(),
+            theme.primary_foreground(),
         );
 
         response

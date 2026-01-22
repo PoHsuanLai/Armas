@@ -2,8 +2,8 @@
 //!
 //! Dropdown and context menus
 
-use crate::{Badge, BadgeColor, Popover, PopoverColor, PopoverPosition, PopoverStyle};
-use egui::{vec2, Id, Key, Rect, Sense};
+use crate::{Badge, Popover, PopoverColor, PopoverPosition, PopoverStyle};
+use egui::{vec2, Color32, Id, Key, Rect, Sense};
 
 /// Menu item
 #[derive(Clone)]
@@ -19,7 +19,7 @@ pub struct MenuItem {
     /// Optional badge text
     pub badge: Option<String>,
     /// Optional badge color
-    pub badge_color: Option<BadgeColor>,
+    pub badge_color: Option<Color32>,
     /// Whether this is a separator
     pub is_separator: bool,
 }
@@ -69,8 +69,8 @@ impl MenuItem {
         self
     }
 
-    /// Set a badge
-    pub fn badge(mut self, text: impl Into<String>, color: BadgeColor) -> Self {
+    /// Set a badge with custom color
+    pub fn badge(mut self, text: impl Into<String>, color: Color32) -> Self {
         self.badge = Some(text.into());
         self.badge_color = Some(color);
         self
@@ -237,7 +237,7 @@ impl Menu {
 
                 // Draw background
                 if (is_selected || item_response.hovered()) && !item.disabled {
-                    ui.painter().rect_filled(rect, 4.0, theme.surface_variant());
+                    ui.painter().rect_filled(rect, 4.0, theme.muted());
                 }
 
                 // Draw content
@@ -253,9 +253,9 @@ impl Menu {
 
                         // Label
                         let text_color = if item.disabled {
-                            theme.on_surface_variant().linear_multiply(0.5)
+                            theme.muted_foreground().linear_multiply(0.5)
                         } else {
-                            theme.on_surface()
+                            theme.foreground()
                         };
 
                         ui.colored_label(text_color, &item.label);
@@ -266,7 +266,7 @@ impl Menu {
 
                             // Badge
                             if let Some(badge_text) = &item.badge {
-                                let color = item.badge_color.unwrap_or(BadgeColor::Neutral);
+                                let color = item.badge_color.unwrap_or(theme.muted_foreground());
                                 Badge::new(badge_text).color(color).show(ui);
                                 ui.add_space(4.0);
                             }
@@ -274,7 +274,7 @@ impl Menu {
                             // Shortcut
                             if let Some(shortcut) = &item.shortcut {
                                 ui.colored_label(
-                                    theme.on_surface_variant().linear_multiply(0.7),
+                                    theme.muted_foreground().linear_multiply(0.7),
                                     shortcut,
                                 );
                             }
@@ -361,7 +361,7 @@ struct MenuItemData {
     shortcut: Option<String>,
     disabled: bool,
     badge: Option<String>,
-    badge_color: Option<BadgeColor>,
+    badge_color: Option<Color32>,
     is_separator: bool,
 }
 
@@ -434,8 +434,8 @@ impl<'a> MenuItemBuilder<'a> {
         self
     }
 
-    /// Set a badge
-    pub fn badge(self, text: &str, color: BadgeColor) -> Self {
+    /// Set a badge with custom color
+    pub fn badge(self, text: &str, color: Color32) -> Self {
         if let Some(item) = self.items.get_mut(self.item_index) {
             item.badge = Some(text.to_string());
             item.badge_color = Some(color);

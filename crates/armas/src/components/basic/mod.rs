@@ -22,12 +22,9 @@ pub mod tooltip;
 
 // Re-exports
 pub use accordion::{Accordion, AccordionItem, AccordionSize};
-pub use alert::{
-    alert, alert_error, alert_info, alert_success, alert_warning, Alert, AlertResponse,
-    AlertVariant,
-};
+pub use alert::{alert, alert_destructive, Alert, AlertResponse, AlertVariant};
 pub use avatar::{Avatar, AvatarShape, AvatarSize};
-pub use badge::{Badge, BadgeColor, BadgeVariant, NotificationBadge};
+pub use badge::{Badge, BadgeVariant, NotificationBadge};
 pub use chip::{Chip, ChipResponse, ChipSize, ChipType};
 pub use date_picker::{Date, DatePicker, DatePickerResponse};
 pub use event_timeline::EventTimeline;

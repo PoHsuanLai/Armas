@@ -280,8 +280,8 @@ fn generate_show_function(blocks: &[CodeBlock]) -> Result<proc_macro2::TokenStre
 
                             // Content area with border
                             let _ = egui::Frame::NONE
-                                .fill(theme.surface())
-                                .stroke(egui::Stroke::new(1.0, theme.outline()))
+                                .fill(theme.card())
+                                .stroke(egui::Stroke::new(1.0, theme.border()))
                                 .corner_radius(8.0)
                                 .inner_margin(24.0)
                                 .show(ui, |ui| {
@@ -410,6 +410,7 @@ fn generate_show_function(blocks: &[CodeBlock]) -> Result<proc_macro2::TokenStre
 
     Ok(quote! {
         pub fn show(ui: &mut egui::Ui) {
+            use egui::Color32;
             let theme = ui.ctx().armas_theme();
             #(#statements)*
         }

@@ -372,9 +372,9 @@ impl MidiPad {
             };
 
             let text_color = if is_pressed {
-                theme.on_surface()
+                theme.foreground()
             } else {
-                theme.on_surface_variant()
+                theme.muted_foreground()
             };
 
             painter.text(
@@ -419,9 +419,9 @@ impl MidiPad {
         let border_color = if is_pressed {
             theme.primary()
         } else if is_hovered {
-            theme.outline()
+            theme.border()
         } else {
-            theme.outline_variant()
+            theme.border()
         };
 
         painter.rect_stroke(
@@ -460,9 +460,9 @@ impl MidiPad {
                 alpha,
             )
         } else if is_hovered {
-            theme.surface_variant()
+            theme.muted()
         } else {
-            theme.surface()
+            theme.card()
         };
 
         painter.rect_filled(rect, corner_radius, bg_color);
@@ -471,9 +471,9 @@ impl MidiPad {
         let border_color = if is_pressed {
             base_color
         } else if is_hovered {
-            theme.outline()
+            theme.border()
         } else {
-            theme.outline_variant()
+            theme.border()
         };
 
         let border_width = if is_pressed { 2.0 } else { 1.5 };
@@ -529,7 +529,7 @@ impl MidiPad {
         let border_color = if is_pressed {
             theme.primary()
         } else {
-            theme.outline_variant()
+            theme.border()
         };
 
         painter.rect_stroke(
@@ -588,10 +588,10 @@ impl MidiPad {
             PadColorScheme::Semantic => {
                 // Cycle through semantic colors
                 let colors = [
-                    theme.error(),
-                    theme.warning(),
-                    theme.success(),
-                    theme.info(),
+                    theme.destructive(),
+                    theme.chart_3(),
+                    theme.chart_2(),
+                    theme.chart_4(),
                     theme.primary(),
                     theme.secondary(),
                 ];

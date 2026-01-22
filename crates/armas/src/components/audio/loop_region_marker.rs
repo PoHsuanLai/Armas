@@ -359,7 +359,7 @@ impl<'a> LoopRegionMarker<'a> {
                     egui::Align2::CENTER_BOTTOM,
                     start_text,
                     egui::FontId::proportional(10.0),
-                    theme.on_surface(),
+                    theme.foreground(),
                 );
 
                 // End label
@@ -369,7 +369,7 @@ impl<'a> LoopRegionMarker<'a> {
                     egui::Align2::CENTER_BOTTOM,
                     end_text,
                     egui::FontId::proportional(10.0),
-                    theme.on_surface(),
+                    theme.foreground(),
                 );
             }
         }
@@ -417,14 +417,14 @@ impl<'a> LoopRegionMarker<'a> {
         painter.rect_stroke(
             rect,
             theme.spacing.corner_radius_small as f32,
-            egui::Stroke::new(1.0, theme.on_surface().gamma_multiply(0.8)),
+            egui::Stroke::new(1.0, theme.foreground().gamma_multiply(0.8)),
             egui::StrokeKind::Outside,
         );
 
         // Draw arrow indicator
         let center = rect.center();
         let arrow_size = 4.0;
-        let arrow_color = theme.on_surface();
+        let arrow_color = theme.foreground();
 
         if is_start {
             // Left arrow for start handle

@@ -32,17 +32,17 @@ ui.horizontal(|ui| {
 
     Icon::new(TransportIcon::Play)
         .size(24.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui);
 
     Icon::new(TransportIcon::Pause)
         .size(24.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui);
 
     Icon::new(TransportIcon::Stop)
         .size(24.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui);
 });
 ```
@@ -57,7 +57,7 @@ ui.horizontal(|ui| {
 
     if Icon::new(TransportIcon::Play)
         .size(32.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui)
         .clicked()
     {
@@ -66,7 +66,7 @@ ui.horizontal(|ui| {
 
     if Icon::new(TransportIcon::Pause)
         .size(32.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui)
         .clicked()
     {
@@ -75,7 +75,7 @@ ui.horizontal(|ui| {
 
     if Icon::new(TransportIcon::Stop)
         .size(32.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui)
         .clicked()
     {
@@ -84,7 +84,7 @@ ui.horizontal(|ui| {
 
     if Icon::new(TransportIcon::Record)
         .size(32.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui)
         .clicked()
     {
@@ -99,22 +99,22 @@ ui.horizontal(|ui| {
 
     Icon::new(TransportIcon::Rewind)
         .size(32.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui);
 
     Icon::new(TransportIcon::Forward)
         .size(32.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui);
 
     Icon::new(TransportIcon::Loop)
         .size(32.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui);
 
     Icon::new(TransportIcon::Metronome)
         .size(32.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui);
 });
 ```
@@ -129,27 +129,27 @@ ui.horizontal(|ui| {
 
     Icon::new(TransportIcon::Play)
         .size(16.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui);
 
     Icon::new(TransportIcon::Play)
         .size(24.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui);
 
     Icon::new(TransportIcon::Play)
         .size(32.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui);
 
     Icon::new(TransportIcon::Play)
         .size(48.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui);
 
     Icon::new(TransportIcon::Play)
         .size(64.0)
-        .color(theme.on_surface())
+        .color(theme.foreground())
         .show(ui);
 });
 ```
@@ -174,7 +174,7 @@ ui.horizontal(|ui| {
 
     Icon::new(TransportIcon::Play)
         .size(32.0)
-        .color(theme.error())
+        .color(theme.destructive())
         .show(ui);
 
     Icon::new(TransportIcon::Play)
@@ -196,7 +196,7 @@ ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.y = 4.0;
         Icon::new(TransportIcon::Play)
             .size(32.0)
-            .color(theme.on_surface())
+            .color(theme.foreground())
             .show(ui);
         ui.label("Play");
     });
@@ -205,7 +205,7 @@ ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.y = 4.0;
         Icon::new(TransportIcon::Pause)
             .size(32.0)
-            .color(theme.on_surface())
+            .color(theme.foreground())
             .show(ui);
         ui.label("Pause");
     });
@@ -214,7 +214,7 @@ ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.y = 4.0;
         Icon::new(TransportIcon::Stop)
             .size(32.0)
-            .color(theme.on_surface())
+            .color(theme.foreground())
             .show(ui);
         ui.label("Stop");
     });
@@ -223,7 +223,7 @@ ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.y = 4.0;
         Icon::new(TransportIcon::Record)
             .size(32.0)
-            .color(theme.error())
+            .color(theme.destructive())
             .show(ui);
         ui.label("Record");
     });

@@ -24,14 +24,16 @@ impl MyApp {
 }
 
 // In your UI code:
-let (response, transport) = self.transport.show(ui, theme);
-self.transport = transport;
+let response = self.transport.show(ui, theme);
 if response.play_clicked {
     // Start playback
 }
 if response.stop_clicked {
     // Stop playback
 }
+// Access current state from response
+println!("Tempo: {}", response.tempo);
+println!("Time: {}", response.current_time);
 ```
 
 ## Live Demo
@@ -48,12 +50,7 @@ let mut transport: TransportControl = ui.ctx().data_mut(|d| {
     })
 });
 
-let (response, new_transport) = transport.show(ui, &theme);
-
-// Save state
-ui.ctx().data_mut(|d| {
-    d.insert_persisted(transport_id, new_transport);
-});
+let response = transport.show(ui, &theme);
 
 // Display response info
 if response.play_clicked {
@@ -81,11 +78,7 @@ let mut transport: TransportControl = ui.ctx().data_mut(|d| {
     })
 });
 
-let (response, new_transport) = transport.show(ui, &theme);
-
-ui.ctx().data_mut(|d| {
-    d.insert_persisted(transport_id, new_transport);
-});
+let response = transport.show(ui, &theme);
 ```
 
 ## API Reference
@@ -102,18 +95,7 @@ ui.ctx().data_mut(|d| {
 | `.loop_enabled(enabled)` | `bool` | `false` | Set loop enabled state |
 | `.metronome_enabled(enabled)` | `bool` | `false` | Set metronome enabled state |
 | `.width(width)` | `f32` | Fill available | Set transport width |
-| `.show(&mut Ui, &Theme)` | - | - | Show transport, returns `(TransportResponse, Self)` |
-
-### Getter Methods
-
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `.get_state()` | `TransportState` | Get current playback state |
-| `.get_current_time()` | `f64` | Get current time in seconds |
-| `.get_tempo()` | `f32` | Get tempo in BPM |
-| `.get_time_signature()` | `(u8, u8)` | Get time signature (numerator, denominator) |
-| `.is_loop_enabled()` | `bool` | Check if loop is enabled |
-| `.is_metronome_enabled()` | `bool` | Check if metronome is enabled |
+| `.show(&mut Ui, &Theme)` | - | - | Show transport, returns `TransportResponse` |
 
 ### TransportState
 
@@ -128,9 +110,18 @@ pub enum TransportState {
 
 ### TransportResponse
 
-The response from `show()` contains:
+The response from `show()` contains both state and interaction flags:
 
+**Current State:**
 - `response: Response` - Standard egui response
+- `state: TransportState` - Current playback state (Stopped/Playing/Paused/Recording)
+- `current_time: f64` - Current time in seconds
+- `tempo: f32` - Current tempo in BPM
+- `time_signature: (u8, u8)` - Current time signature (numerator, denominator)
+- `loop_enabled: bool` - Loop enabled state
+- `metronome_enabled: bool` - Metronome enabled state
+
+**Interaction Flags:**
 - `play_clicked: bool` - Play button clicked (state changed to Playing)
 - `pause_clicked: bool` - Pause button clicked while playing
 - `stop_clicked: bool` - Stop button clicked (resets time to 0)
@@ -140,7 +131,6 @@ The response from `show()` contains:
 - `loop_toggled: bool` - Loop button toggled
 - `metronome_toggled: bool` - Metronome button toggled
 - `tempo_changed: bool` - Tempo value was edited
-- `new_tempo: Option<f32>` - New tempo value (if changed this frame)
 
 ## Features
 
@@ -192,8 +182,7 @@ Toggle buttons show as:
 ### Basic Playback Control
 
 ```rust
-let (response, new_transport) = transport.show(ui, &theme);
-transport = new_transport;
+let response = transport.show(ui, &theme);
 
 if response.play_clicked {
     audio_engine.start();
@@ -213,8 +202,7 @@ if response.stop_clicked {
 // Update transport with playback position
 transport = transport.current_time(audio_engine.get_position());
 
-let (response, new_transport) = transport.show(ui, &theme);
-transport = new_transport;
+let response = transport.show(ui, &theme);
 
 // Handle rewind/navigation
 if response.rewind_clicked {
@@ -225,28 +213,24 @@ if response.rewind_clicked {
 ### Tempo and Metronome
 
 ```rust
-let (response, new_transport) = transport.show(ui, &theme);
+let response = transport.show(ui, &theme);
 
 if response.tempo_changed {
-    if let Some(new_bpm) = response.new_tempo {
-        audio_engine.set_tempo(new_bpm);
-    }
+    audio_engine.set_tempo(response.tempo);
 }
 
 if response.metronome_toggled {
-    audio_engine.set_metronome(new_transport.is_metronome_enabled());
+    audio_engine.set_metronome(response.metronome_enabled);
 }
-
-transport = new_transport;
 ```
 
 ### Recording
 
 ```rust
-let (response, new_transport) = transport.show(ui, &theme);
+let response = transport.show(ui, &theme);
 
 if response.record_clicked {
-    match new_transport.get_state() {
+    match response.state {
         TransportState::Recording => {
             audio_engine.start_recording();
         }
@@ -255,8 +239,6 @@ if response.record_clicked {
         }
     }
 }
-
-transport = new_transport;
 ```
 
 ## Visual Design
@@ -309,8 +291,7 @@ impl DAWApp {
             .current_time(self.audio_engine.get_position())
             .state(self.audio_engine.get_state());
 
-        let (response, new_transport) = transport.show(ui, &theme);
-        self.transport = new_transport;
+        let response = transport.show(ui, &theme);
 
         // Handle all transport events
         if response.play_clicked {
@@ -320,9 +301,7 @@ impl DAWApp {
             self.audio_engine.stop();
         }
         if response.tempo_changed {
-            if let Some(bpm) = response.new_tempo {
-                self.audio_engine.set_tempo(bpm);
-            }
+            self.audio_engine.set_tempo(response.tempo);
         }
         // ... handle other events
     }

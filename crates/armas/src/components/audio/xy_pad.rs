@@ -7,6 +7,26 @@ use crate::ext::ArmasContextExt;
 use crate::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
+/// Response from the XY pad
+#[derive(Debug, Clone)]
+pub struct XYPadResponse {
+    /// The UI response
+    pub response: Response,
+    /// X value (0.0 to 1.0)
+    pub x: f32,
+    /// Y value (0.0 to 1.0)
+    pub y: f32,
+    /// Whether values changed this frame
+    pub changed: bool,
+}
+
+impl XYPadResponse {
+    /// Check if values changed this frame
+    pub fn changed(&self) -> bool {
+        self.changed
+    }
+}
+
 /// Visual style variant for XY pad
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum XYPadVariant {
@@ -129,7 +149,7 @@ impl<'a> XYPad<'a> {
     }
 
     /// Show the XY pad
-    pub fn show(self, ui: &mut Ui) -> Response {
+    pub fn show(self, ui: &mut Ui) -> XYPadResponse {
         let theme = ui.ctx().armas_theme();
 
         // Load previous state if ID is set
@@ -182,7 +202,7 @@ impl<'a> XYPad<'a> {
                 let handle_x = rect.min.x + *self.x * rect.width();
                 let handle_y = rect.max.y - *self.y * rect.height();
 
-                let crosshair_color = theme.on_surface_variant().gamma_multiply(0.3);
+                let crosshair_color = theme.muted_foreground().gamma_multiply(0.3);
                 painter.line_segment(
                     [Pos2::new(rect.min.x, handle_y), Pos2::new(rect.max.x, handle_y)],
                     egui::Stroke::new(1.0, crosshair_color),
@@ -222,7 +242,7 @@ impl<'a> XYPad<'a> {
             painter.circle_stroke(
                 handle_pos,
                 self.handle_size / 2.0,
-                egui::Stroke::new(2.0, theme.on_surface().gamma_multiply(0.9)),
+                egui::Stroke::new(2.0, theme.foreground().gamma_multiply(0.9)),
             );
 
             // Draw labels
@@ -232,7 +252,7 @@ impl<'a> XYPad<'a> {
                     egui::Align2::CENTER_TOP,
                     x_label,
                     egui::FontId::proportional(11.0),
-                    theme.on_surface_variant(),
+                    theme.muted_foreground(),
                 );
             }
 
@@ -242,7 +262,7 @@ impl<'a> XYPad<'a> {
                     egui::Align2::RIGHT_CENTER,
                     y_label,
                     egui::FontId::proportional(11.0),
-                    theme.on_surface_variant(),
+                    theme.muted_foreground(),
                 );
             }
 
@@ -254,7 +274,7 @@ impl<'a> XYPad<'a> {
                     egui::Align2::CENTER_TOP,
                     value_text,
                     egui::FontId::proportional(10.0),
-                    theme.on_surface(),
+                    theme.foreground(),
                 );
             }
         }
@@ -269,18 +289,24 @@ impl<'a> XYPad<'a> {
             });
         }
 
-        response
+        let changed = response.changed();
+        XYPadResponse {
+            response,
+            x: *self.x,
+            y: *self.y,
+            changed,
+        }
     }
 
     fn draw_filled(&self, painter: &egui::Painter, theme: &Theme, rect: Rect, corner_radius: f32) {
         // Background
-        painter.rect_filled(rect, corner_radius, theme.surface_variant());
+        painter.rect_filled(rect, corner_radius, theme.muted());
 
         // Border
         painter.rect_stroke(
             rect,
             corner_radius,
-            egui::Stroke::new(1.0, theme.outline_variant()),
+            egui::Stroke::new(1.0, theme.border()),
             egui::StrokeKind::Outside,
         );
     }
@@ -293,13 +319,13 @@ impl<'a> XYPad<'a> {
         corner_radius: f32,
     ) {
         // Background
-        painter.rect_filled(rect, corner_radius, theme.surface());
+        painter.rect_filled(rect, corner_radius, theme.card());
 
         // Border
         painter.rect_stroke(
             rect,
             corner_radius,
-            egui::Stroke::new(1.5, theme.outline()),
+            egui::Stroke::new(1.5, theme.border()),
             egui::StrokeKind::Outside,
         );
     }
@@ -321,13 +347,13 @@ impl<'a> XYPad<'a> {
         }
 
         // Background
-        painter.rect_filled(rect, corner_radius, theme.surface_variant());
+        painter.rect_filled(rect, corner_radius, theme.muted());
 
         // Border
         painter.rect_stroke(
             rect,
             corner_radius,
-            egui::Stroke::new(1.0, theme.outline_variant()),
+            egui::Stroke::new(1.0, theme.border()),
             egui::StrokeKind::Outside,
         );
     }

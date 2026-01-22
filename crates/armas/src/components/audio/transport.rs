@@ -8,7 +8,37 @@ use crate::components::button::{ButtonVariant, IconButton};
 use crate::components::cards::{Card, CardVariant};
 use crate::icon::TransportIcon;
 use crate::theme::Theme;
-use egui::{Align, Response, Ui};
+use egui::{Align, Color32, Response, Ui};
+
+/// Transport button visibility configuration
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TransportButtons {
+    /// Show rewind/go-to-start button
+    pub show_rewind: bool,
+    /// Show play/pause button
+    pub show_play: bool,
+    /// Show stop button
+    pub show_stop: bool,
+    /// Show record button
+    pub show_record: bool,
+    /// Show loop toggle
+    pub show_loop: bool,
+    /// Show metronome toggle
+    pub show_metronome: bool,
+}
+
+impl Default for TransportButtons {
+    fn default() -> Self {
+        Self {
+            show_rewind: true,
+            show_play: true,
+            show_stop: false,
+            show_record: true,
+            show_loop: true,
+            show_metronome: true,
+        }
+    }
+}
 
 /// Transport playback state
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -28,6 +58,18 @@ pub enum TransportState {
 pub struct TransportResponse {
     /// The UI response
     pub response: Response,
+    /// Current playback state
+    pub state: TransportState,
+    /// Current time in seconds
+    pub current_time: f64,
+    /// Current tempo in BPM
+    pub tempo: f32,
+    /// Current time signature
+    pub time_signature: (u8, u8),
+    /// Loop enabled state
+    pub loop_enabled: bool,
+    /// Metronome enabled state
+    pub metronome_enabled: bool,
     /// Play button clicked
     pub play_clicked: bool,
     /// Pause button clicked (when playing)
@@ -46,8 +88,6 @@ pub struct TransportResponse {
     pub metronome_toggled: bool,
     /// Tempo changed
     pub tempo_changed: bool,
-    /// New tempo value (if changed)
-    pub new_tempo: Option<f32>,
 }
 
 /// Transport Control component
@@ -67,7 +107,7 @@ pub struct TransportResponse {
 ///     .tempo(120.0)
 ///     .time_signature(4, 4);
 ///
-/// let (response, transport) = transport.show(ui, theme);
+/// let response = transport.show(ui, theme);
 ///
 /// if response.play_clicked {
 ///     // Start playback
@@ -75,6 +115,9 @@ pub struct TransportResponse {
 /// if response.stop_clicked {
 ///     // Stop playback
 /// }
+/// // Access current state from response
+/// println!("Current tempo: {}", response.tempo);
+/// println!("Current time: {}", response.current_time);
 /// # }
 /// ```
 #[derive(Clone)]
@@ -93,6 +136,10 @@ pub struct TransportControl {
     metronome_enabled: bool,
     /// Width of the transport
     width: Option<f32>,
+    /// Button color
+    button_color: Option<Color32>,
+    /// Button visibility configuration
+    buttons: TransportButtons,
 }
 
 impl TransportControl {
@@ -106,6 +153,8 @@ impl TransportControl {
             loop_enabled: false,
             metronome_enabled: false,
             width: None,
+            button_color: None,
+            buttons: TransportButtons::default(),
         }
     }
 
@@ -145,46 +194,26 @@ impl TransportControl {
         self
     }
 
+    /// Set button color
+    pub fn button_color(mut self, color: Color32) -> Self {
+        self.button_color = Some(color);
+        self
+    }
+
+    /// Set button visibility configuration
+    pub fn buttons(mut self, buttons: TransportButtons) -> Self {
+        self.buttons = buttons;
+        self
+    }
+
     /// Set the width of the transport (None = fill available width)
     pub fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
-    // Getter methods
-
-    /// Get current playback state
-    pub fn get_state(&self) -> TransportState {
-        self.state
-    }
-
-    /// Get current time
-    pub fn get_current_time(&self) -> f64 {
-        self.current_time
-    }
-
-    /// Get tempo
-    pub fn get_tempo(&self) -> f32 {
-        self.tempo
-    }
-
-    /// Get time signature
-    pub fn get_time_signature(&self) -> (u8, u8) {
-        self.time_signature
-    }
-
-    /// Check if loop is enabled
-    pub fn is_loop_enabled(&self) -> bool {
-        self.loop_enabled
-    }
-
-    /// Check if metronome is enabled
-    pub fn is_metronome_enabled(&self) -> bool {
-        self.metronome_enabled
-    }
-
     /// Show the transport control
-    pub fn show(mut self, ui: &mut Ui, theme: &Theme) -> (TransportResponse, Self) {
+    pub fn show(mut self, ui: &mut Ui, theme: &Theme) -> TransportResponse {
         let mut play_clicked = false;
         let mut pause_clicked = false;
         let mut stop_clicked = false;
@@ -275,7 +304,7 @@ impl TransportControl {
                     // Time display
                     Card::new()
                         .variant(CardVariant::Filled)
-                        .fill(theme.surface())
+                        .fill(theme.card())
                         .inner_margin(8.0)
                         .show(ui, theme, |ui| {
                             let minutes = (self.current_time / 60.0) as u32;
@@ -287,7 +316,7 @@ impl TransportControl {
                                 egui::RichText::new(time_str)
                                     .size(16.0)
                                     .family(egui::FontFamily::Proportional)
-                                    .color(theme.on_surface()),
+                                    .color(theme.foreground()),
                             );
                         });
 
@@ -296,7 +325,7 @@ impl TransportControl {
                     // Tempo display
                     Card::new()
                         .variant(CardVariant::Filled)
-                        .fill(theme.surface())
+                        .fill(theme.card())
                         .inner_margin(8.0)
                         .show(ui, theme, |ui| {
                             ui.spacing_mut().item_spacing.x = 8.0;
@@ -304,17 +333,17 @@ impl TransportControl {
                             ui.label(
                                 egui::RichText::new("BPM:")
                                     .size(16.0)
-                                    .color(theme.on_surface()),
+                                    .color(theme.foreground()),
                             );
                             let mut tempo_str = format!("{:.1}", self.tempo);
                             let tempo_response = Input::new("")
                                 .variant(InputVariant::Inline)
                                 .width(60.0)
                                 .font_size(16.0)
-                                .text_color(theme.on_surface())
+                                .text_color(theme.foreground())
                                 .show(ui, &mut tempo_str);
 
-                            if tempo_response.changed() {
+                            if tempo_response.changed {
                                 if let Ok(new_bpm) = tempo_str.parse::<f32>() {
                                     if new_bpm > 0.0 && new_bpm <= 999.0 {
                                         self.tempo = new_bpm;
@@ -330,7 +359,7 @@ impl TransportControl {
                     // Time signature display
                     Card::new()
                         .variant(CardVariant::Filled)
-                        .fill(theme.surface())
+                        .fill(theme.card())
                         .inner_margin(8.0)
                         .show(ui, theme, |ui| {
                             let time_sig_str =
@@ -338,7 +367,7 @@ impl TransportControl {
                             ui.label(
                                 egui::RichText::new(time_sig_str)
                                     .size(16.0)
-                                    .color(theme.on_surface()),
+                                    .color(theme.foreground()),
                             );
                         });
 
@@ -396,6 +425,12 @@ impl TransportControl {
 
         let transport_response = TransportResponse {
             response: card_response.response,
+            state: self.state,
+            current_time: self.current_time,
+            tempo: self.tempo,
+            time_signature: self.time_signature,
+            loop_enabled: self.loop_enabled,
+            metronome_enabled: self.metronome_enabled,
             play_clicked,
             pause_clicked,
             stop_clicked,
@@ -405,10 +440,9 @@ impl TransportControl {
             loop_toggled,
             metronome_toggled,
             tempo_changed,
-            new_tempo,
         };
 
-        (transport_response, self)
+        transport_response
     }
 }
 

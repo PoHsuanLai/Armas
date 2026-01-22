@@ -20,7 +20,7 @@ GradientCard::new()
     .gradient_colors(vec![
         theme.primary(),
         theme.secondary(),
-        theme.error(),
+        theme.destructive(),
     ])
     .show(ui, &theme, |ui| {
         ui.heading("Custom Colors");
@@ -77,7 +77,7 @@ GradientCard::gold().show(ui, &theme, |ui| {
 | `.gradient_colors()` | `Vec<Color32>` | `[blue, purple, pink]` | Gradient colors (min 2) |
 | `.rotation_speed()` | `f32` | `PI / 4.0` | Rotation speed (radians/sec) |
 | `.animate()` | `bool` | `true` | Enable/disable animation |
-| `.background_color()` | `Color32` | `theme.surface()` | Background color |
+| `.background_color()` | `Color32` | `theme.card()` | Background color |
 | `.glow_on_hover()` | `bool` | `true` | Enable glow effect on hover |
 | `.show()` | `(&mut Ui, &Theme, impl FnOnce(&mut Ui))` | - | Show card with content |
 

@@ -166,14 +166,14 @@ impl AnimatedTabs {
 
             // Background
             if is_hovered && !is_active {
-                ui.painter().rect_filled(tab_rect, 0.0, theme.hover());
+                ui.painter().rect_filled(tab_rect, 0.0, theme.accent());
             }
 
             // Label
             let label_color = if is_active {
                 theme.primary()
             } else {
-                theme.on_surface_variant()
+                theme.muted_foreground()
             };
 
             ui.painter().text(
@@ -226,9 +226,9 @@ impl AnimatedTabs {
                 let bg_color = if is_active {
                     theme.primary()
                 } else if is_hovered {
-                    theme.hover()
+                    theme.accent()
                 } else {
-                    theme.surface()
+                    theme.card()
                 };
 
                 ui.painter().rect_filled(rect, 18.0, bg_color);
@@ -237,7 +237,7 @@ impl AnimatedTabs {
                 let label_color = if is_active {
                     Color32::WHITE
                 } else {
-                    theme.on_surface()
+                    theme.foreground()
                 };
 
                 ui.painter().text(
@@ -270,13 +270,13 @@ impl AnimatedTabs {
             ui.allocate_exact_size(Vec2::new(total_width, height), egui::Sense::hover());
 
         // Draw container background
-        ui.painter().rect_filled(rect, 4.0, theme.surface());
+        ui.painter().rect_filled(rect, 4.0, theme.card());
 
         // Draw container border
         ui.painter().rect_stroke(
             rect,
             4.0,
-            egui::Stroke::new(1.0, theme.outline()),
+            egui::Stroke::new(1.0, theme.border()),
             egui::StrokeKind::Middle,
         );
 
@@ -305,7 +305,7 @@ impl AnimatedTabs {
             // Hover effect
             if is_hovered && !is_active {
                 ui.painter()
-                    .rect_filled(segment_rect.shrink(2.0), 3.0, theme.hover());
+                    .rect_filled(segment_rect.shrink(2.0), 3.0, theme.accent());
             }
 
             // Divider (except for last segment) - drawn manually
@@ -316,7 +316,7 @@ impl AnimatedTabs {
                         Pos2::new(divider_x, rect.min.y + 8.0),
                         Pos2::new(divider_x, rect.max.y - 8.0),
                     ],
-                    egui::Stroke::new(1.0, theme.outline_variant()),
+                    egui::Stroke::new(1.0, theme.border()),
                 );
             }
 
@@ -324,7 +324,7 @@ impl AnimatedTabs {
             let label_color = if is_active {
                 Color32::WHITE
             } else {
-                theme.on_surface()
+                theme.foreground()
             };
 
             ui.painter().text(

@@ -346,7 +346,7 @@ impl PianoRollGrid {
                 egui::Align2::LEFT_TOP,
                 format!("{}", measure + 1),
                 egui::FontId::proportional(10.0),
-                theme.on_surface_variant(),
+                theme.muted_foreground(),
             );
         }
     }

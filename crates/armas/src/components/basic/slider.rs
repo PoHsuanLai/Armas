@@ -146,7 +146,7 @@ impl Slider {
                 // Background track
                 let track_rect = Rect::from_center_size(rect.center(), vec2(rect.width(), 4.0));
 
-                painter.rect_filled(track_rect, 2.0, theme.surface_variant());
+                painter.rect_filled(track_rect, 2.0, theme.muted());
 
                 // Filled track (progress)
                 let t = (*value - self.min) / (self.max - self.min);
@@ -171,7 +171,7 @@ impl Slider {
                 let handle_color = if response.hovered() || response.dragged() {
                     theme.primary()
                 } else {
-                    theme.on_surface()
+                    theme.foreground()
                 };
 
                 painter.circle_filled(handle_center, handle_radius, handle_color);
@@ -180,7 +180,7 @@ impl Slider {
                 painter.circle_stroke(
                     handle_center,
                     handle_radius,
-                    Stroke::new(2.0, theme.surface()),
+                    Stroke::new(2.0, theme.card()),
                 );
             }
         });

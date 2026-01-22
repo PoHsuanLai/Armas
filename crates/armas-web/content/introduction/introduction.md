@@ -48,7 +48,7 @@ ui.vertical(|ui| {
 
     Badge::new("New")
         .variant(BadgeVariant::Filled)
-        .color(BadgeColor::Primary)
+        
         .show(ui);
 });
 ```

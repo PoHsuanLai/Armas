@@ -258,7 +258,7 @@ impl Drawer {
                 ui.set_clip_rect(drawer_rect);
 
                 // Background
-                let frame = egui::Frame::NONE.fill(theme.surface()).inner_margin(0.0);
+                let frame = egui::Frame::NONE.fill(theme.card()).inner_margin(0.0);
 
                 frame.show(ui, |ui| {
                     ui.set_min_size(drawer_rect.size());
@@ -285,7 +285,7 @@ impl Drawer {
                                     if ui.is_rect_visible(close_rect) {
                                         // Background on hover
                                         if close_response.hovered() {
-                                            let error = theme.error();
+                                            let error = theme.destructive();
                                             ui.painter().rect_filled(
                                                 close_rect,
                                                 theme.spacing.xs,
@@ -306,14 +306,14 @@ impl Drawer {
                                                 egui::pos2(center.x - offset, center.y - offset),
                                                 egui::pos2(center.x + offset, center.y + offset),
                                             ],
-                                            egui::Stroke::new(2.0, theme.on_surface()),
+                                            egui::Stroke::new(2.0, theme.foreground()),
                                         );
                                         ui.painter().line_segment(
                                             [
                                                 egui::pos2(center.x + offset, center.y - offset),
                                                 egui::pos2(center.x - offset, center.y + offset),
                                             ],
-                                            egui::Stroke::new(2.0, theme.on_surface()),
+                                            egui::Stroke::new(2.0, theme.foreground()),
                                         );
                                     }
 

@@ -7,6 +7,23 @@ use crate::components::audio::{GridDivision, Piano, PianoOrientation};
 use crate::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 
+/// Grid line style for piano roll
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct GridLineStyle {
+    /// Color of measure lines (darkest)
+    pub measure_color: Color32,
+    /// Color of beat lines
+    pub beat_color: Color32,
+    /// Color of subdivision lines
+    pub subdivision_color: Color32,
+    /// Width of measure lines
+    pub measure_width: f32,
+    /// Width of beat lines
+    pub beat_width: f32,
+    /// Width of subdivision lines
+    pub subdivision_width: f32,
+}
+
 /// A single note in the piano roll
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Note {
@@ -83,6 +100,16 @@ pub struct PianoRoll {
     note_opacity: f32,
     /// Enable note editing
     editable: bool,
+    /// Black key color
+    black_key_color: Option<Color32>,
+    /// Note block color
+    note_color: Option<Color32>,
+    /// Selected note color
+    selected_note_color: Option<Color32>,
+    /// Grid line style configuration
+    grid_style: Option<GridLineStyle>,
+    /// Snap to grid enabled
+    snap_to_grid: bool,
 }
 
 impl PianoRoll {
@@ -102,6 +129,11 @@ impl PianoRoll {
             show_piano: true,
             note_opacity: 0.85,
             editable: true,
+            black_key_color: None,
+            note_color: None,
+            selected_note_color: None,
+            grid_style: None,
+            snap_to_grid: false,
         }
     }
 
@@ -180,6 +212,36 @@ impl PianoRoll {
     /// Set whether notes are editable
     pub fn editable(mut self, editable: bool) -> Self {
         self.editable = editable;
+        self
+    }
+
+    /// Set black key color
+    pub fn black_key_color(mut self, color: Color32) -> Self {
+        self.black_key_color = Some(color);
+        self
+    }
+
+    /// Set note block color
+    pub fn note_color(mut self, color: Color32) -> Self {
+        self.note_color = Some(color);
+        self
+    }
+
+    /// Set selected note color
+    pub fn selected_note_color(mut self, color: Color32) -> Self {
+        self.selected_note_color = Some(color);
+        self
+    }
+
+    /// Set grid line style for customizing line appearance
+    pub fn grid_style(mut self, style: GridLineStyle) -> Self {
+        self.grid_style = Some(style);
+        self
+    }
+
+    /// Enable snap-to-grid for note placement and resizing
+    pub fn snap_to_grid(mut self, enabled: bool) -> Self {
+        self.snap_to_grid = enabled;
         self
     }
 

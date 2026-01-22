@@ -74,14 +74,13 @@ impl ShowcaseSectionHeader {
                     egui::RichText::new(&self.title)
                         .size(title_size)
                         .strong()
-                        .color(theme.on_surface()),
+                        .color(theme.foreground()),
                 );
 
                 if let Some(badge_text) = &self.badge {
                     ui.add_space(8.0);
                     Badge::new(badge_text)
                         .variant(BadgeVariant::Filled)
-                        .color(BadgeColor::Info)
                         .show(ui);
                 }
             });
@@ -91,7 +90,7 @@ impl ShowcaseSectionHeader {
                 ui.label(
                     egui::RichText::new(desc)
                         .size(14.0)
-                        .color(theme.on_surface_variant()),
+                        .color(theme.muted_foreground()),
                 );
             }
         });

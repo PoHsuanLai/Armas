@@ -225,7 +225,7 @@ impl<'a> GridBuilder<'a> {
 
         // Background with hover effect
         let bg_color = if self.hover_effect && is_hovered {
-            self.theme.hover()
+            self.theme.accent()
         } else {
             Color32::TRANSPARENT
         };
@@ -253,7 +253,7 @@ impl<'a> GridBuilder<'a> {
             egui::Align2::LEFT_TOP,
             &item.title,
             egui::FontId::proportional(18.0),
-            self.theme.on_surface(),
+            self.theme.foreground(),
         );
 
         // Description
@@ -264,11 +264,11 @@ impl<'a> GridBuilder<'a> {
         let galley = painter.layout(
             item.description.clone(),
             egui::FontId::proportional(14.0),
-            self.theme.on_surface_variant(),
+            self.theme.muted_foreground(),
             desc_width,
         );
 
-        painter.galley(desc_pos, galley, self.theme.on_surface_variant());
+        painter.galley(desc_pos, galley, self.theme.muted_foreground());
     }
 
     /// Draw smart borders (only between items)
@@ -276,7 +276,7 @@ impl<'a> GridBuilder<'a> {
         let (row, col) = position;
         let (rows, columns) = grid_size;
         let painter = self.ui.painter();
-        let border_color = self.theme.outline_variant();
+        let border_color = self.theme.border();
         let stroke = egui::Stroke::new(1.0, border_color);
 
         // Right border (not on last column)

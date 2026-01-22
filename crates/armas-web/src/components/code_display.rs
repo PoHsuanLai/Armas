@@ -176,9 +176,7 @@ impl CodeDisplayCard {
         Card::new().corner_radius(12.0).show(ui, &theme, |ui| {
             // Header with language badge, GitHub link, and copy button
             ui.horizontal(|ui| {
-                Badge::new(self.language.to_uppercase())
-                    .color(BadgeColor::Info)
-                    .show(ui);
+                Badge::new(self.language.to_uppercase()).show(ui);
 
                 ui.allocate_space(ui.available_size());
 
@@ -245,7 +243,7 @@ impl CodeDisplayCard {
                                 ui.label(
                                     egui::RichText::new(format!("{:>3}", i + 1))
                                         .monospace()
-                                        .color(theme.on_surface_variant()),
+                                        .color(theme.muted_foreground()),
                                 );
                             }
                         });
@@ -271,7 +269,7 @@ impl CodeDisplayCard {
                                     ui.label(
                                         egui::RichText::new(line)
                                             .monospace()
-                                            .color(theme.on_surface()),
+                                            .color(theme.foreground()),
                                     );
                                 }
                             });
@@ -292,7 +290,7 @@ pub fn code_inline(ui: &mut egui::Ui, code: &str, theme: &Theme) {
     ui.label(
         egui::RichText::new(code)
             .monospace()
-            .background_color(theme.surface_variant())
+            .background_color(theme.muted())
             .color(theme.primary()),
     );
 }

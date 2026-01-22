@@ -275,14 +275,14 @@ fn render_paragraph(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
                         egui::RichText::new(&text)
                             .size(14.0)
                             .family(egui::FontFamily::Name("FiraMono".into()))
-                            .background_color(theme.surface_variant())
+                            .background_color(theme.muted())
                             .color(theme.primary()),
                     );
                 } else {
                     ui.label(
                         egui::RichText::new(&text)
                             .size(14.0)
-                            .color(theme.on_surface_variant()),
+                            .color(theme.muted_foreground()),
                     );
                 }
             }
@@ -307,12 +307,12 @@ fn render_code_block(
         ui.set_max_width(800.0);
 
         // Use theme-aware background color
-        let bg_color = theme.surface_variant();
+        let bg_color = theme.muted();
 
         let frame = egui::Frame::NONE
             .fill(bg_color)
             .corner_radius(8.0)
-            .stroke(egui::Stroke::new(1.0, theme.outline()))
+            .stroke(egui::Stroke::new(1.0, theme.border()))
             .inner_margin(0.0);
 
         frame.show(ui, |ui| {
@@ -480,14 +480,14 @@ fn render_list_item(ui: &mut egui::Ui, text: &str, theme: &Theme, base_id: u64, 
                                 egui::RichText::new(&text)
                                     .size(14.0)
                                     .family(egui::FontFamily::Name("FiraMono".into()))
-                                    .background_color(theme.surface_variant())
+                                    .background_color(theme.muted())
                                     .color(theme.primary()),
                             );
                         } else {
                             ui.label(
                                 egui::RichText::new(&text)
                                     .size(14.0)
-                                    .color(theme.on_surface_variant()),
+                                    .color(theme.muted_foreground()),
                             );
                         }
                     }
@@ -556,14 +556,14 @@ fn render_table(
                                             egui::RichText::new(&text)
                                                 .size(14.0)
                                                 .family(egui::FontFamily::Name("FiraMono".into()))
-                                                .background_color(theme.surface_variant())
+                                                .background_color(theme.muted())
                                                 .color(theme.primary()),
                                         );
                                     } else {
                                         ui.label(
                                             egui::RichText::new(&text)
                                                 .size(14.0)
-                                                .color(theme.on_surface_variant()),
+                                                .color(theme.muted_foreground()),
                                         );
                                     }
                                 }

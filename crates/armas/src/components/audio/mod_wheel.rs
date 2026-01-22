@@ -204,7 +204,7 @@ impl<'a> ModWheel<'a> {
                         Pos2::new(rect.min.x + 4.0, center_y),
                         Pos2::new(rect.max.x - 4.0, center_y),
                     ],
-                    egui::Stroke::new(1.0, theme.outline()),
+                    egui::Stroke::new(1.0, theme.border()),
                 );
             }
 
@@ -231,7 +231,7 @@ impl<'a> ModWheel<'a> {
                     egui::Align2::CENTER_TOP,
                     label,
                     egui::FontId::proportional(10.0),
-                    theme.on_surface_variant(),
+                    theme.muted_foreground(),
                 );
             }
 
@@ -243,7 +243,7 @@ impl<'a> ModWheel<'a> {
                     egui::Align2::CENTER_BOTTOM,
                     value_text,
                     egui::FontId::proportional(10.0),
-                    theme.on_surface(),
+                    theme.foreground(),
                 );
             }
         }
@@ -388,13 +388,13 @@ impl<'a> ModWheel<'a> {
 
     fn draw_filled(&self, painter: &egui::Painter, theme: &Theme, rect: Rect, corner_radius: f32) {
         // Background
-        painter.rect_filled(rect, corner_radius, theme.surface_variant());
+        painter.rect_filled(rect, corner_radius, theme.muted());
 
         // Border
         painter.rect_stroke(
             rect,
             corner_radius,
-            egui::Stroke::new(1.0, theme.outline_variant()),
+            egui::Stroke::new(1.0, theme.border()),
             egui::StrokeKind::Outside,
         );
     }
@@ -407,13 +407,13 @@ impl<'a> ModWheel<'a> {
         corner_radius: f32,
     ) {
         // Background
-        painter.rect_filled(rect, corner_radius, theme.surface());
+        painter.rect_filled(rect, corner_radius, theme.card());
 
         // Border
         painter.rect_stroke(
             rect,
             corner_radius,
-            egui::Stroke::new(1.5, theme.outline()),
+            egui::Stroke::new(1.5, theme.border()),
             egui::StrokeKind::Outside,
         );
     }
@@ -435,13 +435,13 @@ impl<'a> ModWheel<'a> {
         }
 
         // Background
-        painter.rect_filled(rect, corner_radius, theme.surface_variant());
+        painter.rect_filled(rect, corner_radius, theme.muted());
 
         // Border
         painter.rect_stroke(
             rect,
             corner_radius,
-            egui::Stroke::new(1.0, theme.outline_variant()),
+            egui::Stroke::new(1.0, theme.border()),
             egui::StrokeKind::Outside,
         );
     }

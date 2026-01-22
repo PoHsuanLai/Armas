@@ -411,7 +411,7 @@ pub struct TrackHeaderResponse {
 ### Card Wrapper
 
 - Uses Material Design `Card` component with `Filled` variant
-- Default background: `theme.surface_variant()` (from Card)
+- Default background: `theme.muted()` (from Card)
 - Can be customized with `.card_color()` for themed tracks
 - Corner radius: `theme.spacing.corner_radius_medium` (12px)
 - Provides subtle elevation and consistent padding
@@ -427,7 +427,7 @@ pub struct TrackHeaderResponse {
 ### Track Name
 
 - Uses native egui `TextEdit` for editable names
-- Theme-aware text color: `theme.on_surface()`
+- Theme-aware text color: `theme.foreground()`
 - Borderless, inline editing experience
 - Full width of header minus color bar and spacing
 - Hint text: "Track Name"

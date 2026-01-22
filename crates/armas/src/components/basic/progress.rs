@@ -23,10 +23,10 @@ impl ProgressColor {
     pub fn color(&self, theme: &Theme) -> Color32 {
         match self {
             ProgressColor::Primary => theme.primary(),
-            ProgressColor::Success => theme.success(),
-            ProgressColor::Warning => theme.warning(),
-            ProgressColor::Error => theme.error(),
-            ProgressColor::Info => theme.info(),
+            ProgressColor::Success => theme.chart_2(),
+            ProgressColor::Warning => theme.chart_3(),
+            ProgressColor::Error => theme.destructive(),
+            ProgressColor::Info => theme.chart_4(),
         }
     }
 }
@@ -147,7 +147,7 @@ impl LinearProgress {
 
         // Background track
         ui.painter()
-            .rect_filled(bar_rect, self.height / 2.0, theme.surface_variant());
+            .rect_filled(bar_rect, self.height / 2.0, theme.muted());
 
         if let Some(progress) = self.progress {
             // Determinate mode
@@ -167,7 +167,7 @@ impl LinearProgress {
                     egui::Align2::CENTER_TOP,
                     format!("{}%", percentage),
                     egui::FontId::proportional(12.0),
-                    theme.on_surface_variant(),
+                    theme.muted_foreground(),
                 );
             }
         } else {
@@ -319,7 +319,7 @@ impl CircularProgressBar {
         ui.painter().circle_stroke(
             center,
             radius,
-            egui::Stroke::new(self.stroke_width, theme.surface_variant()),
+            egui::Stroke::new(self.stroke_width, theme.muted()),
         );
 
         if let Some(progress) = self.progress {
@@ -335,7 +335,7 @@ impl CircularProgressBar {
                     egui::Align2::CENTER_CENTER,
                     format!("{}%", percentage),
                     egui::FontId::proportional(self.size * 0.25),
-                    theme.on_surface(),
+                    theme.foreground(),
                 );
             }
         } else {
@@ -467,7 +467,7 @@ impl RingProgress {
             ui,
             center,
             mid_radius,
-            egui::Stroke::new(self.thickness, theme.surface_variant()),
+            egui::Stroke::new(self.thickness, theme.muted()),
             0.0,
             2.0 * PI,
         );
@@ -490,7 +490,7 @@ impl RingProgress {
             egui::Align2::CENTER_CENTER,
             format!("{}%", percentage),
             egui::FontId::proportional(self.size * 0.2),
-            theme.on_surface(),
+            theme.foreground(),
         );
 
         if let Some(label) = &self.label {
@@ -499,7 +499,7 @@ impl RingProgress {
                 egui::Align2::CENTER_CENTER,
                 label,
                 egui::FontId::proportional(self.size * 0.12),
-                theme.on_surface_variant(),
+                theme.muted_foreground(),
             );
         }
     }

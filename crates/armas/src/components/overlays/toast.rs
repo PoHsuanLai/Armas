@@ -5,39 +5,32 @@
 
 use crate::animation::SpringAnimation;
 use crate::ext::ArmasContextExt;
-use crate::{Badge, BadgeColor, Button, ButtonVariant, Card, CardVariant, Theme};
-use egui::{vec2, Align2, Id, Sense, Vec2};
+use crate::{Badge, Button, ButtonVariant, Card, CardVariant, Theme};
+use egui::{vec2, Align2, Color32, Id, Sense, Vec2};
 use std::collections::VecDeque;
 
 /// Toast notification variant
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ToastVariant {
-    /// Informational message (blue)
-    Info,
-    /// Success message (green)
-    Success,
-    /// Warning message (orange)
-    Warning,
-    /// Error message (red)
-    Error,
+    /// Default notification
+    #[default]
+    Default,
+    /// Destructive/error notification (red)
+    Destructive,
 }
 
 impl ToastVariant {
-    fn badge_color(&self) -> BadgeColor {
+    fn icon(&self) -> &'static str {
         match self {
-            ToastVariant::Info => BadgeColor::Primary,
-            ToastVariant::Success => BadgeColor::Success,
-            ToastVariant::Warning => BadgeColor::Warning,
-            ToastVariant::Error => BadgeColor::Error,
+            ToastVariant::Default => "ℹ",
+            ToastVariant::Destructive => "✕",
         }
     }
 
-    fn icon(&self) -> &'static str {
+    fn color(&self, theme: &Theme) -> Color32 {
         match self {
-            ToastVariant::Info => "ℹ",
-            ToastVariant::Success => "✓",
-            ToastVariant::Warning => "⚠",
-            ToastVariant::Error => "✕",
+            ToastVariant::Default => theme.foreground(),
+            ToastVariant::Destructive => theme.destructive(),
         }
     }
 }
@@ -94,8 +87,9 @@ struct Toast {
     title: Option<String>,
     message: String,
     variant: ToastVariant,
+    custom_color: Option<Color32>,
     duration_secs: f32,
-    created_at: f64, // egui time in seconds
+    created_at: f64,
     slide_animation: SpringAnimation,
     dismissible: bool,
 }
@@ -113,6 +107,7 @@ impl Toast {
             title: None,
             message: message.into(),
             variant,
+            custom_color: None,
             duration_secs: 3.0,
             created_at: current_time,
             slide_animation: SpringAnimation::new(0.0, 1.0).params(250.0, 25.0),
@@ -144,6 +139,10 @@ impl Toast {
 
     fn progress(&self, current_time: f64) -> f32 {
         ((current_time - self.created_at) as f32 / self.duration_secs).min(1.0)
+    }
+
+    fn color(&self, theme: &Theme) -> Color32 {
+        self.custom_color.unwrap_or_else(|| self.variant.color(theme))
     }
 }
 
@@ -182,31 +181,19 @@ impl ToastManager {
         let toast = Toast::new(message, variant, current_time);
         self.toasts.push_back(toast);
 
-        // Limit number of toasts
         while self.toasts.len() > self.max_toasts {
             self.toasts.pop_front();
         }
     }
 
-    /// Add an info toast (time will be set when show() is called)
-    pub fn info(&mut self, message: impl Into<String>) {
-        // Use 0.0 as placeholder, will be updated in show()
-        self.add(message, ToastVariant::Info, 0.0);
+    /// Add a default toast
+    pub fn toast(&mut self, message: impl Into<String>) {
+        self.add(message, ToastVariant::Default, 0.0);
     }
 
-    /// Add a success toast (time will be set when show() is called)
-    pub fn success(&mut self, message: impl Into<String>) {
-        self.add(message, ToastVariant::Success, 0.0);
-    }
-
-    /// Add a warning toast (time will be set when show() is called)
-    pub fn warning(&mut self, message: impl Into<String>) {
-        self.add(message, ToastVariant::Warning, 0.0);
-    }
-
-    /// Add an error toast (time will be set when show() is called)
+    /// Add a destructive/error toast
     pub fn error(&mut self, message: impl Into<String>) {
-        self.add(message, ToastVariant::Error, 0.0);
+        self.add(message, ToastVariant::Destructive, 0.0);
     }
 
     /// Add a custom toast with builder pattern
@@ -321,12 +308,13 @@ impl ToastManager {
                 ui.set_opacity(opacity);
 
                 let width = 300.0;
+                let accent_color = toast.color(theme);
 
-                // Use Card for consistent styling with MD3 Elevated variant for floating effect
+                // Use Card for consistent styling
                 Card::new()
-                    .variant(CardVariant::Elevated) // Use Elevated for visual separation
+                    .variant(CardVariant::Elevated)
                     .width(width)
-                    .stroke(theme.outline().linear_multiply(0.3))
+                    .stroke(theme.border().linear_multiply(0.3))
                     .corner_radius(8.0)
                     .inner_margin(12.0)
                     .show(ui, theme, |ui| {
@@ -334,7 +322,7 @@ impl ToastManager {
                             ui.spacing_mut().item_spacing.x = 8.0;
                             // Icon badge
                             Badge::new(toast.variant.icon())
-                                .color(toast.variant.badge_color())
+                                .color(accent_color)
                                 .show(ui);
 
                             // Content
@@ -371,7 +359,7 @@ impl ToastManager {
                             );
 
                             // Background
-                            ui.painter().rect_filled(rect, 2.0, theme.surface_variant());
+                            ui.painter().rect_filled(rect, 2.0, theme.muted());
 
                             // Progress fill
                             let fill_width = rect.width() * progress;
@@ -380,14 +368,7 @@ impl ToastManager {
                                 vec2(fill_width, progress_height),
                             );
 
-                            let progress_color = match toast.variant {
-                                ToastVariant::Info => theme.primary(),
-                                ToastVariant::Success => theme.success(),
-                                ToastVariant::Warning => theme.warning(),
-                                ToastVariant::Error => theme.error(),
-                            };
-
-                            ui.painter().rect_filled(fill_rect, 2.0, progress_color);
+                            ui.painter().rect_filled(fill_rect, 2.0, accent_color);
                         }
                     });
             });
@@ -414,7 +395,7 @@ impl<'a> ToastBuilder<'a> {
         if let Some(toast) = &mut self.toast {
             toast.message = message.into();
         } else {
-            self.toast = Some(Toast::new(message, ToastVariant::Info, 0.0));
+            self.toast = Some(Toast::new(message, ToastVariant::Default, 0.0));
         }
         self
     }
@@ -433,6 +414,24 @@ impl<'a> ToastBuilder<'a> {
             toast.variant = variant;
         } else {
             self.toast = Some(Toast::new("", variant, 0.0));
+        }
+        self
+    }
+
+    /// Make this a destructive toast
+    pub fn destructive(mut self) -> Self {
+        if let Some(toast) = &mut self.toast {
+            toast.variant = ToastVariant::Destructive;
+        } else {
+            self.toast = Some(Toast::new("", ToastVariant::Destructive, 0.0));
+        }
+        self
+    }
+
+    /// Set custom color (overrides variant)
+    pub fn color(mut self, color: Color32) -> Self {
+        if let Some(toast) = &mut self.toast {
+            toast.custom_color = Some(color);
         }
         self
     }

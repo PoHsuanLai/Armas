@@ -16,7 +16,7 @@
 //!
 //! Icon::new(TransportIcon::Play)
 //!     .size(24.0)
-//!     .color(theme.on_surface())
+//!     .color(theme.foreground())
 //!     .show(ui);
 //! # }
 //! ```

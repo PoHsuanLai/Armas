@@ -120,7 +120,7 @@ impl Breadcrumbs {
 
                 ui.add_space(self.spacing);
                 ui.colored_label(
-                    theme.on_surface_variant().linear_multiply(0.6),
+                    theme.muted_foreground().linear_multiply(0.6),
                     &self.separator,
                 );
                 ui.add_space(self.spacing);
@@ -161,7 +161,7 @@ impl<'a> BreadcrumbsBuilder<'a> {
         if self.item_index > 0 || self.show_home_icon {
             self.ui.add_space(self.spacing);
             self.ui.colored_label(
-                theme.on_surface_variant().linear_multiply(0.6),
+                theme.muted_foreground().linear_multiply(0.6),
                 self.separator,
             );
             self.ui.add_space(self.spacing);
@@ -216,7 +216,7 @@ impl<'a> ItemBuilder<'a> {
 
         // Current item is not clickable
         if self.is_current {
-            self.ui.colored_label(theme.on_surface(), &label);
+            self.ui.colored_label(theme.foreground(), &label);
         } else {
             // Clickable items use text button
             if Button::new(&label)

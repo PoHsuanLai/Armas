@@ -48,8 +48,8 @@ impl MovingCard {
             title: title.into(),
             subtitle: subtitle.into(),
             author: None,
-            background_color: Color32::PLACEHOLDER, // Use theme.surface()
-            text_color: Color32::PLACEHOLDER,       // Use theme.on_surface()
+            background_color: Color32::PLACEHOLDER, // Use theme.card()
+            text_color: Color32::PLACEHOLDER,       // Use theme.foreground()
         }
     }
 
@@ -216,18 +216,18 @@ impl InfiniteMovingCards {
                     if card_rect.right() >= rect.left() && card_rect.left() <= rect.right() {
                         // Use theme colors if not explicitly set
                         let bg_color = if card.background_color == Color32::PLACEHOLDER {
-                            theme.surface()
+                            theme.card()
                         } else {
                             card.background_color
                         };
                         let text_color = if card.text_color == Color32::PLACEHOLDER {
-                            theme.on_surface()
+                            theme.foreground()
                         } else {
                             card.text_color
                         };
 
                         // Draw card background
-                        let outline = theme.outline_variant();
+                        let outline = theme.border();
                         painter.rect(
                             card_rect,
                             theme.spacing.corner_radius,
@@ -257,7 +257,7 @@ impl InfiniteMovingCards {
                         );
 
                         // Subtitle
-                        let subtitle_color = theme.on_surface_variant();
+                        let subtitle_color = theme.muted_foreground();
                         painter.text(
                             Pos2::new(
                                 content_rect.left(),

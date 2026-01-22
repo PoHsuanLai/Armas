@@ -4,56 +4,45 @@
 //! Built on top of Card component and layout system for consistency
 
 use crate::ext::ArmasContextExt;
-use crate::{Badge, BadgeColor, Button, ButtonVariant, Card, CardVariant, Theme};
+use crate::{Badge, Button, ButtonVariant, Card, CardVariant, Theme};
 use egui::{vec2, Color32, Ui};
 
 /// Alert variant
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum AlertVariant {
-    /// Informational alert (blue)
+    /// Informational alert (default)
+    #[default]
     Info,
-    /// Success alert (green)
-    Success,
-    /// Warning alert (orange)
-    Warning,
-    /// Error alert (red)
-    Error,
+    /// Destructive/error alert (red)
+    Destructive,
 }
 
 impl AlertVariant {
-    fn badge_color(&self) -> BadgeColor {
-        match self {
-            AlertVariant::Info => BadgeColor::Primary,
-            AlertVariant::Success => BadgeColor::Success,
-            AlertVariant::Warning => BadgeColor::Warning,
-            AlertVariant::Error => BadgeColor::Error,
-        }
-    }
-
     fn icon(&self) -> &'static str {
         match self {
             AlertVariant::Info => "ℹ",
-            AlertVariant::Success => "✓",
-            AlertVariant::Warning => "⚠",
-            AlertVariant::Error => "✕",
+            AlertVariant::Destructive => "✕",
+        }
+    }
+
+    fn color(&self, theme: &Theme) -> Color32 {
+        match self {
+            AlertVariant::Info => theme.foreground(),
+            AlertVariant::Destructive => theme.destructive(),
         }
     }
 
     fn background_color(&self, theme: &Theme) -> Color32 {
         match self {
-            AlertVariant::Info => theme.primary().linear_multiply(0.08),
-            AlertVariant::Success => theme.success().linear_multiply(0.08),
-            AlertVariant::Warning => theme.warning().linear_multiply(0.08),
-            AlertVariant::Error => theme.error().linear_multiply(0.08),
+            AlertVariant::Info => theme.muted(),
+            AlertVariant::Destructive => theme.destructive().linear_multiply(0.08),
         }
     }
 
     fn border_color(&self, theme: &Theme) -> Color32 {
         match self {
-            AlertVariant::Info => theme.primary(),
-            AlertVariant::Success => theme.success(),
-            AlertVariant::Warning => theme.warning(),
-            AlertVariant::Error => theme.error(),
+            AlertVariant::Info => theme.border(),
+            AlertVariant::Destructive => theme.destructive(),
         }
     }
 }
@@ -61,6 +50,27 @@ impl AlertVariant {
 /// Alert component for inline messages
 ///
 /// Built on top of the Card component with custom styling for alerts
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use armas::components::{Alert, AlertVariant};
+///
+/// fn ui(ui: &mut egui::Ui) {
+///     // Default info alert
+///     Alert::new("Operation completed").show(ui);
+///
+///     // Destructive alert
+///     Alert::new("Something went wrong")
+///         .variant(AlertVariant::Destructive)
+///         .show(ui);
+///
+///     // Custom color alert
+///     Alert::new("Custom alert")
+///         .color(egui::Color32::from_rgb(100, 200, 150))
+///         .show(ui);
+/// }
+/// ```
 pub struct Alert {
     variant: AlertVariant,
     title: Option<String>,
@@ -68,39 +78,21 @@ pub struct Alert {
     dismissible: bool,
     width: Option<f32>,
     show_icon: bool,
+    custom_color: Option<Color32>,
 }
 
 impl Alert {
     /// Create a new alert
-    pub fn new(message: impl Into<String>, variant: AlertVariant) -> Self {
+    pub fn new(message: impl Into<String>) -> Self {
         Self {
-            variant,
+            variant: AlertVariant::default(),
             title: None,
             message: message.into(),
             dismissible: false,
             width: None,
             show_icon: true,
+            custom_color: None,
         }
-    }
-
-    /// Create an info alert
-    pub fn info(message: impl Into<String>) -> Self {
-        Self::new(message, AlertVariant::Info)
-    }
-
-    /// Create a success alert
-    pub fn success(message: impl Into<String>) -> Self {
-        Self::new(message, AlertVariant::Success)
-    }
-
-    /// Create a warning alert
-    pub fn warning(message: impl Into<String>) -> Self {
-        Self::new(message, AlertVariant::Warning)
-    }
-
-    /// Create an error alert
-    pub fn error(message: impl Into<String>) -> Self {
-        Self::new(message, AlertVariant::Error)
     }
 
     /// Set the alert title
@@ -112,6 +104,18 @@ impl Alert {
     /// Set the variant
     pub fn variant(mut self, variant: AlertVariant) -> Self {
         self.variant = variant;
+        self
+    }
+
+    /// Make this a destructive alert
+    pub fn destructive(mut self) -> Self {
+        self.variant = AlertVariant::Destructive;
+        self
+    }
+
+    /// Set custom color (overrides variant color)
+    pub fn color(mut self, color: Color32) -> Self {
+        self.custom_color = Some(color);
         self
     }
 
@@ -140,11 +144,23 @@ impl Alert {
         let theme = ui.ctx().armas_theme();
         let mut dismissed = false;
 
-        // Build the Card with alert-specific styling using MD3 Outlined variant
+        let accent_color = self.custom_color.unwrap_or_else(|| self.variant.color(&theme));
+        let bg_color = if self.custom_color.is_some() {
+            Color32::from_rgba_unmultiplied(accent_color.r(), accent_color.g(), accent_color.b(), 20)
+        } else {
+            self.variant.background_color(&theme)
+        };
+        let border_color = if self.custom_color.is_some() {
+            accent_color
+        } else {
+            self.variant.border_color(&theme)
+        };
+
+        // Build the Card with alert-specific styling
         let mut card = Card::new()
-            .variant(CardVariant::Outlined) // Use Outlined for clear boundary
-            .fill(self.variant.background_color(&theme))
-            .stroke(self.variant.border_color(&theme))
+            .variant(CardVariant::Outlined)
+            .fill(bg_color)
+            .stroke(border_color)
             .corner_radius(8.0)
             .inner_margin(12.0);
 
@@ -152,14 +168,14 @@ impl Alert {
             card = card.width(width);
         }
 
-        // Show the card with alert content using layout system
+        // Show the card with alert content
         card.show(ui, &theme, |ui| {
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = 12.0;
                 // Icon badge
                 if self.show_icon {
                     Badge::new(self.variant.icon())
-                        .color(self.variant.badge_color())
+                        .color(accent_color)
                         .show(ui);
                 }
 
@@ -202,26 +218,11 @@ pub struct AlertResponse {
 }
 
 /// Simple helper to show an alert with just a message
-pub fn alert(ui: &mut Ui, message: impl Into<String>, variant: AlertVariant) {
-    Alert::new(message, variant).show(ui);
+pub fn alert(ui: &mut Ui, message: impl Into<String>) {
+    Alert::new(message).show(ui);
 }
 
-/// Show an info alert
-pub fn alert_info(ui: &mut Ui, message: impl Into<String>) {
-    Alert::info(message).show(ui);
-}
-
-/// Show a success alert
-pub fn alert_success(ui: &mut Ui, message: impl Into<String>) {
-    Alert::success(message).show(ui);
-}
-
-/// Show a warning alert
-pub fn alert_warning(ui: &mut Ui, message: impl Into<String>) {
-    Alert::warning(message).show(ui);
-}
-
-/// Show an error alert
-pub fn alert_error(ui: &mut Ui, message: impl Into<String>) {
-    Alert::error(message).show(ui);
+/// Show a destructive alert
+pub fn alert_destructive(ui: &mut Ui, message: impl Into<String>) {
+    Alert::new(message).destructive().show(ui);
 }

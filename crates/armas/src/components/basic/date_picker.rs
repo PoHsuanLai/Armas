@@ -225,7 +225,7 @@ impl DatePicker {
             ui.label(
                 egui::RichText::new(label)
                     .size(14.0)
-                    .color(theme.on_surface()),
+                    .color(theme.foreground()),
             );
             ui.add_space(4.0);
         }
@@ -233,15 +233,15 @@ impl DatePicker {
         // Input field with calendar icon
         let input = Input::new(&self.placeholder).left_icon("📅").width(300.0);
         let input_response = input.show(ui, &mut self.input_text);
-        let input_rect = input_response.rect;
+        let input_rect = input_response.response.rect;
 
         // Toggle popover on click
-        if input_response.clicked() {
+        if input_response.response.clicked() {
             self.is_open = !self.is_open;
         }
 
         // Try to parse input text
-        if input_response.changed() {
+        if input_response.changed {
             if let Some(date) = Date::parse(&self.input_text) {
                 *selected_date = Some(date);
                 self.viewing_year = date.year;
@@ -272,9 +272,9 @@ impl DatePicker {
                 full_rect,
                 theme.spacing.corner_radius,
                 egui::Color32::from_rgba_premultiplied(
-                    theme.surface().r(),
-                    theme.surface().g(),
-                    theme.surface().b(),
+                    theme.card().r(),
+                    theme.card().g(),
+                    theme.card().b(),
                     255,
                 ),
             );
@@ -296,7 +296,7 @@ impl DatePicker {
                             // Background on hover
                             if hovered {
                                 ui.painter()
-                                    .rect_filled(prev_rect, 6.0, theme.surface_variant());
+                                    .rect_filled(prev_rect, 6.0, theme.muted());
                             }
 
                             // Chevron icon
@@ -306,9 +306,9 @@ impl DatePicker {
                                 "‹",
                                 egui::FontId::proportional(20.0),
                                 if hovered {
-                                    theme.on_surface()
+                                    theme.foreground()
                                 } else {
-                                    theme.on_surface_variant()
+                                    theme.muted_foreground()
                                 },
                             );
                         }
@@ -331,7 +331,7 @@ impl DatePicker {
                                     ))
                                     .size(14.0)
                                     .strong()
-                                    .color(theme.on_surface()),
+                                    .color(theme.foreground()),
                                 );
                             },
                         );
@@ -347,7 +347,7 @@ impl DatePicker {
                             // Background on hover
                             if hovered {
                                 ui.painter()
-                                    .rect_filled(next_rect, 6.0, theme.surface_variant());
+                                    .rect_filled(next_rect, 6.0, theme.muted());
                             }
 
                             // Chevron icon
@@ -357,9 +357,9 @@ impl DatePicker {
                                 "›",
                                 egui::FontId::proportional(20.0),
                                 if hovered {
-                                    theme.on_surface()
+                                    theme.foreground()
                                 } else {
-                                    theme.on_surface_variant()
+                                    theme.muted_foreground()
                                 },
                             );
                         }
@@ -384,7 +384,7 @@ impl DatePicker {
                                                 12.0,
                                                 egui::FontFamily::Name("Inter".into()),
                                             ))
-                                            .color(theme.on_surface_variant()),
+                                            .color(theme.muted_foreground()),
                                     );
                                 });
                             });
@@ -472,16 +472,16 @@ impl DatePicker {
                                             )
                                         } else if hovered {
                                             // Hover: darken surface slightly
-                                            let surface = theme.surface_variant();
+                                            let surface = theme.muted();
                                             let darkened = Color32::from_rgb(
                                                 (surface.r() as f32 * 0.975) as u8,
                                                 (surface.g() as f32 * 0.975) as u8,
                                                 (surface.b() as f32 * 0.975) as u8,
                                             );
-                                            (Some(darkened), theme.on_surface(), false)
+                                            (Some(darkened), theme.foreground(), false)
                                         } else {
                                             // Normal: transparent
-                                            (None, theme.on_surface(), false)
+                                            (None, theme.foreground(), false)
                                         };
 
                                         // Background
@@ -536,7 +536,7 @@ impl DatePicker {
                                                 13.0,
                                                 egui::FontFamily::Name("Inter".into()),
                                             ),
-                                            theme.on_surface_variant().linear_multiply(0.5), // Very muted grey
+                                            theme.muted_foreground().linear_multiply(0.5), // Very muted grey
                                         );
                                     }
                                 }
@@ -557,9 +557,9 @@ impl DatePicker {
                         sep_rect,
                         0.0,
                         Color32::from_rgba_unmultiplied(
-                            theme.outline().r(),
-                            theme.outline().g(),
-                            theme.outline().b(),
+                            theme.border().r(),
+                            theme.border().g(),
+                            theme.border().b(),
                             50,
                         ),
                     );
@@ -598,7 +598,7 @@ impl DatePicker {
                                 if hovered {
                                     theme.primary()
                                 } else {
-                                    theme.outline()
+                                    theme.border()
                                 },
                             ),
                             egui::StrokeKind::Outside,
@@ -622,7 +622,7 @@ impl DatePicker {
                             if hovered {
                                 theme.primary()
                             } else {
-                                theme.on_surface()
+                                theme.foreground()
                             },
                         );
                     }
@@ -650,9 +650,9 @@ impl DatePicker {
                             egui::Stroke::new(
                                 1.0,
                                 if hovered {
-                                    theme.error()
+                                    theme.destructive()
                                 } else {
-                                    theme.outline()
+                                    theme.border()
                                 },
                             ),
                             egui::StrokeKind::Outside,
@@ -663,7 +663,7 @@ impl DatePicker {
                             ui.painter().rect_filled(
                                 clear_rect,
                                 4.0,
-                                theme.error().linear_multiply(0.1),
+                                theme.destructive().linear_multiply(0.1),
                             );
                         }
 
@@ -674,9 +674,9 @@ impl DatePicker {
                             clear_text,
                             egui::FontId::new(13.0, egui::FontFamily::Name("Inter".into())),
                             if hovered {
-                                theme.error()
+                                theme.destructive()
                             } else {
-                                theme.on_surface()
+                                theme.foreground()
                             },
                         );
                     }

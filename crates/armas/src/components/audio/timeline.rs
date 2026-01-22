@@ -776,7 +776,7 @@ impl<'a> Timeline<'a> {
                     .beat_width(self.beat_width)
                     .measures(self.measures)
                     .beats_per_measure(self.beats_per_measure)
-                    .show(&mut ruler_ui, theme);
+                    .show_clipped(&mut ruler_ui, theme);
             });
 
             // Row 2: Headers + Tracks
@@ -1003,61 +1003,53 @@ impl<'a> Timeline<'a> {
         );
 
         // Render point markers in the ruler area
+        // NOTE: We use a child UI with max_rect instead of a separate layer to respect parent z-order
         if self.markers.is_some() && !ruler_rect.is_negative() {
-            let marker_layer_id = egui::LayerId::new(
-                egui::Order::Foreground,
-                self.id.unwrap_or_else(|| ui.id()).with("markers")
-            );
-
             let marker_rect = Rect::from_min_size(
                 pos2(ruler_rect.min.x - scroll_offset.x, ruler_rect.min.y),
                 vec2(timeline_content_width, ruler_rect.height())
             );
 
-            ui.scope_builder(
-                egui::UiBuilder::new().layer_id(marker_layer_id).max_rect(marker_rect),
-                |ui| {
-                    ui.set_clip_rect(ruler_rect);
-
-                    if let Some(markers) = self.markers {
-                        for (i, marker_data) in markers.iter_mut().enumerate() {
-                            let vertical_range = if marker_data.content.contains("BPM") {
-                                (0.33, 0.67)
-                            } else if marker_data.content.contains('/') && marker_data.content.len() < 6 {
-                                (0.67, 1.0)
-                            } else {
-                                (0.0, 0.33)
-                            };
-
-                            let mut marker = Marker::new(&mut marker_data.position, &marker_data.content)
-                                .beat_width(self.beat_width)
-                                .measures(self.measures)
-                                .beats_per_measure(self.beats_per_measure)
-                                .height(self.ruler_height)
-                                .vertical_range(vertical_range.0, vertical_range.1)
-                                .id(self.id.unwrap_or_else(|| ui.id()).with("marker").with(i));
-
-                            if let Some(color) = marker_data.color {
-                                marker = marker.color(color);
-                            }
-
-                            marker.show(ui);
-                        }
-                    }
-                },
+            let mut marker_ui = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(marker_rect)
+                    .layout(egui::Layout::left_to_right(egui::Align::Min)),
             );
+            marker_ui.set_clip_rect(ruler_rect);
+
+            if let Some(markers) = self.markers {
+                for (i, marker_data) in markers.iter_mut().enumerate() {
+                    let vertical_range = if marker_data.content.contains("BPM") {
+                        (0.33, 0.67)
+                    } else if marker_data.content.contains('/') && marker_data.content.len() < 6 {
+                        (0.67, 1.0)
+                    } else {
+                        (0.0, 0.33)
+                    };
+
+                    let mut marker = Marker::new(&mut marker_data.position, &marker_data.content)
+                        .beat_width(self.beat_width)
+                        .measures(self.measures)
+                        .beats_per_measure(self.beats_per_measure)
+                        .height(self.ruler_height)
+                        .vertical_range(vertical_range.0, vertical_range.1)
+                        .id(self.id.unwrap_or_else(|| ui.id()).with("marker").with(i));
+
+                    if let Some(color) = marker_data.color {
+                        marker = marker.color(color);
+                    }
+
+                    marker.show(&mut marker_ui);
+                }
+            }
         }
 
         // Render snap grid overlay if enabled
+        // NOTE: We use a child UI with max_rect instead of a separate layer to respect parent z-order
         if self.show_snap_grid && timeline_height > 0.0 {
             let tracks_rect = Rect::from_min_size(
                 available_rect.min + Vec2::new(self.track_header_width, self.ruler_height),
                 Vec2::new(timeline_width, timeline_height)
-            );
-
-            let grid_layer_id = egui::LayerId::new(
-                egui::Order::Middle,
-                self.id.unwrap_or_else(|| ui.id()).with("snap_grid_overlay")
             );
 
             let grid_rect = Rect::from_min_size(
@@ -1065,22 +1057,25 @@ impl<'a> Timeline<'a> {
                 vec2(timeline_content_width, timeline_content_height)
             );
 
-            ui.scope_builder(
-                egui::UiBuilder::new().layer_id(grid_layer_id).max_rect(grid_rect),
-                |ui| {
-                    ui.set_clip_rect(tracks_rect);
-
-                    SnapGrid::new()
-                        .beat_width(self.beat_width)
-                        .measures(self.measures)
-                        .beats_per_measure(self.beats_per_measure)
-                        .subdivision(self.snap_grid_subdivision)
-                        .show(ui);
-                },
+            let mut grid_ui = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(grid_rect)
+                    .layout(egui::Layout::left_to_right(egui::Align::Min)),
             );
+            grid_ui.set_clip_rect(tracks_rect);
+
+            SnapGrid::new()
+                .beat_width(self.beat_width)
+                .measures(self.measures)
+                .beats_per_measure(self.beats_per_measure)
+                .subdivision(self.snap_grid_subdivision)
+                .show_overlay(&mut grid_ui);
         }
 
         // Render region markers (loop, selection, punch) overlaying tracks
+        // NOTE: We use child UIs instead of separate layers to respect parent z-order
+        // The z_order_id is still used to track which marker was last interacted with
+        // for internal ordering between the three markers
         if !flat_list.is_empty() && timeline_height > 0.0 {
             let tracks_rect = Rect::from_min_size(
                 available_rect.min + Vec2::new(self.track_header_width, self.ruler_height),
@@ -1095,105 +1090,94 @@ impl<'a> Timeline<'a> {
             let z_order_id = self.id.unwrap_or_else(|| ui.id()).with("marker_z_order");
             let mut top_marker: u8 = ui.ctx().data_mut(|d| d.get_temp(z_order_id).unwrap_or(2));
 
-            // Render loop region
-            if let Some(loop_data) = self.loop_region {
-                let loop_order = if top_marker == 0 {
-                    egui::Order::Foreground
-                } else {
-                    egui::Order::Middle
-                };
+            // Determine render order based on which marker is "on top"
+            // We render in back-to-front order so the top marker is drawn last
+            let render_order: [u8; 3] = match top_marker {
+                0 => [1, 2, 0], // Loop on top: render selection, punch, then loop
+                1 => [0, 2, 1], // Selection on top: render loop, punch, then selection
+                _ => [0, 1, 2], // Punch on top (default): render loop, selection, then punch
+            };
 
-                let loop_layer_id = egui::LayerId::new(
-                    loop_order,
-                    self.id.unwrap_or_else(|| ui.id()).with("loop_region_layer")
-                );
+            // We need to render markers in a specific order, but we can only consume each Option once
+            // So we extract them first, then render in order
+            let mut loop_region = self.loop_region;
+            let mut selection_range = self.selection_range;
+            let mut punch_region = self.punch_region;
 
-                let loop_response = ui.scope_builder(
-                    egui::UiBuilder::new().layer_id(loop_layer_id).max_rect(markers_rect),
-                    |ui| {
-                        ui.set_clip_rect(tracks_rect);
+            for marker_type in render_order {
+                match marker_type {
+                    0 => {
+                        // Render loop region
+                        if let Some(loop_data) = loop_region.take() {
+                            let mut loop_ui = ui.new_child(
+                                egui::UiBuilder::new()
+                                    .max_rect(markers_rect)
+                                    .layout(egui::Layout::left_to_right(egui::Align::Min)),
+                            );
+                            loop_ui.set_clip_rect(tracks_rect);
 
-                        LoopRegionMarker::new(&mut loop_data.start, &mut loop_data.end)
-                            .beat_width(self.beat_width)
-                            .measures(self.measures)
-                            .beats_per_measure(self.beats_per_measure)
-                            .height(timeline_content_height)
-                            .vertical_range(0.0, 0.5)
-                            .id(self.id.unwrap_or_else(|| ui.id()).with("loop_region"))
-                            .show(ui)
-                    },
-                ).inner;
+                            let loop_response = LoopRegionMarker::new(&mut loop_data.start, &mut loop_data.end)
+                                .beat_width(self.beat_width)
+                                .measures(self.measures)
+                                .beats_per_measure(self.beats_per_measure)
+                                .height(timeline_content_height)
+                                .vertical_range(0.0, 0.5)
+                                .id(self.id.unwrap_or_else(|| ui.id()).with("loop_region"))
+                                .show(&mut loop_ui);
 
-                if loop_response.region_clicked || loop_response.loop_start_changed || loop_response.loop_end_changed {
-                    top_marker = 0;
-                }
-            }
+                            if loop_response.region_clicked || loop_response.loop_start_changed || loop_response.loop_end_changed {
+                                top_marker = 0;
+                            }
+                        }
+                    }
+                    1 => {
+                        // Render selection range
+                        if let Some(selection_data) = selection_range.take() {
+                            let mut selection_ui = ui.new_child(
+                                egui::UiBuilder::new()
+                                    .max_rect(markers_rect)
+                                    .layout(egui::Layout::left_to_right(egui::Align::Min)),
+                            );
+                            selection_ui.set_clip_rect(tracks_rect);
 
-            // Render selection range
-            if let Some(selection_data) = self.selection_range {
-                let selection_order = if top_marker == 1 {
-                    egui::Order::Foreground
-                } else {
-                    egui::Order::Middle
-                };
+                            let selection_response = SelectionRange::new(&mut selection_data.start, &mut selection_data.end)
+                                .beat_width(self.beat_width)
+                                .measures(self.measures)
+                                .beats_per_measure(self.beats_per_measure)
+                                .height(timeline_content_height)
+                                .vertical_range(0.33, 0.67)
+                                .id(self.id.unwrap_or_else(|| ui.id()).with("selection_range"))
+                                .show(&mut selection_ui);
 
-                let selection_layer_id = egui::LayerId::new(
-                    selection_order,
-                    self.id.unwrap_or_else(|| ui.id()).with("selection_range_layer")
-                );
+                            if selection_response.region_clicked || selection_response.selection_start_changed || selection_response.selection_end_changed {
+                                top_marker = 1;
+                            }
+                        }
+                    }
+                    _ => {
+                        // Render punch region
+                        if let Some(punch_data) = punch_region.take() {
+                            let mut punch_ui = ui.new_child(
+                                egui::UiBuilder::new()
+                                    .max_rect(markers_rect)
+                                    .layout(egui::Layout::left_to_right(egui::Align::Min)),
+                            );
+                            punch_ui.set_clip_rect(tracks_rect);
 
-                let selection_response = ui.scope_builder(
-                    egui::UiBuilder::new().layer_id(selection_layer_id).max_rect(markers_rect),
-                    |ui| {
-                        ui.set_clip_rect(tracks_rect);
+                            let punch_response = PunchMarker::new(&mut punch_data.punch_in, &mut punch_data.punch_out)
+                                .beat_width(self.beat_width)
+                                .measures(self.measures)
+                                .beats_per_measure(self.beats_per_measure)
+                                .height(timeline_content_height)
+                                .vertical_range(0.5, 1.0)
+                                .id(self.id.unwrap_or_else(|| ui.id()).with("punch_region"))
+                                .show(&mut punch_ui);
 
-                        SelectionRange::new(&mut selection_data.start, &mut selection_data.end)
-                            .beat_width(self.beat_width)
-                            .measures(self.measures)
-                            .beats_per_measure(self.beats_per_measure)
-                            .height(timeline_content_height)
-                            .vertical_range(0.33, 0.67)
-                            .id(self.id.unwrap_or_else(|| ui.id()).with("selection_range"))
-                            .show(ui)
-                    },
-                ).inner;
-
-                if selection_response.region_clicked || selection_response.selection_start_changed || selection_response.selection_end_changed {
-                    top_marker = 1;
-                }
-            }
-
-            // Render punch region
-            if let Some(punch_data) = self.punch_region {
-                let punch_order = if top_marker == 2 {
-                    egui::Order::Foreground
-                } else {
-                    egui::Order::Middle
-                };
-
-                let punch_layer_id = egui::LayerId::new(
-                    punch_order,
-                    self.id.unwrap_or_else(|| ui.id()).with("punch_region_layer")
-                );
-
-                let punch_response = ui.scope_builder(
-                    egui::UiBuilder::new().layer_id(punch_layer_id).max_rect(markers_rect),
-                    |ui| {
-                        ui.set_clip_rect(tracks_rect);
-
-                        PunchMarker::new(&mut punch_data.punch_in, &mut punch_data.punch_out)
-                            .beat_width(self.beat_width)
-                            .measures(self.measures)
-                            .beats_per_measure(self.beats_per_measure)
-                            .height(timeline_content_height)
-                            .vertical_range(0.5, 1.0)
-                            .id(self.id.unwrap_or_else(|| ui.id()).with("punch_region"))
-                            .show(ui)
-                    },
-                ).inner;
-
-                if punch_response.region_clicked || punch_response.punch_in_changed || punch_response.punch_out_changed {
-                    top_marker = 2;
+                            if punch_response.region_clicked || punch_response.punch_in_changed || punch_response.punch_out_changed {
+                                top_marker = 2;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -1201,6 +1185,7 @@ impl<'a> Timeline<'a> {
         }
 
         // Playhead - now using Playhead component
+        // NOTE: We use a child UI instead of a separate layer to respect parent z-order
         if self.show_playhead && timeline_height > 0.0 {
             let total_height = available_rect.height();
 
@@ -1209,30 +1194,29 @@ impl<'a> Timeline<'a> {
                 vec2(timeline_content_width, total_height)
             );
 
-            let playhead_layer_id = egui::LayerId::new(
-                egui::Order::Foreground,
-                self.id.unwrap_or_else(|| ui.id()).with("playhead_layer")
-            );
-
             let playhead_clip_rect = Rect::from_min_size(
                 available_rect.min + Vec2::new(self.track_header_width, 0.0),
                 Vec2::new(timeline_width, total_height)
             );
 
             let playhead_id = self.id.unwrap_or_else(|| ui.id()).with("playhead");
-            let mut playhead = Playhead::new(self.beat_width, total_height).id(playhead_id);
+            let mut playhead = Playhead::new()
+                .beat_width(self.beat_width)
+                .height(total_height)
+                .id(playhead_id);
 
             if let Some(color) = self.playhead_color {
                 playhead = playhead.color(color);
             }
 
-            let playhead_response = ui.scope_builder(
-                egui::UiBuilder::new().layer_id(playhead_layer_id).max_rect(playhead_rect),
-                |ui| {
-                    ui.set_clip_rect(playhead_clip_rect);
-                    playhead.show_in_rect(ui, playhead_rect, playhead_position, theme)
-                },
-            ).inner;
+            let mut playhead_ui = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(playhead_rect)
+                    .layout(egui::Layout::left_to_right(egui::Align::Min)),
+            );
+            playhead_ui.set_clip_rect(playhead_clip_rect);
+
+            let playhead_response = playhead.show_in_rect(&mut playhead_ui, playhead_rect, playhead_position, theme);
 
             if playhead_response.changed() {
                 playhead_moved = true;

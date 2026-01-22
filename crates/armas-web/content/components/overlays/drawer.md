@@ -164,7 +164,7 @@ ui.horizontal(|ui| {
         if small_open {
             Badge::new("Small")
                 .variant(BadgeVariant::Filled)
-                .color(BadgeColor::Primary)
+                
                 .show(ui);
             ui.label("256px wide");
         }
@@ -197,7 +197,7 @@ ui.horizontal(|ui| {
         if large_open {
             Badge::new("Large")
                 .variant(BadgeVariant::Filled)
-                .color(BadgeColor::Success)
+                .color(theme.chart_2())
                 .show(ui);
             ui.label("512px wide");
         }

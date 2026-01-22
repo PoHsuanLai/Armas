@@ -66,7 +66,7 @@ impl CardSpotlight {
 
         if ui.is_rect_visible(rect) {
             // Draw base card background
-            let card_bg = theme.surface();
+            let card_bg = theme.card();
             ui.painter()
                 .rect_filled(rect, theme.spacing.corner_radius, card_bg);
 
@@ -74,7 +74,7 @@ impl CardSpotlight {
             ui.painter().rect_stroke(
                 rect,
                 theme.spacing.corner_radius,
-                egui::Stroke::new(1.0, theme.outline_variant()),
+                egui::Stroke::new(1.0, theme.border()),
                 egui::StrokeKind::Outside,
             );
 

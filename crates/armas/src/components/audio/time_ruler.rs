@@ -9,6 +9,13 @@ use egui::{Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 /// Re-export GridDivision from piano_roll_grid for time subdivisions
 pub use super::piano_roll_grid::GridDivision;
 
+/// Response from the time ruler
+#[derive(Debug, Clone)]
+pub struct TimeRulerResponse {
+    /// The UI response
+    pub response: Response,
+}
+
 /// Time display mode for the ruler
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TimeDisplayMode {
@@ -142,17 +149,67 @@ impl TimeRuler {
         self
     }
 
-    /// Show the time ruler (wrapped in horizontal ScrollArea by default)
-    pub fn show(self, ui: &mut Ui, theme: &Theme) -> Response {
-        self.show_inner(ui, theme)
+    /// Show the time ruler (allocates full content width)
+    ///
+    /// Use this when the ruler is the only content and should define its own size.
+    /// For use inside a scrollable timeline, use `show_clipped()` instead.
+    pub fn show(self, ui: &mut Ui, theme: &Theme) -> TimeRulerResponse {
+        TimeRulerResponse { response: self.show_inner(ui, theme) }
     }
 
     /// Show the time ruler without ScrollArea wrapper
-    pub fn show_no_scroll(self, ui: &mut Ui, theme: &Theme) -> Response {
-        self.show_inner(ui, theme)
+    pub fn show_no_scroll(self, ui: &mut Ui, theme: &Theme) -> TimeRulerResponse {
+        TimeRulerResponse { response: self.show_inner(ui, theme) }
     }
 
-    /// Internal render function
+    /// Show the time ruler within a pre-allocated clipped area
+    ///
+    /// Use this when the ruler is part of a scrollable timeline.
+    /// The ruler paints within `ui.max_rect()` and respects `ui.clip_rect()`.
+    /// Does not allocate additional space.
+    pub fn show_clipped(self, ui: &mut Ui, theme: &Theme) -> TimeRulerResponse {
+        // Use max_rect as our drawing area (set by parent)
+        let rect = ui.max_rect();
+        let clip = ui.clip_rect();
+
+        // Create a response for interaction
+        let response = ui.allocate_rect(rect, Sense::hover());
+
+        if ui.is_rect_visible(clip) {
+            let painter = ui.painter();
+
+            // Draw background (only within clip)
+            painter.rect_filled(
+                clip,
+                theme.spacing.corner_radius_small as f32,
+                theme.surface(),
+            );
+
+            // Draw bottom border
+            painter.line_segment(
+                [
+                    Pos2::new(clip.min.x, clip.max.y),
+                    Pos2::new(clip.max.x, clip.max.y),
+                ],
+                Stroke::new(1.0, theme.outline_variant()),
+            );
+
+            // Draw vertical lines and tick marks
+            self.draw_grid_lines(painter, theme, rect);
+
+            // Draw measure numbers
+            self.draw_measure_numbers(painter, theme, rect);
+
+            // Draw beat numbers if enabled
+            if self.show_beat_numbers {
+                self.draw_beat_numbers(painter, theme, rect);
+            }
+        }
+
+        TimeRulerResponse { response }
+    }
+
+    /// Internal render function (allocates full width)
     fn show_inner(self, ui: &mut Ui, theme: &Theme) -> Response {
         // Calculate width (MUST match PianoRollGrid calculation)
         let total_beats = self.measures as f32 * self.beats_per_measure as f32;

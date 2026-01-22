@@ -186,12 +186,12 @@ impl Stepper {
                 let (bg_color, border_color, text_color) = if is_completed {
                     (theme.primary(), theme.primary(), Color32::WHITE)
                 } else if is_current {
-                    (theme.surface(), theme.primary(), theme.primary())
+                    (theme.card(), theme.primary(), theme.primary())
                 } else {
                     (
-                        theme.surface(),
-                        theme.outline().linear_multiply(0.5),
-                        theme.on_surface_variant().linear_multiply(0.5),
+                        theme.card(),
+                        theme.border().linear_multiply(0.5),
+                        theme.muted_foreground().linear_multiply(0.5),
                     )
                 };
 
@@ -233,16 +233,16 @@ impl Stepper {
                     egui::Layout::top_down(egui::Align::Center),
                     |ui| {
                         let label_color = if is_current || is_completed {
-                            theme.on_surface()
+                            theme.foreground()
                         } else {
-                            theme.on_surface_variant().linear_multiply(0.7)
+                            theme.muted_foreground().linear_multiply(0.7)
                         };
 
                         ui.colored_label(label_color, &step.label);
 
                         if let Some(desc) = &step.description {
                             ui.add_space(2.0);
-                            ui.colored_label(theme.on_surface_variant().linear_multiply(0.6), desc);
+                            ui.colored_label(theme.muted_foreground().linear_multiply(0.6), desc);
                         }
                     },
                 );
@@ -263,7 +263,7 @@ impl Stepper {
                     let line_color = if is_completed {
                         theme.primary()
                     } else {
-                        theme.outline().linear_multiply(0.3)
+                        theme.border().linear_multiply(0.3)
                     };
 
                     ui.painter()
@@ -311,12 +311,12 @@ impl Stepper {
                 let (bg_color, border_color, text_color) = if is_completed {
                     (theme.primary(), theme.primary(), Color32::WHITE)
                 } else if is_current {
-                    (theme.surface(), theme.primary(), theme.primary())
+                    (theme.card(), theme.primary(), theme.primary())
                 } else {
                     (
-                        theme.surface(),
-                        theme.outline().linear_multiply(0.5),
-                        theme.on_surface_variant().linear_multiply(0.5),
+                        theme.card(),
+                        theme.border().linear_multiply(0.5),
+                        theme.muted_foreground().linear_multiply(0.5),
                     )
                 };
 
@@ -355,16 +355,16 @@ impl Stepper {
                 // Label and description
                 ui.vertical(|ui| {
                     let label_color = if is_current || is_completed {
-                        theme.on_surface()
+                        theme.foreground()
                     } else {
-                        theme.on_surface_variant().linear_multiply(0.7)
+                        theme.muted_foreground().linear_multiply(0.7)
                     };
 
                     ui.colored_label(label_color, &step.label);
 
                     if let Some(desc) = &step.description {
                         ui.add_space(2.0);
-                        ui.colored_label(theme.on_surface_variant().linear_multiply(0.6), desc);
+                        ui.colored_label(theme.muted_foreground().linear_multiply(0.6), desc);
                     }
                 });
             });
@@ -384,7 +384,7 @@ impl Stepper {
                 let line_color = if is_completed {
                     theme.primary()
                 } else {
-                    theme.outline().linear_multiply(0.3)
+                    theme.border().linear_multiply(0.3)
                 };
 
                 ui.painter()

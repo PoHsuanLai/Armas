@@ -185,7 +185,7 @@ impl FeatureShowcase {
                     egui::RichText::new("Features")
                         .size(32.0)
                         .strong()
-                        .color(theme.on_surface()),
+                        .color(theme.foreground()),
                 );
 
                 ui.add_space(16.0);
@@ -213,7 +213,7 @@ impl FeatureShowcase {
                                     ui.label(
                                         egui::RichText::new(&feature.description)
                                             .size(13.0)
-                                            .color(theme.on_surface_variant()),
+                                            .color(theme.muted_foreground()),
                                     );
                                 });
                             });

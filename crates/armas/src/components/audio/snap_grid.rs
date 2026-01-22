@@ -6,6 +6,13 @@
 use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Response, Sense, Ui, Vec2};
 
+/// Response from the snap grid
+#[derive(Debug, Clone)]
+pub struct SnapGridResponse {
+    /// The UI response
+    pub response: Response,
+}
+
 /// Snap grid component
 ///
 /// Displays visual grid lines at regular beat intervals.
@@ -141,7 +148,10 @@ impl SnapGrid {
     }
 
     /// Show the snap grid
-    pub fn show(self, ui: &mut Ui) -> Response {
+    ///
+    /// When used as an overlay (in a separate layer), use `show_overlay()` instead
+    /// to avoid allocating space that breaks the parent layout.
+    pub fn show(self, ui: &mut Ui) -> SnapGridResponse {
         let theme = ui.ctx().armas_theme();
 
         let total_beats = self.measures * self.beats_per_measure;
@@ -210,7 +220,96 @@ impl SnapGrid {
             }
         }
 
-        response
+        SnapGridResponse { response }
+    }
+
+    /// Show the snap grid as an overlay (no space allocation)
+    ///
+    /// Use this when rendering the grid in a separate layer over other content.
+    /// The parent should set up max_rect with scroll offset and clip_rect for visible area.
+    /// Grid lines are calculated from max_rect.min.x and clipped to clip_rect.
+    pub fn show_overlay(self, ui: &mut Ui) -> SnapGridResponse {
+        let theme = ui.ctx().armas_theme();
+
+        // max_rect has the scroll offset baked in (starts at content origin - scroll)
+        let content_rect = ui.max_rect();
+        // clip_rect is the visible viewport
+        let clip = ui.clip_rect();
+
+        // Create a response for the visible area only
+        let response = ui.allocate_rect(clip, Sense::hover());
+
+        if ui.is_rect_visible(clip) {
+            let painter = ui.painter();
+
+            // Default colors
+            let base_color = theme.outline();
+            let measure_col = self.measure_color.unwrap_or(base_color);
+            let beat_col = self.beat_color.unwrap_or(base_color);
+            let subdiv_col = self.subdivision_color.unwrap_or(base_color);
+
+            let total_beats = self.measures * self.beats_per_measure;
+            let total_subdivisions = total_beats * self.subdivision;
+            let subdivision_width = self.beat_width / self.subdivision as f32;
+
+            // Draw all grid lines - calculate from content_rect, but only draw if in clip
+            for i in 0..=total_subdivisions {
+                // X position relative to content origin (with scroll offset)
+                let x = content_rect.min.x + i as f32 * subdivision_width;
+
+                // Skip if outside visible area (clip rect)
+                if x < clip.min.x - 1.0 || x > clip.max.x + 1.0 {
+                    continue;
+                }
+
+                let is_measure = i % (self.beats_per_measure * self.subdivision) == 0;
+                let is_beat = i % self.subdivision == 0;
+
+                // Draw within clip bounds vertically
+                let y_min = clip.min.y;
+                let y_max = clip.max.y;
+
+                if is_measure && self.show_measures {
+                    // Measure line (strongest)
+                    let color = Color32::from_rgba_unmultiplied(
+                        measure_col.r(),
+                        measure_col.g(),
+                        measure_col.b(),
+                        (255.0 * self.measure_opacity) as u8,
+                    );
+                    painter.line_segment(
+                        [Pos2::new(x, y_min), Pos2::new(x, y_max)],
+                        egui::Stroke::new(1.5, color),
+                    );
+                } else if is_beat && self.show_beats {
+                    // Beat line (medium)
+                    let color = Color32::from_rgba_unmultiplied(
+                        beat_col.r(),
+                        beat_col.g(),
+                        beat_col.b(),
+                        (255.0 * self.beat_opacity) as u8,
+                    );
+                    painter.line_segment(
+                        [Pos2::new(x, y_min), Pos2::new(x, y_max)],
+                        egui::Stroke::new(1.0, color),
+                    );
+                } else if self.show_subdivisions {
+                    // Subdivision line (weakest)
+                    let color = Color32::from_rgba_unmultiplied(
+                        subdiv_col.r(),
+                        subdiv_col.g(),
+                        subdiv_col.b(),
+                        (255.0 * self.subdivision_opacity) as u8,
+                    );
+                    painter.line_segment(
+                        [Pos2::new(x, y_min), Pos2::new(x, y_max)],
+                        egui::Stroke::new(0.5, color),
+                    );
+                }
+            }
+        }
+
+        SnapGridResponse { response }
     }
 }
 

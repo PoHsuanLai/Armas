@@ -5,6 +5,7 @@
 pub mod card;
 pub mod card_spotlight;
 pub mod card_stack;
+pub mod floating_window;
 pub mod focus_cards;
 pub mod glass_panel;
 pub mod gradient_card;
@@ -19,6 +20,7 @@ pub mod wobble_card;
 pub use card::{Card, CardResponse, CardVariant};
 pub use card_spotlight::CardSpotlight;
 pub use card_stack::CardStack;
+pub use floating_window::{FloatingWindow, FloatingWindowResponse, FloatingWindowStyle};
 pub use focus_cards::{FocusCardResponse, FocusCards};
 pub use glass_panel::{GlassPanel, GlassPanelResponse};
 pub use gradient_card::GradientCard;

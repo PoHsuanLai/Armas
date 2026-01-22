@@ -300,7 +300,7 @@ impl FloatingNavbar {
                     let painter = ui.painter();
 
                     // Draw navbar background
-                    let surface = theme.surface_variant();
+                    let surface = theme.muted();
                     let bg_color =
                         Color32::from_rgba_unmultiplied(surface.r(), surface.g(), surface.b(), 200);
 
@@ -310,16 +310,16 @@ impl FloatingNavbar {
                     painter.rect_stroke(
                         rect,
                         theme.spacing.corner_radius_small,
-                        egui::Stroke::new(1.0, theme.outline_variant()),
+                        egui::Stroke::new(1.0, theme.border()),
                         egui::StrokeKind::Outside,
                     );
 
                     // Draw close button background
                     let close_bg_color = if close_hovered {
-                        let error = theme.error();
+                        let error = theme.destructive();
                         Color32::from_rgba_unmultiplied(error.r(), error.g(), error.b(), 150)
                     } else {
-                        let hover = theme.hover();
+                        let hover = theme.accent();
                         Color32::from_rgba_unmultiplied(hover.r(), hover.g(), hover.b(), 100)
                     };
 
@@ -339,14 +339,14 @@ impl FloatingNavbar {
                             Pos2::new(center.x - offset, center.y - offset),
                             Pos2::new(center.x + offset, center.y + offset),
                         ],
-                        egui::Stroke::new(2.0, theme.on_surface()),
+                        egui::Stroke::new(2.0, theme.foreground()),
                     );
                     painter.line_segment(
                         [
                             Pos2::new(center.x + offset, center.y - offset),
                             Pos2::new(center.x - offset, center.y + offset),
                         ],
-                        egui::Stroke::new(2.0, theme.on_surface()),
+                        egui::Stroke::new(2.0, theme.foreground()),
                     );
 
                     // Draw active indicator background (morphing pill)
@@ -371,9 +371,9 @@ impl FloatingNavbar {
                     // Draw items using collected interaction data
                     for (item_rect, is_hovered, item_data) in item_interactions {
                         let text_color = if item_data.is_active || is_hovered {
-                            theme.on_surface()
+                            theme.foreground()
                         } else {
-                            theme.on_surface_variant()
+                            theme.muted_foreground()
                         };
 
                         let mut text_y_offset = 0.0;

@@ -150,10 +150,9 @@ impl AppTheme {
         let mut theme = Theme::dark();
         // Custom dark theme with pure black background
         theme.colors.background = [0, 0, 0];
-        theme.colors.surface = [10, 10, 10];
-        theme.colors.surface_variant = [20, 20, 20];
+        theme.colors.card = [10, 10, 10];
+        theme.colors.muted = [20, 20, 20];
         theme.colors.primary = [255, 255, 255]; // White
-                                                // Keep on_background as light color for general text
         Self::Dark(theme)
     }
 

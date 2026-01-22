@@ -103,9 +103,9 @@ impl Radio {
                         ui.spacing_mut().item_spacing.y = theme.spacing.xs;
                         if let Some(label) = &self.label {
                             let label_color = if self.disabled {
-                                theme.on_surface_variant().linear_multiply(0.5)
+                                theme.muted_foreground().linear_multiply(0.5)
                             } else {
-                                theme.on_surface()
+                                theme.foreground()
                             };
 
                             ui.label(egui::RichText::new(label).size(14.0).color(label_color));
@@ -115,7 +115,7 @@ impl Radio {
                             ui.label(
                                 egui::RichText::new(description)
                                     .size(12.0)
-                                    .color(theme.on_surface_variant()),
+                                    .color(theme.muted_foreground()),
                             );
                         }
                     });
@@ -136,11 +136,11 @@ impl Radio {
 
         // Outer circle
         let border_color = if self.disabled {
-            theme.outline_variant()
+            theme.border()
         } else if selected {
             theme.primary()
         } else {
-            theme.outline()
+            theme.border()
         };
 
         painter.circle_stroke(center, radius, Stroke::new(2.0, border_color));
@@ -149,7 +149,7 @@ impl Radio {
         if selected {
             let inner_radius = radius * 0.5;
             let fill_color = if self.disabled {
-                theme.outline_variant()
+                theme.border()
             } else {
                 theme.primary()
             };
@@ -313,7 +313,7 @@ impl<'a> RadioGroup<'a> {
                     egui::RichText::new(label)
                         .size(14.0)
                         .strong()
-                        .color(theme.on_surface()),
+                        .color(theme.foreground()),
                 );
                 ui.add_space(theme.spacing.xs);
             }

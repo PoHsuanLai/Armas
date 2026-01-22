@@ -247,8 +247,8 @@ impl<'a> GridBuilder<'a> {
 
         // Draw background and border
         let painter = self.ui.painter();
-        let bg_color = background.unwrap_or(self.theme.surface());
-        let border_color = border.or_else(|| Some(self.theme.outline()));
+        let bg_color = background.unwrap_or(self.theme.card());
+        let border_color = border.or_else(|| Some(self.theme.border()));
 
         painter.rect_filled(rect, self.corner_radius, bg_color);
 

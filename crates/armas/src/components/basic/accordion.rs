@@ -175,9 +175,9 @@ impl AccordionItem {
 
             // Draw elevated background matching select dropdown style
             let bg_color = egui::Color32::from_rgba_unmultiplied(
-                theme.surface().r(),
-                theme.surface().g(),
-                theme.surface().b(),
+                theme.card().r(),
+                theme.card().g(),
+                theme.card().b(),
                 250,
             );
 
@@ -194,7 +194,7 @@ impl AccordionItem {
             content_ui.painter().rect_stroke(
                 content_bg_rect,
                 0.0,
-                egui::Stroke::new(1.0, theme.outline_variant()),
+                egui::Stroke::new(1.0, theme.border()),
                 egui::StrokeKind::Outside,
             );
 
@@ -246,9 +246,9 @@ impl AccordionItem {
 
         // Background
         let bg_color = if is_hovered {
-            theme.hover()
+            theme.accent()
         } else {
-            theme.surface()
+            theme.card()
         };
 
         ui.painter().rect_filled(rect, 0.0, bg_color);
@@ -260,7 +260,7 @@ impl AccordionItem {
                 Pos2::new(rect.min.x, border_y),
                 Pos2::new(rect.max.x, border_y),
             ],
-            egui::Stroke::new(1.0, theme.outline_variant()),
+            egui::Stroke::new(1.0, theme.border()),
         );
 
         // Chevron icon
@@ -282,7 +282,7 @@ impl AccordionItem {
             egui::Align2::LEFT_CENTER,
             &self.title,
             egui::FontId::proportional(font_size),
-            theme.on_surface(),
+            theme.foreground(),
         );
 
         response
@@ -316,7 +316,7 @@ impl AccordionItem {
             let pos1 = center + rotated1;
             let pos2 = center + rotated2;
 
-            painter.line_segment([pos1, pos2], egui::Stroke::new(1.5, theme.on_surface()));
+            painter.line_segment([pos1, pos2], egui::Stroke::new(1.5, theme.foreground()));
         }
     }
 }
