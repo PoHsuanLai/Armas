@@ -1,7 +1,7 @@
 //! Tests for Dialog component using egui_kittest
 
-use armas::prelude::*;
 use armas::components::overlays::{Dialog, DialogSize};
+use armas::prelude::*;
 use egui_kittest::Harness;
 
 /// Test that Dialog renders when open
@@ -10,9 +10,7 @@ fn test_dialog_renders_open() {
     let theme = Theme::dark();
 
     let mut harness = Harness::new(|ctx| {
-        let mut dialog = Dialog::new("test_dialog")
-            .title("Test Dialog")
-            .open(true);
+        let mut dialog = Dialog::new("test_dialog").title("Test Dialog").open(true);
 
         dialog.show(ctx, &theme, |ui| {
             ui.label("Dialog content");
@@ -28,9 +26,7 @@ fn test_dialog_closed() {
     let theme = Theme::dark();
 
     let mut harness = Harness::new(|ctx| {
-        let mut dialog = Dialog::new("test_dialog")
-            .title("Test Dialog")
-            .open(false);
+        let mut dialog = Dialog::new("test_dialog").title("Test Dialog").open(false);
 
         dialog.show(ctx, &theme, |ui| {
             ui.label("Dialog content");
@@ -122,8 +118,7 @@ fn test_dialog_no_title() {
     let theme = Theme::dark();
 
     let mut harness = Harness::new(|ctx| {
-        let mut dialog = Dialog::new("no_title_dialog")
-            .open(true);
+        let mut dialog = Dialog::new("no_title_dialog").open(true);
 
         dialog.show(ctx, &theme, |ui| {
             ui.label("Content without title bar");
@@ -193,8 +188,12 @@ fn test_dialog_complex_content() {
                 ui.add_space(16.0);
 
                 ui.horizontal(|ui| {
-                    Button::new("Cancel").variant(ButtonVariant::Outlined).show(ui);
-                    Button::new("Submit").variant(ButtonVariant::Filled).show(ui);
+                    Button::new("Cancel")
+                        .variant(ButtonVariant::Outlined)
+                        .show(ui);
+                    Button::new("Submit")
+                        .variant(ButtonVariant::Filled)
+                        .show(ui);
                 });
             });
         });
@@ -227,17 +226,13 @@ fn test_dialog_stacking() {
     let theme = Theme::dark();
 
     let mut harness = Harness::new(|ctx| {
-        let mut dialog1 = Dialog::new("dialog1")
-            .title("First Dialog")
-            .open(true);
+        let mut dialog1 = Dialog::new("dialog1").title("First Dialog").open(true);
 
         dialog1.show(ctx, &theme, |ui| {
             ui.label("First dialog content");
         });
 
-        let mut dialog2 = Dialog::new("dialog2")
-            .title("Second Dialog")
-            .open(true);
+        let mut dialog2 = Dialog::new("dialog2").title("Second Dialog").open(true);
 
         dialog2.show(ctx, &theme, |ui| {
             ui.label("Second dialog content (on top)");
@@ -246,4 +241,3 @@ fn test_dialog_stacking() {
 
     harness.step();
 }
-
