@@ -565,7 +565,7 @@ let region = Region::automation_with_data("Volume", 0.0, 4.0, data);
 
 **Integration with audio-automation crate:**
 
-If you're using the [`audio-automation`](https://github.com/yourusername/audio-automation) crate, you can convert envelopes directly:
+If you're using the [`audio-automation`](https://github.com/PoHsuanLai/audio-automation) crate, you can convert envelopes directly:
 
 ```rust
 #[cfg(feature = "audio-automation")]

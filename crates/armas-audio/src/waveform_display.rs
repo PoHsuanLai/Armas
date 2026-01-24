@@ -3,8 +3,8 @@
 //! Renders audio waveforms with interactive markers for sample editing.
 //! Generic over sample data type for maximum flexibility.
 
-use armas::theme::Theme;
 use armas::ext::ArmasContextExt;
+use armas::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 
 /// Configuration for waveform display
@@ -38,11 +38,11 @@ impl Default for WaveformConfig {
             // Use primary color for better integration with Armas theme
             peak_color: Color32::from_rgb(100, 200, 255),
             rms_color: Color32::from_rgb(100, 200, 255).gamma_multiply(0.5),
-            show_grid: false,            // Grid disabled by default (like professional DAWs)
+            show_grid: false, // Grid disabled by default (like professional DAWs)
             grid_interval: 1.0,
-            color_by_frequency: false,  // Disabled by default for clarity
-            show_spectrogram: false,    // Disabled by default
-            zoom_level: 1.0,             // Normal zoom
+            color_by_frequency: false, // Disabled by default for clarity
+            show_spectrogram: false,   // Disabled by default
+            zoom_level: 1.0,           // Normal zoom
         }
     }
 }
@@ -61,8 +61,8 @@ pub enum MarkerType {
 pub struct WaveformResponse {
     pub response: Response,
     pub marker_dragged: Option<(MarkerType, f64)>, // (marker type, new position in seconds)
-    pub region_selected: Option<(f64, f64)>,        // (start, end) time range
-    pub playhead_clicked: Option<f64>,               // clicked at time
+    pub region_selected: Option<(f64, f64)>,       // (start, end) time range
+    pub playhead_clicked: Option<f64>,             // clicked at time
 }
 
 /// Waveform display component - generic over sample data type
@@ -184,26 +184,6 @@ impl<'a, T> WaveformDisplay<'a, T> {
         }
     }
 
-    /// Get frequency-based color (warm for low freq, cool for high freq)
-    /// freq_estimate: 0.0 (low bass) to 1.0 (high treble)
-    fn get_frequency_color(&self, freq_estimate: f32, base_color: Color32) -> Color32 {
-        if !self.config.color_by_frequency {
-            return base_color;
-        }
-
-        // Interpolate between warm (red/orange) for low freq and cool (blue/cyan) for high freq
-        let warm = Color32::from_rgb(255, 140, 60);  // Orange (low freq)
-        let cool = Color32::from_rgb(100, 200, 255); // Cyan (high freq)
-
-        let f = freq_estimate.clamp(0.0, 1.0);
-        Color32::from_rgba_unmultiplied(
-            ((warm.r() as f32) * (1.0 - f) + (cool.r() as f32) * f) as u8,
-            ((warm.g() as f32) * (1.0 - f) + (cool.g() as f32) * f) as u8,
-            ((warm.b() as f32) * (1.0 - f) + (cool.b() as f32) * f) as u8,
-            base_color.a(),
-        )
-    }
-
     /// Render the waveform display
     fn render(&self, painter: &egui::Painter, rect: Rect) {
         // Dark, minimal background like professional DAWs
@@ -214,7 +194,7 @@ impl<'a, T> WaveformDisplay<'a, T> {
         painter.rect_filled(
             rect,
             corner_radius,
-            Color32::from_rgb(30, 30, 35)  // Dark neutral background
+            Color32::from_rgb(30, 30, 35), // Dark neutral background
         );
 
         // Add subtle frame stroke for visual boundary
@@ -278,7 +258,8 @@ impl<'a, T> WaveformDisplay<'a, T> {
     /// Draw the waveform using selected render mode
     fn draw_waveform(&self, painter: &egui::Painter, rect: Rect) {
         let effective_pps = self.config.pixels_per_second * self.config.zoom_level;
-        let samples_per_pixel = (self.sample_data.len() as f64 / self.duration / effective_pps as f64).max(1.0);
+        let samples_per_pixel =
+            (self.sample_data.len() as f64 / self.duration / effective_pps as f64).max(1.0);
         let center_y = rect.center().y;
 
         // Collect all amplitude data
@@ -315,93 +296,12 @@ impl<'a, T> WaveformDisplay<'a, T> {
 
         // Center line as reference
         painter.line_segment(
-            [Pos2::new(rect.min.x, center_y), Pos2::new(rect.max.x, center_y)],
+            [
+                Pos2::new(rect.min.x, center_y),
+                Pos2::new(rect.max.x, center_y),
+            ],
             Stroke::new(0.5, self.theme.border().gamma_multiply(0.2)),
         );
-    }
-
-    /// Draw a smooth tessellated waveform envelope
-    fn draw_tessellated_waveform(
-        &self,
-        painter: &egui::Painter,
-        rect: Rect,
-        amplitudes: &[(f32, f32)],
-        center_y: f32,
-        height_scale: f32,
-        color: Color32,
-        alpha: u8,
-    ) {
-        if amplitudes.is_empty() {
-            return;
-        }
-
-        // Build smooth top and bottom paths using Catmull-Rom spline interpolation
-        let mut top_points = Vec::new();
-        let mut bottom_points = Vec::new();
-
-        // Collect amplitude envelope points
-        for (x_pixel, amp_data) in amplitudes.iter().enumerate() {
-            // Use peak data (first element) for consistent sizing with bars mode
-            let amplitude = amp_data.0;
-            let x = rect.min.x + x_pixel as f32;
-            let height = (amplitude * rect.height() * height_scale).min(rect.height() / 2.0);
-
-            top_points.push(Pos2::new(x, center_y - height));
-            bottom_points.push(Pos2::new(x, center_y + height));
-        }
-
-        if top_points.len() < 2 {
-            return;
-        }
-
-        let fill_color = Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
-
-        // No filled polygon - draw just the outlines for consistent appearance with bars mode
-
-        // Draw smooth outline strokes for the top curve
-        for i in 0..top_points.len().saturating_sub(1) {
-            let p1 = top_points[i];
-            let p2 = top_points[i + 1];
-
-            // Draw multiple segments for smooth appearance
-            for segment in 0..3 {
-                let t1 = segment as f32 / 3.0;
-                let t2 = (segment + 1) as f32 / 3.0;
-
-                let y1 = p1.y + (p2.y - p1.y) * (t1 * t1 * (3.0 - 2.0 * t1));
-                let y2 = p1.y + (p2.y - p1.y) * (t2 * t2 * (3.0 - 2.0 * t2));
-
-                let start_x = p1.x + (p2.x - p1.x) * t1;
-                let end_x = p1.x + (p2.x - p1.x) * t2;
-
-                painter.line_segment(
-                    [Pos2::new(start_x, y1), Pos2::new(end_x, y2)],
-                    Stroke::new(1.2, color),
-                );
-            }
-        }
-
-        // Draw smooth outline strokes for the bottom curve
-        for i in (0..bottom_points.len().saturating_sub(1)).rev() {
-            let p1 = bottom_points[i];
-            let p2 = bottom_points[i + 1];
-
-            for segment in 0..3 {
-                let t1 = segment as f32 / 3.0;
-                let t2 = (segment + 1) as f32 / 3.0;
-
-                let y1 = p1.y + (p2.y - p1.y) * (t1 * t1 * (3.0 - 2.0 * t1));
-                let y2 = p1.y + (p2.y - p1.y) * (t2 * t2 * (3.0 - 2.0 * t2));
-
-                let start_x = p1.x + (p2.x - p1.x) * t1;
-                let end_x = p1.x + (p2.x - p1.x) * t2;
-
-                painter.line_segment(
-                    [Pos2::new(start_x, y1), Pos2::new(end_x, y2)],
-                    Stroke::new(1.2, color),
-                );
-            }
-        }
     }
 
     /// Draw waveform as vertical bars (classic DAW style)
@@ -421,9 +321,9 @@ impl<'a, T> WaveformDisplay<'a, T> {
         let effective_bar_width = bar_width - bar_spacing;
 
         // Calculate playhead position in pixels if present
-        let playhead_x = self.playhead_pos.map(|pos| {
-            rect.min.x + ((pos / self.duration) * rect.width() as f64) as f32
-        });
+        let playhead_x = self
+            .playhead_pos
+            .map(|pos| rect.min.x + ((pos / self.duration) * rect.width() as f64) as f32);
 
         // Draw RMS bars (background/lighter)
         for (x_pixel, (_, rms)) in amplitudes.iter().enumerate() {
@@ -513,11 +413,18 @@ impl<'a, T> WaveformDisplay<'a, T> {
 
     /// Draw loop region highlighting
     fn draw_loop_region(&self, painter: &egui::Painter, rect: Rect) {
-        let loop_start_x = rect.min.x + ((self.loop_start / self.duration) * rect.width() as f64) as f32;
-        let loop_end_x = rect.min.x + ((self.loop_end / self.duration) * rect.width() as f64) as f32;
+        let loop_start_x =
+            rect.min.x + ((self.loop_start / self.duration) * rect.width() as f64) as f32;
+        let loop_end_x =
+            rect.min.x + ((self.loop_end / self.duration) * rect.width() as f64) as f32;
 
-        if loop_start_x >= rect.min.x && loop_start_x <= rect.max.x && loop_end_x >= rect.min.x && loop_end_x <= rect.max.x {
-            let loop_rect = Rect::from_x_y_ranges(loop_start_x..=loop_end_x, rect.min.y..=rect.max.y);
+        if loop_start_x >= rect.min.x
+            && loop_start_x <= rect.max.x
+            && loop_end_x >= rect.min.x
+            && loop_end_x <= rect.max.x
+        {
+            let loop_rect =
+                Rect::from_x_y_ranges(loop_start_x..=loop_end_x, rect.min.y..=rect.max.y);
             let loop_color = self.theme.primary().gamma_multiply(0.1);
 
             painter.rect_filled(loop_rect, 0.0, loop_color);
@@ -538,28 +445,53 @@ impl<'a, T> WaveformDisplay<'a, T> {
 
         // Only draw sample start marker if it's not at the very beginning (has been trimmed)
         if self.sample_start > TOLERANCE {
-            let start_x = rect.min.x + ((self.sample_start / self.duration) * rect.width() as f64) as f32;
+            let start_x =
+                rect.min.x + ((self.sample_start / self.duration) * rect.width() as f64) as f32;
             if start_x >= rect.min.x && start_x <= rect.max.x {
-                self.draw_marker(painter, start_x, rect.top(), self.theme.chart_2(), MARKER_WIDTH, MARKER_HEIGHT);
+                self.draw_marker(
+                    painter,
+                    start_x,
+                    rect.top(),
+                    self.theme.chart_2(),
+                    MARKER_WIDTH,
+                    MARKER_HEIGHT,
+                );
             }
         }
 
         // Only draw sample end marker if it's not at the very end (has been trimmed)
         if self.sample_end < (self.duration - TOLERANCE) {
-            let end_x = rect.min.x + ((self.sample_end / self.duration) * rect.width() as f64) as f32;
+            let end_x =
+                rect.min.x + ((self.sample_end / self.duration) * rect.width() as f64) as f32;
             if end_x >= rect.min.x && end_x <= rect.max.x {
-                self.draw_marker(painter, end_x, rect.bottom() - MARKER_HEIGHT, self.theme.destructive(), MARKER_WIDTH, MARKER_HEIGHT);
+                self.draw_marker(
+                    painter,
+                    end_x,
+                    rect.bottom() - MARKER_HEIGHT,
+                    self.theme.destructive(),
+                    MARKER_WIDTH,
+                    MARKER_HEIGHT,
+                );
             }
         }
     }
 
     /// Draw a single marker
-    fn draw_marker(&self, painter: &egui::Painter, x: f32, y: f32, color: Color32, width: f32, height: f32) {
+    fn draw_marker(
+        &self,
+        painter: &egui::Painter,
+        x: f32,
+        y: f32,
+        color: Color32,
+        width: f32,
+        height: f32,
+    ) {
         // Draw glow effect behind marker
         for i in 0..3 {
             let offset = (i as f32 + 1.0) * 2.0;
             let alpha = ((1.0 - i as f32 / 3.0) * 20.0) as u8;
-            let glow_color = Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
+            let glow_color =
+                Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
 
             let glow_points = vec![
                 Pos2::new(x - (width / 2.0 + offset), y - offset),

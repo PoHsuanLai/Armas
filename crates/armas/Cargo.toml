@@ -15,7 +15,6 @@ egui-theme = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = { version = "0.4", features = ["clock", "wasmbind"] }
-audio-automation = { path = "../../../audio-automation" }
 armas-icon = { path = "../armas-icon" }
 
 [dev-dependencies]
