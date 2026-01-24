@@ -1,104 +1,73 @@
 //! Icon system for Armas
 //!
-//! Provides SVG-based icons that are:
-//! - Parsed at compile time for zero runtime overhead
-//! - Themeable with dynamic colors
-//! - Scalable to any size
-//! - Type-safe with enum variants
+//! Re-exports the generic icon infrastructure from [`armas_icon`] and provides
+//! window control icons for use with [`FloatingWindow`](crate::components::cards::FloatingWindow).
 //!
 //! # Example
 //!
 //! ```rust,no_run
 //! # use egui::Ui;
-//! # use armas::Theme;
-//! # fn example(ui: &mut Ui, theme: &Theme) {
-//! use armas::icon::{Icon, TransportIcon};
+//! # fn example(ui: &mut Ui) {
+//! use armas::icon::{WindowIcon, WindowIconWidget};
+//! use egui::Color32;
 //!
-//! Icon::new(TransportIcon::Play)
-//!     .size(24.0)
-//!     .color(theme.foreground())
+//! WindowIconWidget::new(WindowIcon::Close)
+//!     .size(12.0)
+//!     .color(Color32::WHITE)
 //!     .show(ui);
 //! # }
 //! ```
 
-use egui::{Response, Sense, Ui, Vec2};
+// Re-export the generic icon infrastructure
+pub use armas_icon::{render_icon, Icon, IconData};
 
-// Include the generated icon data (brings in Color32, Pos2, Rect, etc.)
-include!(concat!(env!("OUT_DIR"), "/icon_data.rs"));
-use std::collections::HashMap;
-use std::sync::OnceLock;
+// Include the generated window icon data
+include!(concat!(env!("OUT_DIR"), "/window_icons.rs"));
 
-/// Transport control icons
+use egui::{Color32, Response, Sense, Ui, Vec2};
+
+/// Window control icons
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum TransportIcon {
-    /// Play button
-    Play,
-    /// Pause button
-    Pause,
-    /// Stop button
-    Stop,
-    /// Record button
-    Record,
-    /// Rewind button
-    Rewind,
-    /// Fast forward button
-    Forward,
-    /// Loop button
-    Loop,
-    /// Metronome button
-    Metronome,
+pub enum WindowIcon {
+    /// Close window button
+    Close,
+    /// Enter full screen
+    IntoFullScreen,
+    /// Exit full screen
+    ExitFullScreen,
 }
 
-impl TransportIcon {
-    /// Get the icon file name
-    fn file_name(self) -> &'static str {
+impl WindowIcon {
+    /// Get the icon data for this window icon
+    pub fn data(self) -> &'static IconData {
         match self {
-            Self::Play => "play",
-            Self::Pause => "pause",
-            Self::Stop => "stop",
-            Self::Record => "fad-record",
-            Self::Rewind => "back",
-            Self::Forward => "forward",
-            Self::Loop => "loop",
-            Self::Metronome => "fad-metronome",
+            Self::Close => &CLOSE,
+            Self::IntoFullScreen => &INTO_FULL_SCREEN,
+            Self::ExitFullScreen => &EXIT_FULL_SCREEN,
         }
     }
 
-    /// Get the icon data
-    pub fn data(self) -> Option<&'static IconData> {
-        static ICON_MAP: OnceLock<HashMap<&'static str, &'static IconData>> = OnceLock::new();
-
-        let map = ICON_MAP.get_or_init(|| {
-            TRANSPORT_ICONS
-                .iter()
-                .map(|(name, data)| (*name, data))
-                .collect()
-        });
-
-        map.get(self.file_name()).copied()
-    }
-
-    /// Create an Icon from this TransportIcon
-    pub fn icon(self) -> Icon {
-        Icon::new(self)
+    /// Create a WindowIconWidget from this WindowIcon
+    pub fn widget(self) -> WindowIconWidget {
+        WindowIconWidget::new(self)
     }
 }
 
-/// Icon component
+/// Window icon widget component
 ///
-/// Renders SVG-based icons with theme colors and custom sizing.
-pub struct Icon {
-    icon: TransportIcon,
+/// Renders window control icons with theme colors and custom sizing.
+pub struct WindowIconWidget {
+    icon: WindowIcon,
     size: f32,
     color: Color32,
 }
 
-impl Icon {
-    /// Create a new icon
-    pub fn new(icon: TransportIcon) -> Self {
+impl WindowIconWidget {
+    /// Create a new window icon widget
+    pub fn new(icon: WindowIcon) -> Self {
         Self {
             icon,
-            size: 24.0,
+            size: 12.0,
             color: Color32::WHITE,
         }
     }
@@ -120,11 +89,12 @@ impl Icon {
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), Sense::click());
 
         if ui.is_rect_visible(rect) {
-            if let Some(icon_data) = self.icon.data() {
-                render_icon(ui.painter(), rect, icon_data, self.color);
-            } else {
+            let icon_data = self.icon.data();
+            if icon_data.vertices.is_empty() {
                 // Fallback: draw a placeholder if icon data is missing
                 ui.painter().rect_filled(rect, 2.0, Color32::from_gray(100));
+            } else {
+                render_icon(ui.painter(), rect, icon_data, self.color);
             }
         }
 

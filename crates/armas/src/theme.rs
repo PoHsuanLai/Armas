@@ -1,13 +1,12 @@
-//! ARMAS Theme System
+//! ARMAS Theme System (shadcn/ui style)
 //!
 //! Serializable theme system for egui applications.
-//! Provides a complete color palette and spacing configuration that can be
-//! saved/loaded from JSON files.
+//! Uses shadcn/ui naming conventions for simplicity and maintainability.
 
 use egui::Color32;
 use serde::{Deserialize, Serialize};
 
-/// Complete ALIG theme with colors and spacing
+/// Complete theme with colors and spacing
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Theme {
     /// Color palette
@@ -17,67 +16,86 @@ pub struct Theme {
     pub spacing: Spacing,
 }
 
-/// Complete color palette following Material Design principles
+/// Color palette using shadcn/ui naming conventions
 /// All colors stored as [R, G, B] for serializability
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ColorPalette {
-    // Primary & Secondary (brand colors)
-    pub primary: [u8; 3],
-    pub secondary: [u8; 3],
-
-    // Background hierarchy (darkest to lightest)
+    // Background colors
     pub background: [u8; 3],
-    pub surface: [u8; 3],
-    pub surface_variant: [u8; 3],
+    pub foreground: [u8; 3],
 
-    // Text / Foreground
-    pub on_background: [u8; 3],      // Text on background
-    pub on_surface: [u8; 3],         // Text on surface
-    pub on_surface_variant: [u8; 3], // Dimmed text
+    // Card colors (elevated surfaces)
+    pub card: [u8; 3],
+    pub card_foreground: [u8; 3],
 
-    // Borders & Dividers
-    pub outline: [u8; 3],
-    pub outline_variant: [u8; 3], // Subtle borders
+    // Popover colors
+    pub popover: [u8; 3],
+    pub popover_foreground: [u8; 3],
+
+    // Primary brand color
+    pub primary: [u8; 3],
+    pub primary_foreground: [u8; 3],
+
+    // Secondary color
+    pub secondary: [u8; 3],
+    pub secondary_foreground: [u8; 3],
+
+    // Muted/subtle color
+    pub muted: [u8; 3],
+    pub muted_foreground: [u8; 3],
+
+    // Accent color
+    pub accent: [u8; 3],
+    pub accent_foreground: [u8; 3],
+
+    // Destructive/error color
+    pub destructive: [u8; 3],
+    pub destructive_foreground: [u8; 3],
+
+    // Border and input
+    pub border: [u8; 3],
+    pub input: [u8; 3],
+    pub ring: [u8; 3],
+
+    // Chart colors (for data visualization)
+    pub chart_1: [u8; 3],
+    pub chart_2: [u8; 3],
+    pub chart_3: [u8; 3],
+    pub chart_4: [u8; 3],
+    pub chart_5: [u8; 3],
 
     // Interactive states
     pub hover: [u8; 3],
     pub focus: [u8; 3],
-
-    // Semantic colors (Material Design standard)
-    pub error: [u8; 3],
-    pub warning: [u8; 3],
-    pub success: [u8; 3],
-    pub info: [u8; 3],
 }
 
 /// Spacing configuration for layouts
-/// Following a consistent 2px/4px/8px scale
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Spacing {
-    /// 2XS spacing (2px) - minimal spacing, tight track headers
+    /// 2XS spacing (2px)
     pub xxs: f32,
-    /// Extra small spacing (4px) - tight spacing
+    /// Extra small spacing (4px)
     pub xs: f32,
-    /// Small spacing (8px) - compact layouts
+    /// Small spacing (8px)
     pub sm: f32,
-    /// Medium spacing (16px) - standard spacing
+    /// Medium spacing (16px)
     pub md: f32,
-    /// Large spacing (24px) - comfortable spacing
+    /// Large spacing (24px)
     pub lg: f32,
-    /// Extra large spacing (32px) - spacious layouts
+    /// Extra large spacing (32px)
     pub xl: f32,
-    /// 2XL spacing (48px) - section separators
+    /// 2XL spacing (48px)
     pub xxl: f32,
 
-    /// Micro corner radius (2px) - very tight/sharp elements, timeline clips
+    /// Micro corner radius (2px)
     pub corner_radius_micro: u8,
-    /// Tiny corner radius (4px) - compact controls, DAW-style buttons
+    /// Tiny corner radius (4px)
     pub corner_radius_tiny: u8,
-    /// Small corner radius (8px) - buttons, small cards (BACKWARD COMPAT)
+    /// Small corner radius (8px)
     pub corner_radius_small: u8,
-    /// Standard corner radius (12px) - panels, dialogs (BACKWARD COMPAT)
+    /// Standard corner radius (12px)
     pub corner_radius: u8,
-    /// Large corner radius (16px) - prominent elements (BACKWARD COMPAT)
+    /// Large corner radius (16px)
     pub corner_radius_large: u8,
 }
 
@@ -88,26 +106,46 @@ impl Default for Theme {
 }
 
 impl Theme {
-    /// Material Design 3 baseline dark theme (default)
+    /// Dark theme using Zinc color palette (shadcn default)
     pub fn dark() -> Self {
         Self {
             colors: ColorPalette {
-                primary: [208, 188, 255],            // Purple (M3 baseline)
-                secondary: [204, 194, 220],          // Light purple
-                background: [28, 27, 31],            // Dark background
-                surface: [28, 27, 31],               // Surface same as bg
-                surface_variant: [73, 69, 79],       // Elevated surface
-                on_background: [230, 225, 229],      // Text on background
-                on_surface: [230, 225, 229],         // Text on surface
-                on_surface_variant: [202, 196, 208], // Dimmed text
-                outline: [147, 143, 153],            // Borders
-                outline_variant: [73, 69, 79],       // Subtle borders
-                hover: [49, 48, 51],                 // Hover state
-                focus: [208, 188, 255],              // Focus ring (primary)
-                error: [242, 184, 181],              // Error red
-                warning: [241, 196, 15],             // Warning yellow
-                success: [166, 218, 149],            // Success green
-                info: [175, 221, 255],               // Info blue
+                background: [9, 9, 11],           // zinc-950
+                foreground: [250, 250, 250],     // zinc-50
+
+                card: [9, 9, 11],                // zinc-950
+                card_foreground: [250, 250, 250], // zinc-50
+
+                popover: [9, 9, 11],             // zinc-950
+                popover_foreground: [250, 250, 250], // zinc-50
+
+                primary: [250, 250, 250],        // zinc-50
+                primary_foreground: [24, 24, 27], // zinc-900
+
+                secondary: [39, 39, 42],         // zinc-800
+                secondary_foreground: [250, 250, 250], // zinc-50
+
+                muted: [39, 39, 42],             // zinc-800
+                muted_foreground: [161, 161, 170], // zinc-400
+
+                accent: [39, 39, 42],            // zinc-800
+                accent_foreground: [250, 250, 250], // zinc-50
+
+                destructive: [127, 29, 29],      // red-900
+                destructive_foreground: [250, 250, 250], // zinc-50
+
+                border: [39, 39, 42],            // zinc-800
+                input: [39, 39, 42],             // zinc-800
+                ring: [212, 212, 216],           // zinc-300
+
+                chart_1: [59, 130, 246],         // blue-500
+                chart_2: [34, 197, 94],          // green-500
+                chart_3: [234, 179, 8],          // yellow-500
+                chart_4: [168, 85, 247],         // purple-500
+                chart_5: [249, 115, 22],         // orange-500
+
+                hover: [39, 39, 42],             // zinc-800
+                focus: [250, 250, 250],          // zinc-50
             },
             spacing: Spacing {
                 xxs: 2.0,
@@ -126,26 +164,46 @@ impl Theme {
         }
     }
 
-    /// Material Design 3 baseline light theme
+    /// Light theme using Zinc color palette
     pub fn light() -> Self {
         Self {
             colors: ColorPalette {
-                primary: [103, 80, 164],          // Purple
-                secondary: [98, 91, 113],         // Gray purple
-                background: [255, 251, 254],      // Off-white background
-                surface: [255, 251, 254],         // Surface same as bg
-                surface_variant: [231, 224, 236], // Elevated surface
-                on_background: [28, 27, 31],      // Dark text
-                on_surface: [28, 27, 31],         // Dark text
-                on_surface_variant: [73, 69, 79], // Dimmed text
-                outline: [121, 116, 126],         // Borders
-                outline_variant: [202, 196, 208], // Subtle borders
-                hover: [245, 237, 247],           // Hover state
-                focus: [103, 80, 164],            // Focus ring
-                error: [179, 38, 30],             // Error red
-                warning: [204, 130, 0],           // Warning orange
-                success: [56, 142, 60],           // Success green
-                info: [33, 150, 243],             // Info blue
+                background: [255, 255, 255],     // white
+                foreground: [9, 9, 11],          // zinc-950
+
+                card: [255, 255, 255],           // white
+                card_foreground: [9, 9, 11],     // zinc-950
+
+                popover: [255, 255, 255],        // white
+                popover_foreground: [9, 9, 11],  // zinc-950
+
+                primary: [24, 24, 27],           // zinc-900
+                primary_foreground: [250, 250, 250], // zinc-50
+
+                secondary: [244, 244, 245],      // zinc-100
+                secondary_foreground: [24, 24, 27], // zinc-900
+
+                muted: [244, 244, 245],          // zinc-100
+                muted_foreground: [113, 113, 122], // zinc-500
+
+                accent: [244, 244, 245],         // zinc-100
+                accent_foreground: [24, 24, 27], // zinc-900
+
+                destructive: [239, 68, 68],      // red-500
+                destructive_foreground: [250, 250, 250], // zinc-50
+
+                border: [228, 228, 231],         // zinc-200
+                input: [228, 228, 231],          // zinc-200
+                ring: [24, 24, 27],              // zinc-900
+
+                chart_1: [59, 130, 246],         // blue-500
+                chart_2: [34, 197, 94],          // green-500
+                chart_3: [234, 179, 8],          // yellow-500
+                chart_4: [168, 85, 247],         // purple-500
+                chart_5: [249, 115, 22],         // orange-500
+
+                hover: [244, 244, 245],          // zinc-100
+                focus: [24, 24, 27],             // zinc-900
             },
             spacing: Spacing {
                 xxs: 2.0,
@@ -164,7 +222,45 @@ impl Theme {
         }
     }
 
-    // Helper methods to convert [u8; 3] to Color32
+    // =========================================================================
+    // Color accessor methods (shadcn naming)
+    // =========================================================================
+
+    /// Background color
+    pub fn background(&self) -> Color32 {
+        let [r, g, b] = self.colors.background;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Foreground/text color
+    pub fn foreground(&self) -> Color32 {
+        let [r, g, b] = self.colors.foreground;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Card background color
+    pub fn card(&self) -> Color32 {
+        let [r, g, b] = self.colors.card;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Card foreground color
+    pub fn card_foreground(&self) -> Color32 {
+        let [r, g, b] = self.colors.card_foreground;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Popover background color
+    pub fn popover(&self) -> Color32 {
+        let [r, g, b] = self.colors.popover;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Popover foreground color
+    pub fn popover_foreground(&self) -> Color32 {
+        let [r, g, b] = self.colors.popover_foreground;
+        Color32::from_rgb(r, g, b)
+    }
 
     /// Primary brand color
     pub fn primary(&self) -> Color32 {
@@ -172,58 +268,106 @@ impl Theme {
         Color32::from_rgb(r, g, b)
     }
 
-    /// Secondary brand color
+    /// Primary foreground color
+    pub fn primary_foreground(&self) -> Color32 {
+        let [r, g, b] = self.colors.primary_foreground;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Secondary color
     pub fn secondary(&self) -> Color32 {
         let [r, g, b] = self.colors.secondary;
         Color32::from_rgb(r, g, b)
     }
 
-    /// Background color (deepest)
-    pub fn background(&self) -> Color32 {
-        let [r, g, b] = self.colors.background;
+    /// Secondary foreground color
+    pub fn secondary_foreground(&self) -> Color32 {
+        let [r, g, b] = self.colors.secondary_foreground;
         Color32::from_rgb(r, g, b)
     }
 
-    /// Surface color (for cards, panels)
-    pub fn surface(&self) -> Color32 {
-        let [r, g, b] = self.colors.surface;
+    /// Muted color (subtle backgrounds)
+    pub fn muted(&self) -> Color32 {
+        let [r, g, b] = self.colors.muted;
         Color32::from_rgb(r, g, b)
     }
 
-    /// Surface variant color
-    pub fn surface_variant(&self) -> Color32 {
-        let [r, g, b] = self.colors.surface_variant;
+    /// Muted foreground color
+    pub fn muted_foreground(&self) -> Color32 {
+        let [r, g, b] = self.colors.muted_foreground;
         Color32::from_rgb(r, g, b)
     }
 
-    /// Text color on background
-    pub fn on_background(&self) -> Color32 {
-        let [r, g, b] = self.colors.on_background;
+    /// Accent color
+    pub fn accent(&self) -> Color32 {
+        let [r, g, b] = self.colors.accent;
         Color32::from_rgb(r, g, b)
     }
 
-    /// Text color on surface
-    pub fn on_surface(&self) -> Color32 {
-        let [r, g, b] = self.colors.on_surface;
+    /// Accent foreground color
+    pub fn accent_foreground(&self) -> Color32 {
+        let [r, g, b] = self.colors.accent_foreground;
         Color32::from_rgb(r, g, b)
     }
 
-    /// Dimmed text color on surface
-    pub fn on_surface_variant(&self) -> Color32 {
-        let [r, g, b] = self.colors.on_surface_variant;
+    /// Destructive/error color
+    pub fn destructive(&self) -> Color32 {
+        let [r, g, b] = self.colors.destructive;
         Color32::from_rgb(r, g, b)
     }
 
-    /// Outline/border color
-    pub fn outline(&self) -> Color32 {
-        let [r, g, b] = self.colors.outline;
-        Color32::from_rgba_unmultiplied(r, g, b, 77) // 0.3 alpha
+    /// Destructive foreground color
+    pub fn destructive_foreground(&self) -> Color32 {
+        let [r, g, b] = self.colors.destructive_foreground;
+        Color32::from_rgb(r, g, b)
     }
 
-    /// Subtle outline/border color
-    pub fn outline_variant(&self) -> Color32 {
-        let [r, g, b] = self.colors.outline_variant;
-        Color32::from_rgba_unmultiplied(r, g, b, 40) // Subtle effect
+    /// Border color
+    pub fn border(&self) -> Color32 {
+        let [r, g, b] = self.colors.border;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Input border color
+    pub fn input(&self) -> Color32 {
+        let [r, g, b] = self.colors.input;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Focus ring color
+    pub fn ring(&self) -> Color32 {
+        let [r, g, b] = self.colors.ring;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Chart color 1 (blue)
+    pub fn chart_1(&self) -> Color32 {
+        let [r, g, b] = self.colors.chart_1;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Chart color 2 (green) - also used for success
+    pub fn chart_2(&self) -> Color32 {
+        let [r, g, b] = self.colors.chart_2;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Chart color 3 (yellow) - also used for warning
+    pub fn chart_3(&self) -> Color32 {
+        let [r, g, b] = self.colors.chart_3;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Chart color 4 (purple) - also used for info
+    pub fn chart_4(&self) -> Color32 {
+        let [r, g, b] = self.colors.chart_4;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Chart color 5 (orange)
+    pub fn chart_5(&self) -> Color32 {
+        let [r, g, b] = self.colors.chart_5;
+        Color32::from_rgb(r, g, b)
     }
 
     /// Hover state color
@@ -235,30 +379,6 @@ impl Theme {
     /// Focus state color
     pub fn focus(&self) -> Color32 {
         let [r, g, b] = self.colors.focus;
-        Color32::from_rgb(r, g, b)
-    }
-
-    /// Error color
-    pub fn error(&self) -> Color32 {
-        let [r, g, b] = self.colors.error;
-        Color32::from_rgb(r, g, b)
-    }
-
-    /// Warning color
-    pub fn warning(&self) -> Color32 {
-        let [r, g, b] = self.colors.warning;
-        Color32::from_rgb(r, g, b)
-    }
-
-    /// Success color
-    pub fn success(&self) -> Color32 {
-        let [r, g, b] = self.colors.success;
-        Color32::from_rgb(r, g, b)
-    }
-
-    /// Info color
-    pub fn info(&self) -> Color32 {
-        let [r, g, b] = self.colors.info;
         Color32::from_rgb(r, g, b)
     }
 }

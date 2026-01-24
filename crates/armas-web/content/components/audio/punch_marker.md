@@ -5,7 +5,7 @@ Visual markers for recording punch-in/punch-out points with draggable handles. S
 ## Basic Usage
 
 ```demo
-use armas::components::audio::PunchMarker;
+use armas_audio::PunchMarker;
 
 let mut punch_in = 1.0;   // beats
 let mut punch_out = 3.0; // beats
@@ -25,7 +25,7 @@ if response.punch_in_changed {
 ## With Snap to Grid
 
 ```demo
-use armas::components::audio::PunchMarker;
+use armas_audio::PunchMarker;
 
 let mut punch_in = 0.0;
 let mut punch_out = 3.0;
@@ -43,7 +43,7 @@ PunchMarker::new(&mut punch_in, &mut punch_out)
 ## Fine Grid Snapping
 
 ```demo
-use armas::components::audio::PunchMarker;
+use armas_audio::PunchMarker;
 
 let mut punch_in = 0.5;
 let mut punch_out = 3.5;
@@ -61,7 +61,7 @@ PunchMarker::new(&mut punch_in, &mut punch_out)
 ## Custom Color
 
 ```demo
-use armas::components::audio::PunchMarker;
+use armas_audio::PunchMarker;
 
 let mut punch_in = 0.0;
 let mut punch_out = 4.0;
@@ -78,7 +78,7 @@ PunchMarker::new(&mut punch_in, &mut punch_out)
 ## Without Labels
 
 ```demo
-use armas::components::audio::PunchMarker;
+use armas_audio::PunchMarker;
 
 let mut punch_in = 1.0;
 let mut punch_out = 3.0;
@@ -95,7 +95,7 @@ PunchMarker::new(&mut punch_in, &mut punch_out)
 ## Disabled State
 
 ```demo
-use armas::components::audio::PunchMarker;
+use armas_audio::PunchMarker;
 
 let mut punch_in = 0.0;
 let mut punch_out = 4.0;
@@ -115,7 +115,7 @@ ui.label("Punch recording disabled - no markers shown");
 ## With State Persistence
 
 ```demo
-use armas::components::audio::PunchMarker;
+use armas_audio::PunchMarker;
 
 let mut punch_in = 0.0;
 let mut punch_out = 4.0;
@@ -133,7 +133,7 @@ PunchMarker::new(&mut punch_in, &mut punch_out)
 ## In Timeline Context
 
 ```demo
-use armas::components::audio::PunchMarker;
+use armas_audio::PunchMarker;
 
 let mut punch_in = 2.0;
 let mut punch_out = 6.0;
@@ -166,7 +166,7 @@ ui.vertical(|ui| {
 ## Multiple Punch Regions
 
 ```demo
-use armas::components::audio::PunchMarker;
+use armas_audio::PunchMarker;
 
 let mut punch_a_in = 0.0;
 let mut punch_a_out = 3.0;
@@ -309,7 +309,7 @@ Common grid division values for snapping:
 ### Auto Punch Recording
 
 ```demo
-use armas::components::audio::PunchMarker;
+use armas_audio::PunchMarker;
 
 let mut punch_in = 1.0;
 let mut punch_out = 3.0;
@@ -341,7 +341,7 @@ ui.horizontal(|ui| {
 ### Cycle Recording
 
 ```demo
-use armas::components::audio::PunchMarker;
+use armas_audio::PunchMarker;
 
 let mut punch_in = 0.0;
 let mut punch_out = 4.0;
@@ -366,7 +366,7 @@ if ui.button("Record Cycle").clicked() {
 ### Comping Region
 
 ```demo
-use armas::components::audio::PunchMarker;
+use armas_audio::PunchMarker;
 
 let mut comp_in = 2.0;
 let mut comp_out = 4.0;
@@ -390,7 +390,7 @@ ui.label(format!("Comp duration: {:.2} beats ({:.2} bars)", duration, duration /
 The punch marker is designed to work alongside Timeline, LoopRegionMarker, and SelectionRange:
 
 ```demo
-use armas::components::audio::{PunchMarker, LoopRegionMarker, SelectionRange};
+use armas_audio::{PunchMarker, LoopRegionMarker, SelectionRange};
 
 let mut loop_start = 0.0;
 let mut loop_end = 8.0;

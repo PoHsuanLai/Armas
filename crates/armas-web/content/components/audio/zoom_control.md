@@ -5,7 +5,7 @@ Interactive zoom control for timeline scaling. Provides buttons and slider for a
 ## Basic Usage
 
 ```demo
-use armas::components::audio::ZoomControl;
+use armas_audio::ZoomControl;
 
 let mut zoom_level = 1.0;
 
@@ -21,7 +21,7 @@ ui.label(format!("Current zoom: {:.1}x", zoom_level));
 ## Buttons Only
 
 ```demo
-use armas::components::audio::ZoomControl;
+use armas_audio::ZoomControl;
 
 let mut zoom = 1.0;
 
@@ -34,7 +34,7 @@ ZoomControl::new(&mut zoom)
 ## Slider Only
 
 ```demo
-use armas::components::audio::ZoomControl;
+use armas_audio::ZoomControl;
 
 let mut zoom = 1.0;
 
@@ -47,7 +47,7 @@ ZoomControl::new(&mut zoom)
 ## Custom Range and Step
 
 ```demo
-use armas::components::audio::ZoomControl;
+use armas_audio::ZoomControl;
 
 let mut zoom = 1.0;
 
@@ -62,7 +62,7 @@ ZoomControl::new(&mut zoom)
 ## Compact Mode
 
 ```demo
-use armas::components::audio::ZoomControl;
+use armas_audio::ZoomControl;
 
 let mut zoom = 1.0;
 
@@ -125,7 +125,7 @@ pub struct ZoomControlResponse {
 
 ### Timeline Zoom
 ```demo
-use armas::components::audio::{ZoomControl, Marker};
+use armas_audio::{ZoomControl, Marker};
 
 let mut zoom = 1.0;
 let mut marker_pos = 16.0;
@@ -150,7 +150,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 
 ### Adaptive Zoom
 ```demo
-use armas::components::audio::ZoomControl;
+use armas_audio::ZoomControl;
 
 let mut zoom = 1.0;
 

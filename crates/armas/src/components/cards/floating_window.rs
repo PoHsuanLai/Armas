@@ -3,6 +3,7 @@
 //! Draggable, resizable floating window with glassmorphic styling.
 //! Built on top of egui::Window with Armas theme integration.
 
+use crate::icon::{WindowIcon, WindowIconWidget};
 use crate::theme::Theme;
 use egui::{self, Align2, Color32, CornerRadius, Id, Pos2, Vec2};
 
@@ -186,7 +187,8 @@ impl FloatingWindow {
             .id(id)
             .open(&mut open)
             .resizable(true)
-            .collapsible(true)
+            .collapsible(false)
+            .title_bar(false)
             .vscroll(true);
 
         // Set dimensions if provided
@@ -206,6 +208,10 @@ impl FloatingWindow {
 
         // Show the window
         window.show(ctx, |ui| {
+            // Custom thin Mac-style title bar
+            Self::draw_title_bar(ui, theme, &title, &id);
+            ui.separator();
+
             // Apply custom styling based on style variant
             match style {
                 FloatingWindowStyle::Glass => {
@@ -354,6 +360,43 @@ impl FloatingWindow {
             .corner_radius(CornerRadius::same(corner_rad))
             .stroke(egui::Stroke::new(1.0, theme.border()))
             .inner_margin(inner_margin_val);
+    }
+
+    /// Draw thin title bar with enlarge and close buttons
+    fn draw_title_bar(ui: &mut egui::Ui, theme: &Theme, title: &str, _id: &Id) {
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 8.0;
+
+            // Enlarge/Maximize button (left)
+            if WindowIconWidget::new(WindowIcon::IntoFullScreen)
+                .size(12.0)
+                .color(theme.muted_foreground())
+                .show(ui)
+                .clicked()
+            {
+                // Maximize action placeholder
+            }
+
+            // Title text (center-left)
+            ui.label(
+                egui::RichText::new(title)
+                    .size(12.0)
+                    .color(theme.foreground())
+            );
+
+            // Fill remaining space
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                // Close button (right)
+                if WindowIconWidget::new(WindowIcon::Close)
+                    .size(12.0)
+                    .color(theme.muted_foreground())
+                    .show(ui)
+                    .clicked()
+                {
+                    // Close is handled by egui::Window automatically
+                }
+            });
+        });
     }
 }
 

@@ -13,17 +13,6 @@ let response = Breadcrumbs::new()
     });
 ```
 
-## With Icons
-
-```demo
-Breadcrumbs::new()
-    .show(ui, |breadcrumbs| {
-        breadcrumbs.item("Home", Some("🏠"));
-        breadcrumbs.item("Documents", Some("📁"));
-        breadcrumbs.item("Reports", Some("📊")).current();
-    });
-```
-
 ## Custom Separator
 
 ```demo
@@ -58,16 +47,9 @@ if let Some(index) = response.clicked {
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
 | `::new()` | - | - | Create new breadcrumbs |
-| `.separator()` | `&str` | `"›"` | Separator between items |
+| `.separator()` | `&str` | `">"` | Separator between items |
 | `.spacing()` | `f32` | `4.0` | Spacing between items |
-| `.show_home_icon()` | `bool` | `false` | Show home icon before first item |
 | `.show()` | closure | - | Render with closure-based API |
-
-### BreadcrumbsBuilder (in closure)
-
-| Method | Type | Description |
-|--------|------|-------------|
-| `.item()` | `(&str, Option<&str>)` | Add item with label and optional icon |
 
 ### ItemBuilder (chainable from .item())
 
@@ -80,9 +62,3 @@ if let Some(index) = response.clicked {
 | Field | Type | Description |
 |-------|------|-------------|
 | `clicked` | `Option<usize>` | Index of clicked breadcrumb |
-
-## Dependencies
-
-- `egui = "0.33"`
-- Button component
-- Theme colors: `primary`, `on_surface`

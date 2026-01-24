@@ -1,7 +1,7 @@
 //! Hero section for the home page
 
 use armas::prelude::*;
-use armas::AuroraBackground;
+use armas_animated::AuroraBackground;
 use eframe::egui;
 
 pub struct Hero;

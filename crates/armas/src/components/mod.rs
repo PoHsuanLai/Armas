@@ -4,8 +4,6 @@
 //! professional design language.
 
 // Submodules organized by category
-pub mod animated;
-pub mod audio;
 pub mod basic;
 pub mod button;
 pub mod cards;
@@ -13,8 +11,6 @@ pub mod navigation;
 pub mod overlays;
 
 // Re-export all components at the top level for convenience
-pub use animated::*;
-pub use audio::*;
 pub use basic::*;
 pub use button::*;
 pub use cards::*;

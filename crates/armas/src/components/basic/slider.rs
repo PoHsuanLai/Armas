@@ -1,9 +1,26 @@
 //! Slider Component
 //!
-//! Horizontal slider for value selection
+//! Horizontal slider for value selection with optional velocity-based dragging.
 
+use crate::animation::{DragMode, VelocityDrag, VelocityDragConfig};
 use crate::ext::ArmasContextExt;
 use egui::{pos2, vec2, Color32, Rect, Sense, Stroke, Ui};
+
+/// Persisted drag state for slider
+#[derive(Clone)]
+struct SliderDragState {
+    drag: VelocityDrag,
+    drag_start_value: f32,
+}
+
+impl Default for SliderDragState {
+    fn default() -> Self {
+        Self {
+            drag: VelocityDrag::new(VelocityDragConfig::new().sensitivity(1.0)),
+            drag_start_value: 0.0,
+        }
+    }
+}
 
 /// Slider component
 pub struct Slider {
@@ -16,6 +33,9 @@ pub struct Slider {
     label: Option<String>,
     suffix: Option<String>,
     step: Option<f32>,
+    default_value: Option<f32>,
+    velocity_mode: bool,
+    sensitivity: f64,
 }
 
 impl Slider {
@@ -25,12 +45,15 @@ impl Slider {
             id: None,
             min,
             max,
-            width: 0.0, // 0.0 means use available width
+            width: 200.0,
             height: 20.0,
             show_value: true,
             label: None,
             suffix: None,
             step: None,
+            default_value: None,
+            velocity_mode: false,
+            sensitivity: 1.0,
         }
     }
 
@@ -76,10 +99,40 @@ impl Slider {
         self
     }
 
+    /// Set a default value for double-click reset
+    pub fn default_value(mut self, value: f32) -> Self {
+        self.default_value = Some(value);
+        self
+    }
+
+    /// Enable velocity-based dragging mode
+    ///
+    /// When enabled, holding Ctrl/Cmd while dragging uses velocity mode
+    /// where faster mouse movement = larger value changes.
+    /// This allows for fine-grained control.
+    pub fn velocity_mode(mut self, enabled: bool) -> Self {
+        self.velocity_mode = enabled;
+        self
+    }
+
+    /// Set the sensitivity for velocity mode (default: 1.0)
+    ///
+    /// Higher values = more responsive to mouse speed
+    pub fn sensitivity(mut self, sensitivity: f64) -> Self {
+        self.sensitivity = sensitivity;
+        self
+    }
+
     /// Show the slider
     pub fn show(self, ui: &mut Ui, value: &mut f32) -> SliderResponse {
         let theme = ui.ctx().armas_theme();
         let mut changed = false;
+
+        // Generate a stable ID for drag state
+        let slider_id = self
+            .id
+            .unwrap_or_else(|| ui.make_persistent_id("slider"));
+        let drag_state_id = slider_id.with("drag_state");
 
         // Load state from memory if ID is set
         if let Some(id) = self.id {
@@ -115,15 +168,92 @@ impl Slider {
             }
 
             // Slider track and handle
-            let slider_width = if self.width == 0.0 {
-                ui.available_width()
-            } else {
-                self.width
-            };
+            let slider_width = self.width;
             let (rect, response) =
                 ui.allocate_exact_size(vec2(slider_width, self.height), Sense::click_and_drag());
 
-            if response.clicked() || response.dragged() {
+            // Handle double-click to reset
+            if response.double_clicked() {
+                if let Some(default) = self.default_value {
+                    if (*value - default).abs() > 0.001 {
+                        *value = default;
+                        changed = true;
+                    }
+                }
+            }
+            // Handle drag interaction
+            else if response.drag_started() {
+                let mut drag_state = SliderDragState {
+                    drag: VelocityDrag::new(
+                        VelocityDragConfig::new().sensitivity(self.sensitivity),
+                    ),
+                    drag_start_value: *value,
+                };
+
+                if let Some(pos) = response.interact_pointer_pos() {
+                    let use_velocity = self.velocity_mode
+                        && ui.input(|i| {
+                            i.modifiers.command || i.modifiers.ctrl
+                        });
+                    drag_state.drag.begin(*value as f64, pos.x as f64, use_velocity);
+                }
+
+                ui.ctx()
+                    .data_mut(|d| d.insert_temp(drag_state_id, drag_state));
+            } else if response.dragged() {
+                if let Some(pos) = response.interact_pointer_pos() {
+                    let mut drag_state: SliderDragState = ui
+                        .ctx()
+                        .data_mut(|d| d.get_temp(drag_state_id).unwrap_or_default());
+
+                    let range = (self.max - self.min) as f64;
+
+                    if drag_state.drag.mode() == DragMode::Velocity {
+                        // Velocity mode: use drag helper
+                        let delta =
+                            drag_state
+                                .drag
+                                .update_tracked(pos.x as f64, range, rect.width() as f64);
+                        let mut new_value = drag_state.drag_start_value + delta as f32;
+
+                        // Apply step if specified
+                        if let Some(step) = self.step {
+                            new_value = (new_value / step).round() * step;
+                        }
+
+                        if (new_value - *value).abs() > 0.001 {
+                            *value = new_value.clamp(self.min, self.max);
+                            changed = true;
+                        }
+                    } else {
+                        // Absolute mode: position maps directly to value
+                        let t = ((pos.x - rect.left()) / rect.width()).clamp(0.0, 1.0);
+                        let mut new_value = self.min + t * (self.max - self.min);
+
+                        // Apply step if specified
+                        if let Some(step) = self.step {
+                            new_value = (new_value / step).round() * step;
+                        }
+
+                        if (new_value - *value).abs() > 0.001 {
+                            *value = new_value.clamp(self.min, self.max);
+                            changed = true;
+                        }
+                    }
+
+                    ui.ctx()
+                        .data_mut(|d| d.insert_temp(drag_state_id, drag_state));
+                }
+            } else if response.drag_stopped() {
+                ui.ctx().data_mut(|d| {
+                    let mut drag_state: SliderDragState =
+                        d.get_temp(drag_state_id).unwrap_or_default();
+                    drag_state.drag.end();
+                    d.insert_temp(drag_state_id, drag_state);
+                });
+            }
+            // Handle click (not drag)
+            else if response.clicked() {
                 if let Some(pos) = response.interact_pointer_pos() {
                     let t = ((pos.x - rect.left()) / rect.width()).clamp(0.0, 1.0);
                     let mut new_value = self.min + t * (self.max - self.min);

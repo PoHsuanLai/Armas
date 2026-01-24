@@ -17,12 +17,12 @@ Subtle button with minimal styling, shows background on hover.
 
 ```demo
 use armas::components::button::{IconButton, ButtonVariant};
-use armas::icon::TransportIcon;
+use armas_audio::TransportIcon;
 
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
-    if IconButton::new(TransportIcon::Play)
+    if IconButton::new(TransportIcon::Play.data())
         .variant(ButtonVariant::Text)
         .show(ui)
         .clicked()
@@ -30,7 +30,7 @@ ui.horizontal(|ui| {
         ui.label("Play clicked");
     }
 
-    if IconButton::new(TransportIcon::Pause)
+    if IconButton::new(TransportIcon::Pause.data())
         .variant(ButtonVariant::Text)
         .show(ui)
         .clicked()
@@ -38,7 +38,7 @@ ui.horizontal(|ui| {
         ui.label("Pause clicked");
     }
 
-    if IconButton::new(TransportIcon::Stop)
+    if IconButton::new(TransportIcon::Stop.data())
         .variant(ButtonVariant::Text)
         .show(ui)
         .clicked()
@@ -54,20 +54,20 @@ Prominent button with primary color background.
 
 ```demo
 use armas::components::button::{IconButton, ButtonVariant};
-use armas::icon::TransportIcon;
+use armas_audio::TransportIcon;
 
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
-    IconButton::new(TransportIcon::Play)
+    IconButton::new(TransportIcon::Play.data())
         .variant(ButtonVariant::Filled)
         .show(ui);
 
-    IconButton::new(TransportIcon::Pause)
+    IconButton::new(TransportIcon::Pause.data())
         .variant(ButtonVariant::Filled)
         .show(ui);
 
-    IconButton::new(TransportIcon::Stop)
+    IconButton::new(TransportIcon::Stop.data())
         .variant(ButtonVariant::Filled)
         .show(ui);
 });
@@ -79,20 +79,20 @@ Softer than filled, uses secondary container color.
 
 ```demo
 use armas::components::button::{IconButton, ButtonVariant};
-use armas::icon::TransportIcon;
+use armas_audio::TransportIcon;
 
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
-    IconButton::new(TransportIcon::Play)
+    IconButton::new(TransportIcon::Play.data())
         .variant(ButtonVariant::FilledTonal)
         .show(ui);
 
-    IconButton::new(TransportIcon::Pause)
+    IconButton::new(TransportIcon::Pause.data())
         .variant(ButtonVariant::FilledTonal)
         .show(ui);
 
-    IconButton::new(TransportIcon::Stop)
+    IconButton::new(TransportIcon::Stop.data())
         .variant(ButtonVariant::FilledTonal)
         .show(ui);
 });
@@ -104,20 +104,20 @@ Subtle background with shadow for elevation.
 
 ```demo
 use armas::components::button::{IconButton, ButtonVariant};
-use armas::icon::TransportIcon;
+use armas_audio::TransportIcon;
 
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
-    IconButton::new(TransportIcon::Play)
+    IconButton::new(TransportIcon::Play.data())
         .variant(ButtonVariant::Elevated)
         .show(ui);
 
-    IconButton::new(TransportIcon::Pause)
+    IconButton::new(TransportIcon::Pause.data())
         .variant(ButtonVariant::Elevated)
         .show(ui);
 
-    IconButton::new(TransportIcon::Stop)
+    IconButton::new(TransportIcon::Stop.data())
         .variant(ButtonVariant::Elevated)
         .show(ui);
 });
@@ -129,20 +129,20 @@ Border with no background (except on hover).
 
 ```demo
 use armas::components::button::{IconButton, ButtonVariant};
-use armas::icon::TransportIcon;
+use armas_audio::TransportIcon;
 
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
-    IconButton::new(TransportIcon::Play)
+    IconButton::new(TransportIcon::Play.data())
         .variant(ButtonVariant::Outlined)
         .show(ui);
 
-    IconButton::new(TransportIcon::Pause)
+    IconButton::new(TransportIcon::Pause.data())
         .variant(ButtonVariant::Outlined)
         .show(ui);
 
-    IconButton::new(TransportIcon::Stop)
+    IconButton::new(TransportIcon::Stop.data())
         .variant(ButtonVariant::Outlined)
         .show(ui);
 });
@@ -154,14 +154,14 @@ Customize icon size and padding.
 
 ```demo
 use armas::components::button::{IconButton, ButtonVariant};
-use armas::icon::TransportIcon;
+use armas_audio::TransportIcon;
 
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
     ui.vertical(|ui| {
         ui.spacing_mut().item_spacing.y = 4.0;
-        IconButton::new(TransportIcon::Play)
+        IconButton::new(TransportIcon::Play.data())
             .variant(ButtonVariant::Filled)
             .size(16.0)
             .padding(4.0)
@@ -171,7 +171,7 @@ ui.horizontal(|ui| {
 
     ui.vertical(|ui| {
         ui.spacing_mut().item_spacing.y = 4.0;
-        IconButton::new(TransportIcon::Play)
+        IconButton::new(TransportIcon::Play.data())
             .variant(ButtonVariant::Filled)
             .size(24.0)
             .padding(8.0)
@@ -181,7 +181,7 @@ ui.horizontal(|ui| {
 
     ui.vertical(|ui| {
         ui.spacing_mut().item_spacing.y = 4.0;
-        IconButton::new(TransportIcon::Play)
+        IconButton::new(TransportIcon::Play.data())
             .variant(ButtonVariant::Filled)
             .size(32.0)
             .padding(12.0)
@@ -195,24 +195,24 @@ ui.horizontal(|ui| {
 
 ```demo
 use armas::components::button::{IconButton, ButtonVariant};
-use armas::icon::TransportIcon;
+use armas_audio::TransportIcon;
 
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
-    IconButton::new(TransportIcon::Play)
+    IconButton::new(TransportIcon::Play.data())
         .variant(ButtonVariant::Filled)
         .show(ui);
 
-    IconButton::new(TransportIcon::Pause)
+    IconButton::new(TransportIcon::Pause.data())
         .variant(ButtonVariant::Filled)
         .show(ui);
 
-    IconButton::new(TransportIcon::Stop)
+    IconButton::new(TransportIcon::Stop.data())
         .variant(ButtonVariant::Filled)
         .show(ui);
 
-    IconButton::new(TransportIcon::Record)
+    IconButton::new(TransportIcon::Record.data())
         .variant(ButtonVariant::Filled)
         .show(ui);
 });
@@ -222,19 +222,19 @@ ui.add_space(8.0);
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
-    IconButton::new(TransportIcon::Rewind)
+    IconButton::new(TransportIcon::Rewind.data())
         .variant(ButtonVariant::Filled)
         .show(ui);
 
-    IconButton::new(TransportIcon::Forward)
+    IconButton::new(TransportIcon::Forward.data())
         .variant(ButtonVariant::Filled)
         .show(ui);
 
-    IconButton::new(TransportIcon::Loop)
+    IconButton::new(TransportIcon::Loop.data())
         .variant(ButtonVariant::Filled)
         .show(ui);
 
-    IconButton::new(TransportIcon::Metronome)
+    IconButton::new(TransportIcon::Metronome.data())
         .variant(ButtonVariant::Filled)
         .show(ui);
 });
@@ -244,31 +244,31 @@ ui.horizontal(|ui| {
 
 ```demo
 use armas::components::button::{IconButton, ButtonVariant};
-use armas::icon::TransportIcon;
+use armas_audio::TransportIcon;
 
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 4.0;
 
     // Navigation
-    IconButton::new(TransportIcon::Rewind)
+    IconButton::new(TransportIcon::Rewind.data())
         .variant(ButtonVariant::Text)
         .size(24.0)
         .padding(4.0)
         .show(ui);
 
-    IconButton::new(TransportIcon::Play)
+    IconButton::new(TransportIcon::Play.data())
         .variant(ButtonVariant::Text)
         .size(24.0)
         .padding(4.0)
         .show(ui);
 
-    IconButton::new(TransportIcon::Stop)
+    IconButton::new(TransportIcon::Stop.data())
         .variant(ButtonVariant::Text)
         .size(24.0)
         .padding(4.0)
         .show(ui);
 
-    IconButton::new(TransportIcon::Forward)
+    IconButton::new(TransportIcon::Forward.data())
         .variant(ButtonVariant::Text)
         .size(24.0)
         .padding(4.0)
@@ -277,19 +277,19 @@ ui.horizontal(|ui| {
     ui.add_space(16.0);
 
     // Toggles
-    IconButton::new(TransportIcon::Loop)
+    IconButton::new(TransportIcon::Loop.data())
         .variant(ButtonVariant::Text)
         .size(24.0)
         .padding(4.0)
         .show(ui);
 
-    IconButton::new(TransportIcon::Metronome)
+    IconButton::new(TransportIcon::Metronome.data())
         .variant(ButtonVariant::Text)
         .size(24.0)
         .padding(4.0)
         .show(ui);
 
-    IconButton::new(TransportIcon::Record)
+    IconButton::new(TransportIcon::Record.data())
         .variant(ButtonVariant::Text)
         .size(24.0)
         .padding(4.0)
@@ -300,7 +300,7 @@ ui.horizontal(|ui| {
 ## API Reference
 
 ```rust
-IconButton::new(icon: TransportIcon)
+IconButton::new(icon_data: &IconData)
     .variant(variant: ButtonVariant)     // Default: Filled
     .size(size: f32)                     // Default: 24.0
     .padding(padding: f32)               // Default: 8.0

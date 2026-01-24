@@ -5,7 +5,7 @@ Visual markers for tempo changes with BPM display. Shows a vertical line with a 
 ## Basic Usage
 
 ```demo
-use armas::components::audio::TempoMarker;
+use armas_audio::TempoMarker;
 
 let mut position = 16.0; // beats
 let mut bpm = 120.0;
@@ -21,7 +21,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 ## Multiple Tempo Changes
 
 ```demo
-use armas::components::audio::TempoMarker;
+use armas_audio::TempoMarker;
 
 let mut tempo1_pos = 0.0;
 let mut tempo1_bpm = 120.0;
@@ -48,7 +48,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 ## Custom Color
 
 ```demo
-use armas::components::audio::TempoMarker;
+use armas_audio::TempoMarker;
 
 let mut position = 8.0;
 let mut bpm = 180.0;
@@ -65,7 +65,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 ## Non-Draggable
 
 ```demo
-use armas::components::audio::TempoMarker;
+use armas_audio::TempoMarker;
 
 let mut position = 0.0;
 let mut bpm = 128.0;

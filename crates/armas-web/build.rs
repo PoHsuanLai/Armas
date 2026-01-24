@@ -85,6 +85,8 @@ fn main() {
     code.push_str("// Auto-generated showcase pages from markdown files\n\n");
     code.push_str("use crate::markdown;\n");
     code.push_str("use armas::*;\n");
+    code.push_str("use armas_animated::*;\n");
+    code.push_str("use armas_audio::*;\n");
     code.push_str("use armas_showcase_macros::showcase_page;\n");
     code.push_str("use eframe::egui;\n");
     code.push('\n');

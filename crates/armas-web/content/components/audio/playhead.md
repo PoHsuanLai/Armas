@@ -408,13 +408,13 @@ ui.vertical(|ui| {
         .show_in_rect(ui, rect, &mut playhead_pos, &theme);
 
     ui.horizontal(|ui| {
-        if ui.button("⏮").clicked() {
+        if ui.button("|<").clicked() {
             playhead_pos = 0.0;
         }
-        if ui.button("▶").clicked() {
+        if ui.button(">").clicked() {
             // Start playback
         }
-        if ui.button("⏸").clicked() {
+        if ui.button("||").clicked() {
             // Pause playback
         }
         ui.label(format!("Beat: {:.2}", playhead_pos));

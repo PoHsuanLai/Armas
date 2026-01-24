@@ -63,6 +63,7 @@ pub struct Popover {
     show_arrow: bool,
     animation: Animation<f32>,
     is_open: bool,
+    padding: Option<f32>,
     // Internal state management
     external_is_open: Option<bool>, // None = use internal state, Some = external control
 }
@@ -81,6 +82,7 @@ impl Popover {
             show_arrow: true,
             animation: Animation::new(0.0, 1.0, 0.2).easing(EasingFunction::CubicOut),
             is_open: false,
+            padding: None,
             external_is_open: None, // Use internal state by default
         }
     }
@@ -135,6 +137,12 @@ impl Popover {
     /// Show or hide the arrow
     pub fn show_arrow(mut self, show: bool) -> Self {
         self.show_arrow = show;
+        self
+    }
+
+    /// Set custom inner padding (overrides style default)
+    pub fn padding(mut self, padding: f32) -> Self {
+        self.padding = Some(padding);
         self
     }
 
@@ -273,12 +281,13 @@ impl Popover {
         };
 
         // Get style parameters
-        let (stroke_width, rounding, padding) = match self.style {
+        let (stroke_width, rounding, default_padding) = match self.style {
             PopoverStyle::Default => (1.0, theme.spacing.corner_radius, theme.spacing.md),
             PopoverStyle::Elevated => (0.5, theme.spacing.corner_radius_large, theme.spacing.lg),
             PopoverStyle::Bordered => (2.0, theme.spacing.corner_radius_small, theme.spacing.md),
             PopoverStyle::Flat => (0.0, theme.spacing.corner_radius_small, theme.spacing.md),
         };
+        let padding = self.padding.unwrap_or(default_padding);
 
         // Draw popover content using Card
         let area_response = egui::Area::new(self.id)

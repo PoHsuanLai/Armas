@@ -645,8 +645,8 @@ let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
         ui.heading("John Doe");
         ui.label("Software Engineer");
         ui.separator();
-        ui.label("📧 john@example.com");
-        ui.label("📍 San Francisco, CA");
+        ui.label("john@example.com");
+        ui.label("San Francisco, CA");
     });
 });
 

@@ -1,15 +1,15 @@
 # Sidebar
 
-Collapsible sidebar navigation with smooth animations and customizable width.
+Collapsible sidebar navigation.
 
 ## Basic Usage
 
 ```demo
 Sidebar::new()
     .show(ui, |sidebar| {
-        sidebar.item("🏠", "Home");
-        sidebar.item("👤", "Profile");
-        sidebar.item("⚙️", "Settings");
+        sidebar.item("H", "Home");
+        sidebar.item("P", "Profile");
+        sidebar.item("S", "Settings");
     });
 ```
 
@@ -18,25 +18,25 @@ Sidebar::new()
 ```demo
 Sidebar::new()
     .show(ui, |sidebar| {
-        sidebar.item("📊", "Dashboard").active(true);
-        sidebar.item("📈", "Analytics");
+        sidebar.item("D", "Dashboard").active(true);
+        sidebar.item("A", "Analytics");
     });
 ```
 
-## With Expandable Sub-Items
+## With Expandable Groups
 
 ```demo
 Sidebar::new()
     .show(ui, |sidebar| {
-        sidebar.item("🏠", "Home").active(true);
-        sidebar.group("⚙️", "Settings", |group| {
-            group.item("👤", "Profile");
-            group.item("🔔", "Notifications");
-            group.item("🔒", "Privacy");
+        sidebar.item("H", "Home").active(true);
+        sidebar.group("S", "Settings", |group| {
+            group.item("P", "Profile");
+            group.item("N", "Notifications");
+            group.item("X", "Privacy");
         });
-        sidebar.group("🔧", "Tools", |group| {
-            group.item("📊", "Analytics");
-            group.item("📝", "Logs");
+        sidebar.group("T", "Tools", |group| {
+            group.item("A", "Analytics");
+            group.item("L", "Logs");
         });
     });
 ```
@@ -62,14 +62,3 @@ Sidebar::new()
 | Method | Type | Description |
 |--------|------|-------------|
 | `.active()` | `bool` | Mark as active |
-
-### GroupBuilder (in group closure)
-
-| Method | Type | Description |
-|--------|------|-------------|
-| `.item()` | `(&str, &str)` | Add child item with icon and label |
-
-## Dependencies
-
-- `egui = "0.33"`
-- Theme colors: `surface`, `primary`, `on_surface`

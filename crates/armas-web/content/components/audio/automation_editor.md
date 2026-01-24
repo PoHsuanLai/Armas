@@ -47,7 +47,7 @@ AutomationEditor::new(&mut envelope)
 Configure the canvas grid, scaling, and snapping behavior.
 
 ```rust,ignore
-use armas::components::audio::CanvasConfig;
+use armas_audio::CanvasConfig;
 
 let config = CanvasConfig {
     pixels_per_beat: 80.0,
@@ -259,7 +259,7 @@ Full example showing a real-world automation editor setup:
 
 ```rust,ignore
 use audio_automation::{AutomationEnvelope, AutomationPoint, CurveType};
-use armas::components::audio::{AutomationEditor, CanvasConfig};
+use armas_audio::{AutomationEditor, CanvasConfig};
 use egui::Color32;
 
 struct AutomationEditorDemo {

@@ -5,7 +5,7 @@ Complete MIDI controller interface combining piano keyboard, mod/pitch wheels, X
 ## Basic Usage
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState};
+use armas_audio::{MidiController, MidiControllerState};
 
 let mut state = MidiControllerState::default();
 
@@ -31,7 +31,7 @@ if response.mod_wheel_changed {
 Complete controller with all sections visible.
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState, ControllerLayout};
+use armas_audio::{MidiController, MidiControllerState, ControllerLayout};
 
 let mut state = MidiControllerState::default();
 
@@ -45,7 +45,7 @@ MidiController::new(&mut state)
 Essential controls only - keyboard and wheels.
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState, ControllerLayout};
+use armas_audio::{MidiController, MidiControllerState, ControllerLayout};
 
 let mut state = MidiControllerState::default();
 
@@ -59,7 +59,7 @@ MidiController::new(&mut state)
 Optimized for live performance - keyboard, wheels, XY pad, and drum pads.
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState, ControllerLayout};
+use armas_audio::{MidiController, MidiControllerState, ControllerLayout};
 
 let mut state = MidiControllerState::default();
 
@@ -73,7 +73,7 @@ MidiController::new(&mut state)
 Control which sections are visible manually.
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState, ControllerSections};
+use armas_audio::{MidiController, MidiControllerState, ControllerSections};
 
 let mut state = MidiControllerState::default();
 
@@ -93,7 +93,7 @@ MidiController::new(&mut state)
 Customize piano keyboard range.
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState};
+use armas_audio::{MidiController, MidiControllerState};
 
 let mut state = MidiControllerState::default();
 
@@ -107,7 +107,7 @@ MidiController::new(&mut state)
 Configure drum pad layout.
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState};
+use armas_audio::{MidiController, MidiControllerState};
 
 let mut state = MidiControllerState::default();
 
@@ -121,7 +121,7 @@ MidiController::new(&mut state)
 Set number of sequencer steps.
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState};
+use armas_audio::{MidiController, MidiControllerState};
 
 let mut state = MidiControllerState::default();
 
@@ -135,7 +135,7 @@ MidiController::new(&mut state)
 Customize component appearance.
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState, WheelVariant, PadVariant};
+use armas_audio::{MidiController, MidiControllerState, WheelVariant, PadVariant};
 
 let mut state = MidiControllerState::default();
 
@@ -148,12 +148,12 @@ MidiController::new(&mut state)
 ## Complete DAW Controller
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState};
+use armas_audio::{MidiController, MidiControllerState};
 
 let mut state = MidiControllerState::default();
 
 let response = MidiController::new(&mut state)
-    .layout(armas::components::audio::ControllerLayout::Full)
+    .layout(armas_audio::ControllerLayout::Full)
     .piano(3, 3) // 3 octaves from C3
     .drum_pads(4, 4)
     .sequencer_steps(16)
@@ -319,7 +319,7 @@ pub struct ControllerSections {
 The controller state maps directly to MIDI events:
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState};
+use armas_audio::{MidiController, MidiControllerState};
 
 let mut state = MidiControllerState::default();
 let response = MidiController::new(&mut state).show(ui);
@@ -349,7 +349,7 @@ if response.pitch_wheel_changed {
 ### Live Performance Controller
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState, ControllerLayout};
+use armas_audio::{MidiController, MidiControllerState, ControllerLayout};
 
 let mut state = MidiControllerState::default();
 
@@ -363,7 +363,7 @@ MidiController::new(&mut state)
 ### Production Workstation
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState, ControllerLayout};
+use armas_audio::{MidiController, MidiControllerState, ControllerLayout};
 
 let mut state = MidiControllerState::default();
 
@@ -377,7 +377,7 @@ MidiController::new(&mut state)
 ### MIDI Learn Interface
 
 ```demo
-use armas::components::audio::{MidiController, MidiControllerState};
+use armas_audio::{MidiController, MidiControllerState};
 
 let mut state = MidiControllerState::default();
 let response = MidiController::new(&mut state).show(ui);

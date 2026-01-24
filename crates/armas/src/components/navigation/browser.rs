@@ -14,7 +14,7 @@
 //! | 200-280px | Normal | Full names, category chips, basic metadata |
 //! | > 280px | Expanded | Full metadata inline (BPM, key, duration) |
 
-use crate::components::basic::{Chip, ChipSize, ChipType};
+use crate::components::basic::{Badge, BadgeVariant};
 use crate::components::cards::{Card, CardVariant};
 use crate::ext::ArmasContextExt;
 use egui::{Response, Ui, Vec2};
@@ -685,7 +685,7 @@ impl Browser {
         if mode == BrowserMode::Expanded {
             ui.horizontal(|ui| {
                 ui.add_space(theme.spacing.xs);
-                ui.colored_label(theme.on_surface_variant(), "Category:");
+                ui.colored_label(theme.muted_foreground(), "Category:");
             });
         }
 
@@ -705,20 +705,20 @@ impl Browser {
                             tab.icon().to_string()
                         };
 
-                        let chip_response = Chip::new(&label)
-                            .chip_type(ChipType::Assist)
-                            .size(ChipSize::Small)
+                        let badge_response = Badge::new(&label)
+                            .variant(BadgeVariant::Outlined)
                             .selected(is_active)
+                            .size(12.0)
                             .show(ui);
 
-                        if chip_response.clicked() {
+                        if badge_response.clicked {
                             self.active_tab = tab;
                             if old_tab != tab {
                                 tab_changed = Some(tab);
                             }
                         } else if mode != BrowserMode::Expanded {
                             // Tooltip for icon-only (only if not clicked)
-                            chip_response.response.on_hover_text(tab.label());
+                            badge_response.response.on_hover_text(tab.label());
                         }
                         ui.add_space(theme.spacing.xs);
                     }
@@ -742,7 +742,7 @@ impl Browser {
         if mode == BrowserMode::Expanded {
             ui.horizontal(|ui| {
                 ui.add_space(theme.spacing.xs);
-                ui.colored_label(theme.on_surface_variant(), "Filters:");
+                ui.colored_label(theme.muted_foreground(), "Filters:");
                 if !self.filter_tags.is_empty() {
                     ui.colored_label(theme.primary(), format!("({})", self.filter_tags.len()));
                 }
@@ -765,13 +765,13 @@ impl Browser {
                             tag.clone()
                         };
 
-                        let chip_response = Chip::new(&display_tag)
-                            .chip_type(ChipType::Filter)
-                            .size(ChipSize::Small)
+                        let badge_response = Badge::new(&display_tag)
+                            .variant(BadgeVariant::Outlined)
                             .selected(is_active)
+                            .size(12.0)
                             .show(ui);
 
-                        if chip_response.clicked() {
+                        if badge_response.clicked {
                             if is_active {
                                 self.filter_tags.retain(|t| t != tag);
                             } else {
@@ -780,7 +780,7 @@ impl Browser {
                             changed = true;
                         } else if display_tag != *tag {
                             // Show full tag on hover if truncated (only if not clicked)
-                            chip_response.response.on_hover_text(tag);
+                            badge_response.response.on_hover_text(tag);
                         }
 
                         ui.add_space(theme.spacing.xs);
@@ -873,7 +873,7 @@ impl Browser {
                             ui.add_space(theme.spacing.xs);
 
                             let display_name = truncate_string(&item.name, mode.max_filename_chars());
-                            let label = ui.colored_label(theme.on_surface(), &display_name);
+                            let label = ui.colored_label(theme.foreground(), &display_name);
                             if display_name != item.name {
                                 label.on_hover_text(&item.name);
                             }
@@ -898,7 +898,7 @@ impl Browser {
                             ui.add_space(theme.spacing.xs);
 
                             let display_name = truncate_string(&item.name, mode.max_filename_chars());
-                            ui.colored_label(theme.on_surface(), &display_name);
+                            ui.colored_label(theme.foreground(), &display_name);
                         });
                     });
 
@@ -926,12 +926,12 @@ impl Browser {
                             ui.add_space(theme.spacing.xs);
 
                             ui.vertical(|ui| {
-                                ui.colored_label(theme.on_surface(), &item.name);
+                                ui.colored_label(theme.foreground(), &item.name);
 
                                 if let Some(ref metadata) = item.metadata {
                                     let meta_str = build_metadata_string(metadata);
                                     if !meta_str.is_empty() {
-                                        ui.colored_label(theme.on_surface_variant(), meta_str);
+                                        ui.colored_label(theme.muted_foreground(), meta_str);
                                     }
                                 }
                             });

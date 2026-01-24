@@ -104,25 +104,25 @@ let mut drawer = Drawer::new("drawer_left")
 let theme = ui.ctx().armas_theme();
 let response = drawer.show(ui.ctx(), &theme, |ui| {
     if is_open {
-        Button::new("🏠 Home")
+        Button::new("Home")
             .variant(ButtonVariant::Text)
             .text_align(egui::Align2::LEFT_CENTER)
             .min_size(egui::vec2(200.0, 40.0))
             .show(ui);
 
-        Button::new("📊 Dashboard")
+        Button::new("Dashboard")
             .variant(ButtonVariant::Text)
             .text_align(egui::Align2::LEFT_CENTER)
             .min_size(egui::vec2(200.0, 40.0))
             .show(ui);
 
-        Button::new("⚙️ Settings")
+        Button::new("Settings")
             .variant(ButtonVariant::Text)
             .text_align(egui::Align2::LEFT_CENTER)
             .min_size(egui::vec2(200.0, 40.0))
             .show(ui);
 
-        Button::new("❓ Help")
+        Button::new("Help")
             .variant(ButtonVariant::Text)
             .text_align(egui::Align2::LEFT_CENTER)
             .min_size(egui::vec2(200.0, 40.0))

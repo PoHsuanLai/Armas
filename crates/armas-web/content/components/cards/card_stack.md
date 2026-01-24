@@ -87,7 +87,7 @@ CardStack::new(400.0, 250.0)
 
 ## Important Notes
 
-⚠️ **Multiple Instances**: When using multiple CardStack components, always set a unique ID with `.id()` to prevent state sharing:
+**Multiple Instances**: When using multiple CardStack components, always set a unique ID with `.id()` to prevent state sharing:
 
 ```rust
 // ✅ Good - Each has unique ID

@@ -47,9 +47,9 @@ select.show(ui);
 
 ```demo
 let options = vec![
-    SelectOption::new("home", "Home").icon("🏠"),
-    SelectOption::new("work", "Work").icon("💼"),
-    SelectOption::new("other", "Other").icon("📍"),
+    SelectOption::new("home", "Home"),
+    SelectOption::new("work", "Work"),
+    SelectOption::new("other", "Other"),
 ];
 
 let mut select = Select::new(options)
@@ -79,13 +79,10 @@ select.show(ui);
 ```demo
 let mut select = Select::build(|s| {
     s.option("apple", "Apple")
-        .icon("🍎")
         .description("Red and crispy");
     s.option("banana", "Banana")
-        .icon("🍌")
         .description("Yellow and sweet");
     s.option("cherry", "Cherry")
-        .icon("🍒")
         .description("Small and tart");
 })
 .id("select_closure")
@@ -209,6 +206,15 @@ if response.changed {
 - `.icon(&str)` - Add icon
 - `.description(&str)` - Add description
 - `.disabled(bool)` - Mark as disabled
+
+### SelectResponse
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `response` | `egui::Response` | The trigger button response |
+| `changed` | `bool` | Whether the selected value changed |
+| `selected_value` | `Option<String>` | The newly selected value |
+| `is_open` | `bool` | Whether the dropdown is currently open |
 
 ## Dependencies
 

@@ -75,15 +75,15 @@ Input::new("Enter email").id("input_5")
 ```demo
 let mut text = String::new();
 Input::new("Search...")
-    .left_icon("🔍")
+    .left_icon("*")
     .show(ui, &mut text);
 ```
 
 ```demo
 let mut text = String::new();
 Input::new("Username")
-    .left_icon("👤")
-    .right_icon("✓")
+    .left_icon("@")
+    .right_icon("ok")
     .show(ui, &mut text);
 ```
 
@@ -126,7 +126,7 @@ let mut password = String::new();
 Input::new("Enter password")
     .label("Password")
     .password(true)
-    .left_icon("🔒")
+    .left_icon("*")
     .show(ui, &mut password);
 ```
 

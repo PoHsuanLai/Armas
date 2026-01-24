@@ -5,7 +5,7 @@ Visual markers for time signature (meter) changes. Shows a vertical line with a 
 ## Basic Usage
 
 ```demo
-use armas::components::audio::TimeSignatureMarker;
+use armas_audio::TimeSignatureMarker;
 
 let mut position = 32.0; // beats
 let mut numerator = 3;
@@ -22,7 +22,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 ## Multiple Time Signatures
 
 ```demo
-use armas::components::audio::TimeSignatureMarker;
+use armas_audio::TimeSignatureMarker;
 
 let mut ts1_pos = 0.0;
 let mut ts1_num = 4;
@@ -51,7 +51,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 ## Custom Color
 
 ```demo
-use armas::components::audio::TimeSignatureMarker;
+use armas_audio::TimeSignatureMarker;
 
 let mut position = 16.0;
 let mut num = 5;

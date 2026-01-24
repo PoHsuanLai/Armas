@@ -33,10 +33,8 @@
 //! ```
 
 pub mod animation;
-pub mod backgrounds;
 pub mod color;
 pub mod components;
-pub mod effects;
 pub mod ext;
 pub mod fonts;
 pub mod icon;
@@ -51,12 +49,10 @@ pub use animation::{
     Animation, AnimationSequence, AnimationState, EasingFunction, LoopMode, LoopingAnimation,
     SpringAnimation, StaggeredAnimation,
 };
-pub use backgrounds::*;
 pub use color::{
     blend, lerp_color, saturate, with_alpha, BlendMode, ColorStop, Gradient, NeonPalette,
 };
 pub use components::*;
-pub use effects::*;
 pub use ext::{
     ArmasContextExt, {neon_circle, neon_line, PainterExt},
 };

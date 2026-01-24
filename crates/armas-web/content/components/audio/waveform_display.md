@@ -177,7 +177,7 @@ Colors are configurable via `WaveformConfig`:
 ## Complete Example
 
 ```rust
-use armas::components::audio::WaveformDisplay;
+use armas_audio::WaveformDisplay;
 use egui::{Color32, Vec2};
 
 fn show_waveform(ui: &mut egui::Ui, theme: &Theme) {

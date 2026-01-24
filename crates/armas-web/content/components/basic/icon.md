@@ -12,10 +12,11 @@ SVG-based icons that are parsed at compile time and rendered with theme colors.
 ## Single Icon Test
 
 ```demo
-use armas::icon::{Icon, TransportIcon};
+use armas::icon::Icon;
+use armas_audio::TransportIcon;
 
 ui.label("Single Play icon (64px):");
-Icon::new(TransportIcon::Play)
+Icon::new(TransportIcon::Play.data())
     .size(64.0)
     .color(theme.primary())
     .show(ui);
@@ -24,23 +25,24 @@ Icon::new(TransportIcon::Play)
 ## Basic Usage
 
 ```demo
-use armas::icon::{Icon, TransportIcon};
+use armas::icon::Icon;
+use armas_audio::TransportIcon;
 
 ui.label("Three icons in horizontal layout:");
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
-    Icon::new(TransportIcon::Play)
+    Icon::new(TransportIcon::Play.data())
         .size(24.0)
         .color(theme.foreground())
         .show(ui);
 
-    Icon::new(TransportIcon::Pause)
+    Icon::new(TransportIcon::Pause.data())
         .size(24.0)
         .color(theme.foreground())
         .show(ui);
 
-    Icon::new(TransportIcon::Stop)
+    Icon::new(TransportIcon::Stop.data())
         .size(24.0)
         .color(theme.foreground())
         .show(ui);
@@ -50,12 +52,13 @@ ui.horizontal(|ui| {
 ## All Transport Icons
 
 ```demo
-use armas::icon::{Icon, TransportIcon};
+use armas::icon::Icon;
+use armas_audio::TransportIcon;
 
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
-    if Icon::new(TransportIcon::Play)
+    if Icon::new(TransportIcon::Play.data())
         .size(32.0)
         .color(theme.foreground())
         .show(ui)
@@ -64,7 +67,7 @@ ui.horizontal(|ui| {
         ui.label("Play clicked");
     }
 
-    if Icon::new(TransportIcon::Pause)
+    if Icon::new(TransportIcon::Pause.data())
         .size(32.0)
         .color(theme.foreground())
         .show(ui)
@@ -73,7 +76,7 @@ ui.horizontal(|ui| {
         ui.label("Pause clicked");
     }
 
-    if Icon::new(TransportIcon::Stop)
+    if Icon::new(TransportIcon::Stop.data())
         .size(32.0)
         .color(theme.foreground())
         .show(ui)
@@ -82,7 +85,7 @@ ui.horizontal(|ui| {
         ui.label("Stop clicked");
     }
 
-    if Icon::new(TransportIcon::Record)
+    if Icon::new(TransportIcon::Record.data())
         .size(32.0)
         .color(theme.foreground())
         .show(ui)
@@ -97,22 +100,22 @@ ui.add_space(8.0);
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
-    Icon::new(TransportIcon::Rewind)
+    Icon::new(TransportIcon::Rewind.data())
         .size(32.0)
         .color(theme.foreground())
         .show(ui);
 
-    Icon::new(TransportIcon::Forward)
+    Icon::new(TransportIcon::Forward.data())
         .size(32.0)
         .color(theme.foreground())
         .show(ui);
 
-    Icon::new(TransportIcon::Loop)
+    Icon::new(TransportIcon::Loop.data())
         .size(32.0)
         .color(theme.foreground())
         .show(ui);
 
-    Icon::new(TransportIcon::Metronome)
+    Icon::new(TransportIcon::Metronome.data())
         .size(32.0)
         .color(theme.foreground())
         .show(ui);
@@ -122,32 +125,33 @@ ui.horizontal(|ui| {
 ## Different Sizes
 
 ```demo
-use armas::icon::{Icon, TransportIcon};
+use armas::icon::Icon;
+use armas_audio::TransportIcon;
 
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
-    Icon::new(TransportIcon::Play)
+    Icon::new(TransportIcon::Play.data())
         .size(16.0)
         .color(theme.foreground())
         .show(ui);
 
-    Icon::new(TransportIcon::Play)
+    Icon::new(TransportIcon::Play.data())
         .size(24.0)
         .color(theme.foreground())
         .show(ui);
 
-    Icon::new(TransportIcon::Play)
+    Icon::new(TransportIcon::Play.data())
         .size(32.0)
         .color(theme.foreground())
         .show(ui);
 
-    Icon::new(TransportIcon::Play)
+    Icon::new(TransportIcon::Play.data())
         .size(48.0)
         .color(theme.foreground())
         .show(ui);
 
-    Icon::new(TransportIcon::Play)
+    Icon::new(TransportIcon::Play.data())
         .size(64.0)
         .color(theme.foreground())
         .show(ui);
@@ -157,27 +161,28 @@ ui.horizontal(|ui| {
 ## Different Colors
 
 ```demo
-use armas::icon::{Icon, TransportIcon};
+use armas::icon::Icon;
+use armas_audio::TransportIcon;
 
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
 
-    Icon::new(TransportIcon::Play)
+    Icon::new(TransportIcon::Play.data())
         .size(32.0)
         .color(theme.primary())
         .show(ui);
 
-    Icon::new(TransportIcon::Play)
+    Icon::new(TransportIcon::Play.data())
         .size(32.0)
         .color(theme.secondary())
         .show(ui);
 
-    Icon::new(TransportIcon::Play)
+    Icon::new(TransportIcon::Play.data())
         .size(32.0)
         .color(theme.destructive())
         .show(ui);
 
-    Icon::new(TransportIcon::Play)
+    Icon::new(TransportIcon::Play.data())
         .size(32.0)
         .color(egui::Color32::from_rgb(255, 165, 0))
         .show(ui);
@@ -187,14 +192,15 @@ ui.horizontal(|ui| {
 ## With Labels
 
 ```demo
-use armas::icon::{Icon, TransportIcon};
+use armas::icon::Icon;
+use armas_audio::TransportIcon;
 
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 16.0;
 
     ui.vertical(|ui| {
         ui.spacing_mut().item_spacing.y = 4.0;
-        Icon::new(TransportIcon::Play)
+        Icon::new(TransportIcon::Play.data())
             .size(32.0)
             .color(theme.foreground())
             .show(ui);
@@ -203,7 +209,7 @@ ui.horizontal(|ui| {
 
     ui.vertical(|ui| {
         ui.spacing_mut().item_spacing.y = 4.0;
-        Icon::new(TransportIcon::Pause)
+        Icon::new(TransportIcon::Pause.data())
             .size(32.0)
             .color(theme.foreground())
             .show(ui);
@@ -212,7 +218,7 @@ ui.horizontal(|ui| {
 
     ui.vertical(|ui| {
         ui.spacing_mut().item_spacing.y = 4.0;
-        Icon::new(TransportIcon::Stop)
+        Icon::new(TransportIcon::Stop.data())
             .size(32.0)
             .color(theme.foreground())
             .show(ui);
@@ -221,7 +227,7 @@ ui.horizontal(|ui| {
 
     ui.vertical(|ui| {
         ui.spacing_mut().item_spacing.y = 4.0;
-        Icon::new(TransportIcon::Record)
+        Icon::new(TransportIcon::Record.data())
             .size(32.0)
             .color(theme.destructive())
             .show(ui);
@@ -235,13 +241,13 @@ ui.horizontal(|ui| {
 ### Icon
 
 ```rust
-Icon::new(icon: TransportIcon)
+Icon::new(icon_data: &IconData)
     .size(size: f32)           // Default: 24.0
     .color(color: Color32)     // Default: Color32::WHITE
     .show(ui: &mut Ui) -> Response
 ```
 
-### TransportIcon Enum
+### TransportIcon Enum (from armas_audio)
 
 ```rust
 pub enum TransportIcon {
@@ -254,14 +260,18 @@ pub enum TransportIcon {
     Loop,        // Loop button (loop.svg)
     Metronome,   // Metronome button (fad-metronome.svg)
 }
+
+// Get icon data with .data() method
+TransportIcon::Play.data() -> &'static IconData
 ```
 
 ## Implementation Details
 
 Icons are:
 1. **Parsed at compile time** by the build script (`build.rs`)
-2. **Converted to path data** - Bezier curves sampled into point arrays
+2. **Tessellated into triangles** using Lyon tessellation
 3. **Rendered with egui::Painter** - No external dependencies at runtime
 4. **Stored as static data** - Zero allocation during rendering
 
-The build script processes SVG files in `icons/transport/` and generates Rust code with pre-computed path data.
+The `armas-icon` crate provides the generic `Icon` widget and `IconData` type.
+Domain-specific icon sets (like `TransportIcon`) are defined in their respective crates.

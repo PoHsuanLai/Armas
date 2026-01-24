@@ -96,25 +96,22 @@ Use these standard widths for responsive layouts:
 
 ```demo
 ui.vertical(|ui| {
-    // Small
     ui.set_max_width(600.0);
-    ui.label("📱 Small: 600px");
+    ui.label("Small: 600px");
 });
 
 ui.add_space(8.0);
 
 ui.vertical(|ui| {
-    // Medium
     ui.set_max_width(960.0);
-    ui.label("💻 Medium: 960px");
+    ui.label("Medium: 960px");
 });
 
 ui.add_space(8.0);
 
 ui.vertical(|ui| {
-    // Large
     ui.set_max_width(1280.0);
-    ui.label("🖥 Large: 1280px");
+    ui.label("Large: 1280px");
 });
 ```
 

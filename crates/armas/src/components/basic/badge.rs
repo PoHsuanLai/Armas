@@ -55,6 +55,8 @@ pub struct Badge {
     corner_radius: Option<f32>,
     /// Vertical padding (None = use default theme spacing)
     vertical_padding: Option<f32>,
+    /// Whether the badge is selected (for interactive use)
+    is_selected: bool,
 }
 
 impl Badge {
@@ -70,6 +72,7 @@ impl Badge {
             removable: false,
             corner_radius: None,
             vertical_padding: None,
+            is_selected: false,
         }
     }
 
@@ -121,6 +124,12 @@ impl Badge {
         self
     }
 
+    /// Set selected state (for interactive badge use)
+    pub fn selected(mut self, selected: bool) -> Self {
+        self.is_selected = selected;
+        self
+    }
+
     /// Show the badge
     pub fn show(self, ui: &mut Ui) -> BadgeResponse {
         let theme = ui.ctx().armas_theme();
@@ -145,27 +154,32 @@ impl Badge {
         let width = text_width + dot_space + remove_space + padding;
         let height = self.size + vertical_pad;
 
+        // Use click sense for interactive badges
         let (rect, response) =
-            ui.allocate_exact_size(Vec2::new(width, height), egui::Sense::hover());
+            ui.allocate_exact_size(Vec2::new(width, height), egui::Sense::click());
 
         // Calculate corner radius (default to pill shape)
         let radius = self.corner_radius.unwrap_or(height / 2.0);
 
-        // Background
-        match self.variant {
-            BadgeVariant::Filled => {
-                ui.painter().rect_filled(rect, radius, bg_color);
-            }
-            BadgeVariant::Outlined => {
-                ui.painter().rect_stroke(
-                    rect,
-                    radius,
-                    egui::Stroke::new(1.0, border_color),
-                    egui::StrokeKind::Middle,
-                );
-            }
-            BadgeVariant::Soft => {
-                ui.painter().rect_filled(rect, radius, bg_color);
+        // Background - always fill when selected
+        if self.is_selected {
+            ui.painter().rect_filled(rect, radius, bg_color);
+        } else {
+            match self.variant {
+                BadgeVariant::Filled => {
+                    ui.painter().rect_filled(rect, radius, bg_color);
+                }
+                BadgeVariant::Outlined => {
+                    ui.painter().rect_stroke(
+                        rect,
+                        radius,
+                        egui::Stroke::new(1.0, border_color),
+                        egui::StrokeKind::Middle,
+                    );
+                }
+                BadgeVariant::Soft => {
+                    ui.painter().rect_filled(rect, radius, bg_color);
+                }
             }
         }
 
@@ -231,12 +245,13 @@ impl Badge {
         }
 
         BadgeResponse {
+            clicked: response.clicked(),
             removed: was_clicked,
             response,
         }
     }
 
-    /// Get colors based on variant and color
+    /// Get colors based on variant, color, and selected state
     fn get_colors(&self, theme: &Theme) -> (Color32, Color32, Color32) {
         let base_color = if let Some(color) = self.custom_color {
             color
@@ -245,6 +260,11 @@ impl Badge {
         } else {
             theme.primary()
         };
+
+        // When selected, use filled style regardless of variant
+        if self.is_selected {
+            return (base_color, theme.primary_foreground(), base_color);
+        }
 
         match self.variant {
             BadgeVariant::Filled => {
@@ -268,6 +288,8 @@ impl Badge {
 /// Response from a badge
 #[derive(Debug, Clone)]
 pub struct BadgeResponse {
+    /// Whether the badge was clicked
+    pub clicked: bool,
     /// Whether the remove button was clicked (only relevant if badge is removable)
     pub removed: bool,
     /// The underlying egui response

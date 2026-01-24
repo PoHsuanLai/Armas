@@ -1,0 +1,16 @@
+[package]
+name = "armas-icon"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Generic SVG-based icon system for egui"
+keywords = ["egui", "icons", "svg", "ui"]
+categories = ["gui"]
+
+[dependencies]
+egui.workspace = true
+
+[lints]
+workspace = true

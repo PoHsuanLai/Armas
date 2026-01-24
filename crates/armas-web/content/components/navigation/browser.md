@@ -136,17 +136,16 @@ BrowserItem {
 The browser provides intuitive folder navigation:
 
 ### Breadcrumb Trail
-- Shows current path: "📁 Samples › Drums › Kicks"
+- Shows current path: "Samples > Drums > Kicks"
 - Click any breadcrumb to jump to that folder
-- Click "📁 Samples" to return to root
+- Click "Samples" to return to root
 
 ### Back Button
-- "⬅ Back" appears when inside a folder
+- "Back" appears when inside a folder
 - Navigate one level up in the hierarchy
-- Quick way to return to parent folder
 
 ### Folder Drilling
-- Click any folder icon (📁) to enter that folder
+- Click any folder to enter it
 - Only shows items in the current folder
 - Maintains proper hierarchy filtering
 

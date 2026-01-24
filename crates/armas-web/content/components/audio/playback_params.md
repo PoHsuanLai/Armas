@@ -229,7 +229,7 @@ if ui.button("Apply Preset 1").clicked() {
 ## Complete Example
 
 ```rust
-use armas::components::audio::{PlaybackParams, PlaybackParamsUI};
+use armas_audio::{PlaybackParams, PlaybackParamsUI};
 
 struct SamplerState {
     params: PlaybackParams,

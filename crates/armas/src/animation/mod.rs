@@ -1,10 +1,16 @@
 pub mod easing;
 pub mod interpolate;
+pub mod momentum;
 pub mod staggered;
+pub mod velocity_drag;
 
 pub use easing::EasingFunction;
 pub use interpolate::Interpolate;
+pub use momentum::{
+    ContinuousWithMomentum, MomentumBehavior, MomentumPosition, SnapToPageBoundaries,
+};
 pub use staggered::{AnimationSequence, LoopMode, LoopingAnimation, StaggeredAnimation};
+pub use velocity_drag::{DoubleClickReset, DragMode, VelocityDrag, VelocityDragConfig};
 
 /// Animation state
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -1,0 +1,17 @@
+[package]
+name = "armas-animated"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Animated text and effect components for egui"
+keywords = ["egui", "animation", "effects", "ui"]
+categories = ["gui"]
+
+[dependencies]
+egui.workspace = true
+armas = { path = "../armas" }
+
+[lints]
+workspace = true

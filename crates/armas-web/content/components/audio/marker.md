@@ -10,7 +10,7 @@ The marker type is automatically detected based on the content string.
 ## Basic Usage - Cue Point
 
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut position = 16.0; // beats
 
@@ -29,7 +29,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 ## Usage with Timeline (Recommended)
 
 ```demo
-use armas::components::audio::{Timeline, MarkerData, Track};
+use armas_audio::{Timeline, MarkerData, Track};
 
 let theme = ui.ctx().armas_theme();
 let mut tracks = vec![
@@ -59,7 +59,7 @@ The Timeline automatically handles vertical positioning:
 ## Multiple Markers
 
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut intro_pos = 0.0;
 let mut verse_pos = 8.0;
@@ -102,7 +102,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 ## With Custom Colors
 
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut position = 8.0;
 
@@ -118,7 +118,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 ## Non-Draggable Marker
 
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut position = 12.0;
 
@@ -136,7 +136,7 @@ ui.label("This marker cannot be dragged");
 ## Without Vertical Line
 
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut position = 4.0;
 
@@ -152,7 +152,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 ## With Custom Tooltip
 
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut position = 16.0;
 
@@ -170,7 +170,7 @@ ui.label("Hover over the marker to see custom tooltip");
 ## With Snap to Grid
 
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut position = 7.5;
 
@@ -187,7 +187,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 ## Fine Grid Snapping
 
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut position = 8.25;
 
@@ -204,7 +204,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 ## Song Structure Example
 
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut intro = 0.0;
 let mut verse1 = 8.0;
@@ -283,7 +283,7 @@ ui.vertical(|ui| {
 ## Disabled State
 
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut position = 16.0;
 
@@ -323,7 +323,7 @@ MarkerData::time_signature(position: f32, numerator: u32, denominator: u32) -> S
 ### Example
 
 ```demo
-use armas::components::audio::MarkerData;
+use armas_audio::MarkerData;
 
 let markers = vec![
     MarkerData::new(0.0, "Intro")
@@ -438,7 +438,7 @@ pub struct MarkerResponse {
 
 ### Navigation
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut current_section = 0.0;
 
@@ -457,7 +457,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 
 ### Arrangement Markers
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut drop_point = 32.0;
 
@@ -475,7 +475,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 
 ### Reference Points
 ```demo
-use armas::components::audio::Marker;
+use armas_audio::Marker;
 
 let mut ref_point = 16.0;
 
@@ -495,7 +495,7 @@ egui::ScrollArea::horizontal().show(ui, |ui| {
 Markers work alongside other timeline components:
 
 ```demo
-use armas::components::audio::{Marker, LoopRegionMarker, SelectionRange};
+use armas_audio::{Marker, LoopRegionMarker, SelectionRange};
 
 let mut verse_pos = 8.0;
 let mut chorus_pos = 24.0;

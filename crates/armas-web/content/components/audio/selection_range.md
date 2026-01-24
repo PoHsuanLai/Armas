@@ -5,7 +5,7 @@ Visual markers for selection start/end points with draggable handles. Shows high
 ## Basic Usage
 
 ```demo
-use armas::components::audio::SelectionRange;
+use armas_audio::SelectionRange;
 
 let mut selection_start = 1.0;  // beats
 let mut selection_end = 3.0;   // beats
@@ -25,7 +25,7 @@ if response.selection_start_changed {
 ## With Snap to Grid
 
 ```demo
-use armas::components::audio::SelectionRange;
+use armas_audio::SelectionRange;
 
 let mut selection_start = 0.0;
 let mut selection_end = 3.0;
@@ -43,7 +43,7 @@ SelectionRange::new(&mut selection_start, &mut selection_end)
 ## Fine Grid Snapping
 
 ```demo
-use armas::components::audio::SelectionRange;
+use armas_audio::SelectionRange;
 
 let mut selection_start = 0.5;
 let mut selection_end = 3.5;
@@ -61,7 +61,7 @@ SelectionRange::new(&mut selection_start, &mut selection_end)
 ## Custom Color
 
 ```demo
-use armas::components::audio::SelectionRange;
+use armas_audio::SelectionRange;
 
 let mut selection_start = 0.0;
 let mut selection_end = 4.0;
@@ -78,7 +78,7 @@ SelectionRange::new(&mut selection_start, &mut selection_end)
 ## Without Labels
 
 ```demo
-use armas::components::audio::SelectionRange;
+use armas_audio::SelectionRange;
 
 let mut selection_start = 1.0;
 let mut selection_end = 3.0;
@@ -95,7 +95,7 @@ SelectionRange::new(&mut selection_start, &mut selection_end)
 ## Disabled State
 
 ```demo
-use armas::components::audio::SelectionRange;
+use armas_audio::SelectionRange;
 
 let mut selection_start = 0.0;
 let mut selection_end = 4.0;
@@ -115,7 +115,7 @@ ui.label("Selection disabled - no markers shown");
 ## With State Persistence
 
 ```demo
-use armas::components::audio::SelectionRange;
+use armas_audio::SelectionRange;
 
 let mut selection_start = 0.0;
 let mut selection_end = 4.0;
@@ -133,7 +133,7 @@ SelectionRange::new(&mut selection_start, &mut selection_end)
 ## In Timeline Context
 
 ```demo
-use armas::components::audio::SelectionRange;
+use armas_audio::SelectionRange;
 
 let mut selection_start = 2.0;
 let mut selection_end = 6.0;
@@ -166,7 +166,7 @@ ui.vertical(|ui| {
 ## Multiple Selections
 
 ```demo
-use armas::components::audio::SelectionRange;
+use armas_audio::SelectionRange;
 
 let mut sel_a_start = 0.0;
 let mut sel_a_end = 3.0;
@@ -307,7 +307,7 @@ Common grid division values for snapping:
 ### Copy/Cut Region
 
 ```demo
-use armas::components::audio::SelectionRange;
+use armas_audio::SelectionRange;
 
 let mut selection_start = 1.0;
 let mut selection_end = 3.0;
@@ -333,7 +333,7 @@ ui.horizontal(|ui| {
 ### Delete Range
 
 ```demo
-use armas::components::audio::SelectionRange;
+use armas_audio::SelectionRange;
 
 let mut selection_start = 2.0;
 let mut selection_end = 4.0;
@@ -356,7 +356,7 @@ if ui.button("Delete Selection").clicked() {
 ### Time Range Selection
 
 ```demo
-use armas::components::audio::SelectionRange;
+use armas_audio::SelectionRange;
 
 let mut selection_start = 0.0;
 let mut selection_end = 4.0;
@@ -379,7 +379,7 @@ ui.label(format!("Duration: {:.2} beats ({:.2} bars)", duration, duration / 4.0)
 The selection range is designed to work alongside the Timeline and LoopRegionMarker:
 
 ```demo
-use armas::components::audio::{SelectionRange, LoopRegionMarker, Timeline};
+use armas_audio::{SelectionRange, LoopRegionMarker, Timeline};
 
 let mut loop_start = 0.0;
 let mut loop_end = 8.0;

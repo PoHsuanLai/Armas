@@ -5,7 +5,7 @@ Visual grid lines for timeline alignment. Draws vertical lines at beat/subdivisi
 ## Basic Usage
 
 ```demo
-use armas::components::audio::SnapGrid;
+use armas_audio::SnapGrid;
 
 ui.vertical(|ui| {
     SnapGrid::new()
@@ -19,7 +19,7 @@ ui.vertical(|ui| {
 ## Different Subdivisions
 
 ```demo
-use armas::components::audio::SnapGrid;
+use armas_audio::SnapGrid;
 
 ui.label("16th Notes:");
 SnapGrid::new()
@@ -41,7 +41,7 @@ SnapGrid::new()
 ## Custom Opacity
 
 ```demo
-use armas::components::audio::SnapGrid;
+use armas_audio::SnapGrid;
 
 SnapGrid::new()
     .beat_width(60.0)
@@ -56,7 +56,7 @@ SnapGrid::new()
 ## Beats Only (No Subdivisions)
 
 ```demo
-use armas::components::audio::SnapGrid;
+use armas_audio::SnapGrid;
 
 SnapGrid::new()
     .beat_width(60.0)
@@ -68,7 +68,7 @@ SnapGrid::new()
 ## Custom Colors
 
 ```demo
-use armas::components::audio::SnapGrid;
+use armas_audio::SnapGrid;
 
 SnapGrid::new()
     .beat_width(60.0)
@@ -123,7 +123,7 @@ SnapGrid::new() -> Self
 
 ### Background Grid for Timeline
 ```demo
-use armas::components::audio::{SnapGrid, Marker};
+use armas_audio::{SnapGrid, Marker};
 
 let mut marker_pos = 16.0;
 

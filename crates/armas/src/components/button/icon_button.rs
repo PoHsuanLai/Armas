@@ -4,7 +4,7 @@
 
 use crate::components::button::ButtonVariant;
 use crate::ext::context::ArmasContextExt;
-use crate::icon::{render_icon, TransportIcon};
+use crate::icon::{render_icon, IconData};
 use egui::{Color32, Response, Sense, Ui, Vec2};
 
 /// Icon Button component
@@ -15,22 +15,26 @@ use egui::{Color32, Response, Sense, Ui, Vec2};
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
+/// # use armas::icon::IconData;
+/// # static MY_ICON: IconData = IconData {
+/// #     name: "test", vertices: &[], indices: &[],
+/// #     viewbox_width: 24.0, viewbox_height: 24.0,
+/// # };
 /// # fn example(ui: &mut Ui) {
 /// use armas::components::button::{IconButton, ButtonVariant};
-/// use armas::icon::TransportIcon;
 ///
-/// if IconButton::new(TransportIcon::Play)
+/// if IconButton::new(&MY_ICON)
 ///     .variant(ButtonVariant::Filled)
 ///     .size(24.0)
 ///     .show(ui)
 ///     .clicked()
 /// {
-///     // Handle play button click
+///     // Handle button click
 /// }
 /// # }
 /// ```
-pub struct IconButton {
-    icon: TransportIcon,
+pub struct IconButton<'a> {
+    icon_data: &'a IconData,
     variant: ButtonVariant,
     size: f32,
     padding: f32,
@@ -39,11 +43,11 @@ pub struct IconButton {
     hover_icon_color: Option<Color32>,
 }
 
-impl IconButton {
+impl<'a> IconButton<'a> {
     /// Create a new icon button
-    pub fn new(icon: TransportIcon) -> Self {
+    pub fn new(icon_data: &'a IconData) -> Self {
         Self {
-            icon,
+            icon_data,
             variant: ButtonVariant::Filled,
             size: 24.0,
             padding: 8.0,
@@ -213,9 +217,7 @@ impl IconButton {
 
             // Draw icon
             let icon_rect = egui::Rect::from_center_size(rect.center(), Vec2::splat(self.size));
-            if let Some(icon_data) = self.icon.data() {
-                render_icon(ui.painter(), icon_rect, icon_data, icon_color);
-            }
+            render_icon(ui.painter(), icon_rect, self.icon_data, icon_color);
         }
 
         response

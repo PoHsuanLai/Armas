@@ -60,7 +60,7 @@ if response.pause_clicked {
     ui.label("⏸ Pause clicked");
 }
 if response.stop_clicked {
-    ui.label("⏹ Stop clicked");
+    ui.label("Stop Stop clicked");
 }
 ```
 
@@ -136,10 +136,10 @@ The response from `show()` contains both state and interaction flags:
 
 ### Navigation Controls (Left Section)
 
-- **⏮ Rewind**: Jump to start (sets time to 0.0)
+- **Rewind Rewind**: Jump to start (sets time to 0.0)
 - **▶/⏸ Play/Pause**: Toggle between play and pause states
-- **⏹ Stop**: Stop playback and reset time to 0
-- **⏩ Fast Forward**: Custom forward behavior (click detected)
+- **Stop Stop**: Stop playback and reset time to 0
+- **FF Fast Forward**: Custom forward behavior (click detected)
 
 The play button dynamically shows ▶ when stopped/paused and ⏸ when playing/recording.
 
@@ -169,9 +169,9 @@ Shows current time signature (e.g., "4/4", "3/4", "6/8"):
 
 ### Toggle Controls (Right Section)
 
-- **🔄 Loop**: Enable/disable loop playback
-- **🎵 Metronome**: Enable/disable metronome click
-- **🔴 Record**: Toggle recording mode
+- **Loop**: Enable/disable loop playback
+- **Metronome**: Enable/disable metronome click
+- **Record**: Toggle recording mode
 
 Toggle buttons show as:
 - **Filled** variant when active/enabled
@@ -256,8 +256,8 @@ The transport follows professional DAW aesthetics:
 ## Layout Structure
 
 ```
-[ ⏮ ▶ ⏹ ⏩ ] | [ 00:00.000 ] | [ BPM: 120.0 ] | [ 4/4 ] | [ 🔄 🎵 🔴 ]
-   Navigation      Time          Tempo          Sig      Toggles
+[ |< > [] >| ] | [ 00:00.000 ] | [ BPM: 120.0 ] | [ 4/4 ] | [ Loop Metro Rec ]
+   Navigation      Time           Tempo           Sig        Toggles
 ```
 
 All sections are horizontally arranged with consistent spacing.

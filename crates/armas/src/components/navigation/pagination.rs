@@ -1,10 +1,10 @@
-//! Pagination Component
+//! Pagination Component (shadcn/ui style)
 //!
-//! Page navigation for paginated content
+//! Page navigation for paginated content.
 
 use crate::ext::ArmasContextExt;
 use crate::{Button, ButtonVariant};
-use egui::Ui;
+use egui::{vec2, Ui};
 
 /// Pagination component for navigating through pages
 ///
@@ -15,38 +15,42 @@ use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas::Pagination;
 ///
-/// let pagination = Pagination::new(1, 10);
-///
-/// let response = pagination.show(ui);
-/// if let Some(page) = response.page_changed {
-///     println!("Changed to page: {}", page);
-/// }
+/// let (_, current_page) = Pagination::new(1, 10).show(ui);
+/// // current_page is the current page after any user interaction
 /// # }
 /// ```
 pub struct Pagination {
-    current_page: usize,
+    id: Option<egui::Id>,
+    initial_page: usize,
     total_pages: usize,
     max_visible_pages: usize,
-    show_first_last: bool,
     show_prev_next: bool,
-    spacing: f32,
+    show_labels: bool,
+    sibling_count: usize,
 }
 
 impl Pagination {
     /// Create a new pagination component
     ///
     /// # Arguments
-    /// * `current_page` - Current page (1-indexed)
+    /// * `initial_page` - Initial/current page (1-indexed)
     /// * `total_pages` - Total number of pages
-    pub fn new(current_page: usize, total_pages: usize) -> Self {
+    pub fn new(initial_page: usize, total_pages: usize) -> Self {
         Self {
-            current_page: current_page.max(1).min(total_pages.max(1)),
+            id: None,
+            initial_page: initial_page.max(1).min(total_pages.max(1)),
             total_pages: total_pages.max(1),
             max_visible_pages: 7,
-            show_first_last: true,
             show_prev_next: true,
-            spacing: 4.0,
+            show_labels: true,
+            sibling_count: 1,
         }
+    }
+
+    /// Set ID for state persistence
+    pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
+        self.id = Some(id.into());
+        self
     }
 
     /// Set maximum number of visible page buttons
@@ -55,9 +59,9 @@ impl Pagination {
         self
     }
 
-    /// Show or hide first/last buttons
-    pub fn show_first_last(mut self, show: bool) -> Self {
-        self.show_first_last = show;
+    /// Set the number of sibling pages to show on each side of current page
+    pub fn sibling_count(mut self, count: usize) -> Self {
+        self.sibling_count = count;
         self
     }
 
@@ -67,197 +71,174 @@ impl Pagination {
         self
     }
 
-    /// Set spacing between buttons
-    pub fn spacing(mut self, spacing: f32) -> Self {
-        self.spacing = spacing;
+    /// Show or hide text labels on prev/next buttons
+    pub fn show_labels(mut self, show: bool) -> Self {
+        self.show_labels = show;
         self
     }
 
-    /// Show the pagination
-    pub fn show(mut self, ui: &mut Ui) -> PaginationResponse {
-        let _theme = ui.ctx().armas_theme();
+    /// Show the pagination and return (Response, current_page)
+    pub fn show(self, ui: &mut Ui) -> (egui::Response, usize) {
+        let theme = ui.ctx().armas_theme();
+        let total_pages = self.total_pages;
 
-        // Generate a stable ID for this pagination instance based on current UI scope
-        let pagination_id = ui.id().with("pagination_state");
+        // Load state from memory if ID is set
+        let mut current_page = if let Some(id) = self.id {
+            let state_id = id.with("page");
+            ui.ctx()
+                .data_mut(|d| d.get_temp(state_id).unwrap_or(self.initial_page))
+        } else {
+            self.initial_page
+        };
 
-        // Load previous state from egui memory (if current_page is the default)
-        if self.current_page == 1 {
-            if let Some(stored_page) = ui
-                .ctx()
-                .data_mut(|d| d.get_persisted::<usize>(pagination_id))
-            {
-                self.current_page = stored_page;
-            }
-        }
+        // Calculate visible pages based on current state
+        let pages = calculate_visible_pages(current_page, total_pages, self.sibling_count, self.max_visible_pages);
 
-        let mut page_changed = None;
-
-        ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = self.spacing;
-            // First button
-            if self.show_first_last {
-                let enabled = self.current_page > 1;
-                let mut button = Button::new("«")
-                    .variant(ButtonVariant::Outlined)
-                    .min_size(egui::vec2(32.0, 32.0));
-
-                if !enabled {
-                    button = button.enabled(false);
-                }
-
-                if button.show(ui).clicked() && enabled {
-                    self.current_page = 1;
-                    page_changed = Some(1);
-                }
-            }
+        let response = ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 4.0;
 
             // Previous button
             if self.show_prev_next {
-                let enabled = self.current_page > 1;
-                let mut button = Button::new("‹")
-                    .variant(ButtonVariant::Outlined)
-                    .min_size(egui::vec2(32.0, 32.0));
+                let can_go_prev = current_page > 1;
+                let label = if self.show_labels { "< Previous" } else { "<" };
+                let width = if self.show_labels { 100.0 } else { 36.0 };
 
-                if !enabled {
-                    button = button.enabled(false);
-                }
+                let btn = Button::new(label)
+                    .variant(ButtonVariant::Text)
+                    .min_size(vec2(width, 36.0))
+                    .enabled(can_go_prev)
+                    .show(ui);
 
-                if button.show(ui).clicked() && enabled {
-                    self.current_page -= 1;
-                    page_changed = Some(self.current_page);
+                if can_go_prev && btn.clicked() {
+                    current_page -= 1;
                 }
             }
-
-            // Calculate visible page range
-            let pages = self.calculate_visible_pages();
 
             // Page number buttons
             for page in pages.iter() {
                 if let Some(page_num) = page {
-                    let is_current = *page_num == self.current_page;
+                    let is_current = *page_num == current_page;
                     let variant = if is_current {
-                        ButtonVariant::Filled
-                    } else {
                         ButtonVariant::Outlined
+                    } else {
+                        ButtonVariant::Text
                     };
 
-                    if Button::new(page_num.to_string())
+                    let btn = Button::new(page_num.to_string())
                         .variant(variant)
-                        .min_size(egui::vec2(32.0, 32.0))
-                        .show(ui)
-                        .clicked()
-                        && !is_current
-                    {
-                        self.current_page = *page_num;
-                        page_changed = Some(*page_num);
+                        .min_size(vec2(36.0, 36.0))
+                        .show(ui);
+
+                    if btn.clicked() && !is_current {
+                        current_page = *page_num;
                     }
                 } else {
                     // Ellipsis
-                    ui.add_space(4.0);
-                    ui.label("…");
-                    ui.add_space(4.0);
+                    let (rect, _) = ui.allocate_exact_size(vec2(36.0, 36.0), egui::Sense::hover());
+                    ui.painter().text(
+                        rect.center(),
+                        egui::Align2::CENTER_CENTER,
+                        "...",
+                        egui::FontId::proportional(14.0),
+                        theme.muted_foreground(),
+                    );
                 }
             }
 
             // Next button
             if self.show_prev_next {
-                let enabled = self.current_page < self.total_pages;
-                let mut button = Button::new("›")
-                    .variant(ButtonVariant::Outlined)
-                    .min_size(egui::vec2(32.0, 32.0));
+                let can_go_next = current_page < total_pages;
+                let label = if self.show_labels { "Next >" } else { ">" };
+                let width = if self.show_labels { 80.0 } else { 36.0 };
 
-                if !enabled {
-                    button = button.enabled(false);
-                }
+                let btn = Button::new(label)
+                    .variant(ButtonVariant::Text)
+                    .min_size(vec2(width, 36.0))
+                    .enabled(can_go_next)
+                    .show(ui);
 
-                if button.show(ui).clicked() && enabled {
-                    self.current_page += 1;
-                    page_changed = Some(self.current_page);
-                }
-            }
-
-            // Last button
-            if self.show_first_last {
-                let enabled = self.current_page < self.total_pages;
-                let mut button = Button::new("»")
-                    .variant(ButtonVariant::Outlined)
-                    .min_size(egui::vec2(32.0, 32.0));
-
-                if !enabled {
-                    button = button.enabled(false);
-                }
-
-                if button.show(ui).clicked() && enabled {
-                    self.current_page = self.total_pages;
-                    page_changed = Some(self.total_pages);
+                if can_go_next && btn.clicked() {
+                    current_page += 1;
                 }
             }
-        });
+        }).response;
 
-        // Store current page if changed
-        if page_changed.is_some() {
+        // Save state to memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("page");
             ui.ctx().data_mut(|d| {
-                d.insert_persisted(pagination_id, self.current_page);
+                d.insert_temp(state_id, current_page);
             });
         }
 
-        PaginationResponse { page_changed }
-    }
-
-    /// Calculate which pages to show, including ellipsis
-    fn calculate_visible_pages(&self) -> Vec<Option<usize>> {
-        let mut pages = Vec::new();
-
-        if self.total_pages <= self.max_visible_pages {
-            // Show all pages
-            for i in 1..=self.total_pages {
-                pages.push(Some(i));
-            }
-        } else {
-            // Calculate range around current page
-            let half = self.max_visible_pages / 2;
-            let mut start = self.current_page.saturating_sub(half);
-            let mut end = self.current_page + half;
-
-            // Adjust if at boundaries
-            if start < 1 {
-                start = 1;
-                end = self.max_visible_pages;
-            }
-            if end > self.total_pages {
-                end = self.total_pages;
-                start = self.total_pages.saturating_sub(self.max_visible_pages - 1);
-            }
-
-            // Always show first page
-            if start > 1 {
-                pages.push(Some(1));
-                if start > 2 {
-                    pages.push(None); // Ellipsis
-                }
-            }
-
-            // Show range
-            for i in start..=end {
-                pages.push(Some(i));
-            }
-
-            // Always show last page
-            if end < self.total_pages {
-                if end < self.total_pages - 1 {
-                    pages.push(None); // Ellipsis
-                }
-                pages.push(Some(self.total_pages));
-            }
-        }
-
-        pages
+        (response, current_page)
     }
 }
 
-/// Response from pagination
-#[derive(Debug, Clone, Copy)]
-pub struct PaginationResponse {
-    /// The new page number if changed
-    pub page_changed: Option<usize>,
+/// Calculate which pages to show, including ellipsis (None)
+/// Uses shadcn/ui pagination pattern with consistent element count
+fn calculate_visible_pages(
+    current: usize,
+    total: usize,
+    siblings: usize,
+    max_visible: usize,
+) -> Vec<Option<usize>> {
+    if total <= max_visible {
+        return (1..=total).map(Some).collect();
+    }
+
+    // Calculate boundaries
+    // "boundary" pages are always shown at start/end
+    let boundary = 1;
+    // siblings on each side of current
+    let sibling_count = siblings;
+
+    // Calculate how many items we'd show without ellipsis
+    // [1] [2] ... [current-1] [current] [current+1] ... [total-1] [total]
+
+    let left_sibling_idx = current.saturating_sub(sibling_count).max(1);
+    let right_sibling_idx = (current + sibling_count).min(total);
+
+    let show_left_ellipsis = left_sibling_idx > boundary + 1;
+    let show_right_ellipsis = right_sibling_idx < total - boundary;
+
+    let mut pages = Vec::new();
+
+    if !show_left_ellipsis && show_right_ellipsis {
+        // Near start: show first few pages + ellipsis + last
+        // [1] [2] [3] [4] [...] [total]
+        let left_count = max_visible - 2; // -2 for ellipsis and last page
+        for i in 1..=left_count {
+            pages.push(Some(i));
+        }
+        pages.push(None); // ellipsis
+        pages.push(Some(total));
+    } else if show_left_ellipsis && !show_right_ellipsis {
+        // Near end: show first + ellipsis + last few pages
+        // [1] [...] [7] [8] [9] [10]
+        pages.push(Some(1));
+        pages.push(None); // ellipsis
+        let right_count = max_visible - 2; // -2 for first page and ellipsis
+        let start = total - right_count + 1;
+        for i in start..=total {
+            pages.push(Some(i));
+        }
+    } else if show_left_ellipsis && show_right_ellipsis {
+        // Middle: show first + ellipsis + current vicinity + ellipsis + last
+        // [1] [...] [4] [5] [6] [...] [10]
+        pages.push(Some(1));
+        pages.push(None); // left ellipsis
+        for i in left_sibling_idx..=right_sibling_idx {
+            pages.push(Some(i));
+        }
+        pages.push(None); // right ellipsis
+        pages.push(Some(total));
+    } else {
+        // No ellipsis needed (shouldn't happen if total > max_visible)
+        for i in 1..=total {
+            pages.push(Some(i));
+        }
+    }
+
+    pages
 }

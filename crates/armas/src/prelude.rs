@@ -30,11 +30,12 @@ pub use crate::components::{
 };
 
 // Essential interactive components
-pub use crate::components::{Badge, Button, Input, Select, Slider, Textarea, Toggle};
+pub use crate::components::{Badge, Button, Input, Select, Slider, RangeSlider, ThreeValueSlider, Textarea, Toggle};
 
 // Display components
 pub use crate::components::{
-    Alert, Avatar, AvatarShape, AvatarSize, CircularProgress, LoadingDots, Skeleton, Spinner,
+    Alert, Avatar, AvatarShape, AvatarSize, CircularProgress, Kbd, LoadingDots, Separator,
+    Skeleton, Spinner,
 };
 
 // Navigation components
@@ -46,8 +47,8 @@ pub use crate::components::{Card, GlassPanel, GradientCard};
 // Overlay components
 pub use crate::components::{Drawer, HoverCard, Modal, Popover, Tooltip};
 
-// DAW-specific components
-pub use crate::components::{Fader, RoutingButton, SectionHeader, Slot};
+// DAW-specific components (basic ones - use armas-audio for full audio widget set)
+pub use crate::components::{RoutingButton, SectionHeader};
 
 // Grouping components
 pub use crate::components::{Accordion, Stepper};

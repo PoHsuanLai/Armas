@@ -1,13 +1,14 @@
-//! Build script to parse SVG icons at compile time
+//! Build script to parse window SVG icons at compile time
 //!
 //! This script:
-//! 1. Scans the `icons/` directory for SVG files
+//! 1. Scans the `icons/window/` directory for SVG files
 //! 2. Parses each SVG using usvg
-//! 3. Tessellates paths into triangles using Lyon (properly handles holes)
+//! 3. Tessellates paths into triangles using Lyon
 //! 4. Generates Rust code with icon data as constants
 
 use lyon_tessellation::{
-    path::Path as TessPath, BuffersBuilder, FillOptions, FillTessellator, FillVertex, VertexBuffers,
+    path::Path as TessPath, BuffersBuilder, FillOptions, FillTessellator, FillVertex,
+    VertexBuffers,
 };
 use std::env;
 use std::fs::{self, File};
@@ -19,37 +20,15 @@ fn main() {
     println!("cargo:rerun-if-changed=icons/");
 
     let out_dir = env::var("OUT_DIR").unwrap();
-    let dest_path = Path::new(&out_dir).join("icon_data.rs");
+    let dest_path = Path::new(&out_dir).join("window_icons.rs");
     let mut output = File::create(&dest_path).unwrap();
 
     // Start generating the Rust code
-    writeln!(output, "// Generated icon data - DO NOT EDIT MANUALLY\n").unwrap();
-    writeln!(
-        output,
-        "use egui::{{epaint::Vertex, Color32, Pos2, Rect, Painter, Mesh}};"
-    )
-    .unwrap();
-    writeln!(output).unwrap();
+    // Note: IconData is already imported by the parent module via `pub use armas_icon::IconData`
+    writeln!(output, "// Generated window icon data - DO NOT EDIT MANUALLY\n").unwrap();
 
-    // Icon data structure
-    writeln!(output, "#[derive(Debug, Clone)]").unwrap();
-    writeln!(output, "pub struct IconData {{").unwrap();
-    writeln!(output, "    pub name: &'static str,").unwrap();
-    writeln!(output, "    pub vertices: &'static [(f32, f32)],").unwrap();
-    writeln!(output, "    pub indices: &'static [u32],").unwrap();
-    writeln!(output, "    pub viewbox_width: f32,").unwrap();
-    writeln!(output, "    pub viewbox_height: f32,").unwrap();
-    writeln!(output, "}}\n").unwrap();
-
-    // Start the icon registry
-    writeln!(
-        output,
-        "pub static TRANSPORT_ICONS: &[(&str, IconData)] = &["
-    )
-    .unwrap();
-
-    // Parse transport icons
-    let icons_dir = PathBuf::from("icons/transport");
+    // Parse window icons
+    let icons_dir = PathBuf::from("icons/window");
     if icons_dir.exists() {
         for entry in fs::read_dir(&icons_dir).unwrap() {
             let entry = entry.unwrap();
@@ -59,9 +38,23 @@ fn main() {
                 let file_name = path.file_stem().unwrap().to_str().unwrap();
                 println!("cargo:rerun-if-changed={}", path.display());
 
+                // Convert file name to SCREAMING_SNAKE_CASE for constant name
+                let const_name = file_name.to_uppercase().replace('-', "_");
+
                 match parse_svg(&path) {
-                    Ok(icon_code) => {
-                        writeln!(output, "    (\"{}\", {}),", file_name, icon_code).unwrap();
+                    Ok((vertices, indices, width, height)) => {
+                        writeln!(
+                            output,
+                            "pub static {}: IconData = IconData {{",
+                            const_name
+                        )
+                        .unwrap();
+                        writeln!(output, "    name: \"{}\",", file_name).unwrap();
+                        writeln!(output, "    vertices: &[{}],", vertices).unwrap();
+                        writeln!(output, "    indices: &[{}],", indices).unwrap();
+                        writeln!(output, "    viewbox_width: {:.1},", width).unwrap();
+                        writeln!(output, "    viewbox_height: {:.1},", height).unwrap();
+                        writeln!(output, "}};\n").unwrap();
                     }
                     Err(e) => {
                         eprintln!("Warning: Failed to parse {}: {}", path.display(), e);
@@ -71,48 +64,10 @@ fn main() {
         }
     }
 
-    writeln!(output, "];\n").unwrap();
-
-    // Helper function to render icons
-    writeln!(
-        output,
-        r#"
-pub fn render_icon(painter: &Painter, rect: Rect, icon_data: &IconData, color: Color32) {{
-    let scale_x = rect.width() / icon_data.viewbox_width;
-    let scale_y = rect.height() / icon_data.viewbox_height;
-    let scale = scale_x.min(scale_y);
-
-    let offset_x = rect.left() + (rect.width() - icon_data.viewbox_width * scale) / 2.0;
-    let offset_y = rect.top() + (rect.height() - icon_data.viewbox_height * scale) / 2.0;
-
-    let mut mesh = Mesh::default();
-
-    // Transform vertices and add to mesh
-    for (x, y) in icon_data.vertices {{
-        let pos = Pos2::new(
-            offset_x + x * scale,
-            offset_y + y * scale,
-        );
-        mesh.vertices.push(Vertex {{
-            pos,
-            uv: Pos2::ZERO,
-            color,
-        }});
-    }}
-
-    // Add indices
-    mesh.indices.extend_from_slice(icon_data.indices);
-
-    painter.add(mesh);
-}}
-"#
-    )
-    .unwrap();
-
-    println!("cargo:rustc-env=ICON_DATA_PATH={}", dest_path.display());
+    println!("cargo:rustc-env=WINDOW_ICONS_PATH={}", dest_path.display());
 }
 
-fn parse_svg(path: &Path) -> Result<String, Box<dyn std::error::Error>> {
+fn parse_svg(path: &Path) -> Result<(String, String, f32, f32), Box<dyn std::error::Error>> {
     let svg_data = fs::read_to_string(path)?;
 
     // Extract viewBox dimensions from the raw SVG
@@ -147,17 +102,7 @@ fn parse_svg(path: &Path) -> Result<String, Box<dyn std::error::Error>> {
         indices_code.push_str(&format!("{}", index));
     }
 
-    let icon_name = path.file_stem().unwrap().to_str().unwrap();
-    let code = format!(
-        "IconData {{\n        name: \"{}\",\n        vertices: &[{}],\n        indices: &[{}],\n        viewbox_width: {:.1},\n        viewbox_height: {:.1},\n    }}",
-        icon_name,
-        vertices_code,
-        indices_code,
-        width,
-        height
-    );
-
-    Ok(code)
+    Ok((vertices_code, indices_code, width, height))
 }
 
 fn extract_viewbox(svg_data: &str) -> Option<(f32, f32)> {

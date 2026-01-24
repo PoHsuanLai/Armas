@@ -107,7 +107,7 @@ The mixer strip internally uses:
 - `Card` - Container with dark background
 - `Badge` - Send effect labels
 - `Button` - All interactive controls (sends, routing, M/S/R/I)
-- `GlowingDivider` - Visual separator
+- `Separator` - Visual separator
 - `Knob` - Pan control
 - `Slot` - Plugin insert slots
 - `AudioMeter` - Level metering
@@ -128,7 +128,7 @@ The mixer strip maintains its own state including:
 The strip layout from top to bottom:
 1. Sends button (opens modal)
 2. Send badges (vertical list)
-3. Glowing divider
+3. Separator
 4. Input routing button
 5. Output routing button
 6. 4x Insert slots
@@ -143,4 +143,4 @@ The strip layout from top to bottom:
 ## Dependencies
 
 - `egui = "0.33"`
-- Internal components: Card, Badge, Button, GlowingDivider, Knob, Slot, AudioMeter, Fader, Modal
+- Internal components: Card, Badge, Button, Separator, Knob, Slot, AudioMeter, Fader, Modal

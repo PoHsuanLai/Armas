@@ -5,7 +5,7 @@ Visual markers for loop start/end points with draggable handles. Shows highlight
 ## Basic Usage
 
 ```demo
-use armas::components::audio::LoopRegionMarker;
+use armas_audio::LoopRegionMarker;
 
 let mut loop_start = 1.0;  // beats
 let mut loop_end = 3.0;   // beats
@@ -25,7 +25,7 @@ if response.loop_start_changed {
 ## With Snap to Grid
 
 ```demo
-use armas::components::audio::LoopRegionMarker;
+use armas_audio::LoopRegionMarker;
 
 let mut loop_start = 0.0;
 let mut loop_end = 3.0;
@@ -43,7 +43,7 @@ LoopRegionMarker::new(&mut loop_start, &mut loop_end)
 ## Fine Grid Snapping
 
 ```demo
-use armas::components::audio::LoopRegionMarker;
+use armas_audio::LoopRegionMarker;
 
 let mut loop_start = 0.5;
 let mut loop_end = 3.5;
@@ -61,7 +61,7 @@ LoopRegionMarker::new(&mut loop_start, &mut loop_end)
 ## Custom Color
 
 ```demo
-use armas::components::audio::LoopRegionMarker;
+use armas_audio::LoopRegionMarker;
 
 let mut loop_start = 0.0;
 let mut loop_end = 4.0;
@@ -78,7 +78,7 @@ LoopRegionMarker::new(&mut loop_start, &mut loop_end)
 ## Without Labels
 
 ```demo
-use armas::components::audio::LoopRegionMarker;
+use armas_audio::LoopRegionMarker;
 
 let mut loop_start = 1.0;
 let mut loop_end = 3.0;
@@ -95,7 +95,7 @@ LoopRegionMarker::new(&mut loop_start, &mut loop_end)
 ## Disabled State
 
 ```demo
-use armas::components::audio::LoopRegionMarker;
+use armas_audio::LoopRegionMarker;
 
 let mut loop_start = 0.0;
 let mut loop_end = 4.0;
@@ -115,7 +115,7 @@ ui.label("Loop disabled - no markers shown");
 ## With State Persistence
 
 ```demo
-use armas::components::audio::LoopRegionMarker;
+use armas_audio::LoopRegionMarker;
 
 let mut loop_start = 0.0;
 let mut loop_end = 4.0;
@@ -133,7 +133,7 @@ LoopRegionMarker::new(&mut loop_start, &mut loop_end)
 ## In Timeline Context
 
 ```demo
-use armas::components::audio::LoopRegionMarker;
+use armas_audio::LoopRegionMarker;
 
 let mut loop_start = 2.0;
 let mut loop_end = 6.0;
@@ -166,7 +166,7 @@ ui.vertical(|ui| {
 ## Multiple Loop Markers
 
 ```demo
-use armas::components::audio::LoopRegionMarker;
+use armas_audio::LoopRegionMarker;
 
 let mut loop_a_start = 0.0;
 let mut loop_a_end = 3.0;
@@ -293,7 +293,7 @@ Common grid division values for snapping:
 ### Basic Looping
 
 ```demo
-use armas::components::audio::LoopRegionMarker;
+use armas_audio::LoopRegionMarker;
 
 let mut loop_start = 0.0;
 let mut loop_end = 4.0;
@@ -317,7 +317,7 @@ if response.loop_start_changed || response.loop_end_changed {
 ### Recording Punch-In/Out
 
 ```demo
-use armas::components::audio::LoopRegionMarker;
+use armas_audio::LoopRegionMarker;
 
 let mut punch_in = 2.0;
 let mut punch_out = 4.0;
@@ -336,7 +336,7 @@ LoopRegionMarker::new(&mut punch_in, &mut punch_out)
 ### Selection Range
 
 ```demo
-use armas::components::audio::LoopRegionMarker;
+use armas_audio::LoopRegionMarker;
 
 let mut selection_start = 1.0;
 let mut selection_end = 3.0;
@@ -359,7 +359,7 @@ ui.label(format!("Duration: {:.2} beats", selection_end - selection_start));
 The loop region marker is designed to work seamlessly with the Timeline component:
 
 ```demo
-use armas::components::audio::{LoopRegionMarker, Timeline};
+use armas_audio::{LoopRegionMarker, Timeline};
 
 let mut loop_start = 0.0;
 let mut loop_end = 4.0;

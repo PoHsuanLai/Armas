@@ -288,7 +288,7 @@ The component uses Material Design 3 with:
 ## Complete Example
 
 ```rust
-use armas::components::audio::{ADSREnvelope, EnvelopeSection};
+use armas_audio::{ADSREnvelope, EnvelopeSection};
 use egui::Vec2;
 
 struct SamplerState {

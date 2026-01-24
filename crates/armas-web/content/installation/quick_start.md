@@ -1,27 +1,18 @@
 # Quick Start
 
-## Installation
-
-Add Armas to your `Cargo.toml`:
-
 ```toml
 [dependencies]
 armas = "0.1.0"
 egui = "0.33"
 ```
 
-## Your First Component
-
-Here's a minimal example to get you started:
-
 ```rust
 use armas::prelude::*;
 
 fn main() -> eframe::Result<()> {
-    let native_options = eframe::NativeOptions::default();
     eframe::run_native(
-        "My Armas App",
-        native_options,
+        "My App",
+        eframe::NativeOptions::default(),
         Box::new(|cc| Ok(Box::new(MyApp::new(cc)))),
     )
 }
@@ -32,9 +23,7 @@ struct MyApp {
 
 impl MyApp {
     fn new(_cc: &eframe::CreationContext<'_>) -> Self {
-        Self {
-            theme: Theme::dark(),
-        }
+        Self { theme: Theme::dark() }
     }
 }
 
@@ -51,6 +40,5 @@ impl eframe::App for MyApp {
 
 ## Next Steps
 
-- Explore the [Components](/components) section
-- Learn about [Themes](/installation/themes)
-- Check out [Layout](/layout) primitives
+- [Components](/components)
+- [Themes](/installation/themes)

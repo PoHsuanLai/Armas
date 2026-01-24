@@ -1,75 +1,50 @@
 # Accordion
 
-Collapsible content panels with smooth animations.
+Collapsible content sections. Styled to match shadcn/ui accordion.
 
 ## Basic Usage
 
 ```demo
-let mut accordion = AccordionItem::new("What is Armas?").id("accordion_1");
-accordion.show(ui, |ui| {
-    ui.label("Armas is a component library for egui with Material Design inspired theming and aceternity-style visual effects.");
-});
+Accordion::new("demo_accordion", vec!["What is Armas?"])
+    .show(ui, |ui, _idx| {
+        ui.label("Armas is a component library for egui with shadcn-inspired styling.");
+    });
 ```
 
 ## Multiple Items
 
 ```demo
-let mut item1 = AccordionItem::new("Getting Started").id("accordion_2");
-item1.show(ui, |ui| {
-    ui.label("Install Armas by adding it to your Cargo.toml dependencies.");
-});
-
-ui.add_space(8.0);
-
-let mut item2 = AccordionItem::new("Features").id("accordion_3");
-item2.show(ui, |ui| {
-    ui.label("60+ components, animations, and effects. Material Design theming.");
-});
-
-ui.add_space(8.0);
-
-let mut item3 = AccordionItem::new("Documentation").id("accordion_4");
-item3.show(ui, |ui| {
-    ui.label("Check out the docs at docs.rs for detailed API reference.");
-});
+Accordion::new("demo_multi", vec!["Getting Started", "Features", "Documentation"])
+    .show(ui, |ui, idx| {
+        match idx {
+            0 => { ui.label("Install Armas by adding it to your Cargo.toml."); }
+            1 => { ui.label("60+ components with shadcn styling."); }
+            _ => { ui.label("Check out docs.rs for API reference."); }
+        }
+    });
 ```
 
-## Initially Open
+## Allow Multiple Open
 
 ```demo
-let mut accordion = AccordionItem::new("Already Open").id("accordion_5")
-    .open(true);
-accordion.show(ui, |ui| {
-    ui.label("This accordion starts in the open state.");
-});
-```
-
-## Without Icon
-
-```demo
-let mut accordion = AccordionItem::new("No Chevron Icon")
-    .show_icon(false);
-accordion.show(ui, |ui| {
-    ui.label("This accordion has no chevron icon.");
-});
+Accordion::new("demo_multiple", vec!["Section A", "Section B", "Section C"])
+    .allow_multiple(true)
+    .show(ui, |ui, idx| {
+        ui.label(format!("Content for section {}", idx + 1));
+    });
 ```
 
 ## API Reference
 
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
-| `.open()` | `bool` | `false` | Sets initial open state |
-| `.show_icon()` | `bool` | `true` | Show/hide chevron icon |
-| `.animate()` | `bool` | `true` | Enable/disable animation |
+| `::new()` | `id, titles` | - | Create with ID and title list |
+| `.allow_multiple()` | `bool` | `false` | Allow multiple sections open |
+| `.show()` | `ui, fn` | - | Display with content callback |
 
-## Animation Details
+## Styling
 
-- **Trigger**: Click header to toggle
-- **Duration**: ~125ms smooth expansion/collapse
-- **Easing**: Exponential ease-out
-- **Performance**: 60fps, GPU accelerated
-
-## Dependencies
-
-- `egui = "0.33"`
-- Theme colors: `surface`, `on_surface`, `outline`
+- Trigger: `hover:underline`, chevron on right
+- Chevron: Rotates 180deg when open
+- Border: Bottom border on each item
+- Animation: Smooth expand/collapse

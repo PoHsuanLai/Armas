@@ -182,7 +182,7 @@ Table::new()
         table.row(|row| {
             row.cell_ui(|ui| {
                 ui.horizontal(|ui| {
-                    ui.label("👤");
+                    ui.label("@");
                     ui.label("Alice");
                 });
             });
@@ -198,7 +198,7 @@ Table::new()
         table.row(|row| {
             row.cell_ui(|ui| {
                 ui.horizontal(|ui| {
-                    ui.label("👤");
+                    ui.label("@");
                     ui.label("Bob");
                 });
             });
@@ -246,7 +246,7 @@ Table::new()
             row.cell("Theme");
             row.cell("Dark");
             row.cell_ui(|ui| {
-                ui.label("🌙");
+                ui.label("Dark");
             });
         });
     });

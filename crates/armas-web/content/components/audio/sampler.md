@@ -46,7 +46,7 @@ SampleZone (Composite)
 ### Single Zone Sampler
 
 ```rust,ignore
-use armas::components::audio::{SampleZone, PlaybackParams, ADSREnvelope};
+use armas_audio::{SampleZone, PlaybackParams, ADSREnvelope};
 
 let mut params = PlaybackParams::default();
 let mut envelope = ADSREnvelope::default();
@@ -117,7 +117,7 @@ Generic waveform visualization component.
 #### Creating a WaveformDisplay
 
 ```rust,ignore
-use armas::components::audio::WaveformDisplay;
+use armas_audio::WaveformDisplay;
 
 let waveform = WaveformDisplay::new(
     sample_data,           // &[T] - your sample data
@@ -187,7 +187,7 @@ Controls for pitch, pan, volume, and loop settings.
 #### Creating PlaybackParameters
 
 ```rust,ignore
-use armas::components::audio::PlaybackParamsUI;
+use armas_audio::PlaybackParamsUI;
 
 let mut params = PlaybackParams {
     pitch: 0.0,
@@ -233,7 +233,7 @@ ADSR envelope editor with automation visualization.
 #### Creating EnvelopeSection
 
 ```rust,ignore
-use armas::components::audio::EnvelopeSection;
+use armas_audio::EnvelopeSection;
 
 let mut envelope = ADSREnvelope::default();
 
@@ -294,7 +294,7 @@ Complete single-zone sampler combining all components.
 #### Creating a SampleZone
 
 ```rust,ignore
-use armas::components::audio::SampleZone;
+use armas_audio::SampleZone;
 
 let mut params = PlaybackParams::default();
 let mut envelope = ADSREnvelope::default();
@@ -450,7 +450,7 @@ SampleZone::new(...)
 Full working example with a single sample zone:
 
 ```rust,ignore
-use armas::components::audio::{SampleZone, PlaybackParams, ADSREnvelope, WaveformConfig};
+use armas_audio::{SampleZone, PlaybackParams, ADSREnvelope, WaveformConfig};
 use egui::{Color32, Vec2};
 
 struct SamplerDemo {

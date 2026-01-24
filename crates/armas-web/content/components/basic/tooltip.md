@@ -219,7 +219,7 @@ tooltip.show(ui, &response);
 ### Icon with Tooltip
 
 ```demo
-let response = ui.label("ℹ️");
+let response = ui.label("(i)");
 let mut tooltip = Tooltip::new("Click for more information")
     .position(TooltipPosition::Right)
     .delay(300);
