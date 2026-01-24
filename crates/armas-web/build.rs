@@ -17,12 +17,12 @@ fn main() {
         "introduction",
         "installation",
         "layout",
-        "components/basic",
-        "components/navigation",
-        "components/cards",
-        "components/animated",
-        "components/audio",
-        "components/overlays",
+        "basic",
+        "navigation",
+        "cards",
+        "animated",
+        "audio",
+        "overlays",
         "backgrounds",
     ];
 

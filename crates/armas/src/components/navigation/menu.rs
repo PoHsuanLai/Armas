@@ -16,6 +16,42 @@
 use crate::components::basic::Kbd;
 use crate::{Popover, PopoverPosition, PopoverStyle};
 use egui::{vec2, Color32, Id, Key, Rect, Sense, Ui};
+use std::collections::HashSet;
+
+// ============================================================================
+// Submenu State (persisted in egui temp storage)
+// ============================================================================
+
+/// Tracks which submenus are currently open for a menu
+#[derive(Clone, Default)]
+struct SubmenuState {
+    /// Set of open submenu indices
+    open: HashSet<usize>,
+}
+
+impl SubmenuState {
+    fn load(ctx: &egui::Context, menu_id: Id) -> Self {
+        ctx.data_mut(|d| d.get_temp(menu_id.with("submenu_state")).unwrap_or_default())
+    }
+
+    fn save(&self, ctx: &egui::Context, menu_id: Id) {
+        ctx.data_mut(|d| d.insert_temp(menu_id.with("submenu_state"), self.clone()));
+    }
+
+    fn is_open(&self, idx: usize) -> bool {
+        self.open.contains(&idx)
+    }
+
+    fn open_submenu(&mut self, idx: usize) {
+        // Close all others and open this one
+        self.open.clear();
+        self.open.insert(idx);
+    }
+
+    fn close_all(&mut self) {
+        self.open.clear();
+    }
+}
 
 // ============================================================================
 // Constants (matching shadcn Tailwind values)
@@ -316,19 +352,17 @@ impl Menu {
         let items = builder.items;
 
         // Load state
-        let (mut is_open, mut selected_index, mut open_submenu) = self.load_state(ctx);
+        let (mut is_open, mut selected_index) = self.load_state(ctx);
+        let mut submenu_state = SubmenuState::load(ctx, self.id);
 
         // Override with external control if set
         if let Some(external_open) = self.is_open {
             is_open = external_open;
         }
 
-        // Handle keyboard navigation
+        // Handle keyboard navigation (only when open)
         if is_open {
             self.handle_keyboard(ctx, &items, &mut is_open, &mut selected_index);
-        } else {
-            selected_index = None;
-            open_submenu = None;
         }
 
         // Initialize response
@@ -356,7 +390,7 @@ impl Menu {
                 menu_width,
                 &items,
                 &mut selected_index,
-                &mut open_submenu,
+                &mut submenu_state,
                 &mut response,
             );
         });
@@ -364,13 +398,20 @@ impl Menu {
         if popover_response.clicked_outside {
             response.clicked_outside = true;
             is_open = false;
+            submenu_state.close_all();
+        }
+
+        // Close submenus when an item is selected
+        if response.selected.is_some() {
+            submenu_state.close_all();
         }
 
         // Update response with final open state
         response.is_open = is_open;
 
         // Save state
-        self.save_state(ctx, is_open, selected_index, open_submenu);
+        self.save_state(ctx, is_open, selected_index);
+        submenu_state.save(ctx, self.id);
 
         response
     }
@@ -379,16 +420,14 @@ impl Menu {
     // State Management
     // ========================================================================
 
-    fn load_state(&self, ctx: &egui::Context) -> (bool, Option<usize>, Option<usize>) {
+    fn load_state(&self, ctx: &egui::Context) -> (bool, Option<usize>) {
         let state_id = self.id.with("menu_state");
         let selected_id = self.id.with("selected_index");
-        let submenu_id = self.id.with("open_submenu");
 
         let is_open = ctx.data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
         let selected_index = ctx.data_mut(|d| d.get_temp(selected_id));
-        let open_submenu = ctx.data_mut(|d| d.get_temp(submenu_id));
 
-        (is_open, selected_index, open_submenu)
+        (is_open, selected_index)
     }
 
     fn save_state(
@@ -396,14 +435,12 @@ impl Menu {
         ctx: &egui::Context,
         is_open: bool,
         selected_index: Option<usize>,
-        open_submenu: Option<usize>,
     ) {
         ctx.data_mut(|d| {
             if self.is_open.is_none() {
                 d.insert_temp(self.id.with("menu_state"), is_open);
             }
             d.insert_temp(self.id.with("selected_index"), selected_index);
-            d.insert_temp(self.id.with("open_submenu"), open_submenu);
         });
     }
 
@@ -458,7 +495,7 @@ fn render_items(
     menu_width: f32,
     items: &[MenuItemData],
     selected_index: &mut Option<usize>,
-    open_submenu: &mut Option<usize>,
+    submenu_state: &mut SubmenuState,
     response: &mut MenuResponse,
 ) {
     for (idx, item) in items.iter().enumerate() {
@@ -467,7 +504,7 @@ fn render_items(
                 render_separator(ui, theme);
             }
             MenuItemKind::Item { destructive } => {
-                if let Some(result) = render_item(
+                let (result, _) = render_item_with_hover(
                     ui,
                     theme,
                     idx,
@@ -475,12 +512,13 @@ fn render_items(
                     *destructive,
                     selected_index,
                     ItemVariant::Normal,
-                ) {
-                    response.selected = Some(result);
+                );
+                if let Some(r) = result {
+                    response.selected = Some(r);
                 }
             }
             MenuItemKind::Checkbox { checked } => {
-                if render_item(
+                let (result, _) = render_item_with_hover(
                     ui,
                     theme,
                     idx,
@@ -488,13 +526,14 @@ fn render_items(
                     false,
                     selected_index,
                     ItemVariant::Checkbox(*checked),
-                ).is_some() {
+                );
+                if result.is_some() {
                     response.selected = Some(idx);
                     response.checkbox_toggled = Some((idx, !checked));
                 }
             }
             MenuItemKind::Radio { group, value, selected } => {
-                if render_item(
+                let (result, _) = render_item_with_hover(
                     ui,
                     theme,
                     idx,
@@ -502,7 +541,8 @@ fn render_items(
                     false,
                     selected_index,
                     ItemVariant::Radio(*selected),
-                ).is_some() {
+                );
+                if result.is_some() {
                     response.selected = Some(idx);
                     response.radio_selected = Some((group.clone(), value.clone()));
                 }
@@ -517,7 +557,7 @@ fn render_items(
                     item,
                     sub_items,
                     selected_index,
-                    open_submenu,
+                    submenu_state,
                     response,
                 );
             }
@@ -537,7 +577,8 @@ fn render_separator(ui: &mut Ui, theme: &crate::Theme) {
     ui.add_space(SEPARATOR_MARGIN_Y);
 }
 
-fn render_item(
+/// Renders a menu item and returns (clicked_index, is_hovered)
+fn render_item_with_hover(
     ui: &mut Ui,
     theme: &crate::Theme,
     idx: usize,
@@ -545,7 +586,7 @@ fn render_item(
     destructive: bool,
     selected_index: &mut Option<usize>,
     variant: ItemVariant,
-) -> Option<usize> {
+) -> (Option<usize>, bool) {
     let is_selected = *selected_index == Some(idx);
     let has_indicator = matches!(variant, ItemVariant::Checkbox(_) | ItemVariant::Radio(_));
 
@@ -554,8 +595,10 @@ fn render_item(
         if item.disabled { Sense::hover() } else { Sense::click() },
     );
 
+    let is_hovered = item_response.hovered() && !item.disabled;
+
     // Update hover state
-    if item_response.hovered() && !item.disabled {
+    if is_hovered {
         *selected_index = Some(idx);
     }
 
@@ -574,11 +617,13 @@ fn render_item(
         variant,
     );
 
-    if item_response.clicked() && !item.disabled {
+    let clicked = if item_response.clicked() && !item.disabled {
         Some(idx)
     } else {
         None
-    }
+    };
+
+    (clicked, is_hovered)
 }
 
 fn render_item_background(
@@ -695,62 +740,25 @@ fn render_submenu(
     item: &MenuItemData,
     sub_items: &[MenuItemData],
     selected_index: &mut Option<usize>,
-    open_submenu: &mut Option<usize>,
+    submenu_state: &mut SubmenuState,
     response: &mut MenuResponse,
 ) {
     let is_selected = *selected_index == Some(idx);
+    let is_submenu_open = submenu_state.is_open(idx);
 
     let (rect, item_response) = ui.allocate_exact_size(
         vec2(ui.available_width(), ITEM_HEIGHT),
         if item.disabled { Sense::hover() } else { Sense::click() },
     );
 
-    // Check if mouse is currently hovering over the submenu content area
-    // We store the submenu rect in memory to check against
-    let submenu_rect_id = menu_id.with(("submenu_rect", idx));
-    let submenu_rect: Option<Rect> = ui.ctx().data_mut(|d| d.get_temp(submenu_rect_id));
-
-    let mouse_pos = ui.ctx().input(|i| i.pointer.hover_pos());
-
-    // Check if mouse is in submenu
-    let mouse_in_submenu = mouse_pos
-        .zip(submenu_rect)
-        .map(|(pos, r)| r.contains(pos))
-        .unwrap_or(false);
-
-    // Check if mouse is in the "bridge" zone between trigger and submenu
-    // This is the gap area to the right of the trigger, at the same vertical level
-    let mouse_in_bridge = mouse_pos
-        .zip(submenu_rect)
-        .map(|(pos, sub_rect)| {
-            // Bridge zone: from right edge of trigger to left edge of submenu,
-            // vertically spanning from trigger top to submenu bottom (or vice versa)
-            let bridge_left = rect.right();
-            let bridge_right = sub_rect.left();
-            let bridge_top = rect.top().min(sub_rect.top());
-            let bridge_bottom = rect.bottom().max(sub_rect.bottom());
-
-            pos.x >= bridge_left && pos.x <= bridge_right &&
-            pos.y >= bridge_top && pos.y <= bridge_bottom
-        })
-        .unwrap_or(false);
-
-    // Keep submenu open if:
-    // 1. Hovering over the trigger item, OR
-    // 2. Mouse is inside the submenu content area, OR
-    // 3. Mouse is in the bridge zone between trigger and submenu
-    let should_keep_open = item_response.hovered() || mouse_in_submenu || mouse_in_bridge;
-
+    // Open submenu when hovering the trigger
     if item_response.hovered() && !item.disabled {
         *selected_index = Some(idx);
-        *open_submenu = Some(idx);
-    } else if *open_submenu == Some(idx) && !should_keep_open {
-        // Close submenu if mouse left trigger, submenu, and bridge zone
-        *open_submenu = None;
+        submenu_state.open_submenu(idx);
     }
 
     // Render background
-    let highlighted = is_selected || item_response.hovered() || *open_submenu == Some(idx);
+    let highlighted = is_selected || item_response.hovered() || is_submenu_open;
     render_item_background(ui, theme, rect, highlighted, false, item.disabled);
 
     // Render content (label + chevron)
@@ -788,49 +796,36 @@ fn render_submenu(
         icon_color,
     );
 
-    // Show submenu if open
-    if *open_submenu == Some(idx) && !item.disabled {
-        // Position submenu to the right of the item
-        let submenu_anchor = Rect::from_min_size(
-            egui::pos2(rect.right(), rect.top()),
-            vec2(0.0, rect.height()),
-        );
+    // Always render the submenu so it can animate closed
+    // Position submenu to the right of the item
+    let submenu_anchor = Rect::from_min_size(
+        egui::pos2(rect.right(), rect.top()),
+        vec2(0.0, rect.height()),
+    );
 
-        let submenu_id = menu_id.with(("submenu", idx));
-        let mut submenu = Menu::new(submenu_id)
-            .position(PopoverPosition::Right)
-            .width(menu_width)
-            .open(true);
+    let submenu_id = menu_id.with(("submenu", idx));
+    let submenu_should_be_open = submenu_state.is_open(idx) && !item.disabled;
 
-        let sub_response = submenu.show(ui.ctx(), submenu_anchor, |builder| {
-            // Copy items into the builder
-            for sub_item in sub_items {
-                add_item_to_builder(builder, sub_item, menu_id, menu_width);
-            }
-        });
+    let mut submenu = Menu::new(submenu_id)
+        .position(PopoverPosition::Right)
+        .width(menu_width)
+        .open(submenu_should_be_open);
 
-        // Store the submenu's actual rendered rect for hover detection next frame
-        // We need to get the rect from egui's Area system
-        let area_id = submenu_id.with("popover");
-        if let Some(area_state) = ui.ctx().memory(|m| m.area_rect(area_id)) {
-            // Expand the rect slightly to create a buffer zone for mouse movement
-            let expanded_rect = area_state.expand(4.0);
-            ui.ctx().data_mut(|d| d.insert_temp(submenu_rect_id, expanded_rect));
+    let sub_response = submenu.show(ui.ctx(), submenu_anchor, |builder| {
+        for sub_item in sub_items {
+            add_item_to_builder(builder, sub_item, menu_id, menu_width);
         }
+    });
 
-        // Propagate submenu responses
-        if sub_response.selected.is_some() {
-            response.selected = sub_response.selected;
-        }
-        if sub_response.checkbox_toggled.is_some() {
-            response.checkbox_toggled = sub_response.checkbox_toggled;
-        }
-        if sub_response.radio_selected.is_some() {
-            response.radio_selected = sub_response.radio_selected;
-        }
-    } else {
-        // Clear the stored rect when submenu is closed
-        ui.ctx().data_mut(|d| d.remove::<Rect>(submenu_rect_id));
+    // Propagate submenu responses
+    if sub_response.selected.is_some() {
+        response.selected = sub_response.selected;
+    }
+    if sub_response.checkbox_toggled.is_some() {
+        response.checkbox_toggled = sub_response.checkbox_toggled;
+    }
+    if sub_response.radio_selected.is_some() {
+        response.radio_selected = sub_response.radio_selected;
     }
 }
 

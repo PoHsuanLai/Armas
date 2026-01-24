@@ -7,7 +7,7 @@ use crate::{AudioMeter, Fader, Knob, Slot};
 use armas::components::basic::Badge;
 use armas::components::button::{Button, ButtonVariant};
 use armas::components::cards::{Card, CardVariant};
-use armas::components::overlays::Modal;
+use armas::components::overlays::Dialog;
 use armas::ext::ArmasContextExt;
 use armas::Separator;
 use egui::{Color32, Id, Response, Ui, Vec2};
@@ -671,7 +671,7 @@ impl MixerStrip {
                 (format!("Edit: {}", send_name), true)
             };
 
-            let modal_response = Modal::new(self.id.with("send_modal"))
+            let modal_response = Dialog::new(self.id.with("send_modal"))
                 .title(modal_title)
                 .open(modal_open)
                 .show(ui.ctx(), &theme, |ui| {

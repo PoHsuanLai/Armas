@@ -1,29 +1,42 @@
 //! Popover Component
 //!
-//! Floating panels anchored to elements with animations
+//! Floating panels anchored to elements.
 
-use crate::{Animation, Card, CardVariant, EasingFunction, Theme};
-use egui::{pos2, vec2, Id, Pos2, Rect, Stroke, Ui, Vec2};
+use crate::{Card, CardVariant, Theme};
+use egui::{pos2, vec2, Color32, Id, Pos2, Rect, Stroke, Ui, Vec2};
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const ARROW_SIZE: f32 = 8.0;
+const MIN_SPACE_FOR_POSITION: f32 = 50.0;
+
+// ============================================================================
+// Enums
+// ============================================================================
 
 /// Popover position relative to anchor
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PopoverPosition {
     /// Above the anchor
     Top,
     /// Below the anchor
+    #[default]
     Bottom,
     /// To the left of the anchor
     Left,
     /// To the right of the anchor
     Right,
-    /// Automatically choose based on space
+    /// Automatically choose based on available space
     Auto,
 }
 
 /// Popover visual style
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PopoverStyle {
-    /// Default style with soft border and shadow
+    /// Default style with soft border
+    #[default]
     Default,
     /// Elevated style with stronger shadow
     Elevated,
@@ -34,9 +47,10 @@ pub enum PopoverStyle {
 }
 
 /// Popover color themes
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PopoverColor {
     /// Default surface color
+    #[default]
     Surface,
     /// Primary theme color
     Primary,
@@ -50,7 +64,24 @@ pub enum PopoverColor {
     Info,
 }
 
-/// Popover component
+// ============================================================================
+// Response
+// ============================================================================
+
+/// Response from showing a popover
+#[derive(Debug, Clone, Copy, Default)]
+pub struct PopoverResponse {
+    /// Whether the user clicked outside the popover
+    pub clicked_outside: bool,
+    /// Whether the popover should be closed (for external state management)
+    pub should_close: bool,
+}
+
+// ============================================================================
+// Popover Component
+// ============================================================================
+
+/// Popover component for floating panels anchored to elements
 #[derive(Clone)]
 pub struct Popover {
     id: Id,
@@ -61,29 +92,24 @@ pub struct Popover {
     width: Option<f32>,
     max_width: f32,
     show_arrow: bool,
-    animation: Animation<f32>,
-    is_open: bool,
     padding: Option<f32>,
-    // Internal state management
-    external_is_open: Option<bool>, // None = use internal state, Some = external control
+    external_is_open: Option<bool>,
 }
 
 impl Popover {
-    /// Create a new popover
+    /// Create a new popover with the given ID
     pub fn new(id: impl Into<Id>) -> Self {
         Self {
             id: id.into(),
-            position: PopoverPosition::Bottom,
-            style: PopoverStyle::Default,
-            color: PopoverColor::Surface,
-            offset: vec2(0.0, 12.0),
+            position: PopoverPosition::default(),
+            style: PopoverStyle::default(),
+            color: PopoverColor::default(),
+            offset: vec2(0.0, 8.0),
             width: None,
             max_width: 400.0,
             show_arrow: true,
-            animation: Animation::new(0.0, 1.0, 0.2).easing(EasingFunction::CubicOut),
-            is_open: false,
             padding: None,
-            external_is_open: None, // Use internal state by default
+            external_is_open: None,
         }
     }
 
@@ -93,24 +119,24 @@ impl Popover {
         self
     }
 
-    /// Set the open state (mutable version for updating existing popovers)
+    /// Set the open state (mutable version)
     pub fn set_open(&mut self, is_open: bool) {
         self.external_is_open = Some(is_open);
     }
 
-    /// Set the popover position
+    /// Set the popover position relative to anchor
     pub fn position(mut self, position: PopoverPosition) -> Self {
         self.position = position;
         self
     }
 
-    /// Set the popover style
+    /// Set the popover visual style
     pub fn style(mut self, style: PopoverStyle) -> Self {
         self.style = style;
         self
     }
 
-    /// Set the popover color
+    /// Set the popover color theme
     pub fn color(mut self, color: PopoverColor) -> Self {
         self.color = color;
         self
@@ -146,7 +172,7 @@ impl Popover {
         self
     }
 
-    /// Show the popover
+    /// Show the popover anchored to the given rect
     pub fn show(
         &mut self,
         ctx: &egui::Context,
@@ -154,324 +180,261 @@ impl Popover {
         anchor_rect: Rect,
         content: impl FnOnce(&mut Ui),
     ) -> PopoverResponse {
-        let mut response = PopoverResponse {
-            clicked_outside: false,
-            should_close: false,
-        };
+        let mut response = PopoverResponse::default();
 
-        // Load state from egui memory if not externally controlled
-        let state_id = self.id.with("popover_state");
-        let is_open = if let Some(external_open) = self.external_is_open {
-            external_open
-        } else {
-            ctx.data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false))
-        };
-
-        // Handle opening/closing
-        if is_open && !self.is_open {
-            // Opening
-            self.animation.reset();
-            self.animation.start();
-            self.is_open = true;
-        } else if !is_open && self.is_open {
-            // Closing
-            self.is_open = false;
-        }
-
-        if !self.is_open && !self.animation.is_running() {
+        // Check if should be open
+        let is_open = self.external_is_open.unwrap_or(false);
+        if !is_open {
             return response;
         }
 
-        // Update animation
-        if self.animation.is_running() {
-            self.animation.update(ctx.input(|i| i.unstable_dt));
-            ctx.request_repaint();
-        }
-
-        let progress = self.animation.value();
-
-        // Don't show if fully closed
-        if progress <= 0.0 {
-            return response;
-        }
-
-        // Determine position
+        // Calculate position
         let position = self.determine_position(ctx, anchor_rect);
-        let arrow_size = if self.show_arrow { 8.0 } else { 0.0 };
+        let popover_pos = self.calculate_popover_position(anchor_rect, position);
 
-        // Calculate popover rect (estimate size first)
-        let estimated_size = vec2(
-            self.width.unwrap_or(self.max_width),
-            100.0, // Will be adjusted
+        // Get styling
+        let (bg_color, border_color) = self.get_colors(theme);
+        let (stroke_width, rounding, padding) = self.get_style_params(theme);
+        let card_variant = self.get_card_variant(stroke_width);
+
+        // Render the popover
+        let area_response = self.render_popover(
+            ctx,
+            theme,
+            popover_pos,
+            bg_color,
+            border_color,
+            rounding,
+            padding,
+            card_variant,
+            position,
+            content,
         );
 
-        let popover_pos =
-            self.calculate_position(anchor_rect, estimated_size, arrow_size, position);
-
-        // No backdrop - we'll check clicks after rendering the popover
-
-        // Persist state if not externally controlled
-        if self.external_is_open.is_none() {
-            ctx.data_mut(|d| d.insert_temp(state_id, is_open));
-        }
-
-        // Get colors based on color theme
-        let (bg_color, border_color) = match self.color {
-            PopoverColor::Surface => (theme.card(), theme.border()),
-            PopoverColor::Primary => {
-                let base = theme.primary();
-                (
-                    egui::Color32::from_rgba_premultiplied(
-                        (theme.card().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                        (theme.card().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                        (theme.card().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
-                        255,
-                    ),
-                    base,
-                )
-            }
-            PopoverColor::Success => {
-                let base = theme.chart_2();
-                (
-                    egui::Color32::from_rgba_premultiplied(
-                        (theme.card().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                        (theme.card().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                        (theme.card().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
-                        255,
-                    ),
-                    base,
-                )
-            }
-            PopoverColor::Warning => {
-                let base = theme.chart_3();
-                (
-                    egui::Color32::from_rgba_premultiplied(
-                        (theme.card().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                        (theme.card().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                        (theme.card().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
-                        255,
-                    ),
-                    base,
-                )
-            }
-            PopoverColor::Error => {
-                let base = theme.destructive();
-                (
-                    egui::Color32::from_rgba_premultiplied(
-                        (theme.card().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                        (theme.card().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                        (theme.card().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
-                        255,
-                    ),
-                    base,
-                )
-            }
-            PopoverColor::Info => {
-                let base = theme.chart_4();
-                (
-                    egui::Color32::from_rgba_premultiplied(
-                        (theme.card().r() as f32 * 0.85 + base.r() as f32 * 0.15) as u8,
-                        (theme.card().g() as f32 * 0.85 + base.g() as f32 * 0.15) as u8,
-                        (theme.card().b() as f32 * 0.85 + base.b() as f32 * 0.15) as u8,
-                        255,
-                    ),
-                    base,
-                )
-            }
-        };
-
-        // Get style parameters
-        let (stroke_width, rounding, default_padding) = match self.style {
-            PopoverStyle::Default => (1.0, theme.spacing.corner_radius, theme.spacing.md),
-            PopoverStyle::Elevated => (0.5, theme.spacing.corner_radius_large, theme.spacing.lg),
-            PopoverStyle::Bordered => (2.0, theme.spacing.corner_radius_small, theme.spacing.md),
-            PopoverStyle::Flat => (0.0, theme.spacing.corner_radius_small, theme.spacing.md),
-        };
-        let padding = self.padding.unwrap_or(default_padding);
-
-        // Draw popover content using Card
-        let area_response = egui::Area::new(self.id)
-            .order(egui::Order::Foreground)
-            .fixed_pos(popover_pos)
-            .show(ctx, |ui| {
-                // Apply animation opacity (minimum 0.95 to keep it mostly opaque)
-                ui.set_opacity(progress.max(0.95));
-
-                let content_width = self
-                    .width
-                    .unwrap_or_else(|| ui.available_width().min(self.max_width));
-
-                ui.set_max_width(content_width);
-
-                // Use Card component with MD3 variant based on style
-                let card_variant = match self.style {
-                    PopoverStyle::Elevated => CardVariant::Elevated,
-                    PopoverStyle::Bordered => CardVariant::Outlined,
-                    PopoverStyle::Flat => CardVariant::Filled,
-                    PopoverStyle::Default => {
-                        if stroke_width > 0.0 {
-                            CardVariant::Outlined
-                        } else {
-                            CardVariant::Filled
-                        }
-                    }
-                };
-
-                Card::new()
-                    .variant(card_variant)
-                    .fill(bg_color)
-                    .stroke(border_color)
-                    .corner_radius(rounding as f32)
-                    .inner_margin(padding)
-                    .width(content_width)
-                    .show(ui, theme, |ui| {
-                        content(ui);
-                    });
-
-                // Draw arrow
-                if self.show_arrow && progress > 0.5 {
-                    self.draw_arrow(ui, theme, anchor_rect, position, bg_color, border_color);
-                }
-            });
-
-        // Check for clicks outside the popover and anchor to close
-        if is_open && ctx.input(|i| i.pointer.any_click()) {
-            if let Some(click_pos) = ctx.input(|i| i.pointer.interact_pos()) {
-                let popover_rect = area_response.response.rect;
-                // Close if clicked outside both popover and anchor
-                if !popover_rect.contains(click_pos) && !anchor_rect.contains(click_pos) {
-                    response.clicked_outside = true;
-                    response.should_close = true;
-
-                    // Update state immediately
-                    if self.external_is_open.is_none() {
-                        ctx.data_mut(|d| d.insert_temp(state_id, false));
-                    }
-                }
-            }
-        }
+        // Handle click outside
+        response = self.check_click_outside(ctx, &area_response.response.rect, anchor_rect);
 
         response
     }
+
+    // ========================================================================
+    // Position Calculation
+    // ========================================================================
 
     fn determine_position(&self, ctx: &egui::Context, anchor_rect: Rect) -> PopoverPosition {
         if self.position != PopoverPosition::Auto {
             return self.position;
         }
 
-        let screen_rect = ctx.content_rect();
-        let spacing = 50.0; // Minimum space needed
-
+        let screen_rect = ctx.available_rect();
         let space_above = anchor_rect.top() - screen_rect.top();
         let space_below = screen_rect.bottom() - anchor_rect.bottom();
         let space_left = anchor_rect.left() - screen_rect.left();
         let space_right = screen_rect.right() - anchor_rect.right();
 
         // Prefer bottom, then top, then sides
-        if space_below >= spacing {
+        if space_below >= MIN_SPACE_FOR_POSITION {
             PopoverPosition::Bottom
-        } else if space_above >= spacing {
+        } else if space_above >= MIN_SPACE_FOR_POSITION {
             PopoverPosition::Top
-        } else if space_right >= spacing {
+        } else if space_right >= MIN_SPACE_FOR_POSITION {
             PopoverPosition::Right
-        } else if space_left >= spacing {
+        } else if space_left >= MIN_SPACE_FOR_POSITION {
             PopoverPosition::Left
         } else {
             PopoverPosition::Bottom
         }
     }
 
-    fn calculate_position(
-        &self,
-        anchor_rect: Rect,
-        size: Vec2,
-        arrow_size: f32,
-        position: PopoverPosition,
-    ) -> Pos2 {
+    fn calculate_popover_position(&self, anchor_rect: Rect, position: PopoverPosition) -> Pos2 {
+        let arrow_size = if self.show_arrow { ARROW_SIZE } else { 0.0 };
         let spacing = arrow_size + self.offset.length();
+        let estimated_width = self.width.unwrap_or(self.max_width);
 
         match position {
             PopoverPosition::Top => pos2(
-                anchor_rect.center().x - size.x / 2.0,
-                anchor_rect.top() - size.y - spacing,
+                anchor_rect.center().x - estimated_width / 2.0,
+                anchor_rect.top() - spacing,
             ),
             PopoverPosition::Bottom => pos2(
-                anchor_rect.center().x - size.x / 2.0,
+                anchor_rect.center().x - estimated_width / 2.0,
                 anchor_rect.bottom() + spacing,
             ),
             PopoverPosition::Left => pos2(
-                anchor_rect.left() - size.x - spacing,
-                anchor_rect.center().y - size.y / 2.0,
+                anchor_rect.left() - estimated_width - spacing,
+                anchor_rect.center().y,
             ),
             PopoverPosition::Right => pos2(
                 anchor_rect.right() + spacing,
-                anchor_rect.center().y - size.y / 2.0,
+                anchor_rect.center().y,
             ),
             PopoverPosition::Auto => unreachable!(),
         }
     }
 
-    fn draw_arrow(
-        &self,
-        ui: &mut Ui,
-        _theme: &Theme,
-        _anchor_rect: Rect,
-        position: PopoverPosition,
-        bg_color: egui::Color32,
-        border_color: egui::Color32,
-    ) {
-        let painter = ui.painter();
-        let arrow_size = 8.0;
+    // ========================================================================
+    // Styling
+    // ========================================================================
 
-        let popover_rect = ui.min_rect();
+    fn get_colors(&self, theme: &Theme) -> (Color32, Color32) {
+        match self.color {
+            PopoverColor::Surface => (theme.card(), theme.border()),
+            PopoverColor::Primary => blend_with_card(theme, theme.primary()),
+            PopoverColor::Success => blend_with_card(theme, theme.chart_2()),
+            PopoverColor::Warning => blend_with_card(theme, theme.chart_3()),
+            PopoverColor::Error => blend_with_card(theme, theme.destructive()),
+            PopoverColor::Info => blend_with_card(theme, theme.chart_4()),
+        }
+    }
 
-        let (tip, base1, base2) = match position {
-            PopoverPosition::Top => {
-                let tip = pos2(popover_rect.center().x, popover_rect.bottom());
-                let base1 = pos2(tip.x - arrow_size, tip.y - arrow_size);
-                let base2 = pos2(tip.x + arrow_size, tip.y - arrow_size);
-                (tip, base1, base2)
-            }
-            PopoverPosition::Bottom => {
-                let tip = pos2(popover_rect.center().x, popover_rect.top());
-                let base1 = pos2(tip.x - arrow_size, tip.y + arrow_size);
-                let base2 = pos2(tip.x + arrow_size, tip.y + arrow_size);
-                (tip, base1, base2)
-            }
-            PopoverPosition::Left => {
-                let tip = pos2(popover_rect.right(), popover_rect.center().y);
-                let base1 = pos2(tip.x - arrow_size, tip.y - arrow_size);
-                let base2 = pos2(tip.x - arrow_size, tip.y + arrow_size);
-                (tip, base1, base2)
-            }
-            PopoverPosition::Right => {
-                let tip = pos2(popover_rect.left(), popover_rect.center().y);
-                let base1 = pos2(tip.x + arrow_size, tip.y - arrow_size);
-                let base2 = pos2(tip.x + arrow_size, tip.y + arrow_size);
-                (tip, base1, base2)
-            }
-            PopoverPosition::Auto => unreachable!(),
+    fn get_style_params(&self, theme: &Theme) -> (f32, f32, f32) {
+        let (stroke_width, rounding, default_padding) = match self.style {
+            PopoverStyle::Default => (1.0, theme.spacing.corner_radius as f32, theme.spacing.md),
+            PopoverStyle::Elevated => (0.5, theme.spacing.corner_radius_large as f32, theme.spacing.lg),
+            PopoverStyle::Bordered => (2.0, theme.spacing.corner_radius_small as f32, theme.spacing.md),
+            PopoverStyle::Flat => (0.0, theme.spacing.corner_radius_small as f32, theme.spacing.md),
         };
+        let padding = self.padding.unwrap_or(default_padding);
+        (stroke_width, rounding, padding)
+    }
 
-        // Fill
-        painter.add(egui::Shape::convex_polygon(
-            vec![tip, base1, base2],
-            bg_color,
-            Stroke::NONE,
-        ));
+    fn get_card_variant(&self, stroke_width: f32) -> CardVariant {
+        match self.style {
+            PopoverStyle::Elevated => CardVariant::Elevated,
+            PopoverStyle::Bordered => CardVariant::Outlined,
+            PopoverStyle::Flat => CardVariant::Filled,
+            PopoverStyle::Default => {
+                if stroke_width > 0.0 {
+                    CardVariant::Outlined
+                } else {
+                    CardVariant::Filled
+                }
+            }
+        }
+    }
 
-        // Border (make it subtle like the main border)
-        let subtle_border = border_color.linear_multiply(0.3);
-        painter.line_segment([base1, tip], Stroke::new(1.0, subtle_border));
-        painter.line_segment([tip, base2], Stroke::new(1.0, subtle_border));
+    // ========================================================================
+    // Rendering
+    // ========================================================================
+
+    #[allow(clippy::too_many_arguments)]
+    fn render_popover(
+        &self,
+        ctx: &egui::Context,
+        theme: &Theme,
+        popover_pos: Pos2,
+        bg_color: Color32,
+        border_color: Color32,
+        rounding: f32,
+        padding: f32,
+        card_variant: CardVariant,
+        position: PopoverPosition,
+        content: impl FnOnce(&mut Ui),
+    ) -> egui::InnerResponse<()> {
+        egui::Area::new(self.id)
+            .order(egui::Order::Foreground)
+            .fixed_pos(popover_pos)
+            .show(ctx, |ui| {
+                let content_width = self
+                    .width
+                    .unwrap_or_else(|| ui.available_width().min(self.max_width));
+
+                ui.set_max_width(content_width);
+
+                Card::new()
+                    .variant(card_variant)
+                    .fill(bg_color)
+                    .stroke(border_color)
+                    .corner_radius(rounding)
+                    .inner_margin(padding)
+                    .width(content_width)
+                    .show(ui, theme, |ui| {
+                        content(ui);
+                    });
+
+                // Draw arrow if enabled
+                if self.show_arrow {
+                    draw_arrow(ui, position, bg_color, border_color);
+                }
+            })
+    }
+
+    fn check_click_outside(
+        &self,
+        ctx: &egui::Context,
+        popover_rect: &Rect,
+        anchor_rect: Rect,
+    ) -> PopoverResponse {
+        let mut response = PopoverResponse::default();
+
+        if ctx.input(|i| i.pointer.any_click()) {
+            if let Some(click_pos) = ctx.input(|i| i.pointer.interact_pos()) {
+                if !popover_rect.contains(click_pos) && !anchor_rect.contains(click_pos) {
+                    response.clicked_outside = true;
+                    response.should_close = true;
+                }
+            }
+        }
+
+        response
     }
 }
 
-/// Response from a popover
-#[derive(Debug, Clone, Copy)]
-pub struct PopoverResponse {
-    /// Whether the user clicked outside the popover
-    pub clicked_outside: bool,
-    /// Whether the popover should be closed (for external state management)
-    pub should_close: bool,
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+fn blend_with_card(theme: &Theme, base: Color32) -> (Color32, Color32) {
+    let blended = Color32::from_rgba_premultiplied(
+        ((theme.card().r() as f32) * 0.85 + (base.r() as f32) * 0.15) as u8,
+        ((theme.card().g() as f32) * 0.85 + (base.g() as f32) * 0.15) as u8,
+        ((theme.card().b() as f32) * 0.85 + (base.b() as f32) * 0.15) as u8,
+        255,
+    );
+    (blended, base)
+}
+
+fn draw_arrow(ui: &mut Ui, position: PopoverPosition, bg_color: Color32, border_color: Color32) {
+    let painter = ui.painter();
+    let popover_rect = ui.min_rect();
+
+    let (tip, base1, base2) = match position {
+        PopoverPosition::Top => {
+            let tip = pos2(popover_rect.center().x, popover_rect.bottom());
+            let base1 = pos2(tip.x - ARROW_SIZE, tip.y - ARROW_SIZE);
+            let base2 = pos2(tip.x + ARROW_SIZE, tip.y - ARROW_SIZE);
+            (tip, base1, base2)
+        }
+        PopoverPosition::Bottom => {
+            let tip = pos2(popover_rect.center().x, popover_rect.top());
+            let base1 = pos2(tip.x - ARROW_SIZE, tip.y + ARROW_SIZE);
+            let base2 = pos2(tip.x + ARROW_SIZE, tip.y + ARROW_SIZE);
+            (tip, base1, base2)
+        }
+        PopoverPosition::Left => {
+            let tip = pos2(popover_rect.right(), popover_rect.center().y);
+            let base1 = pos2(tip.x - ARROW_SIZE, tip.y - ARROW_SIZE);
+            let base2 = pos2(tip.x - ARROW_SIZE, tip.y + ARROW_SIZE);
+            (tip, base1, base2)
+        }
+        PopoverPosition::Right => {
+            let tip = pos2(popover_rect.left(), popover_rect.center().y);
+            let base1 = pos2(tip.x + ARROW_SIZE, tip.y - ARROW_SIZE);
+            let base2 = pos2(tip.x + ARROW_SIZE, tip.y + ARROW_SIZE);
+            (tip, base1, base2)
+        }
+        PopoverPosition::Auto => unreachable!(),
+    };
+
+    // Fill
+    painter.add(egui::Shape::convex_polygon(
+        vec![tip, base1, base2],
+        bg_color,
+        Stroke::NONE,
+    ));
+
+    // Border (subtle)
+    let subtle_border = border_color.linear_multiply(0.3);
+    painter.line_segment([base1, tip], Stroke::new(1.0, subtle_border));
+    painter.line_segment([tip, base2], Stroke::new(1.0, subtle_border));
 }

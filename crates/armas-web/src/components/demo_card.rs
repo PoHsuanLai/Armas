@@ -44,11 +44,10 @@ impl ComponentDemoCard {
 
     fn show_inner<R>(&self, ui: &mut egui::Ui, content: impl FnOnce(&mut egui::Ui) -> R) -> R {
         let theme = ui.ctx().armas_theme();
-        let panel_result = GlassPanel::new()
-            .blur(10.0)
-            .opacity(0.05)
-            .corner_radius(16.0)
-            .show(ui, &theme, |ui| {
+        let panel_result = egui::Frame::new()
+            .fill(theme.card().gamma_multiply(0.5))
+            .corner_radius(egui::CornerRadius::same(16))
+            .show(ui, |ui| {
                 ui.set_min_height(self.min_height);
 
                 // Optional dark background overlay

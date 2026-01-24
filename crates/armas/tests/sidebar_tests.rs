@@ -1,6 +1,6 @@
 //! Tests for Sidebar component using egui_kittest
 
-use armas::components::navigation::Sidebar;
+use armas::components::navigation::{CollapsibleMode, Sidebar};
 use egui_kittest::Harness;
 
 /// Test that Sidebar renders without panicking
@@ -161,7 +161,7 @@ fn test_sidebar_custom_expanded_width() {
 fn test_sidebar_not_collapsible() {
     let mut harness = Harness::new_ui(|ui| {
         Sidebar::new()
-            .collapsible(false)
+            .collapsible(CollapsibleMode::None)
             .show(ui, |sidebar| {
                 sidebar.item("🏠", "Home");
                 sidebar.item("📧", "Messages");
@@ -244,7 +244,7 @@ fn test_sidebar_full_config() {
             .collapsed(false)
             .collapsed_width(60.0)
             .expanded_width(250.0)
-            .collapsible(true)
+            .collapsible(CollapsibleMode::Icon)
             .show_icons(true)
             .show(ui, |sidebar| {
                 sidebar.item("🏠", "Dashboard").active(true);

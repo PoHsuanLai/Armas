@@ -117,10 +117,10 @@ impl QuickInstall {
 
     pub fn show(self, ui: &mut egui::Ui) -> egui::Response {
         let theme = ui.ctx().armas_theme();
-        let response = GlassPanel::new()
-            .opacity(0.05)
-            .corner_radius(12.0)
-            .show(ui, &theme, |ui| {
+        let response = egui::Frame::new()
+            .fill(theme.card().gamma_multiply(0.5))
+            .corner_radius(egui::CornerRadius::same(12))
+            .show(ui, |ui| {
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 16.0;
 

@@ -67,6 +67,16 @@ pub struct ColorPalette {
     // Interactive states
     pub hover: [u8; 3],
     pub focus: [u8; 3],
+
+    // Sidebar colors (shadcn/ui sidebar)
+    pub sidebar: [u8; 3],
+    pub sidebar_foreground: [u8; 3],
+    pub sidebar_primary: [u8; 3],
+    pub sidebar_primary_foreground: [u8; 3],
+    pub sidebar_accent: [u8; 3],
+    pub sidebar_accent_foreground: [u8; 3],
+    pub sidebar_border: [u8; 3],
+    pub sidebar_ring: [u8; 3],
 }
 
 /// Spacing configuration for layouts
@@ -146,6 +156,16 @@ impl Theme {
 
                 hover: [39, 39, 42],             // zinc-800
                 focus: [250, 250, 250],          // zinc-50
+
+                // Sidebar (slightly lighter than background for distinction)
+                sidebar: [9, 9, 11],              // zinc-950 (same as bg)
+                sidebar_foreground: [250, 250, 250], // zinc-50
+                sidebar_primary: [250, 250, 250], // zinc-50
+                sidebar_primary_foreground: [24, 24, 27], // zinc-900
+                sidebar_accent: [39, 39, 42],     // zinc-800
+                sidebar_accent_foreground: [250, 250, 250], // zinc-50
+                sidebar_border: [39, 39, 42],     // zinc-800
+                sidebar_ring: [212, 212, 216],    // zinc-300
             },
             spacing: Spacing {
                 xxs: 2.0,
@@ -204,6 +224,16 @@ impl Theme {
 
                 hover: [244, 244, 245],          // zinc-100
                 focus: [24, 24, 27],             // zinc-900
+
+                // Sidebar (slightly darker than background for distinction)
+                sidebar: [250, 250, 250],         // zinc-50
+                sidebar_foreground: [9, 9, 11],   // zinc-950
+                sidebar_primary: [24, 24, 27],    // zinc-900
+                sidebar_primary_foreground: [250, 250, 250], // zinc-50
+                sidebar_accent: [244, 244, 245],  // zinc-100
+                sidebar_accent_foreground: [24, 24, 27], // zinc-900
+                sidebar_border: [228, 228, 231],  // zinc-200
+                sidebar_ring: [24, 24, 27],       // zinc-900
             },
             spacing: Spacing {
                 xxs: 2.0,
@@ -379,6 +409,58 @@ impl Theme {
     /// Focus state color
     pub fn focus(&self) -> Color32 {
         let [r, g, b] = self.colors.focus;
+        Color32::from_rgb(r, g, b)
+    }
+
+    // =========================================================================
+    // Sidebar color accessors
+    // =========================================================================
+
+    /// Sidebar background color
+    pub fn sidebar(&self) -> Color32 {
+        let [r, g, b] = self.colors.sidebar;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Sidebar foreground/text color
+    pub fn sidebar_foreground(&self) -> Color32 {
+        let [r, g, b] = self.colors.sidebar_foreground;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Sidebar primary color
+    pub fn sidebar_primary(&self) -> Color32 {
+        let [r, g, b] = self.colors.sidebar_primary;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Sidebar primary foreground color
+    pub fn sidebar_primary_foreground(&self) -> Color32 {
+        let [r, g, b] = self.colors.sidebar_primary_foreground;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Sidebar accent color (hover/active background)
+    pub fn sidebar_accent(&self) -> Color32 {
+        let [r, g, b] = self.colors.sidebar_accent;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Sidebar accent foreground color
+    pub fn sidebar_accent_foreground(&self) -> Color32 {
+        let [r, g, b] = self.colors.sidebar_accent_foreground;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Sidebar border color
+    pub fn sidebar_border(&self) -> Color32 {
+        let [r, g, b] = self.colors.sidebar_border;
+        Color32::from_rgb(r, g, b)
+    }
+
+    /// Sidebar focus ring color
+    pub fn sidebar_ring(&self) -> Color32 {
+        let [r, g, b] = self.colors.sidebar_ring;
         Color32::from_rgb(r, g, b)
     }
 }

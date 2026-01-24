@@ -273,44 +273,53 @@ impl Slider {
             if ui.is_rect_visible(rect) {
                 let painter = ui.painter();
 
-                // Background track
-                let track_rect = Rect::from_center_size(rect.center(), vec2(rect.width(), 4.0));
+                // Track and thumb sizes (matching shadcn: h-1.5 track, size-4 thumb)
+                let track_height = 6.0;
+                let thumb_radius = 8.0;
 
-                painter.rect_filled(track_rect, 2.0, theme.muted());
+                // Background track
+                let track_rect = Rect::from_center_size(rect.center(), vec2(rect.width(), track_height));
+
+                painter.rect_filled(track_rect, track_height / 2.0, theme.muted());
 
                 // Filled track (progress)
                 let t = (*value - self.min) / (self.max - self.min);
                 let fill_width = track_rect.width() * t;
-                let fill_rect = Rect::from_min_size(track_rect.min, vec2(fill_width, 4.0));
+                let fill_rect = Rect::from_min_size(track_rect.min, vec2(fill_width, track_height));
 
-                painter.rect_filled(fill_rect, 2.0, theme.primary());
+                painter.rect_filled(fill_rect, track_height / 2.0, theme.primary());
 
                 // Handle (thumb)
                 let handle_x = track_rect.left() + fill_width;
                 let handle_center = pos2(handle_x, track_rect.center().y);
-                let handle_radius = self.height / 2.0;
+
+                // Hover ring effect (like shadcn ring-4)
+                if response.hovered() || response.dragged() {
+                    let ring_color = theme.ring().gamma_multiply(0.5);
+                    painter.circle_filled(handle_center, thumb_radius + 4.0, ring_color);
+                }
 
                 // Handle shadow
                 painter.circle_filled(
                     handle_center + vec2(0.0, 1.0),
-                    handle_radius,
+                    thumb_radius,
                     Color32::from_black_alpha(40),
                 );
 
                 // Handle
-                let handle_color = if response.hovered() || response.dragged() {
+                let handle_color = if response.dragged() {
                     theme.primary()
                 } else {
                     theme.foreground()
                 };
 
-                painter.circle_filled(handle_center, handle_radius, handle_color);
+                painter.circle_filled(handle_center, thumb_radius, handle_color);
 
                 // Handle border
                 painter.circle_stroke(
                     handle_center,
-                    handle_radius,
-                    Stroke::new(2.0, theme.card()),
+                    thumb_radius,
+                    Stroke::new(1.0, theme.primary()),
                 );
             }
         });

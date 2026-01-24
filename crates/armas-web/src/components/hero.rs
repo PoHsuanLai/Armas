@@ -26,15 +26,14 @@ impl Hero {
             .id("hero_aurora")
             .show(ui);
 
-        // Draw content on top wrapped in GlassPanel
+        // Draw content on top
         ui.scope_builder(egui::UiBuilder::new().max_rect(full_rect), |ui| {
             ui.set_height(hero_height);
 
-            GlassPanel::new()
-                .blur(10.0)
-                .opacity(0.03)
+            egui::Frame::new()
+                .fill(theme.card().gamma_multiply(0.3))
                 .inner_margin(0.0)
-                .show(ui, &theme, |ui| {
+                .show(ui, |ui| {
                     ui.set_height(hero_height);
                     ui.set_width(ui.available_width());
 

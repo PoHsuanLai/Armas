@@ -5,10 +5,9 @@
 use crate::{
     ADSREnvelope, Fader, Knob, PlaybackParams, WaveformConfig, WaveformDisplay,
 };
-use armas::components::cards::GlassPanel;
 use armas::ext::ArmasContextExt;
 use armas::theme::Theme;
-use egui::{Color32, Ui, Vec2};
+use egui::{Color32, CornerRadius, Stroke, Ui, Vec2};
 
 // Knob size constants matching Studio One
 const KNOB_BIG: f32 = 48.0;
@@ -101,12 +100,13 @@ impl<'a, T> SampleZone<'a, T> {
 
         ui.spacing_mut().item_spacing.y = self.theme.spacing.sm;
 
-        // Main container with glassmorphic styling
-        GlassPanel::new()
-            .opacity(0.6)
-            .glow_intensity(0.4)
-            .corner_radius(16.0)
-            .show(ui, &theme, |ui| {
+        // Main container
+        egui::Frame::new()
+            .fill(theme.card().gamma_multiply(0.6))
+            .stroke(Stroke::new(1.0, theme.border()))
+            .corner_radius(CornerRadius::same(16))
+            .inner_margin(theme.spacing.md)
+            .show(ui, |ui| {
                 ui.spacing_mut().item_spacing.y = self.theme.spacing.sm;
 
                 // Zone title
@@ -156,12 +156,13 @@ impl<'a, T> SampleZone<'a, T> {
                 let waveform_width = card1_width + card2_width + card3_width + card4_width + card5_width + 4.0 * card_spacing;
                 let waveform_height = self.waveform_size.y / 2.0; // Half height since we're stacking vertically
 
-                // Display stereo waveforms vertically stacked in a card
-                GlassPanel::new()
-                    .opacity(0.5)
-                    .glow_intensity(0.2)
+                // Display stereo waveforms vertically stacked
+                egui::Frame::new()
+                    .fill(theme.card().gamma_multiply(0.5))
+                    .stroke(Stroke::new(1.0, theme.border()))
+                    .corner_radius(CornerRadius::same(8))
                     .inner_margin(theme.spacing.sm)
-                    .show(ui, &theme, |ui| {
+                    .show(ui, |ui| {
                         ui.vertical(|ui| {
                             ui.spacing_mut().item_spacing.y = self.theme.spacing.xs;
 
@@ -310,14 +311,14 @@ fn draw_pitch_card(
 ) {
     let mut dummy_val = 0.5;
 
-    GlassPanel::new()
-        .title("PITCH")
-        .opacity(0.5)
-        .glow_intensity(0.3)
+    egui::Frame::new()
+        .fill(theme.card().gamma_multiply(0.5))
+        .stroke(Stroke::new(1.0, theme.border()))
+        .corner_radius(CornerRadius::same(8))
         .inner_margin(theme.spacing.sm)
-        .width(CARD_WIDTH)
-        .height(CARD_HEIGHT)
-        .show(ui, theme, |ui| {
+        .show(ui, |ui| {
+            ui.set_min_size(egui::vec2(CARD_WIDTH, CARD_HEIGHT));
+            ui.label(egui::RichText::new("PITCH").size(12.0).strong());
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = theme.spacing.md;
 
@@ -385,14 +386,14 @@ fn draw_filter_card(
 ) {
     let mut dummy_val = 0.5;
 
-    GlassPanel::new()
-        .title("FILTER")
-        .opacity(0.5)
-        .glow_intensity(0.3)
+    egui::Frame::new()
+        .fill(theme.card().gamma_multiply(0.5))
+        .stroke(Stroke::new(1.0, theme.border()))
+        .corner_radius(CornerRadius::same(8))
         .inner_margin(theme.spacing.sm)
-        .width(CARD_WIDTH)
-        .height(CARD_HEIGHT)
-        .show(ui, theme, |ui| {
+        .show(ui, |ui| {
+            ui.set_min_size(egui::vec2(CARD_WIDTH, CARD_HEIGHT));
+            ui.label(egui::RichText::new("FILTER").size(12.0).strong());
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = theme.spacing.md;
 
@@ -474,14 +475,14 @@ fn draw_amp_card(
 ) {
     let mut dummy_val = 0.5;
 
-    GlassPanel::new()
-        .title("AMP")
-        .opacity(0.5)
-        .glow_intensity(0.3)
+    egui::Frame::new()
+        .fill(theme.card().gamma_multiply(0.5))
+        .stroke(Stroke::new(1.0, theme.border()))
+        .corner_radius(CornerRadius::same(8))
         .inner_margin(theme.spacing.sm)
-        .width(CARD_WIDTH)
-        .height(CARD_HEIGHT)
-        .show(ui, theme, |ui| {
+        .show(ui, |ui| {
+            ui.set_min_size(egui::vec2(CARD_WIDTH, CARD_HEIGHT));
+            ui.label(egui::RichText::new("AMP").size(12.0).strong());
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = theme.spacing.md;
 
@@ -549,14 +550,14 @@ fn draw_lfo_card(
 ) {
     let mut dummy_val = 0.5;
 
-    GlassPanel::new()
-        .title("LFO")
-        .opacity(0.5)
-        .glow_intensity(0.3)
+    egui::Frame::new()
+        .fill(theme.card().gamma_multiply(0.5))
+        .stroke(Stroke::new(1.0, theme.border()))
+        .corner_radius(CornerRadius::same(8))
         .inner_margin(theme.spacing.sm)
-        .width(CARD_WIDTH)
-        .height(CARD_HEIGHT)
-        .show(ui, theme, |ui| {
+        .show(ui, |ui| {
+            ui.set_min_size(egui::vec2(CARD_WIDTH, CARD_HEIGHT));
+            ui.label(egui::RichText::new("LFO").size(12.0).strong());
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = theme.spacing.md;
 

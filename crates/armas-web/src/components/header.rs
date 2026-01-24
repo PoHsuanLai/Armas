@@ -14,15 +14,20 @@ impl Header {
         let theme = ui.ctx().armas_theme();
         let mut hamburger_clicked = false;
 
-        GlassPanel::new()
-            .blur(10.0)
-            .opacity(0.05)
-            .inner_margin(0.0)
-            .show(ui, &theme, |ui| {
-                let total_height = showcase_sizes::HEADER_HEIGHT;
-                ui.set_height(total_height);
+        // Get the full available width before creating the frame
+        let available_width = ui.available_width();
 
-                let full_rect = ui.available_rect_before_wrap();
+        egui::Frame::new()
+            .fill(theme.card().gamma_multiply(0.5))
+            .inner_margin(0.0)
+            .show(ui, |ui| {
+                let total_height = showcase_sizes::HEADER_HEIGHT;
+                ui.set_min_size(egui::vec2(available_width, total_height));
+
+                let full_rect = egui::Rect::from_min_size(
+                    ui.cursor().min,
+                    egui::vec2(available_width, total_height),
+                );
                 let screen_width = full_rect.width();
 
                 // Determine layout based on screen width
@@ -89,25 +94,25 @@ impl Header {
                     });
                 });
 
-                // Right side: Responsive content
-                let right_side_width = if is_mobile {
-                    150.0 // Mobile: Smaller search + hamburger
-                } else if is_tablet {
-                    400.0 // Tablet: Full header with smaller search
+                // Right side: Fixed width area anchored to right edge
+                let right_content_width = if is_mobile || is_tablet {
+                    200.0 // Search (100) + spacing (8) + hamburger (~40) + padding (24+24)
                 } else {
-                    500.0 // Desktop: Full header with larger search
+                    500.0 // Components + GitHub + Search + spacing + padding
                 };
 
                 let right_rect = egui::Rect::from_min_size(
-                    egui::pos2(full_rect.max.x - right_side_width, full_rect.min.y),
-                    egui::vec2(right_side_width, total_height),
+                    egui::pos2(full_rect.max.x - right_content_width, full_rect.min.y),
+                    egui::vec2(right_content_width, total_height),
                 );
 
                 let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(right_rect), |ui| {
                     ui.set_height(total_height);
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                        // Mobile & Tablet: Small search + hamburger
+                        // Mobile & Tablet: Search + hamburger
                         if is_mobile || is_tablet {
+                            ui.add_space(24.0);
+
                             Input::new("Search...")
                                 .left_icon("🔍")
                                 .width(100.0)
@@ -126,10 +131,8 @@ impl Header {
                                 *sidebar_open = !*sidebar_open;
                                 hamburger_clicked = true;
                             }
-
-                            ui.add_space(32.0); // Match content panel's right padding
                         }
-                        // Desktop: Full header (Components + GitHub + Search)
+                        // Desktop: Components + GitHub + Search
                         else {
                             if Button::new("Components")
                                 .variant(ButtonVariant::Text)
@@ -161,20 +164,13 @@ impl Header {
 
                             ui.add_space(16.0);
 
-                            // Tablet: Smaller search box, Desktop: Larger search box
-                            let search_width = if is_tablet {
-                                showcase_sizes::SEARCH_WIDTH_MIN
-                            } else {
-                                showcase_sizes::SEARCH_WIDTH_MAX
-                            };
-
                             Input::new("Search...")
                                 .left_icon("🔍")
-                                .width(search_width)
+                                .width(showcase_sizes::SEARCH_WIDTH_MAX)
                                 .variant(InputVariant::Filled)
                                 .show(ui, search_text);
 
-                            ui.add_space(32.0); // Match content panel's right padding
+                            ui.add_space(24.0);
                         }
                     });
                 });

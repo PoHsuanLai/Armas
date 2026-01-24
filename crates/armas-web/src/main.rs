@@ -62,10 +62,6 @@ mod showcase_sizes {
     pub const SEARCH_WIDTH_MIN: f32 = 150.0;
     #[allow(dead_code)]
     pub const SEARCH_WIDTH_MAX: f32 = 250.0;
-    /// Glass panel blur amount
-    pub const GLASS_BLUR: f32 = 10.0;
-    /// Glass panel opacity
-    pub const GLASS_OPACITY: f32 = 0.03;
     /// Content vertical spacing
     #[allow(dead_code)]
     pub const CONTENT_SPACING_TOP: f32 = 32.0;
@@ -450,17 +446,16 @@ impl ShowcaseApp {
             None
         };
 
-        // Wrap sidebar in GlassPanel with independent scrolling
-        GlassPanel::new()
-            .blur(showcase_sizes::GLASS_BLUR)
-            .opacity(showcase_sizes::GLASS_OPACITY)
+        // Wrap sidebar in frame with independent scrolling
+        egui::Frame::new()
+            .fill(theme.card().gamma_multiply(0.5))
             .inner_margin(8.0)
-            .show(ui, &theme, |ui| {
+            .show(ui, |ui| {
                 egui::ScrollArea::vertical()
                     .id_salt("sidebar_scroll")
                     .show(ui, |ui| {
                         let response = armas::Sidebar::new()
-                            .collapsible(false)
+                            .collapsible(armas::CollapsibleMode::None)
                             .show_icons(false)
                             .show(ui, |sidebar| {
                                 // Build sidebar content with nested sections
@@ -585,11 +580,10 @@ impl ShowcaseApp {
     fn show_content(&mut self, ui: &mut egui::Ui) {
         let theme = self.app_theme.theme().clone();
 
-        GlassPanel::new()
-            .blur(showcase_sizes::GLASS_BLUR)
-            .opacity(showcase_sizes::GLASS_OPACITY)
+        egui::Frame::new()
+            .fill(theme.card().gamma_multiply(0.5))
             .inner_margin(0.0)
-            .show(ui, &theme, |ui| {
+            .show(ui, |ui| {
                 // Responsive outer padding
                 let screen_width = ui.ctx().viewport_rect().width();
                 let outer_padding = if screen_width < layout::MOBILE_BREAKPOINT {

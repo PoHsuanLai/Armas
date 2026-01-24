@@ -126,6 +126,18 @@ impl RangeSlider {
             .unwrap_or_else(|| ui.make_persistent_id("range_slider"));
         let drag_state_id = slider_id.with("drag_state");
 
+        // Load state from memory if ID is set (for demos where values reset each frame)
+        if let Some(id) = self.id {
+            let min_state_id = id.with("min_value");
+            let max_state_id = id.with("max_value");
+            *min_value = ui
+                .ctx()
+                .data_mut(|d| d.get_temp(min_state_id).unwrap_or(*min_value));
+            *max_value = ui
+                .ctx()
+                .data_mut(|d| d.get_temp(max_state_id).unwrap_or(*max_value));
+        }
+
         // Clamp and ensure min <= max
         self.clamp_values(min_value, max_value);
 
@@ -139,8 +151,10 @@ impl RangeSlider {
             let (rect, response) =
                 ui.allocate_exact_size(vec2(self.width, self.height), Sense::click_and_drag());
 
-            let track_rect = Rect::from_center_size(rect.center(), vec2(rect.width(), 4.0));
-            let handle_radius = self.height / 2.0;
+            // Track and thumb sizes (matching shadcn: h-1.5 track, size-4 thumb)
+            let track_height = 6.0;
+            let thumb_radius = 8.0;
+            let track_rect = Rect::from_center_size(rect.center(), vec2(rect.width(), track_height));
 
             // Calculate thumb positions
             let min_x = self.value_to_x(*min_value, &track_rect);
@@ -152,7 +166,7 @@ impl RangeSlider {
                 &response,
                 drag_state_id,
                 &track_rect,
-                handle_radius,
+                thumb_radius,
                 min_x,
                 max_x,
                 min_value,
@@ -160,18 +174,49 @@ impl RangeSlider {
                 &mut changed,
             );
 
+            // Determine which thumb is hovered (for per-thumb hover effect)
+            let hovered_thumb = if response.hovered() {
+                if let Some(pos) = response.hover_pos() {
+                    let dist_to_min = (pos.x - min_x).abs();
+                    let dist_to_max = (pos.x - max_x).abs();
+                    if dist_to_min <= thumb_radius {
+                        Some(DragTarget::Min)
+                    } else if dist_to_max <= thumb_radius {
+                        Some(DragTarget::Max)
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+
             // Draw the slider
             self.draw(
                 ui,
                 &response,
                 &track_rect,
-                handle_radius,
+                track_height,
+                thumb_radius,
                 min_x,
                 max_x,
                 &drag_state,
+                hovered_thumb,
                 &theme,
             );
         });
+
+        // Save state to memory if ID is set
+        if let Some(id) = self.id {
+            let min_state_id = id.with("min_value");
+            let max_state_id = id.with("max_value");
+            ui.ctx().data_mut(|d| {
+                d.insert_temp(min_state_id, *min_value);
+                d.insert_temp(max_state_id, *max_value);
+            });
+        }
 
         RangeSliderResponse {
             min_value: *min_value,
@@ -332,10 +377,12 @@ impl RangeSlider {
         max_value: &mut f32,
         changed: &mut bool,
     ) {
+        let raw_value = self.x_to_value(pos_x, track_rect);
+
         match drag_state.target {
             DragTarget::Min => {
                 let new_value = self
-                    .apply_step(self.x_to_value(pos_x, track_rect))
+                    .apply_step(raw_value)
                     .clamp(self.range_min, *max_value - self.min_gap);
 
                 if (new_value - *min_value).abs() > 0.001 {
@@ -345,7 +392,7 @@ impl RangeSlider {
             }
             DragTarget::Max => {
                 let new_value = self
-                    .apply_step(self.x_to_value(pos_x, track_rect))
+                    .apply_step(raw_value)
                     .clamp(*min_value + self.min_gap, self.range_max);
 
                 if (new_value - *max_value).abs() > 0.001 {
@@ -391,49 +438,60 @@ impl RangeSlider {
         ui: &Ui,
         response: &Response,
         track_rect: &Rect,
-        handle_radius: f32,
+        track_height: f32,
+        thumb_radius: f32,
         min_x: f32,
         max_x: f32,
         drag_state: &RangeSliderDragState,
+        hovered_thumb: Option<DragTarget>,
         theme: &crate::Theme,
     ) {
         let painter = ui.painter();
 
         // Background track
-        painter.rect_filled(*track_rect, 2.0, theme.muted());
+        painter.rect_filled(*track_rect, track_height / 2.0, theme.muted());
 
         // Filled region between thumbs
         let fill_rect = Rect::from_min_max(
             pos2(min_x, track_rect.top()),
             pos2(max_x, track_rect.bottom()),
         );
-        painter.rect_filled(fill_rect, 2.0, theme.primary());
+        painter.rect_filled(fill_rect, track_height / 2.0, theme.primary());
 
         // Draw thumbs
         for (x, is_min) in [(min_x, true), (max_x, false)] {
             let center = pos2(x, track_rect.center().y);
+            let this_target = if is_min { DragTarget::Min } else { DragTarget::Max };
+
+            // Determine if this thumb is active (being dragged)
+            let is_active = response.dragged()
+                && (drag_state.target == this_target || drag_state.target == DragTarget::Both);
+
+            // Determine if this specific thumb is hovered
+            let is_hovered = hovered_thumb == Some(this_target);
+
+            // Hover ring effect (like shadcn ring-4 with ring-ring/50)
+            if is_active || is_hovered {
+                let ring_color = theme.ring().gamma_multiply(0.5);
+                painter.circle_filled(center, thumb_radius + 4.0, ring_color);
+            }
 
             // Shadow
             painter.circle_filled(
                 center + vec2(0.0, 1.0),
-                handle_radius,
+                thumb_radius,
                 Color32::from_black_alpha(40),
             );
 
-            // Determine if this thumb is active
-            let is_active = response.dragged()
-                && ((is_min && drag_state.target == DragTarget::Min)
-                    || (!is_min && drag_state.target == DragTarget::Max)
-                    || drag_state.target == DragTarget::Both);
-
-            let handle_color = if is_active || response.hovered() {
+            // Handle fill
+            let handle_color = if is_active {
                 theme.primary()
             } else {
                 theme.foreground()
             };
 
-            painter.circle_filled(center, handle_radius, handle_color);
-            painter.circle_stroke(center, handle_radius, Stroke::new(2.0, theme.card()));
+            painter.circle_filled(center, thumb_radius, handle_color);
+            painter.circle_stroke(center, thumb_radius, Stroke::new(1.0, theme.primary()));
         }
     }
 }

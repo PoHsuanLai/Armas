@@ -37,11 +37,10 @@ impl VariantCard {
         content: impl FnOnce(&mut egui::Ui) -> R,
     ) -> (egui::Response, R) {
         let theme = ui.ctx().armas_theme();
-        let card_result = GlassPanel::new()
-            .blur(10.0)
-            .opacity(0.05)
-            .corner_radius(12.0)
-            .show(ui, &theme, |ui| {
+        let card_result = egui::Frame::new()
+            .fill(theme.card().gamma_multiply(0.5))
+            .corner_radius(egui::CornerRadius::same(12))
+            .show(ui, |ui| {
                 ui.set_min_height(self.min_height);
 
                 // Manual vertical layout with spacing to preserve inner R

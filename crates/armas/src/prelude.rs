@@ -25,12 +25,14 @@ pub use crate::layout::{AspectRatio, ContentMode, Table, TableStyle};
 
 // Common component enums
 pub use crate::components::{
-    AlertVariant, BadgeVariant, ButtonVariant, DrawerSize, InputState, InputVariant, ModalSize,
+    AlertVariant, BadgeVariant, ButtonVariant, DialogSize, DrawerSize, InputState, InputVariant,
     PopoverPosition, ToastVariant, ToggleSize, ToggleVariant, TooltipPosition,
 };
 
 // Essential interactive components
-pub use crate::components::{Badge, Button, Input, Select, Slider, RangeSlider, ThreeValueSlider, Textarea, Toggle};
+pub use crate::components::{
+    Badge, Button, Input, RangeSlider, Select, Slider, Textarea, ThreeValueSlider, Toggle,
+};
 
 // Display components
 pub use crate::components::{
@@ -42,13 +44,10 @@ pub use crate::components::{
 pub use crate::components::{Breadcrumbs, Menu, Pagination};
 
 // Card components
-pub use crate::components::{Card, GlassPanel, GradientCard};
+pub use crate::components::{Card, GradientCard};
 
 // Overlay components
-pub use crate::components::{Drawer, HoverCard, Modal, Popover, Tooltip};
-
-// DAW-specific components (basic ones - use armas-audio for full audio widget set)
-pub use crate::components::{RoutingButton, SectionHeader};
+pub use crate::components::{Dialog, DialogResponse, Drawer, HoverCard, Popover, Tooltip};
 
 // Grouping components
 pub use crate::components::{Accordion, Stepper};
