@@ -1,7 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/armas", "crates/armas-showcase-macros",
+    "crates/armas",
+    "crates/armas-animated",
+    "crates/armas-audio",
+    "crates/armas-icon",
+    "crates/armas-showcase-macros",
     "crates/armas-web",
 ]
 
@@ -17,6 +21,29 @@ egui = "0.33"
 eframe = "0.33"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+[workspace.lints.clippy]
+# Pedantic lints for high code quality
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+
+# Specific lints we want to enforce
+must_use_candidate = "warn"
+missing_errors_doc = "warn"
+missing_panics_doc = "warn"
+doc_markdown = "warn"
+
+# Builder pattern conventions
+# Disallow 'with_' prefix in builder methods
+# Use simple names like .color(), .size(), not .with_color()
+module_name_repetitions = "allow"  # Allow Button::button() pattern
+similar_names = "allow"  # xs, sm, md, lg, xl are fine
+
+# Allow certain patterns common in egui
+cast_possible_truncation = "allow"  # egui uses many f32 <-> u8 conversions
+cast_sign_loss = "allow"  # Common in graphics code
+cast_precision_loss = "allow"  # f64 -> f32 is common
+float_cmp = "allow"  # egui compares floats frequently
 
 [profile.release]
 opt-level = 2

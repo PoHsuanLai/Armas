@@ -6,3 +6,10 @@ dist/
 # Downloads
 .downloads/
 .claude
+
+/aceternity-ui
+/egui
+/egui_taffy
+/JUCE
+/hero-ui
+/ui
