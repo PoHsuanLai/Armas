@@ -382,9 +382,8 @@ impl MixerStrip {
                     // Sends header as clickable outlined button (compact height, fixed width)
                     let button_width_full = scaled_width - 4.0 * scale; // Card has 2px inner margin on each side
                     let sends_response = Button::new("Sends")
-                        .variant(ButtonVariant::Outlined)
-                        .min_size(Vec2::new(button_width_full, button_height))
-                        .max_width(button_width_full)
+                        .variant(ButtonVariant::Outline)
+                        .min_width(button_width_full)
                         .show(ui);
 
                     if sends_response.clicked() {
@@ -419,9 +418,8 @@ impl MixerStrip {
 
                     // Input routing (compact height, fixed width)
                     if Button::new(&self.input_route.name)
-                        .variant(ButtonVariant::Outlined)
-                        .min_size(Vec2::new(button_width_full, button_height))
-                        .max_width(button_width_full)
+                        .variant(ButtonVariant::Outline)
+                        .min_width(button_width_full)
                         .show(ui)
                         .clicked()
                     {
@@ -433,9 +431,8 @@ impl MixerStrip {
 
                     // Output routing (compact height, fixed width)
                     if Button::new(&self.output_route.name)
-                        .variant(ButtonVariant::Outlined)
-                        .min_size(Vec2::new(button_width_full, button_height))
-                        .max_width(button_width_full)
+                        .variant(ButtonVariant::Outline)
+                        .min_width(button_width_full)
                         .show(ui)
                         .clicked()
                     {
@@ -514,9 +511,8 @@ impl MixerStrip {
                         ui.spacing_mut().item_spacing.x = 0.0;
 
                         if Button::new("M")
-                            .variant(ButtonVariant::Outlined)
-                            .min_size(Vec2::new(button_width_grid, button_height))
-                            .max_width(button_width_grid)
+                            .variant(ButtonVariant::Outline)
+                            .min_width(button_width_grid)
                             .show(ui)
                             .clicked()
                         {
@@ -526,9 +522,8 @@ impl MixerStrip {
                         ui.add_space(theme.spacing.xs * scale);
 
                         if Button::new("S")
-                            .variant(ButtonVariant::Outlined)
-                            .min_size(Vec2::new(button_width_grid, button_height))
-                            .max_width(button_width_grid)
+                            .variant(ButtonVariant::Outline)
+                            .min_width(button_width_grid)
                             .show(ui)
                             .clicked()
                         {
@@ -543,9 +538,8 @@ impl MixerStrip {
                         ui.spacing_mut().item_spacing.x = 0.0;
 
                         if Button::new("R")
-                            .variant(ButtonVariant::Outlined)
-                            .min_size(Vec2::new(button_width_grid, button_height))
-                            .max_width(button_width_grid)
+                            .variant(ButtonVariant::Outline)
+                            .min_width(button_width_grid)
                             .show(ui)
                             .clicked()
                         {
@@ -555,9 +549,8 @@ impl MixerStrip {
                         ui.add_space(theme.spacing.xs * scale);
 
                         if Button::new("I")
-                            .variant(ButtonVariant::Outlined)
-                            .min_size(Vec2::new(button_width_grid, button_height))
-                            .max_width(button_width_grid)
+                            .variant(ButtonVariant::Outline)
+                            .min_width(button_width_grid)
                             .show(ui)
                             .clicked()
                         {

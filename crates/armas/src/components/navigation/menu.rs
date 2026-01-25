@@ -14,6 +14,7 @@
 //! - Label: px-2 py-1.5 text-sm font-medium
 
 use crate::components::basic::Kbd;
+use crate::icon::{render_icon, WindowIcon};
 use crate::{Popover, PopoverPosition, PopoverStyle};
 use egui::{vec2, Color32, Id, Key, Rect, Sense, Ui};
 use std::collections::HashSet;
@@ -312,8 +313,7 @@ impl Menu {
             popover: Popover::new(id.with("popover"))
                 .position(PopoverPosition::Bottom)
                 .style(PopoverStyle::Default) // shadcn: rounded-md border shadow-md
-                .padding(4.0) // p-1 = 4px (shadcn)
-                .show_arrow(false),
+                .padding(4.0), // p-1 = 4px (shadcn)
             is_open: None,
             width: 200.0,
         }
@@ -788,13 +788,11 @@ fn render_submenu(
     );
 
     // Chevron (right arrow)
-    ui.painter().text(
+    let chevron_rect = Rect::from_center_size(
         egui::pos2(rect.right() - ITEM_PADDING_X - CHEVRON_SIZE / 2.0, rect.center().y),
-        egui::Align2::CENTER_CENTER,
-        "›",
-        egui::FontId::proportional(CHEVRON_SIZE),
-        icon_color,
+        vec2(CHEVRON_SIZE, CHEVRON_SIZE),
     );
+    render_icon(ui.painter(), chevron_rect, WindowIcon::ChevronRight.data(), icon_color);
 
     // Always render the submenu so it can animate closed
     // Position submenu to the right of the item

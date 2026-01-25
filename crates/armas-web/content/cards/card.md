@@ -199,7 +199,7 @@ Card::new()
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = 12.0;
             Avatar::new("JD")
-                .size(AvatarSize::Large)
+                .size_preset(AvatarSize::Large)
                 .show(ui);
             ui.vertical(|ui| {
                 ui.label(egui::RichText::new("John Doe").strong());

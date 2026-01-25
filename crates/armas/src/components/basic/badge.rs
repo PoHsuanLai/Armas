@@ -1,61 +1,74 @@
+//! Badge Component
+//!
+//! Small status indicator styled like shadcn/ui Badge.
+//! Provides variants for different contexts:
+//! - Default (primary colored)
+//! - Secondary (muted)
+//! - Destructive (red)
+//! - Outline (border only)
+
 use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 
-/// Badge variant styles
+// shadcn Badge constants
+const CORNER_RADIUS: f32 = 9999.0; // rounded-full (pill shape)
+const PADDING_X: f32 = 10.0; // px-2.5
+const PADDING_Y: f32 = 2.0; // py-0.5
+const FONT_SIZE: f32 = 12.0; // text-xs
+
+/// Badge variant styles (shadcn/ui)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum BadgeVariant {
-    /// Solid fill background
-    Filled,
-    /// Outline style
-    Outlined,
-    /// Subtle background (default)
+    /// Primary background (default)
     #[default]
-    Soft,
+    Default,
+    /// Secondary/muted background
+    Secondary,
+    /// Destructive/error style
+    Destructive,
+    /// Outline only
+    Outline,
 }
 
-/// Small status indicator badge
-///
-/// Compact component for displaying status, counts, labels, or categories.
-/// Perfect for tags, notifications, and status indicators.
+// Backwards compatibility aliases
+#[allow(non_upper_case_globals)]
+impl BadgeVariant {
+    /// Alias for Default (backwards compatibility)
+    pub const Filled: BadgeVariant = BadgeVariant::Default;
+    /// Alias for Outline (backwards compatibility)
+    pub const Outlined: BadgeVariant = BadgeVariant::Outline;
+    /// Alias for Secondary (backwards compatibility)
+    pub const Soft: BadgeVariant = BadgeVariant::Secondary;
+}
+
+/// Small status indicator badge styled like shadcn/ui
 ///
 /// # Example
 ///
 /// ```rust,no_run
 /// use armas::components::{Badge, BadgeVariant};
-/// use egui::Color32;
 ///
 /// fn ui(ui: &mut egui::Ui) {
 ///     // Default badge
 ///     Badge::new("New").show(ui);
 ///
-///     // Destructive badge
-///     Badge::new("Error").destructive().show(ui);
+///     // Secondary badge
+///     Badge::new("Draft").variant(BadgeVariant::Secondary).show(ui);
 ///
-///     // Custom color
-///     Badge::new("Custom").color(Color32::from_rgb(255, 100, 50)).show(ui);
+///     // Destructive badge
+///     Badge::new("Error").variant(BadgeVariant::Destructive).show(ui);
+///
+///     // Outline badge
+///     Badge::new("Outline").variant(BadgeVariant::Outline).show(ui);
 /// }
 /// ```
 pub struct Badge {
-    /// Badge text
     text: String,
-    /// Visual variant
     variant: BadgeVariant,
-    /// Custom color (None = use theme primary)
     custom_color: Option<Color32>,
-    /// Whether this is a destructive badge
-    is_destructive: bool,
-    /// Show dot indicator
     show_dot: bool,
-    /// Custom size
-    size: f32,
-    /// Removable (shows × button)
     removable: bool,
-    /// Corner radius (None = use default pill shape)
-    corner_radius: Option<f32>,
-    /// Vertical padding (None = use default theme spacing)
-    vertical_padding: Option<f32>,
-    /// Whether the badge is selected (for interactive use)
     is_selected: bool,
 }
 
@@ -66,12 +79,8 @@ impl Badge {
             text: text.into(),
             variant: BadgeVariant::default(),
             custom_color: None,
-            is_destructive: false,
             show_dot: false,
-            size: 13.0,
             removable: false,
-            corner_radius: None,
-            vertical_padding: None,
             is_selected: false,
         }
     }
@@ -82,15 +91,15 @@ impl Badge {
         self
     }
 
-    /// Set custom color (overrides default and destructive)
+    /// Set custom color (overrides variant colors)
     pub fn color(mut self, color: Color32) -> Self {
         self.custom_color = Some(color);
         self
     }
 
-    /// Make this a destructive badge (red)
+    /// Make this a destructive badge (shorthand)
     pub fn destructive(mut self) -> Self {
-        self.is_destructive = true;
+        self.variant = BadgeVariant::Destructive;
         self
     }
 
@@ -100,9 +109,8 @@ impl Badge {
         self
     }
 
-    /// Set text size
-    pub fn size(mut self, size: f32) -> Self {
-        self.size = size;
+    /// Set text size (backwards compatibility - ignored)
+    pub fn size(self, _size: f32) -> Self {
         self
     }
 
@@ -112,15 +120,13 @@ impl Badge {
         self
     }
 
-    /// Set corner radius (overrides default pill shape)
-    pub fn corner_radius(mut self, radius: f32) -> Self {
-        self.corner_radius = Some(radius);
+    /// Set corner radius (backwards compatibility - ignored, always pill)
+    pub fn corner_radius(self, _radius: f32) -> Self {
         self
     }
 
-    /// Set vertical padding (overrides default theme spacing)
-    pub fn vertical_padding(mut self, padding: f32) -> Self {
-        self.vertical_padding = Some(padding);
+    /// Set vertical padding (backwards compatibility - ignored)
+    pub fn vertical_padding(self, _padding: f32) -> Self {
         self
     }
 
@@ -135,80 +141,71 @@ impl Badge {
         let theme = ui.ctx().armas_theme();
         let (bg_color, text_color, border_color) = self.get_colors(&theme);
 
-        // Calculate size
-        let font_id = egui::FontId::proportional(self.size);
+        // Calculate size using shadcn constants
+        let font_id = egui::FontId::proportional(FONT_SIZE);
         let text_galley =
             ui.painter()
                 .layout_no_wrap(self.text.clone(), font_id.clone(), text_color);
         let text_width = text_galley.rect.width();
 
-        let dot_space = if self.show_dot { theme.spacing.md } else { 0.0 };
-        let remove_space = if self.removable {
-            theme.spacing.lg
-        } else {
-            0.0
-        };
-        let padding = theme.spacing.md;
-        let vertical_pad = self.vertical_padding.unwrap_or(theme.spacing.md);
+        let dot_space = if self.show_dot { 12.0 } else { 0.0 };
+        let remove_space = if self.removable { 16.0 } else { 0.0 };
 
-        let width = text_width + dot_space + remove_space + padding;
-        let height = self.size + vertical_pad;
+        let width = text_width + dot_space + remove_space + PADDING_X * 2.0;
+        let height = FONT_SIZE + PADDING_Y * 2.0 + 4.0; // Extra height for better proportions
 
         // Use click sense for interactive badges
         let (rect, response) =
             ui.allocate_exact_size(Vec2::new(width, height), egui::Sense::click());
 
-        // Calculate corner radius (default to pill shape)
-        let radius = self.corner_radius.unwrap_or(height / 2.0);
-
-        // Background - always fill when selected
-        if self.is_selected {
-            ui.painter().rect_filled(rect, radius, bg_color);
-        } else {
-            match self.variant {
-                BadgeVariant::Filled => {
-                    ui.painter().rect_filled(rect, radius, bg_color);
-                }
-                BadgeVariant::Outlined => {
-                    ui.painter().rect_stroke(
-                        rect,
-                        radius,
-                        egui::Stroke::new(1.0, border_color),
-                        egui::StrokeKind::Middle,
-                    );
-                }
-                BadgeVariant::Soft => {
-                    ui.painter().rect_filled(rect, radius, bg_color);
-                }
+        // Draw background
+        match self.variant {
+            BadgeVariant::Outline => {
+                // Outline: no fill, just border
+                ui.painter().rect_stroke(
+                    rect,
+                    CORNER_RADIUS,
+                    egui::Stroke::new(1.0, border_color),
+                    egui::StrokeKind::Inside,
+                );
+            }
+            _ => {
+                // All other variants: filled background
+                ui.painter().rect_filled(rect, CORNER_RADIUS, bg_color);
             }
         }
 
-        let mut x = rect.min.x + theme.spacing.sm;
+        let mut x = rect.min.x + PADDING_X;
 
         // Dot indicator
         if self.show_dot {
-            let dot_center = Pos2::new(x + theme.spacing.xs, rect.center().y);
+            let dot_center = Pos2::new(x + 3.0, rect.center().y);
             ui.painter().circle_filled(dot_center, 3.0, text_color);
-            x += theme.spacing.md;
+            x += 12.0;
         }
 
-        // Text
-        ui.painter().text(
-            Pos2::new(x, rect.center().y),
-            egui::Align2::LEFT_CENTER,
-            &self.text,
-            font_id,
-            text_color,
-        );
+        // Text (centered)
+        let text_pos = if self.show_dot || self.removable {
+            Pos2::new(x, rect.center().y)
+        } else {
+            rect.center()
+        };
+        let text_align = if self.show_dot || self.removable {
+            egui::Align2::LEFT_CENTER
+        } else {
+            egui::Align2::CENTER_CENTER
+        };
 
-        x += text_width + theme.spacing.xs;
+        ui.painter()
+            .text(text_pos, text_align, &self.text, font_id, text_color);
 
         // Remove button
         let mut was_clicked = false;
         if self.removable {
+            x += text_width + 4.0;
             let remove_rect = egui::Rect::from_center_size(
-                Pos2::new(x + theme.spacing.sm, rect.center().y),
-                Vec2::splat(theme.spacing.md),
+                Pos2::new(x + 6.0, rect.center().y),
+                Vec2::splat(12.0),
             );
 
             let is_hovered = ui.rect_contains_pointer(remove_rect);
@@ -216,13 +213,13 @@ impl Badge {
             if is_hovered {
                 ui.painter().circle_filled(
                     remove_rect.center(),
-                    8.0,
+                    6.0,
                     text_color.gamma_multiply(0.2),
                 );
             }
 
             // Draw X
-            let cross_size = 4.0;
+            let cross_size = 3.0;
             let center = remove_rect.center();
             ui.painter().line_segment(
                 [
@@ -251,37 +248,46 @@ impl Badge {
         }
     }
 
-    /// Get colors based on variant, color, and selected state
+    /// Get colors based on variant (shadcn/ui style)
     fn get_colors(&self, theme: &Theme) -> (Color32, Color32, Color32) {
-        let base_color = if let Some(color) = self.custom_color {
-            color
-        } else if self.is_destructive {
-            theme.destructive()
-        } else {
-            theme.primary()
-        };
+        // Custom color overrides everything
+        if let Some(color) = self.custom_color {
+            return (color, theme.primary_foreground(), color);
+        }
 
-        // When selected, use filled style regardless of variant
+        // When selected, use primary filled style
         if self.is_selected {
-            return (base_color, theme.primary_foreground(), base_color);
+            return (
+                theme.primary(),
+                theme.primary_foreground(),
+                theme.primary(),
+            );
         }
 
         match self.variant {
-            BadgeVariant::Filled => {
-                let text_color = theme.primary_foreground();
-                (base_color, text_color, base_color)
-            }
-            BadgeVariant::Outlined => (Color32::TRANSPARENT, base_color, base_color),
-            BadgeVariant::Soft => {
-                let soft_bg = Color32::from_rgba_unmultiplied(
-                    base_color.r(),
-                    base_color.g(),
-                    base_color.b(),
-                    40,
-                );
-                (soft_bg, base_color, base_color)
-            }
+            BadgeVariant::Default => (
+                theme.primary(),
+                theme.primary_foreground(),
+                theme.primary(),
+            ),
+            BadgeVariant::Secondary => (
+                theme.secondary(),
+                theme.secondary_foreground(),
+                theme.secondary(),
+            ),
+            BadgeVariant::Destructive => (
+                theme.destructive(),
+                theme.destructive_foreground(),
+                theme.destructive(),
+            ),
+            BadgeVariant::Outline => (Color32::TRANSPARENT, theme.foreground(), theme.border()),
         }
+    }
+}
+
+impl Default for Badge {
+    fn default() -> Self {
+        Self::new("")
     }
 }
 

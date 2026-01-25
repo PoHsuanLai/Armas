@@ -1,10 +1,21 @@
 //! Textarea Component
 //!
-//! Multi-line text input field
+//! Multi-line text input field styled like shadcn/ui Textarea.
+//! Provides a clean, accessible textarea with support for:
+//! - Labels and descriptions
+//! - Validation states (error, success, warning)
+//! - Character count limits
+//! - Resizable option
 
 use crate::ext::ArmasContextExt;
 use crate::{InputState, InputVariant};
-use egui::{Color32, Response, TextEdit, Ui};
+use egui::{Color32, Response, Stroke, TextEdit, Ui};
+
+// shadcn Textarea constants
+const CORNER_RADIUS: f32 = 6.0; // rounded-md
+const MIN_HEIGHT: f32 = 80.0; // Minimum height
+const PADDING: f32 = 12.0; // px-3 py-2
+const FONT_SIZE: f32 = 14.0; // text-sm
 
 /// Response from the textarea
 #[derive(Debug, Clone)]
@@ -17,21 +28,19 @@ pub struct TextareaResponse {
     pub changed: bool,
 }
 
-/// Multi-line text input field
-///
-/// Uses `InputVariant` for styling. See `InputVariant` documentation for MD3 compliance notes.
-/// Prefer `Outlined` or `Filled` variants for new implementations.
+/// Multi-line text input field styled like shadcn/ui
 pub struct Textarea {
     id: Option<egui::Id>,
     variant: InputVariant,
     state: InputState,
     label: Option<String>,
+    description: Option<String>,
     placeholder: String,
-    helper_text: Option<String>,
     width: Option<f32>,
     rows: usize,
     max_chars: Option<usize>,
     resizable: bool,
+    disabled: bool,
 }
 
 impl Textarea {
@@ -39,45 +48,52 @@ impl Textarea {
     pub fn new(placeholder: impl Into<String>) -> Self {
         Self {
             id: None,
-            variant: InputVariant::Outlined,
+            variant: InputVariant::Default,
             state: InputState::Normal,
             label: None,
+            description: None,
             placeholder: placeholder.into(),
-            helper_text: None,
             width: None,
             rows: 4,
             max_chars: None,
             resizable: true,
+            disabled: false,
         }
     }
 
-    /// Set ID for state persistence (useful for demos where textarea is recreated each frame)
+    /// Set ID for state persistence
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
     }
 
-    /// Set the textarea variant
+    /// Set the textarea variant (for backwards compatibility)
     pub fn variant(mut self, variant: InputVariant) -> Self {
         self.variant = variant;
         self
     }
 
-    /// Set the input state (Normal, Success, Error, Warning)
+    /// Set the validation state
     pub fn state(mut self, state: InputState) -> Self {
         self.state = state;
         self
     }
 
-    /// Set a label
+    /// Set a label above the textarea
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
     }
 
-    /// Set helper text
+    /// Set description/helper text below the textarea
+    pub fn description(mut self, text: impl Into<String>) -> Self {
+        self.description = Some(text.into());
+        self
+    }
+
+    /// Alias for description (backwards compatibility)
     pub fn helper_text(mut self, text: impl Into<String>) -> Self {
-        self.helper_text = Some(text.into());
+        self.description = Some(text.into());
         self
     }
 
@@ -105,6 +121,12 @@ impl Textarea {
         self
     }
 
+    /// Set disabled state
+    pub fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Show the textarea
     pub fn show(self, ui: &mut Ui, text: &mut String) -> TextareaResponse {
         let theme = ui.ctx().armas_theme();
@@ -118,70 +140,104 @@ impl Textarea {
             *text = stored_text;
         }
 
+        let width = self.width.unwrap_or(300.0);
+
         let response = ui
             .vertical(|ui| {
-                ui.spacing_mut().item_spacing.y = 4.0;
-                // Label
+                ui.spacing_mut().item_spacing.y = 6.0; // gap-1.5
+
+                // Label with optional character count
                 if let Some(label) = &self.label {
                     ui.horizontal(|ui| {
-                        ui.spacing_mut().item_spacing.x = 8.0;
-                        ui.label(label);
+                        ui.label(
+                            egui::RichText::new(label)
+                                .size(14.0)
+                                .color(if self.disabled {
+                                    theme.muted_foreground()
+                                } else {
+                                    theme.foreground()
+                                }),
+                        );
 
-                        // Character count
+                        // Character count on the right
                         if let Some(max) = self.max_chars {
-                            ui.allocate_space(ui.available_size());
-
-                            let count_color = if text.len() > max {
-                                theme.destructive()
-                            } else if text.len() as f32 / max as f32 > 0.9 {
-                                theme.chart_3()
-                            } else {
-                                theme.muted_foreground()
-                            };
-
-                            ui.colored_label(count_color, format!("{}/{}", text.len(), max));
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                let count_color = if text.len() > max {
+                                    theme.destructive()
+                                } else if text.len() as f32 / max as f32 > 0.9 {
+                                    theme.chart_3()
+                                } else {
+                                    theme.muted_foreground()
+                                };
+                                ui.label(
+                                    egui::RichText::new(format!("{}/{}", text.len(), max))
+                                        .size(12.0)
+                                        .color(count_color),
+                                );
+                            });
                         }
                     });
                 }
 
-                let width = self.width.unwrap_or_else(|| ui.available_width());
-
                 // Calculate height based on rows
                 let line_height = ui.text_style_height(&egui::TextStyle::Body);
-                let min_height = line_height * self.rows as f32 + 16.0; // 16.0 for padding
+                let min_height = (line_height * self.rows as f32 + PADDING * 2.0).max(MIN_HEIGHT);
 
-                // Background and border colors based on state
-                let (bg_color, border_color) = match self.state {
-                    InputState::Normal => (theme.card(), theme.border()),
-                    InputState::Success => (theme.card(), theme.chart_2()),
-                    InputState::Error => (theme.card(), theme.destructive()),
-                    InputState::Warning => (theme.card(), theme.chart_3()),
+                // Border color based on state
+                let border_color = match self.state {
+                    InputState::Normal => theme.input(),
+                    InputState::Success => theme.chart_2(),
+                    InputState::Error => theme.destructive(),
+                    InputState::Warning => theme.chart_3(),
                 };
 
-                let (bg_color, border_color) = match self.variant {
-                    InputVariant::Default => (Color32::TRANSPARENT, Color32::TRANSPARENT),
-                    InputVariant::Outlined => (Color32::TRANSPARENT, border_color),
-                    InputVariant::Filled => (bg_color, Color32::TRANSPARENT),
-                    InputVariant::Inline => (bg_color, border_color), // Same as filled for textarea
+                // Background color
+                let bg_color = if self.disabled {
+                    theme.muted()
+                } else if self.variant == InputVariant::Filled {
+                    theme.muted()
+                } else {
+                    theme.background()
+                };
+
+                // Text color
+                let text_color = if self.disabled {
+                    theme.muted_foreground()
+                } else {
+                    theme.foreground()
                 };
 
                 // Frame for the textarea
                 let frame = egui::Frame::NONE
                     .fill(bg_color)
-                    .stroke(egui::Stroke::new(1.0, border_color))
-                    .corner_radius(4.0)
-                    .inner_margin(8.0);
+                    .stroke(Stroke::new(1.0, border_color))
+                    .corner_radius(CORNER_RADIUS)
+                    .inner_margin(PADDING);
 
                 let response = frame.show(ui, |ui| {
-                    ui.set_width(width - 16.0);
-                    ui.set_min_height(min_height);
+                    ui.set_width(width - PADDING * 2.0);
+                    ui.set_min_height(min_height - PADDING * 2.0);
+
+                    // Style the text edit
+                    ui.style_mut().visuals.widgets.inactive.bg_fill = Color32::TRANSPARENT;
+                    ui.style_mut().visuals.widgets.hovered.bg_fill = Color32::TRANSPARENT;
+                    ui.style_mut().visuals.widgets.active.bg_fill = Color32::TRANSPARENT;
+                    ui.style_mut().visuals.widgets.inactive.bg_stroke = Stroke::NONE;
+                    ui.style_mut().visuals.widgets.hovered.bg_stroke = Stroke::NONE;
+                    ui.style_mut().visuals.widgets.active.bg_stroke = Stroke::NONE;
+                    ui.style_mut().visuals.override_text_color = Some(text_color);
+                    ui.style_mut().text_styles.insert(
+                        egui::TextStyle::Body,
+                        egui::FontId::proportional(FONT_SIZE),
+                    );
 
                     let mut text_edit = TextEdit::multiline(text)
                         .hint_text(&self.placeholder)
-                        .desired_width(width - 32.0)
-                        .desired_rows(self.rows);
+                        .desired_width(width - PADDING * 4.0)
+                        .desired_rows(self.rows)
+                        .frame(false)
+                        .interactive(!self.disabled);
 
-                    // Only allow resize if enabled
                     if !self.resizable {
                         text_edit = text_edit.desired_rows(self.rows);
                     }
@@ -198,16 +254,15 @@ impl Textarea {
                     response
                 });
 
-                // Helper text
-                if let Some(helper) = &self.helper_text {
-                    ui.add_space(4.0);
-                    let color = match self.state {
+                // Description/helper text
+                if let Some(desc) = &self.description {
+                    let desc_color = match self.state {
                         InputState::Normal => theme.muted_foreground(),
                         InputState::Success => theme.chart_2(),
                         InputState::Error => theme.destructive(),
                         InputState::Warning => theme.chart_3(),
                     };
-                    ui.colored_label(color, helper);
+                    ui.label(egui::RichText::new(desc).size(12.0).color(desc_color));
                 }
 
                 response.inner
@@ -230,5 +285,11 @@ impl Textarea {
             text: text_clone,
             changed,
         }
+    }
+}
+
+impl Default for Textarea {
+    fn default() -> Self {
+        Self::new("")
     }
 }

@@ -365,14 +365,14 @@ impl TrackHeader {
 
                                 // Mute button
                                 let mute_variant = if controls.muted {
-                                    ButtonVariant::Filled
+                                    ButtonVariant::Default
                                 } else {
-                                    ButtonVariant::Outlined
+                                    ButtonVariant::Outline
                                 };
 
                                 if Button::new("M")
                                     .variant(mute_variant)
-                                    .min_size(Vec2::splat(button_size))
+                                    .min_width(button_size)
                                     .show(ui)
                                     .clicked()
                                 {
@@ -382,14 +382,14 @@ impl TrackHeader {
 
                                 // Solo button
                                 let solo_variant = if controls.soloed {
-                                    ButtonVariant::Filled
+                                    ButtonVariant::Default
                                 } else {
-                                    ButtonVariant::Outlined
+                                    ButtonVariant::Outline
                                 };
 
                                 if Button::new("S")
                                     .variant(solo_variant)
-                                    .min_size(Vec2::splat(button_size))
+                                    .min_width(button_size)
                                     .show(ui)
                                     .clicked()
                                 {
@@ -399,14 +399,14 @@ impl TrackHeader {
 
                                 // Record arm button
                                 let arm_variant = if controls.armed {
-                                    ButtonVariant::Filled
+                                    ButtonVariant::Default
                                 } else {
-                                    ButtonVariant::Outlined
+                                    ButtonVariant::Outline
                                 };
 
                                 if Button::new("R")
                                     .variant(arm_variant)
-                                    .min_size(Vec2::splat(button_size))
+                                    .min_width(button_size)
                                     .show(ui)
                                     .clicked()
                                 {

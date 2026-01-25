@@ -1,65 +1,47 @@
 # Avatar
 
-Display user profile images with initials or icons.
+User profile images with initials, styled like shadcn/ui Avatar.
 
 ## Basic Usage
 
 ```demo
-Avatar::new("JD").show(ui);
-ui.add_space(8.0);
-Avatar::new("AB").show(ui);
-ui.add_space(8.0);
-Avatar::new("XY").show(ui);
+ui.horizontal(|ui| {
+    Avatar::new("JD").show(ui);
+    ui.add_space(8.0);
+    Avatar::new("AB").show(ui);
+    ui.add_space(8.0);
+    Avatar::new("XY").show(ui);
+});
 ```
 
 ## Sizes
 
-### Extra Small
+### Using Presets
 
 ```demo
-Avatar::new("XS")
-    .size(AvatarSize::XSmall)
-    .show(ui);
-```
-
-### Small
-
-```demo
-Avatar::new("SM")
-    .size(AvatarSize::Small)
-    .show(ui);
-```
-
-### Medium (Default)
-
-```demo
-Avatar::new("MD")
-    .size(AvatarSize::Medium)
-    .show(ui);
-```
-
-### Large
-
-```demo
-Avatar::new("LG")
-    .size(AvatarSize::Large)
-    .show(ui);
-```
-
-### Extra Large
-
-```demo
-Avatar::new("XL")
-    .size(AvatarSize::XLarge)
-    .show(ui);
+ui.horizontal(|ui| {
+    Avatar::new("XS").size_preset(AvatarSize::XSmall).show(ui);
+    ui.add_space(8.0);
+    Avatar::new("SM").size_preset(AvatarSize::Small).show(ui);
+    ui.add_space(8.0);
+    Avatar::new("MD").size_preset(AvatarSize::Medium).show(ui);
+    ui.add_space(8.0);
+    Avatar::new("LG").size_preset(AvatarSize::Large).show(ui);
+    ui.add_space(8.0);
+    Avatar::new("XL").size_preset(AvatarSize::XLarge).show(ui);
+});
 ```
 
 ### Custom Size
 
 ```demo
-Avatar::new("128")
-    .size(AvatarSize::Custom(128.0))
-    .show(ui);
+ui.horizontal(|ui| {
+    Avatar::new("20").size(20.0).show(ui);
+    ui.add_space(8.0);
+    Avatar::new("40").size(40.0).show(ui);
+    ui.add_space(8.0);
+    Avatar::new("60").size(60.0).show(ui);
+});
 ```
 
 ## Shapes
@@ -67,103 +49,36 @@ Avatar::new("128")
 ### Circle (Default)
 
 ```demo
-Avatar::new("CR")
-    .shape(AvatarShape::Circle)
-    .show(ui);
+Avatar::new("CR").show(ui);
 ```
 
 ### Rounded Square
 
 ```demo
-Avatar::new("RS")
-    .shape(AvatarShape::RoundedSquare)
-    .show(ui);
+Avatar::new("RS").shape(AvatarShape::Rounded).show(ui);
 ```
 
-### Square
+## Full Name Initials
+
+Pass a full name to automatically extract initials:
 
 ```demo
-Avatar::new("SQ")
-    .shape(AvatarShape::Square)
-    .show(ui);
-```
-
-## Custom Colors
-
-```demo
-let theme = ui.ctx().armas_theme();
-Avatar::new("AM")
-    .color(theme.primary())
-    .show(ui);
-ui.add_space(8.0);
-Avatar::new("JD")
-    .color(theme.chart_2())
-    .show(ui);
-ui.add_space(8.0);
-Avatar::new("KL")
-    .color(theme.destructive())
-    .show(ui);
-```
-
-## With Border
-
-```demo
-Avatar::new("BD")
-    .border(true)
-    .show(ui);
-```
-
-## With Status Badge
-
-### Online (Success)
-
-```demo
-Avatar::new("ON")
-    .status(theme.chart_2())
-    .show(ui);
-```
-
-### Busy (Warning)
-
-```demo
-Avatar::new("BY")
-    .status(theme.chart_3())
-    .show(ui);
-```
-
-### Offline (Neutral)
-
-```demo
-Avatar::new("OF")
-    .status(theme.muted_foreground())
-    .show(ui);
-```
-
-## Clickable
-
-```demo
-let response = Avatar::new("CL")
-    .clickable()
-    .show(ui);
-
-if response.clicked() {
-    // Handle click
-}
+ui.horizontal(|ui| {
+    Avatar::new("John Doe").show(ui);
+    ui.add_space(8.0);
+    Avatar::new("Alice Marie Smith").show(ui);
+    ui.add_space(8.0);
+    Avatar::new("Bob").show(ui);
+});
 ```
 
 ## Avatar Group
 
 ```demo
 ui.horizontal(|ui| {
-    Avatar::new("A1")
-        .size(AvatarSize::Small)
-        .show(ui);
-    Avatar::new("A2")
-        .size(AvatarSize::Small)
-        .show(ui);
-    Avatar::new("A3")
-        .size(AvatarSize::Small)
-        .show(ui);
+    Avatar::new("A").show(ui);
+    Avatar::new("B").show(ui);
+    Avatar::new("C").show(ui);
     ui.label("+5");
 });
 ```
@@ -174,83 +89,94 @@ ui.horizontal(|ui| {
 
 ```demo
 ui.horizontal(|ui| {
-    Avatar::new("JD")
-        .size(AvatarSize::Large)
-        .status(theme.chart_2())
+    Avatar::new("John Doe")
+        .size_preset(AvatarSize::Large)
         .show(ui);
-
+    ui.add_space(12.0);
     ui.vertical(|ui| {
         ui.label("John Doe");
-        ui.label("Online");
+        ui.label("john@example.com");
     });
 });
 ```
 
-### Team Members
+### Comment Thread
 
 ```demo
-ui.horizontal(|ui| {
-    let theme = ui.ctx().armas_theme();
-
-    Avatar::new("AM")
-        .color(theme.primary())
-        .border(true)
-        .show(ui);
+ui.vertical(|ui| {
+    ui.horizontal(|ui| {
+        Avatar::new("AM").size_preset(AvatarSize::Small).show(ui);
+        ui.add_space(8.0);
+        ui.vertical(|ui| {
+            ui.label("Alice Miller");
+            ui.label("Great work on this feature!");
+        });
+    });
     ui.add_space(8.0);
-
-    Avatar::new("BK")
-        .color(theme.chart_2())
-        .border(true)
-        .show(ui);
-    ui.add_space(8.0);
-
-    Avatar::new("CL")
-        .color(theme.chart_4())
-        .border(true)
-        .show(ui);
-});
-```
-
-### Different Initials Lengths
-
-```demo
-ui.horizontal(|ui| {
-    Avatar::new("A").show(ui);
-    ui.add_space(8.0);
-    Avatar::new("AB").show(ui);
-    ui.add_space(8.0);
-    Avatar::new("ABC").show(ui);
+    ui.horizontal(|ui| {
+        Avatar::new("BK").size_preset(AvatarSize::Small).show(ui);
+        ui.add_space(8.0);
+        ui.vertical(|ui| {
+            ui.label("Bob King");
+            ui.label("Thanks for the review!");
+        });
+    });
 });
 ```
 
 ## API Reference
 
+### AvatarSize Enum
+
+```rust
+pub enum AvatarSize {
+    XSmall,      // 24px
+    Small,       // 32px (default)
+    Medium,      // 40px
+    Large,       // 48px
+    XLarge,      // 64px
+    Custom(f32), // Custom size
+}
+```
+
+### AvatarShape Enum
+
+```rust
+pub enum AvatarShape {
+    Circle,  // Circular (default)
+    Rounded, // Rounded square
+}
+```
+
+### Avatar
+
+#### Constructor
+
+```rust
+Avatar::new(text: impl Into<String>) -> Self
+```
+
+#### Builder Methods
+
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
-| `.size()` | `AvatarSize` | `Medium` | Avatar size preset |
+| `.size()` | `f32` | `32.0` | Avatar size in pixels |
+| `.size_preset()` | `AvatarSize` | `Small` | Use size preset |
 | `.shape()` | `AvatarShape` | `Circle` | Avatar shape |
-| `.color()` | `Color32` | Auto | Custom background color |
-| `.text_color()` | `Color32` | White | Custom text color |
-| `.border()` | `bool` | `false` | Show border |
-| `.clickable()` | - | `false` | Enable click interaction |
-| `.status()` | `Color32` | `None` | Show status badge |
 
-## Sizes
+#### Show Method
 
-- `AvatarSize::XSmall` - 24px
-- `AvatarSize::Small` - 32px
-- `AvatarSize::Medium` - 48px (default)
-- `AvatarSize::Large` - 64px
-- `AvatarSize::XLarge` - 96px
-- `AvatarSize::Custom(f32)` - Custom size
+```rust
+pub fn show(self, ui: &mut Ui) -> Response
+```
 
-## Shapes
+## shadcn/ui Styling
 
-- `AvatarShape::Circle` - Circular (default)
-- `AvatarShape::RoundedSquare` - Rounded corners
-- `AvatarShape::Square` - Sharp corners
+The Avatar follows shadcn/ui conventions:
 
-## Dependencies
-
-- `egui = "0.33"`
-- Theme colors: `primary`, `success`, `error`, `info`, `surface`
+- **Default size**: 32px (size-8)
+- **Shape**: `rounded-full` for circle
+- **Background**: `bg-muted`
+- **Text**: `text-muted-foreground`
+- **Font size**: 40% of avatar size
+- **Initials**: Automatically extracted from name (first letter of each word)

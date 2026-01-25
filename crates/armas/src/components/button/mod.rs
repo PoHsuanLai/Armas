@@ -17,8 +17,8 @@ pub mod simple;
 pub mod sketch;
 pub mod spotify;
 
-// Re-export the base button and its variant enum
-pub use base::{Button, ButtonVariant};
+// Re-export the base button and its variant/size enums
+pub use base::{Button, ButtonSize, ButtonVariant};
 
 // Re-export button group
 pub use button_group::{ButtonGroup, ButtonGroupResponse, ButtonGroupVariant};

@@ -1,7 +1,12 @@
-//! Select/Dropdown Components
+//! Select Component
 //!
-//! Searchable dropdown menus with keyboard navigation.
-//! Styled to match shadcn/ui select and combobox.
+//! Searchable dropdown menu styled like shadcn/ui Select.
+//! Features:
+//! - Keyboard navigation (arrow keys, enter, escape)
+//! - Search/filter functionality
+//! - Support for icons and descriptions
+//! - Disabled options
+//! - State persistence
 
 use crate::ext::ArmasContextExt;
 use crate::Theme;

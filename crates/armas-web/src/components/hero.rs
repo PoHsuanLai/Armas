@@ -100,8 +100,9 @@ impl Hero {
                             ));
 
                             if Button::new("Get Started")
-                                .variant(ButtonVariant::Filled)
-                                .min_size(egui::vec2(140.0, 48.0))
+                                .variant(ButtonVariant::Default)
+                                .size(ButtonSize::Large)
+                                .min_width(140.0)
                                 .show(ui)
                                 .clicked()
                             {
@@ -117,8 +118,9 @@ impl Hero {
                             ui.add_space(16.0);
 
                             if Button::new("View on GitHub")
-                                .variant(ButtonVariant::Outlined)
-                                .min_size(egui::vec2(160.0, 48.0))
+                                .variant(ButtonVariant::Outline)
+                                .size(ButtonSize::Large)
+                                .min_width(160.0)
                                 .show(ui)
                                 .clicked()
                             {

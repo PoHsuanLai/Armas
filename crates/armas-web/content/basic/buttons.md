@@ -1,82 +1,95 @@
 # Button
 
-Material Design button component with multiple variants.
+Button component with shadcn/ui styling.
 
 ## Basic Usage
 
 ```demo
-Button::new("Click me")
-    .variant(ButtonVariant::Filled)
-    .show(ui);
+Button::new("Click me").show(ui);
 ```
 
 ## Variants
 
-### Filled
+### Default
+
+Primary button with high emphasis.
 
 ```demo
-Button::new("Filled Button")
-    .variant(ButtonVariant::Filled)
+Button::new("Default Button")
+    .variant(ButtonVariant::Default)
     .show(ui);
 ```
 
-### Filled Tonal
+### Secondary
+
+Secondary button with medium emphasis.
 
 ```demo
-Button::new("Filled Tonal")
-    .variant(ButtonVariant::FilledTonal)
+Button::new("Secondary")
+    .variant(ButtonVariant::Secondary)
     .show(ui);
 ```
 
-### Elevated
+### Outline
+
+Border with transparent background.
 
 ```demo
-Button::new("Elevated")
-    .variant(ButtonVariant::Elevated)
+Button::new("Outline")
+    .variant(ButtonVariant::Outline)
     .show(ui);
 ```
 
-### Outlined
+### Ghost
+
+No background, hover shows accent.
 
 ```demo
-Button::new("Outlined")
-    .variant(ButtonVariant::Outlined)
+Button::new("Ghost")
+    .variant(ButtonVariant::Ghost)
     .show(ui);
 ```
 
-### Text
+### Link
+
+Text style with underline on hover.
 
 ```demo
-Button::new("Text")
-    .variant(ButtonVariant::Text)
+Button::new("Link")
+    .variant(ButtonVariant::Link)
     .show(ui);
 ```
 
 ## Sizes
 
 ```demo
-Button::new("Small")
-    .variant(ButtonVariant::Filled)
-    .min_size(egui::vec2(80.0, 32.0))
-    .show(ui);
-ui.add_space(8.0);
-Button::new("Medium")
-    .variant(ButtonVariant::Filled)
-    .min_size(egui::vec2(100.0, 40.0))
-    .show(ui);
-ui.add_space(8.0);
-Button::new("Large")
-    .variant(ButtonVariant::Filled)
-    .min_size(egui::vec2(120.0, 48.0))
-    .show(ui);
+ui.horizontal(|ui| {
+    ui.spacing_mut().item_spacing.x = 8.0;
+    Button::new("Small")
+        .size(ButtonSize::Small)
+        .show(ui);
+    Button::new("Default")
+        .size(ButtonSize::Default)
+        .show(ui);
+    Button::new("Large")
+        .size(ButtonSize::Large)
+        .show(ui);
+});
 ```
 
 ## Disabled State
 
 ```demo
 Button::new("Disabled")
-    .variant(ButtonVariant::Filled)
     .enabled(false)
+    .show(ui);
+```
+
+## Full Width
+
+```demo
+Button::new("Full Width Button")
+    .full_width(true)
     .show(ui);
 ```
 
@@ -84,27 +97,38 @@ Button::new("Disabled")
 
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
-| `.variant()` | `ButtonVariant` | `Filled` | Sets the button style |
-| `.min_size()` | `Vec2` | `(100, 40)` | Sets minimum size |
+| `.variant()` | `ButtonVariant` | `Default` | Sets the button style |
+| `.size()` | `ButtonSize` | `Default` | Sets the button size |
 | `.enabled()` | `bool` | `true` | Enables/disables interaction |
-| `.text_align()` | `Align2` | `CENTER` | Sets text alignment |
-| `.text_color()` | `Color32` | theme | Custom text color |
+| `.full_width()` | `bool` | `false` | Makes button take full width |
+| `.min_width()` | `f32` | auto | Sets minimum width |
+
+### ButtonVariant
+
+| Variant | Description |
+|---------|-------------|
+| `Default` | Primary background, high emphasis |
+| `Secondary` | Secondary background, medium emphasis |
+| `Outline` | Border with transparent background |
+| `Ghost` | No background, hover shows accent |
+| `Link` | Text style with underline on hover |
+
+### ButtonSize
+
+| Size | Height |
+|------|--------|
+| `Small` | 32px |
+| `Default` | 36px |
+| `Large` | 40px |
 
 ## Composition Examples
 
 ```demo
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 12.0;
-    Button::new("Save")
-        .variant(ButtonVariant::Filled)
-        .show(ui);
+    Button::new("Save").show(ui);
     Button::new("Cancel")
-        .variant(ButtonVariant::Outlined)
+        .variant(ButtonVariant::Outline)
         .show(ui);
 });
 ```
-
-## Dependencies
-
-- `egui = "0.33"`
-- Theme colors: `primary`, `surface`, `on_surface`

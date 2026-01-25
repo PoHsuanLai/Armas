@@ -1,7 +1,33 @@
-//! Sidebar
+//! Sidebar Component
 //!
-//! Animated sidebar with icons and smooth expand/collapse.
-//! Styled to match shadcn/ui conventions with spring-based animations.
+//! Animated sidebar styled like shadcn/ui Sidebar.
+//! Features smooth spring-based expand/collapse animations, multiple variants,
+//! group labels, collapsible groups, badges, and icon-only collapsed mode.
+//!
+//! # Example
+//!
+//! ```rust,no_run
+//! # use egui::Ui;
+//! # fn example(ui: &mut Ui) {
+//! use armas::components::{Sidebar, SidebarState, SidebarVariant};
+//!
+//! // Controlled mode with external state
+//! let mut state = SidebarState::new(true);
+//!
+//! Sidebar::new()
+//!     .state(&mut state)
+//!     .variant(SidebarVariant::Floating)
+//!     .show(ui, |sidebar| {
+//!         sidebar.group_label("Platform");
+//!         sidebar.item("🏠", "Home").active(true);
+//!         sidebar.item("📧", "Messages").badge("5");
+//!         sidebar.group("⚙️", "Settings", |group| {
+//!             group.item("👤", "Profile");
+//!             group.item("🔒", "Security");
+//!         });
+//!     });
+//! # }
+//! ```
 
 use crate::animation::SpringAnimation;
 use crate::ext::ArmasContextExt;

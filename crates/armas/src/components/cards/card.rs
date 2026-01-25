@@ -1,13 +1,13 @@
 //! Card Component
 //!
-//! Material Design 3 card - a surface for displaying grouped content.
-//! Features three variants: Filled, Outlined, and Elevated.
+//! Card container styled like shadcn/ui Card.
+//! A surface for displaying grouped content with consistent styling.
 //!
-//! # Material Design 3 Variants
+//! # Variants
 //!
-//! - **Filled**: Subtle separation with filled background (surface_variant)
-//! - **Outlined**: Clear boundary with stroke and transparent background
-//! - **Elevated**: Visual separation with shadow effect (simulated via border)
+//! - **Filled**: Muted background, no border
+//! - **Outlined**: Card background with border (shadcn default)
+//! - **Elevated**: Card background with shadow effect
 //!
 //! # Example
 //!
@@ -15,28 +15,12 @@
 //! use armas::{Card, CardVariant, Theme};
 //!
 //! fn show_cards(ui: &mut egui::Ui, theme: &Theme) {
-//!     // Filled card (default)
-//!     Card::new()
-//!         .variant(CardVariant::Filled)
-//!         .title("Filled Card")
-//!         .show(ui, theme, |ui| {
-//!             ui.label("Content goes here");
-//!         });
-//!
-//!     // Outlined card
+//!     // Outlined card (shadcn default)
 //!     Card::new()
 //!         .variant(CardVariant::Outlined)
-//!         .title("Outlined Card")
+//!         .title("Card Title")
 //!         .show(ui, theme, |ui| {
-//!             ui.label("Content with clear boundary");
-//!         });
-//!
-//!     // Elevated card
-//!     Card::new()
-//!         .variant(CardVariant::Elevated)
-//!         .title("Elevated Card")
-//!         .show(ui, theme, |ui| {
-//!             ui.label("Content with shadow effect");
+//!             ui.label("Content goes here");
 //!         });
 //! }
 //! ```
@@ -44,22 +28,24 @@
 use crate::theme::Theme;
 use egui::{self, Color32, CornerRadius};
 
-/// Material Design 3 card variant
+// shadcn Card constants
+const CORNER_RADIUS: f32 = 8.0; // rounded-lg
+const PADDING: f32 = 24.0; // p-6
+const BORDER_WIDTH: f32 = 1.0;
+
+/// Card variant (shadcn/ui style)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum CardVariant {
-    /// Filled card - subtle separation with filled background
-    /// Uses surface_variant color, no border, no shadow
-    #[default]
+    /// Filled card - muted background, no border
     Filled,
-    /// Outlined card - clear boundary with stroke
-    /// Uses surface color with 1px outline_variant border
+    /// Outlined card - card background with border (shadcn default)
+    #[default]
     Outlined,
-    /// Elevated card - visual separation with shadow effect
-    /// Uses surface color with simulated shadow (thicker border gradient)
+    /// Elevated card - card background with shadow effect
     Elevated,
 }
 
-/// Material Design 3 card component
+/// Card component styled like shadcn/ui
 pub struct Card<'a> {
     /// Optional title for the card
     pub title: Option<&'a str>,
@@ -198,10 +184,10 @@ impl<'a> Card<'a> {
         theme: &Theme,
         content: impl FnOnce(&mut egui::Ui) -> R,
     ) -> CardResponse<R> {
-        // Material Design 3 variant styling
+        // shadcn/ui variant styling
         let (fill_color, border_width, border_color) = match self.variant {
             CardVariant::Filled => {
-                // Filled: surface_variant background, no border
+                // Filled: muted background, no border
                 (
                     self.fill_color.unwrap_or_else(|| theme.muted()),
                     0.0,
@@ -209,28 +195,25 @@ impl<'a> Card<'a> {
                 )
             }
             CardVariant::Outlined => {
-                // Outlined: surface background with 1px outline_variant border
+                // Outlined: card background with border (shadcn default)
                 (
                     self.fill_color.unwrap_or_else(|| theme.card()),
-                    1.0,
+                    BORDER_WIDTH,
                     self.stroke_color.unwrap_or_else(|| theme.border()),
                 )
             }
             CardVariant::Elevated => {
-                // Elevated: surface background with thicker border to simulate shadow
-                // Since egui doesn't have real shadows, we use a 2px border with outline color
+                // Elevated: card background with shadow effect (simulated via border)
                 (
                     self.fill_color.unwrap_or_else(|| theme.card()),
-                    2.0,
+                    BORDER_WIDTH,
                     self.stroke_color
-                        .unwrap_or_else(|| theme.border().linear_multiply(0.5)),
+                        .unwrap_or_else(|| theme.border().gamma_multiply(0.5)),
                 )
             }
         };
 
-        let corner_rad = self
-            .corner_radius
-            .unwrap_or(theme.spacing.corner_radius as f32) as u8;
+        let corner_rad = self.corner_radius.unwrap_or(CORNER_RADIUS) as u8;
 
         let sense = if self.clickable {
             egui::Sense::click()
@@ -238,11 +221,11 @@ impl<'a> Card<'a> {
             egui::Sense::hover()
         };
 
-        // Use asymmetric margin if provided, otherwise uniform margin
+        // Use asymmetric margin if provided, otherwise uniform margin (using shadcn PADDING)
         let frame_margin = if let Some(margin) = self.margin {
             margin
         } else {
-            let margin_val = self.inner_margin.unwrap_or(theme.spacing.md) as i8;
+            let margin_val = self.inner_margin.unwrap_or(PADDING) as i8;
             egui::Margin::same(margin_val)
         };
         let mut content_result = None;

@@ -26,15 +26,25 @@ include!(concat!(env!("OUT_DIR"), "/window_icons.rs"));
 
 use egui::{Color32, Response, Sense, Ui, Vec2};
 
-/// Window control icons
+/// Window and UI icons
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum WindowIcon {
-    /// Close window button
+    /// Close button (X)
     Close,
     /// Enter full screen
     IntoFullScreen,
     /// Exit full screen
     ExitFullScreen,
+    /// Info icon (circle with i)
+    Info,
+    /// Error icon (circle with !)
+    Error,
+    /// Chevron left (<)
+    ChevronLeft,
+    /// Chevron right (>)
+    ChevronRight,
+    /// Chevron down (v)
+    ChevronDown,
 }
 
 impl WindowIcon {
@@ -44,6 +54,11 @@ impl WindowIcon {
             Self::Close => &CLOSE,
             Self::IntoFullScreen => &INTO_FULL_SCREEN,
             Self::ExitFullScreen => &EXIT_FULL_SCREEN,
+            Self::Info => &INFO,
+            Self::Error => &ERROR,
+            Self::ChevronLeft => &CHEVRON_LEFT,
+            Self::ChevronRight => &CHEVRON_RIGHT,
+            Self::ChevronDown => &CHEVRON_DOWN,
         }
     }
 

@@ -3,13 +3,12 @@
 //! Floating panels anchored to elements.
 
 use crate::{Card, CardVariant, Theme};
-use egui::{pos2, vec2, Color32, Id, Pos2, Rect, Stroke, Ui, Vec2};
+use egui::{pos2, vec2, Color32, Id, Pos2, Rect, Ui, Vec2};
 
 // ============================================================================
 // Constants
 // ============================================================================
 
-const ARROW_SIZE: f32 = 8.0;
 const MIN_SPACE_FOR_POSITION: f32 = 50.0;
 
 // ============================================================================
@@ -91,7 +90,6 @@ pub struct Popover {
     offset: Vec2,
     width: Option<f32>,
     max_width: f32,
-    show_arrow: bool,
     padding: Option<f32>,
     external_is_open: Option<bool>,
 }
@@ -107,7 +105,6 @@ impl Popover {
             offset: vec2(0.0, 8.0),
             width: None,
             max_width: 400.0,
-            show_arrow: true,
             padding: None,
             external_is_open: None,
         }
@@ -160,12 +157,6 @@ impl Popover {
         self
     }
 
-    /// Show or hide the arrow
-    pub fn show_arrow(mut self, show: bool) -> Self {
-        self.show_arrow = show;
-        self
-    }
-
     /// Set custom inner padding (overrides style default)
     pub fn padding(mut self, padding: f32) -> Self {
         self.padding = Some(padding);
@@ -207,7 +198,6 @@ impl Popover {
             rounding,
             padding,
             card_variant,
-            position,
             content,
         );
 
@@ -247,8 +237,7 @@ impl Popover {
     }
 
     fn calculate_popover_position(&self, anchor_rect: Rect, position: PopoverPosition) -> Pos2 {
-        let arrow_size = if self.show_arrow { ARROW_SIZE } else { 0.0 };
-        let spacing = arrow_size + self.offset.length();
+        let spacing = self.offset.length();
         let estimated_width = self.width.unwrap_or(self.max_width);
 
         match position {
@@ -328,7 +317,6 @@ impl Popover {
         rounding: f32,
         padding: f32,
         card_variant: CardVariant,
-        position: PopoverPosition,
         content: impl FnOnce(&mut Ui),
     ) -> egui::InnerResponse<()> {
         egui::Area::new(self.id)
@@ -351,11 +339,6 @@ impl Popover {
                     .show(ui, theme, |ui| {
                         content(ui);
                     });
-
-                // Draw arrow if enabled
-                if self.show_arrow {
-                    draw_arrow(ui, position, bg_color, border_color);
-                }
             })
     }
 
@@ -392,49 +375,4 @@ fn blend_with_card(theme: &Theme, base: Color32) -> (Color32, Color32) {
         255,
     );
     (blended, base)
-}
-
-fn draw_arrow(ui: &mut Ui, position: PopoverPosition, bg_color: Color32, border_color: Color32) {
-    let painter = ui.painter();
-    let popover_rect = ui.min_rect();
-
-    let (tip, base1, base2) = match position {
-        PopoverPosition::Top => {
-            let tip = pos2(popover_rect.center().x, popover_rect.bottom());
-            let base1 = pos2(tip.x - ARROW_SIZE, tip.y - ARROW_SIZE);
-            let base2 = pos2(tip.x + ARROW_SIZE, tip.y - ARROW_SIZE);
-            (tip, base1, base2)
-        }
-        PopoverPosition::Bottom => {
-            let tip = pos2(popover_rect.center().x, popover_rect.top());
-            let base1 = pos2(tip.x - ARROW_SIZE, tip.y + ARROW_SIZE);
-            let base2 = pos2(tip.x + ARROW_SIZE, tip.y + ARROW_SIZE);
-            (tip, base1, base2)
-        }
-        PopoverPosition::Left => {
-            let tip = pos2(popover_rect.right(), popover_rect.center().y);
-            let base1 = pos2(tip.x - ARROW_SIZE, tip.y - ARROW_SIZE);
-            let base2 = pos2(tip.x - ARROW_SIZE, tip.y + ARROW_SIZE);
-            (tip, base1, base2)
-        }
-        PopoverPosition::Right => {
-            let tip = pos2(popover_rect.left(), popover_rect.center().y);
-            let base1 = pos2(tip.x + ARROW_SIZE, tip.y - ARROW_SIZE);
-            let base2 = pos2(tip.x + ARROW_SIZE, tip.y + ARROW_SIZE);
-            (tip, base1, base2)
-        }
-        PopoverPosition::Auto => unreachable!(),
-    };
-
-    // Fill
-    painter.add(egui::Shape::convex_polygon(
-        vec![tip, base1, base2],
-        bg_color,
-        Stroke::NONE,
-    ));
-
-    // Border (subtle)
-    let subtle_border = border_color.linear_multiply(0.3);
-    painter.line_segment([base1, tip], Stroke::new(1.0, subtle_border));
-    painter.line_segment([tip, base2], Stroke::new(1.0, subtle_border));
 }

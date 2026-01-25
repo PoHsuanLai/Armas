@@ -1,13 +1,53 @@
 //! Toast/Notification Components
 //!
-//! Temporary notification messages with auto-dismiss
-//! Built on top of Card component for consistency
+//! Toast notifications styled like shadcn/ui Sonner (Toast).
+//! Supports multiple positions, variants, and auto-dismiss with progress indicators.
+//!
+//! # Example
+//!
+//! ```rust,no_run
+//! # use egui::Context;
+//! # fn example(ctx: &Context) {
+//! use armas::components::{ToastManager, ToastVariant};
+//!
+//! let mut toasts = ToastManager::new();
+//!
+//! // Simple toast
+//! toasts.toast("Changes saved");
+//!
+//! // Error toast
+//! toasts.error("Something went wrong");
+//!
+//! // Custom toast
+//! toasts.custom()
+//!     .title("Scheduled")
+//!     .message("Your message has been scheduled")
+//!     .duration(std::time::Duration::from_secs(5))
+//!     .show();
+//!
+//! // Render all toasts
+//! toasts.show(ctx);
+//! # }
+//! ```
 
 use crate::animation::SpringAnimation;
+use crate::components::button::IconButton;
 use crate::ext::ArmasContextExt;
-use crate::{Badge, Button, ButtonVariant, Card, CardVariant, Theme};
+use crate::icon::{render_icon, WindowIcon};
+use crate::{ButtonVariant, Card, CardVariant, Theme};
 use egui::{vec2, Align2, Color32, Id, Sense, Vec2};
 use std::collections::VecDeque;
+
+// shadcn Sonner (Toast) constants
+const TOAST_WIDTH: f32 = 356.0; // w-[356px]
+const TOAST_PADDING: f32 = 16.0; // p-4
+const TOAST_CORNER_RADIUS: f32 = 8.0; // rounded-lg
+const TOAST_HEIGHT: f32 = 70.0; // Approximate height
+const TOAST_SPACING: f32 = 8.0; // gap-2
+const TOAST_MARGIN: f32 = 16.0; // 1rem margin
+const DEFAULT_DURATION_SECS: f32 = 4.0; // 4s default
+const PROGRESS_HEIGHT: f32 = 2.0; // h-0.5
+const MAX_TOASTS: usize = 5;
 
 /// Toast notification variant
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -20,10 +60,10 @@ pub enum ToastVariant {
 }
 
 impl ToastVariant {
-    fn icon(&self) -> &'static str {
+    fn icon(&self) -> WindowIcon {
         match self {
-            ToastVariant::Default => "ℹ",
-            ToastVariant::Destructive => "✕",
+            ToastVariant::Default => WindowIcon::Info,
+            ToastVariant::Destructive => WindowIcon::Error,
         }
     }
 
@@ -65,17 +105,15 @@ impl ToastPosition {
     }
 
     fn offset(&self, index: usize, toast_height: f32) -> Vec2 {
-        let spacing = 10.0;
-        let margin = 20.0;
-        let y_offset = (toast_height + spacing) * index as f32;
+        let y_offset = (toast_height + TOAST_SPACING) * index as f32;
 
         match self {
-            ToastPosition::TopLeft => vec2(margin, margin + y_offset),
-            ToastPosition::TopCenter => vec2(0.0, margin + y_offset),
-            ToastPosition::TopRight => vec2(-margin, margin + y_offset),
-            ToastPosition::BottomLeft => vec2(margin, -margin - y_offset),
-            ToastPosition::BottomCenter => vec2(0.0, -margin - y_offset),
-            ToastPosition::BottomRight => vec2(-margin, -margin - y_offset),
+            ToastPosition::TopLeft => vec2(TOAST_MARGIN, TOAST_MARGIN + y_offset),
+            ToastPosition::TopCenter => vec2(0.0, TOAST_MARGIN + y_offset),
+            ToastPosition::TopRight => vec2(-TOAST_MARGIN, TOAST_MARGIN + y_offset),
+            ToastPosition::BottomLeft => vec2(TOAST_MARGIN, -TOAST_MARGIN - y_offset),
+            ToastPosition::BottomCenter => vec2(0.0, -TOAST_MARGIN - y_offset),
+            ToastPosition::BottomRight => vec2(-TOAST_MARGIN, -TOAST_MARGIN - y_offset),
         }
     }
 }
@@ -108,7 +146,7 @@ impl Toast {
             message: message.into(),
             variant,
             custom_color: None,
-            duration_secs: 3.0,
+            duration_secs: DEFAULT_DURATION_SECS,
             created_at: current_time,
             slide_animation: SpringAnimation::new(0.0, 1.0).params(250.0, 25.0),
             dismissible: true,
@@ -159,8 +197,8 @@ impl ToastManager {
     pub fn new() -> Self {
         Self {
             toasts: VecDeque::new(),
-            position: ToastPosition::TopRight,
-            max_toasts: 5,
+            position: ToastPosition::BottomRight, // shadcn default
+            max_toasts: MAX_TOASTS,
         }
     }
 
@@ -224,7 +262,6 @@ impl ToastManager {
         }
 
         // Animate and draw toasts
-        let toast_height = 70.0;
         let mut to_remove = Vec::new();
         let position = self.position;
 
@@ -253,7 +290,7 @@ impl ToastManager {
             // Slide in animation using spring
             let slide_progress = toast.slide_animation.value;
 
-            let offset = position.offset(index, toast_height);
+            let offset = position.offset(index, TOAST_HEIGHT);
             let slide_offset = match position {
                 ToastPosition::TopRight | ToastPosition::BottomRight => {
                     vec2(50.0 * (1.0 - slide_progress), 0.0)
@@ -307,28 +344,28 @@ impl ToastManager {
             .show(ctx, |ui| {
                 ui.set_opacity(opacity);
 
-                let width = 300.0;
                 let accent_color = toast.color(theme);
 
-                // Use Card for consistent styling
+                // Use Card for consistent styling (shadcn toast style)
                 Card::new()
-                    .variant(CardVariant::Elevated)
-                    .width(width)
-                    .stroke(theme.border().linear_multiply(0.3))
-                    .corner_radius(8.0)
-                    .inner_margin(12.0)
+                    .variant(CardVariant::Outlined) // shadcn uses border
+                    .width(TOAST_WIDTH)
+                    .stroke(theme.border())
+                    .corner_radius(TOAST_CORNER_RADIUS)
+                    .inner_margin(TOAST_PADDING)
                     .show(ui, theme, |ui| {
                         ui.horizontal(|ui| {
-                            ui.spacing_mut().item_spacing.x = 8.0;
-                            // Icon badge
-                            Badge::new(toast.variant.icon())
-                                .color(accent_color)
-                                .show(ui);
+                            ui.spacing_mut().item_spacing.x = TOAST_SPACING;
+
+                            // Icon
+                            let icon_size = 16.0;
+                            let (rect, _) = ui.allocate_exact_size(vec2(icon_size, icon_size), Sense::hover());
+                            render_icon(ui.painter(), rect, toast.variant.icon().data(), accent_color);
 
                             // Content
                             ui.vertical(|ui| {
                                 ui.spacing_mut().item_spacing.y = 0.0;
-                                ui.set_width(width - 100.0);
+                                ui.set_width(TOAST_WIDTH - 100.0);
 
                                 if let Some(title) = &toast.title {
                                     ui.strong(title);
@@ -337,38 +374,41 @@ impl ToastManager {
                             });
 
                             // Close button
-                            if toast.dismissible
-                                && Button::new("✕")
-                                    .variant(ButtonVariant::Text)
-                                    .min_size(vec2(24.0, 24.0))
-                                    .show(ui)
-                                    .clicked()
-                            {
-                                dismissed = true;
+                            if toast.dismissible {
+                                let close_response = IconButton::new(WindowIcon::Close.data())
+                                    .variant(ButtonVariant::Ghost)
+                                    .size(12.0)
+                                    .padding(6.0)
+                                    .icon_color(theme.muted_foreground())
+                                    .hover_icon_color(theme.foreground())
+                                    .show(ui);
+
+                                if close_response.clicked() {
+                                    dismissed = true;
+                                }
                             }
                         });
 
-                        // Progress bar
+                        // Progress bar (shadcn style)
                         let progress = toast.progress(current_time).min(1.0);
                         if progress < 1.0 {
-                            ui.add_space(4.0);
-                            let progress_height = 3.0;
+                            ui.add_space(TOAST_SPACING);
                             let (rect, _) = ui.allocate_exact_size(
-                                vec2(ui.available_width(), progress_height),
+                                vec2(ui.available_width(), PROGRESS_HEIGHT),
                                 Sense::hover(),
                             );
 
                             // Background
-                            ui.painter().rect_filled(rect, 2.0, theme.muted());
+                            ui.painter().rect_filled(rect, 1.0, theme.muted());
 
                             // Progress fill
                             let fill_width = rect.width() * progress;
                             let fill_rect = egui::Rect::from_min_size(
                                 rect.min,
-                                vec2(fill_width, progress_height),
+                                vec2(fill_width, PROGRESS_HEIGHT),
                             );
 
-                            ui.painter().rect_filled(fill_rect, 2.0, accent_color);
+                            ui.painter().rect_filled(fill_rect, 1.0, accent_color);
                         }
                     });
             });

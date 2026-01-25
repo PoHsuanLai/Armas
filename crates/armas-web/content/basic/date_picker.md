@@ -1,6 +1,6 @@
 # DatePicker
 
-Calendar date selection with input field, popover calendar, and keyboard navigation.
+Calendar date selection styled like shadcn/ui. Combines a Button trigger with a Calendar popover.
 
 ## Basic Usage
 
@@ -40,6 +40,36 @@ let date_id = ui.id().with("placeholder_date");
 let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
 
 let mut date_picker = DatePicker::new("event_date").placeholder("Choose event date...");
+date_picker.show(&ctx, &theme, ui, &mut selected_date);
+
+ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
+```
+
+## With Footer Buttons
+
+Show Today and Clear buttons for quick actions:
+
+```demo
+let ctx = ui.ctx().clone();
+let theme = ctx.armas_theme();
+let date_id = ui.id().with("footer_date");
+let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
+
+let mut date_picker = DatePicker::new("with_footer").show_footer(true);
+date_picker.show(&ctx, &theme, ui, &mut selected_date);
+
+ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
+```
+
+## Custom Width
+
+```demo
+let ctx = ui.ctx().clone();
+let theme = ctx.armas_theme();
+let date_id = ui.id().with("width_date");
+let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
+
+let mut date_picker = DatePicker::new("custom_width").width(200.0);
 date_picker.show(&ctx, &theme, ui, &mut selected_date);
 
 ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
@@ -103,6 +133,9 @@ ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```demo
 let date = Date::new(2024, 12, 25).unwrap();
 
+// Format as human-readable
+let display = date.format_display(); // "December 25, 2024"
+
 // Format as YYYY-MM-DD
 let formatted = date.format(); // "2024-12-25"
 
@@ -120,18 +153,6 @@ let day = date.day_of_week();
 if let Some(date) = Date::parse("2024-03-15") {
     // Use parsed date
 }
-
-// Manual input support
-let ctx = ui.ctx().clone();
-let theme = ctx.armas_theme();
-let date_id = ui.id().with("manual_date");
-let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
-
-let mut date_picker = DatePicker::new("manual");
-date_picker.show(&ctx, &theme, ui, &mut selected_date);
-// User can type "2024-03-15" directly in input field
-
-ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
 
 ## Working with Dates
@@ -173,7 +194,8 @@ ui.vertical(|ui| {
     let mut deadline_date: Option<Date> = ctx.data(|d| d.get_temp(deadline_id));
     let mut deadline = DatePicker::new("deadline")
         .label("Registration Deadline")
-        .placeholder("Select deadline...");
+        .placeholder("Select deadline...")
+        .show_footer(true);
     deadline.show(&ctx, &theme, ui, &mut deadline_date);
     ctx.data_mut(|d| d.insert_temp(deadline_id, deadline_date));
 });
@@ -182,14 +204,14 @@ ui.vertical(|ui| {
 ## Calendar Features
 
 The date picker calendar includes:
-- Month/year navigation with arrow buttons
+- Button trigger with calendar icon (shadcn outline variant)
+- Month/year navigation with ghost buttons
 - Weekday headers (Su-Sa)
 - Current month days (clickable)
-- Previous/next month days (greyed out)
-- Today highlighted in turquoise
-- Selected date highlighted in primary color
-- "Today" quick action button
-- "Clear" button to remove selection
+- Previous/next month days (muted text)
+- Today highlighted with accent color
+- Selected date highlighted with primary color
+- Optional "Today" and "Clear" footer buttons
 
 ## API Reference
 
@@ -197,8 +219,10 @@ The date picker calendar includes:
 
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
-| `.placeholder()` | `&str` | "Select a date..." | Input placeholder |
-| `.label()` | `&str` | `None` | Label text |
+| `.placeholder()` | `&str` | "Pick a date" | Trigger button placeholder |
+| `.label()` | `&str` | `None` | Label text above trigger |
+| `.show_footer()` | `bool` | `false` | Show Today/Clear buttons |
+| `.width()` | `f32` | `280.0` | Trigger button width |
 
 ### Date
 
@@ -208,6 +232,7 @@ The date picker calendar includes:
 | `Date::today()` | `Date` | Get today's date |
 | `Date::parse(s)` | `Option<Date>` | Parse YYYY-MM-DD |
 | `.format()` | `String` | Format as YYYY-MM-DD |
+| `.format_display()` | `String` | Format as "Month Day, Year" |
 | `.month_name()` | `&str` | Get month name |
 | `.day_of_week()` | `u32` | Get day (0-6) |
 | `Date::is_leap_year(y)` | `bool` | Check leap year |
@@ -219,14 +244,20 @@ The date picker calendar includes:
 |-------|------|-------------|
 | `changed` | `bool` | Whether date changed |
 
-## Keyboard Support
+## shadcn/ui Styling
 
-- Type date directly in YYYY-MM-DD format
-- Escape to close calendar
+The DatePicker follows shadcn/ui conventions:
+
+- **Trigger**: Outline variant button with calendar icon
+- **Cell size**: 32px (2rem)
+- **Today**: `bg-accent text-accent-foreground`
+- **Selected**: `bg-primary text-primary-foreground`
+- **Outside month**: `text-muted-foreground`
+- **Navigation**: Ghost variant buttons with chevron icons
+- **Popover**: No padding (`p-0`), content provides its own padding
 
 ## Dependencies
 
 - `egui = "0.33"`
-- Theme colors: `primary`, `surface`, `on_surface`, `surface_variant`
-- Input component for text field
+- Theme colors: `primary`, `accent`, `foreground`, `muted-foreground`
 - Popover component for calendar overlay

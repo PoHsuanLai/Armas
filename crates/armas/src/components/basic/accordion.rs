@@ -1,16 +1,33 @@
 //! Accordion Component
 //!
-//! Collapsible content sections. Styled to match shadcn/ui accordion.
+//! Collapsible content sections styled like shadcn/ui Accordion.
+//! Supports single or multiple open items with smooth spring animations.
+//!
+//! # Example
+//!
+//! ```rust,no_run
+//! # use egui::Ui;
+//! # fn example(ui: &mut Ui) {
+//! use armas::components::Accordion;
+//!
+//! Accordion::new("my_accordion", vec!["Section 1", "Section 2"])
+//!     .allow_multiple(true)
+//!     .show(ui, |ui, idx| {
+//!         ui.label(format!("Content for section {}", idx));
+//!     });
+//! # }
+//! ```
 
 use crate::animation::SpringAnimation;
 use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Pos2, Ui, Vec2};
 
-const TRIGGER_PADDING_Y: f32 = 16.0;
-const CONTENT_PADDING_BOTTOM: f32 = 16.0;
-const FONT_SIZE: f32 = 14.0;
-const CHEVRON_SIZE: f32 = 16.0;
+// shadcn Accordion constants
+const TRIGGER_PADDING_Y: f32 = 16.0; // py-4
+const CONTENT_PADDING_BOTTOM: f32 = 16.0; // pb-4
+const FONT_SIZE: f32 = 14.0; // text-sm
+const CHEVRON_SIZE: f32 = 16.0; // h-4 w-4
 
 /// Response from showing an accordion
 pub struct AccordionResponse {

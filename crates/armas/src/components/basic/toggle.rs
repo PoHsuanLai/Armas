@@ -1,11 +1,21 @@
 //! Toggle/Switch Components
 //!
-//! Animated toggle switches and checkboxes
+//! Animated toggle switches and checkboxes styled like shadcn/ui Switch.
+//! Provides smooth spring animations and supports:
+//! - Switch style (default)
+//! - Checkbox style
+//! - Labels and descriptions
+//! - Disabled state
 
 use crate::animation::SpringAnimation;
 use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{pos2, vec2, Color32, CornerRadius, Response, Sense, Stroke, Ui, Vec2};
+
+// shadcn Switch dimensions
+const SWITCH_WIDTH: f32 = 44.0; // w-11
+const SWITCH_HEIGHT: f32 = 24.0; // h-6
+const SWITCH_THUMB_SIZE: f32 = 20.0; // h-5 w-5
 
 /// Toggle switch variant
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -29,7 +39,7 @@ impl ToggleSize {
         match variant {
             ToggleVariant::Switch => match self {
                 ToggleSize::Small => (36.0, 20.0),
-                ToggleSize::Medium => (44.0, 24.0),
+                ToggleSize::Medium => (SWITCH_WIDTH, SWITCH_HEIGHT), // shadcn default
                 ToggleSize::Large => (52.0, 28.0),
             },
             ToggleVariant::Checkbox => match self {
@@ -206,91 +216,79 @@ impl Toggle {
         }
     }
 
-    /// Draw a switch-style toggle
+    /// Draw a switch-style toggle (shadcn/ui style)
     fn draw_switch(&self, ui: &mut Ui, rect: egui::Rect, checked: bool, theme: &Theme) {
         let painter = ui.painter();
         let t = self.toggle_spring.value;
 
-        // Background track
+        // Background track - shadcn uses input color when unchecked, primary when checked
         let bg_color = if self.disabled {
-            theme.muted().linear_multiply(0.5)
+            theme.muted().gamma_multiply(0.5)
         } else if checked {
-            let primary = theme.primary();
-            Color32::from_rgba_unmultiplied(
-                primary.r(),
-                primary.g(),
-                primary.b(),
-                (200.0 + 55.0 * t) as u8,
-            )
+            theme.primary()
         } else {
-            theme.muted()
+            theme.input()
         };
 
+        // Full rounded corners (pill shape)
         let track_radius = rect.height() / 2.0;
         painter.rect_filled(rect, CornerRadius::same(track_radius as u8), bg_color);
 
-        // Border
-        if !checked && !self.disabled {
+        // Focus ring on hover (shadcn style)
+        let response = ui.interact(rect, ui.id().with("switch_hover"), Sense::hover());
+        if response.hovered() && !self.disabled {
             painter.rect_stroke(
-                rect,
-                CornerRadius::same(track_radius as u8),
-                Stroke::new(1.0, theme.border()),
+                rect.expand(2.0),
+                CornerRadius::same((track_radius + 2.0) as u8),
+                Stroke::new(2.0, theme.ring()),
                 egui::StrokeKind::Outside,
             );
         }
 
-        // Thumb (sliding circle)
-        let thumb_radius = (rect.height() - 4.0) / 2.0;
+        // Thumb (sliding circle) - shadcn uses background color for thumb
+        let thumb_radius = SWITCH_THUMB_SIZE / 2.0;
         let thumb_padding = 2.0;
-        let thumb_travel = rect.width() - rect.height();
+        let thumb_travel = rect.width() - SWITCH_THUMB_SIZE - thumb_padding * 2.0;
         let thumb_x = rect.min.x + thumb_padding + thumb_radius + thumb_travel * t;
         let thumb_center = pos2(thumb_x, rect.center().y);
 
         let thumb_color = if self.disabled {
             theme.muted_foreground()
         } else {
-            theme.foreground()
+            theme.background()
         };
 
-        painter.circle_filled(thumb_center, thumb_radius, thumb_color);
-
-        // Thumb shadow
+        // Shadow under thumb
         if !self.disabled {
             painter.circle_filled(
                 thumb_center + vec2(0.0, 1.0),
                 thumb_radius,
-                Color32::from_rgba_unmultiplied(0, 0, 0, 30),
+                Color32::from_rgba_unmultiplied(0, 0, 0, 20),
             );
         }
+
+        painter.circle_filled(thumb_center, thumb_radius, thumb_color);
     }
 
-    /// Draw a checkbox-style toggle
+    /// Draw a checkbox-style toggle (shadcn/ui Checkbox style)
     fn draw_checkbox(&self, ui: &mut Ui, rect: egui::Rect, checked: bool, theme: &Theme) {
         let painter = ui.painter();
         let t = self.toggle_spring.value;
 
-        // Background
+        // Background - shadcn uses primary when checked, transparent when unchecked
         let bg_color = if self.disabled {
-            theme.muted().linear_multiply(0.5)
+            theme.muted().gamma_multiply(0.5)
         } else if checked {
-            let primary = theme.primary();
-            Color32::from_rgba_unmultiplied(
-                primary.r(),
-                primary.g(),
-                primary.b(),
-                (200.0 + 55.0 * t) as u8,
-            )
+            theme.primary()
         } else {
-            theme.card()
+            Color32::TRANSPARENT
         };
 
-        painter.rect_filled(
-            rect,
-            CornerRadius::same(theme.spacing.corner_radius_small),
-            bg_color,
-        );
+        let corner_radius = 4u8; // rounded-sm for checkbox
 
-        // Border
+        painter.rect_filled(rect, CornerRadius::same(corner_radius), bg_color);
+
+        // Border - always visible when unchecked
         let border_color = if self.disabled {
             theme.border()
         } else if checked {
@@ -301,30 +299,53 @@ impl Toggle {
 
         painter.rect_stroke(
             rect,
-            CornerRadius::same(theme.spacing.corner_radius_small),
-            Stroke::new(1.5, border_color),
-            egui::StrokeKind::Outside,
+            CornerRadius::same(corner_radius),
+            Stroke::new(1.0, border_color),
+            egui::StrokeKind::Inside,
         );
 
-        // Checkmark
+        // Focus ring on hover
+        let response = ui.interact(rect, ui.id().with("checkbox_hover"), Sense::hover());
+        if response.hovered() && !self.disabled {
+            painter.rect_stroke(
+                rect.expand(2.0),
+                CornerRadius::same(corner_radius + 2),
+                Stroke::new(2.0, theme.ring()),
+                egui::StrokeKind::Outside,
+            );
+        }
+
+        // Checkmark - white on primary background
         if t > 0.0 {
-            let scale = t; // Animate the checkmark appearance
+            let scale = t;
             let center = rect.center();
-            let size = rect.height() * 0.6 * scale;
+            let size = rect.height() * 0.5 * scale;
 
             // Draw checkmark as two lines
-            let check_start = center + vec2(-size * 0.3, 0.0);
-            let check_middle = center + vec2(-size * 0.1, size * 0.3);
-            let check_end = center + vec2(size * 0.4, -size * 0.4);
+            let check_start = center + vec2(-size * 0.35, 0.0);
+            let check_middle = center + vec2(-size * 0.05, size * 0.3);
+            let check_end = center + vec2(size * 0.35, -size * 0.35);
 
             let check_color = if self.disabled {
                 theme.muted_foreground()
             } else {
-                theme.foreground()
+                theme.primary_foreground() // White on primary
             };
 
-            painter.line_segment([check_start, check_middle], Stroke::new(2.0, check_color));
-            painter.line_segment([check_middle, check_end], Stroke::new(2.0, check_color));
+            let stroke_width = if self.size == ToggleSize::Small {
+                1.5
+            } else {
+                2.0
+            };
+
+            painter.line_segment(
+                [check_start, check_middle],
+                Stroke::new(stroke_width, check_color),
+            );
+            painter.line_segment(
+                [check_middle, check_end],
+                Stroke::new(stroke_width, check_color),
+            );
         }
     }
 }

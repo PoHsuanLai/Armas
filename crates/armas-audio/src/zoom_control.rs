@@ -156,8 +156,8 @@ impl<'a> ZoomControl<'a> {
                     // Zoom out button
                     if self.show_buttons {
                         if Button::new("−")
-                            .variant(ButtonVariant::FilledTonal)
-                            .min_size(egui::vec2(28.0, 28.0))
+                            .variant(ButtonVariant::Secondary)
+                            .min_width(28.0)
                             .show(ui)
                             .clicked()
                         {
@@ -184,8 +184,8 @@ impl<'a> ZoomControl<'a> {
                     // Zoom in button
                     if self.show_buttons {
                         if Button::new("+")
-                            .variant(ButtonVariant::FilledTonal)
-                            .min_size(egui::vec2(28.0, 28.0))
+                            .variant(ButtonVariant::Secondary)
+                            .min_width(28.0)
                             .show(ui)
                             .clicked()
                         {
@@ -203,8 +203,8 @@ impl<'a> ZoomControl<'a> {
 
                     // Reset button (1:1)
                     if Button::new("1:1")
-                        .variant(ButtonVariant::Text)
-                        .min_size(egui::vec2(36.0, 28.0))
+                        .variant(ButtonVariant::Ghost)
+                        .min_width(36.0)
                         .show(ui)
                         .clicked()
                     {
@@ -215,8 +215,8 @@ impl<'a> ZoomControl<'a> {
 
                     // Fit button (could zoom to fit content)
                     if Button::new("Fit")
-                        .variant(ButtonVariant::Text)
-                        .min_size(egui::vec2(36.0, 28.0))
+                        .variant(ButtonVariant::Ghost)
+                        .min_width(36.0)
                         .show(ui)
                         .clicked()
                     {

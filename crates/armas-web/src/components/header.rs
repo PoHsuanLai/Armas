@@ -122,9 +122,7 @@ impl Header {
                             ui.add_space(8.0);
 
                             if Button::new("☰")
-                                .variant(ButtonVariant::Text)
-                                .text_color(egui::Color32::from_gray(160))
-                                .hover_text_color(egui::Color32::WHITE)
+                                .variant(ButtonVariant::Ghost)
                                 .show(ui)
                                 .clicked()
                             {
@@ -135,9 +133,7 @@ impl Header {
                         // Desktop: Components + GitHub + Search
                         else {
                             if Button::new("Components")
-                                .variant(ButtonVariant::Text)
-                                .text_color(egui::Color32::from_gray(160))
-                                .hover_text_color(egui::Color32::WHITE)
+                                .variant(ButtonVariant::Ghost)
                                 .show(ui)
                                 .clicked()
                             {
@@ -153,9 +149,7 @@ impl Header {
                             ui.add_space(16.0);
 
                             if Button::new("GitHub")
-                                .variant(ButtonVariant::Text)
-                                .text_color(egui::Color32::from_gray(160))
-                                .hover_text_color(egui::Color32::WHITE)
+                                .variant(ButtonVariant::Ghost)
                                 .show(ui)
                                 .clicked()
                             {

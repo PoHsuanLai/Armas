@@ -1,10 +1,19 @@
 //! Slider Component
 //!
-//! Horizontal slider for value selection with optional velocity-based dragging.
+//! Horizontal slider styled like shadcn/ui Slider.
+//! Features:
+//! - Step snapping
+//! - Double-click to reset to default
+//! - Optional velocity-based dragging (hold Ctrl/Cmd)
+//! - Labels and value display
 
 use crate::animation::{DragMode, VelocityDrag, VelocityDragConfig};
 use crate::ext::ArmasContextExt;
 use egui::{pos2, vec2, Color32, Rect, Sense, Stroke, Ui};
+
+// shadcn Slider constants
+const TRACK_HEIGHT: f32 = 6.0; // h-1.5 in tailwind (6px)
+const THUMB_RADIUS: f32 = 8.0; // size-4 thumb (16px diameter)
 
 /// Persisted drag state for slider
 #[derive(Clone)]
@@ -273,21 +282,17 @@ impl Slider {
             if ui.is_rect_visible(rect) {
                 let painter = ui.painter();
 
-                // Track and thumb sizes (matching shadcn: h-1.5 track, size-4 thumb)
-                let track_height = 6.0;
-                let thumb_radius = 8.0;
+                // Background track (using shadcn constants)
+                let track_rect = Rect::from_center_size(rect.center(), vec2(rect.width(), TRACK_HEIGHT));
 
-                // Background track
-                let track_rect = Rect::from_center_size(rect.center(), vec2(rect.width(), track_height));
-
-                painter.rect_filled(track_rect, track_height / 2.0, theme.muted());
+                painter.rect_filled(track_rect, TRACK_HEIGHT / 2.0, theme.muted());
 
                 // Filled track (progress)
                 let t = (*value - self.min) / (self.max - self.min);
                 let fill_width = track_rect.width() * t;
-                let fill_rect = Rect::from_min_size(track_rect.min, vec2(fill_width, track_height));
+                let fill_rect = Rect::from_min_size(track_rect.min, vec2(fill_width, TRACK_HEIGHT));
 
-                painter.rect_filled(fill_rect, track_height / 2.0, theme.primary());
+                painter.rect_filled(fill_rect, TRACK_HEIGHT / 2.0, theme.primary());
 
                 // Handle (thumb)
                 let handle_x = track_rect.left() + fill_width;
@@ -296,13 +301,13 @@ impl Slider {
                 // Hover ring effect (like shadcn ring-4)
                 if response.hovered() || response.dragged() {
                     let ring_color = theme.ring().gamma_multiply(0.5);
-                    painter.circle_filled(handle_center, thumb_radius + 4.0, ring_color);
+                    painter.circle_filled(handle_center, THUMB_RADIUS + 4.0, ring_color);
                 }
 
                 // Handle shadow
                 painter.circle_filled(
                     handle_center + vec2(0.0, 1.0),
-                    thumb_radius,
+                    THUMB_RADIUS,
                     Color32::from_black_alpha(40),
                 );
 
@@ -313,12 +318,12 @@ impl Slider {
                     theme.foreground()
                 };
 
-                painter.circle_filled(handle_center, thumb_radius, handle_color);
+                painter.circle_filled(handle_center, THUMB_RADIUS, handle_color);
 
                 // Handle border
                 painter.circle_stroke(
                     handle_center,
-                    thumb_radius,
+                    THUMB_RADIUS,
                     Stroke::new(1.0, theme.primary()),
                 );
             }

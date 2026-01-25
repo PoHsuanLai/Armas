@@ -1,10 +1,21 @@
-//! Enhanced Input Components
+//! Input Component
 //!
-//! Modern text input fields with icons, validation, and animations
+//! Text input field styled like shadcn/ui Input.
+//! Provides a clean, accessible text input with support for:
+//! - Labels and descriptions
+//! - Validation states (error, success, warning)
+//! - Icons (left and right)
+//! - Password masking
 
-use crate::components::cards::{Card, CardVariant};
 use crate::ext::ArmasContextExt;
-use egui::{Response, TextEdit, Ui};
+use egui::{Color32, Response, Sense, Stroke, TextEdit, Ui, Vec2};
+
+// shadcn Input constants
+const CORNER_RADIUS: f32 = 6.0; // rounded-md
+const HEIGHT: f32 = 36.0; // h-9
+const PADDING_X: f32 = 12.0; // px-3
+const PADDING_Y: f32 = 8.0; // py-2
+const FONT_SIZE: f32 = 14.0; // text-sm
 
 /// Response from the input field
 #[derive(Debug, Clone)]
@@ -17,33 +28,11 @@ pub struct InputResponse {
     pub changed: bool,
 }
 
-/// Input field variant
-///
-/// Material Design 3 specifies two primary text field variants:
-/// - `Filled`: Higher visual emphasis with filled background
-/// - `Outlined`: Lower visual emphasis, better for forms
-///
-/// The `Default` variant is kept for backwards compatibility but deprecated in MD3.
-/// Use `Filled` or `Outlined` for new implementations.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum InputVariant {
-    /// Default input style
-    ///
-    /// **Note**: This variant is deprecated in Material Design 3.
-    /// Use `Filled` or `Outlined` instead for MD3 compliance.
-    Default,
-    /// Outlined input with border (MD3 recommended for forms)
-    Outlined,
-    /// Filled background style (MD3 recommended for higher emphasis)
-    Filled,
-    /// Inline edit style - looks like a button when not focused, editable when clicked
-    Inline,
-}
-
 /// Input validation state
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum InputState {
     /// Normal state
+    #[default]
     Normal,
     /// Success/valid state
     Success,
@@ -53,20 +42,33 @@ pub enum InputState {
     Warning,
 }
 
-/// Enhanced text input field
+/// Input field variant (for backwards compatibility)
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub enum InputVariant {
+    /// Default input style (standard shadcn input)
+    #[default]
+    Default,
+    /// Outlined input (same as default in shadcn)
+    Outlined,
+    /// Filled background style
+    Filled,
+    /// Inline edit style - minimal chrome
+    Inline,
+}
+
+/// Text input field styled like shadcn/ui
 pub struct Input {
     id: Option<egui::Id>,
     variant: InputVariant,
     state: InputState,
     label: Option<String>,
+    description: Option<String>,
     placeholder: String,
-    helper_text: Option<String>,
     left_icon: Option<String>,
     right_icon: Option<String>,
     width: Option<f32>,
     password: bool,
-    font_size: f32,
-    text_color: Option<egui::Color32>,
+    disabled: bool,
 }
 
 impl Input {
@@ -77,24 +79,23 @@ impl Input {
             variant: InputVariant::Default,
             state: InputState::Normal,
             label: None,
+            description: None,
             placeholder: placeholder.into(),
-            helper_text: None,
             left_icon: None,
             right_icon: None,
             width: None,
             password: false,
-            font_size: 14.0,
-            text_color: None,
+            disabled: false,
         }
     }
 
-    /// Set ID for state persistence (useful for demos where input is recreated each frame)
+    /// Set ID for state persistence
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
     }
 
-    /// Set the variant
+    /// Set the variant (for backwards compatibility)
     pub fn variant(mut self, variant: InputVariant) -> Self {
         self.variant = variant;
         self
@@ -106,15 +107,21 @@ impl Input {
         self
     }
 
-    /// Set a label
+    /// Set a label above the input
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
     }
 
-    /// Set helper text
+    /// Set description/helper text below the input
+    pub fn description(mut self, text: impl Into<String>) -> Self {
+        self.description = Some(text.into());
+        self
+    }
+
+    /// Alias for description (backwards compatibility)
     pub fn helper_text(mut self, text: impl Into<String>) -> Self {
-        self.helper_text = Some(text.into());
+        self.description = Some(text.into());
         self
     }
 
@@ -142,15 +149,20 @@ impl Input {
         self
     }
 
-    /// Set font size
-    pub fn font_size(mut self, size: f32) -> Self {
-        self.font_size = size;
+    /// Set disabled state
+    pub fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
         self
     }
 
-    /// Set text color
-    pub fn text_color(mut self, color: egui::Color32) -> Self {
-        self.text_color = Some(color);
+    /// Backwards compatibility aliases
+    pub fn font_size(self, _size: f32) -> Self {
+        // Ignored - use consistent sizing
+        self
+    }
+
+    pub fn text_color(self, _color: Color32) -> Self {
+        // Ignored - use theme colors
         self
     }
 
@@ -167,201 +179,207 @@ impl Input {
             *text = stored_text;
         }
 
-        // For Inline variant, calculate width based on text content
-        let width = if self.variant == InputVariant::Inline && self.width.is_none() {
-            // Estimate width: ~8px per character for proportional font at size 14
-            let char_count = text.len().max(8); // Minimum 8 chars
-            let estimated_width = (char_count as f32 * 8.0) + 24.0; // 24px padding
-            estimated_width.clamp(80.0, 300.0) // Min 80, max 300
-        } else {
-            self.width.unwrap_or(200.0)
-        };
+        let width = self.width.unwrap_or(200.0);
 
-        // For Inline variant, use button height
-        let height = if self.variant == InputVariant::Inline {
-            28.0
-        } else {
-            40.0
-        };
-
-        // Only use vertical layout if we have label or helper text
-        let has_extras = self.label.is_some() || self.helper_text.is_some();
-
-        let mut render_input = |ui: &mut Ui| {
-            if has_extras {
-                ui.spacing_mut().item_spacing.y = theme.spacing.xs;
-            }
+        let response = ui.vertical(|ui| {
+            ui.spacing_mut().item_spacing.y = 6.0; // gap-1.5
 
             // Label
             if let Some(label) = &self.label {
                 ui.label(
                     egui::RichText::new(label)
                         .size(14.0)
-                        .color(theme.foreground()),
+                        .color(if self.disabled {
+                            theme.muted_foreground()
+                        } else {
+                            theme.foreground()
+                        }),
                 );
             }
 
-            // For Inline variant, render without card wrapper for minimal visual chrome
-            let response = if self.variant == InputVariant::Inline {
-                // Left icon
-                if let Some(icon) = &self.left_icon {
-                    ui.label(
-                        egui::RichText::new(icon)
-                            .size(16.0)
-                            .color(theme.muted_foreground()),
-                    );
-                }
+            // Input field
+            let input_response = self.render_input(ui, text, width, &theme);
 
-                // Apply font size and text color before creating TextEdit
-                ui.style_mut().text_styles.insert(
-                    egui::TextStyle::Body,
-                    egui::FontId::proportional(self.font_size),
-                );
-                if let Some(color) = self.text_color {
-                    ui.style_mut().visuals.override_text_color = Some(color);
-                }
-
-                // Text input
-                let mut text_edit = TextEdit::singleline(text)
-                    .hint_text(&self.placeholder)
-                    .desired_width(
-                        width
-                            - if self.left_icon.is_some() { 24.0 } else { 0.0 }
-                            - if self.right_icon.is_some() { 24.0 } else { 0.0 },
-                    )
-                    .frame(false)
-                    .font(egui::TextStyle::Body)
-                    .vertical_align(egui::Align::Center);
-
-                if self.password {
-                    text_edit = text_edit.password(true);
-                }
-
-                let text_response = ui.add(text_edit);
-
-                // Right icon
-                if let Some(icon) = &self.right_icon {
-                    ui.label(
-                        egui::RichText::new(icon)
-                            .size(16.0)
-                            .color(theme.muted_foreground()),
-                    );
-                }
-
-                text_response
-            } else {
-                // For Filled and Outlined variants, use Card
-                let (card_variant, border_color) = match self.state {
-                    InputState::Normal => match self.variant {
-                        InputVariant::Default | InputVariant::Filled => (CardVariant::Filled, None),
-                        InputVariant::Outlined => (CardVariant::Outlined, None),
-                        InputVariant::Inline => unreachable!(), // Already handled above
-                    },
-                    InputState::Success => (CardVariant::Outlined, Some(theme.chart_2())),
-                    InputState::Error => (CardVariant::Outlined, Some(theme.destructive())),
-                    InputState::Warning => (CardVariant::Outlined, Some(theme.chart_3())),
-                };
-
-                // Create card for input with minimal padding
-                let mut card = Card::new().variant(card_variant).inner_margin(4.0);
-
-                if let Some(border) = border_color {
-                    card = card.stroke(border);
-                }
-
-                let card_response = card.show(ui, &theme, |ui| {
-                    ui.set_width(width - 8.0); // Account for card padding (4px * 2)
-                    ui.set_height(height - 8.0); // Account for card padding (4px * 2)
-
-                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                        ui.spacing_mut().item_spacing.x = 8.0;
-
-                        // Left icon
-                        if let Some(icon) = &self.left_icon {
-                            ui.label(
-                                egui::RichText::new(icon)
-                                    .size(16.0)
-                                    .color(theme.muted_foreground()),
-                            );
-                        }
-
-                        // Text input
-                        let mut text_edit = TextEdit::singleline(text)
-                            .hint_text(&self.placeholder)
-                            .desired_width(
-                                ui.available_width()
-                                    - if self.right_icon.is_some() { 24.0 } else { 0.0 },
-                            )
-                            .frame(false)
-                            .font(egui::TextStyle::Body)
-                            .vertical_align(egui::Align::Center);
-
-                        if self.password {
-                            text_edit = text_edit.password(true);
-                        }
-
-                        // Apply font size and text color
-                        ui.style_mut().text_styles.insert(
-                            egui::TextStyle::Body,
-                            egui::FontId::proportional(self.font_size),
-                        );
-                        if let Some(color) = self.text_color {
-                            ui.style_mut().visuals.override_text_color = Some(color);
-                        }
-
-                        ui.add(text_edit);
-
-                        // Right icon
-                        if let Some(icon) = &self.right_icon {
-                            ui.label(
-                                egui::RichText::new(icon)
-                                    .size(16.0)
-                                    .color(theme.muted_foreground()),
-                            );
-                        }
-                    });
-                });
-
-                card_response.response
-            };
-
-            // Helper text
-            if let Some(helper) = &self.helper_text {
-                ui.add_space(theme.spacing.xs);
-                let helper_color = match self.state {
+            // Description/helper text
+            if let Some(desc) = &self.description {
+                let desc_color = match self.state {
                     InputState::Normal => theme.muted_foreground(),
                     InputState::Success => theme.chart_2(),
                     InputState::Error => theme.destructive(),
                     InputState::Warning => theme.chart_3(),
                 };
-                ui.label(egui::RichText::new(helper).size(12.0).color(helper_color));
+                ui.label(egui::RichText::new(desc).size(12.0).color(desc_color));
             }
 
-            // Save state to memory if ID is set
-            if let Some(id) = self.id {
-                let state_id = id.with("input_state");
-                ui.ctx().data_mut(|d| {
-                    d.insert_temp(state_id, text.clone());
-                });
-            }
+            input_response
+        });
 
-            response
-        };
+        // Save state to memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("input_state");
+            ui.ctx().data_mut(|d| {
+                d.insert_temp(state_id, text.clone());
+            });
+        }
 
-        let response = if has_extras {
-            ui.vertical(render_input).inner
-        } else {
-            render_input(ui)
-        };
-
-        let changed = response.changed();
+        let inner_response = response.inner;
+        let changed = inner_response.changed();
         let text_clone = text.clone();
 
         InputResponse {
-            response,
+            response: inner_response,
             text: text_clone,
             changed,
         }
+    }
+
+    fn render_input(
+        &self,
+        ui: &mut Ui,
+        text: &mut String,
+        width: f32,
+        theme: &crate::Theme,
+    ) -> Response {
+        let height = if self.variant == InputVariant::Inline {
+            28.0
+        } else {
+            HEIGHT
+        };
+
+        // Calculate border color based on state
+        let border_color = match self.state {
+            InputState::Normal => theme.input(),
+            InputState::Success => theme.chart_2(),
+            InputState::Error => theme.destructive(),
+            InputState::Warning => theme.chart_3(),
+        };
+
+        // Background color
+        let bg_color = if self.disabled {
+            theme.muted()
+        } else if self.variant == InputVariant::Filled {
+            theme.muted()
+        } else {
+            theme.background()
+        };
+
+        // Text color
+        let text_color = if self.disabled {
+            theme.muted_foreground()
+        } else {
+            theme.foreground()
+        };
+
+        let placeholder_color = theme.muted_foreground();
+
+        // Allocate space for the input
+        let desired_size = Vec2::new(width, height);
+        let (rect, response) = ui.allocate_exact_size(
+            desired_size,
+            if self.disabled {
+                Sense::hover()
+            } else {
+                Sense::click_and_drag()
+            },
+        );
+
+        if ui.is_rect_visible(rect) {
+            let painter = ui.painter();
+
+            // Draw background
+            painter.rect_filled(rect, CORNER_RADIUS, bg_color);
+
+            // Draw border
+            let stroke_width = if response.has_focus() { 2.0 } else { 1.0 };
+            let stroke_color = if response.has_focus() {
+                theme.ring()
+            } else {
+                border_color
+            };
+            painter.rect_stroke(
+                rect,
+                CORNER_RADIUS,
+                Stroke::new(stroke_width, stroke_color),
+                egui::StrokeKind::Inside,
+            );
+
+            // Calculate content rect with padding
+            let content_rect = rect.shrink2(Vec2::new(PADDING_X, PADDING_Y));
+
+            // Layout: [left_icon] [text_input] [right_icon]
+            let mut x_offset = content_rect.left();
+
+            // Left icon
+            if let Some(icon) = &self.left_icon {
+                let icon_galley = painter.layout_no_wrap(
+                    icon.clone(),
+                    egui::FontId::proportional(16.0),
+                    placeholder_color,
+                );
+                let icon_pos = egui::pos2(x_offset, content_rect.center().y - icon_galley.size().y / 2.0);
+                painter.galley(icon_pos, icon_galley, placeholder_color);
+                x_offset += 24.0; // icon width + spacing
+            }
+
+            // Right icon offset calculation
+            let right_icon_width = if self.right_icon.is_some() { 24.0 } else { 0.0 };
+
+            // Text input area
+            let text_rect = egui::Rect::from_min_max(
+                egui::pos2(x_offset, content_rect.top()),
+                egui::pos2(content_rect.right() - right_icon_width, content_rect.bottom()),
+            );
+
+            // Right icon
+            if let Some(icon) = &self.right_icon {
+                let icon_galley = painter.layout_no_wrap(
+                    icon.clone(),
+                    egui::FontId::proportional(16.0),
+                    placeholder_color,
+                );
+                let icon_x = content_rect.right() - icon_galley.size().x;
+                let icon_pos = egui::pos2(icon_x, content_rect.center().y - icon_galley.size().y / 2.0);
+                painter.galley(icon_pos, icon_galley, placeholder_color);
+            }
+
+            // Render text edit in the allocated space
+            let mut child_ui = ui.new_child(egui::UiBuilder::new().max_rect(text_rect));
+
+            // Style the text edit
+            child_ui.style_mut().visuals.widgets.inactive.bg_fill = Color32::TRANSPARENT;
+            child_ui.style_mut().visuals.widgets.hovered.bg_fill = Color32::TRANSPARENT;
+            child_ui.style_mut().visuals.widgets.active.bg_fill = Color32::TRANSPARENT;
+            child_ui.style_mut().visuals.widgets.inactive.bg_stroke = Stroke::NONE;
+            child_ui.style_mut().visuals.widgets.hovered.bg_stroke = Stroke::NONE;
+            child_ui.style_mut().visuals.widgets.active.bg_stroke = Stroke::NONE;
+            child_ui.style_mut().visuals.override_text_color = Some(text_color);
+            child_ui.style_mut().text_styles.insert(
+                egui::TextStyle::Body,
+                egui::FontId::proportional(FONT_SIZE),
+            );
+
+            let mut text_edit = TextEdit::singleline(text)
+                .hint_text(&self.placeholder)
+                .desired_width(text_rect.width())
+                .frame(false)
+                .font(egui::TextStyle::Body)
+                .vertical_align(egui::Align::Center)
+                .interactive(!self.disabled);
+
+            if self.password {
+                text_edit = text_edit.password(true);
+            }
+
+            return child_ui.add(text_edit);
+        }
+
+        response
+    }
+}
+
+impl Default for Input {
+    fn default() -> Self {
+        Self::new("")
     }
 }
 
@@ -403,7 +421,6 @@ impl SearchInput {
     /// Show the search input
     pub fn show(self, ui: &mut Ui, text: &mut String) -> InputResponse {
         let mut input = Input::new(&self.placeholder)
-            .variant(InputVariant::Filled)
             .left_icon("🔍")
             .width(self.width.unwrap_or(300.0));
 
@@ -437,12 +454,12 @@ mod tests {
     fn test_input_builder() {
         let input = Input::new("Test")
             .label("Username")
-            .helper_text("Required field")
+            .description("Required field")
             .variant(InputVariant::Outlined)
             .state(InputState::Error);
 
         assert_eq!(input.label, Some("Username".to_string()));
-        assert_eq!(input.helper_text, Some("Required field".to_string()));
+        assert_eq!(input.description, Some("Required field".to_string()));
         assert_eq!(input.variant, InputVariant::Outlined);
         assert_eq!(input.state, InputState::Error);
     }

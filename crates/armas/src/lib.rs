@@ -18,15 +18,14 @@
 //! ```rust,no_run
 //! # use egui::Ui;
 //! # fn example(ui: &mut Ui) {
-//! use armas::components::Slot;
+//! use armas::prelude::*;
 //!
-//! let slot = Slot::new()
-//!     .size(60.0, 30.0)
-//!     .effect("Reverb")
-//!     .level(0.7);
-//!
-//! let response = slot.show(ui);
-//! if response.clicked() {
+//! // Create a button with shadcn/ui styling
+//! if Button::new("Click me")
+//!     .variant(ButtonVariant::Default)
+//!     .show(ui)
+//!     .clicked()
+//! {
 //!     // Handle click
 //! }
 //! # }

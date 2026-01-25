@@ -557,38 +557,6 @@ ui.ctx().data_mut(|d| {
 });
 ```
 
-## Without Arrow
-
-```demo
-let popover_id = ui.id().with("popover_no_arrow");
-let mut popover = ui.ctx().data_mut(|d| {
-    d.get_temp::<Popover>(popover_id).unwrap_or_else(|| {
-        Popover::new("no_arrow").show_arrow(false)
-    })
-});
-
-let state_id = ui.id().with("popover_open_no_arrow");
-let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
-let theme = ui.ctx().armas_theme();
-
-let anchor_response = Button::new("No Arrow").show(ui);
-if anchor_response.clicked() {
-    is_open = !is_open;
-}
-popover = popover.open(is_open);
-let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {
-    ui.label("No arrow indicator");
-});
-
-if response.clicked_outside || response.should_close {
-    is_open = false;
-}
-ui.ctx().data_mut(|d| {
-    d.insert_temp(state_id, is_open);
-    d.insert_temp(popover_id, popover);
-});
-```
-
 ## Custom Offset
 
 ```demo
@@ -743,7 +711,6 @@ ui.ctx().data_mut(|d| {
 | `.offset()` | `Vec2` | `(0, 12)` | Offset from anchor |
 | `.width()` | `f32` | `None` | Fixed width |
 | `.max_width()` | `f32` | `400.0` | Maximum width |
-| `.show_arrow()` | `bool` | `true` | Show arrow indicator |
 
 ### PopoverColor
 

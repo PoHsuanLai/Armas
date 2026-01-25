@@ -57,54 +57,6 @@ fn test_breadcrumbs_with_icons() {
     harness.run();
 }
 
-/// Test Breadcrumbs with custom separator
-#[test]
-fn test_breadcrumbs_custom_separator() {
-    let mut harness = Harness::new_ui(|ui| {
-        Breadcrumbs::new()
-            .separator("/")
-            .show(ui, |bc| {
-                bc.item("Home", None);
-                bc.item("Folder", None);
-                bc.item("File", None);
-            });
-    });
-
-    harness.run();
-}
-
-/// Test Breadcrumbs with arrow separator
-#[test]
-fn test_breadcrumbs_arrow_separator() {
-    let mut harness = Harness::new_ui(|ui| {
-        Breadcrumbs::new()
-            .separator("→")
-            .show(ui, |bc| {
-                bc.item("Start", None);
-                bc.item("Middle", None);
-                bc.item("End", None);
-            });
-    });
-
-    harness.run();
-}
-
-/// Test Breadcrumbs with home icon
-#[test]
-fn test_breadcrumbs_show_home_icon() {
-    let mut harness = Harness::new_ui(|ui| {
-        Breadcrumbs::new()
-            .show_home_icon(true)
-            .show(ui, |bc| {
-                bc.item("Documents", None);
-                bc.item("Projects", None);
-                bc.item("Armas", None).current();
-            });
-    });
-
-    harness.run();
-}
-
 /// Test Breadcrumbs with custom spacing
 #[test]
 fn test_breadcrumbs_custom_spacing() {
@@ -157,15 +109,12 @@ fn test_breadcrumbs_many_items() {
 #[test]
 fn test_breadcrumbs_file_path() {
     let mut harness = Harness::new_ui(|ui| {
-        Breadcrumbs::new()
-            .separator("/")
-            .show_home_icon(true)
-            .show(ui, |bc| {
-                bc.item("Users", Some("📁"));
-                bc.item("john", Some("📁"));
-                bc.item("Documents", Some("📁"));
-                bc.item("report.pdf", Some("📄")).current();
-            });
+        Breadcrumbs::new().show(ui, |bc| {
+            bc.item("Users", Some("📁"));
+            bc.item("john", Some("📁"));
+            bc.item("Documents", Some("📁"));
+            bc.item("report.pdf", Some("📄")).current();
+        });
     });
 
     harness.run();
@@ -175,33 +124,13 @@ fn test_breadcrumbs_file_path() {
 #[test]
 fn test_breadcrumbs_website_nav() {
     let mut harness = Harness::new_ui(|ui| {
-        Breadcrumbs::new()
-            .separator("›")
-            .show(ui, |bc| {
-                bc.item("Home", Some("🏠"));
-                bc.item("Shop", None);
-                bc.item("Electronics", None);
-                bc.item("Smartphones", None);
-                bc.item("iPhone 15", None).current();
-            });
-    });
-
-    harness.run();
-}
-
-/// Test Breadcrumbs with all options
-#[test]
-fn test_breadcrumbs_full_config() {
-    let mut harness = Harness::new_ui(|ui| {
-        Breadcrumbs::new()
-            .separator("»")
-            .spacing(6.0)
-            .show_home_icon(true)
-            .show(ui, |bc| {
-                bc.item("Dashboard", Some("📊"));
-                bc.item("Analytics", Some("📈"));
-                bc.item("Reports", Some("📋")).current();
-            });
+        Breadcrumbs::new().show(ui, |bc| {
+            bc.item("Home", Some("🏠"));
+            bc.item("Shop", None);
+            bc.item("Electronics", None);
+            bc.item("Smartphones", None);
+            bc.item("iPhone 15", None).current();
+        });
     });
 
     harness.run();

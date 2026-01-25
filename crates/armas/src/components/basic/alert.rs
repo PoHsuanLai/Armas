@@ -1,11 +1,18 @@
 //! Alert Component
 //!
-//! Inline alert messages with variants and icons
-//! Built on top of Card component and layout system for consistency
+//! Inline alert messages styled like shadcn/ui Alert.
+//! Supports info (default) and destructive variants.
+//! Built on top of Card component for consistency.
 
+use crate::components::button::IconButton;
 use crate::ext::ArmasContextExt;
-use crate::{Badge, Button, ButtonVariant, Card, CardVariant, Theme};
-use egui::{vec2, Color32, Ui};
+use crate::icon::{render_icon, WindowIcon};
+use crate::{ButtonVariant, Card, CardVariant, Theme};
+use egui::{vec2, Color32, Sense, Ui};
+
+// shadcn Alert constants
+const CORNER_RADIUS: f32 = 8.0; // rounded-lg
+const PADDING: f32 = 16.0; // p-4
 
 /// Alert variant
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -18,10 +25,10 @@ pub enum AlertVariant {
 }
 
 impl AlertVariant {
-    fn icon(&self) -> &'static str {
+    fn icon(&self) -> WindowIcon {
         match self {
-            AlertVariant::Info => "ℹ",
-            AlertVariant::Destructive => "✕",
+            AlertVariant::Info => WindowIcon::Info,
+            AlertVariant::Destructive => WindowIcon::Error,
         }
     }
 
@@ -156,13 +163,13 @@ impl Alert {
             self.variant.border_color(&theme)
         };
 
-        // Build the Card with alert-specific styling
+        // Build the Card with alert-specific styling (shadcn style)
         let mut card = Card::new()
             .variant(CardVariant::Outlined)
             .fill(bg_color)
             .stroke(border_color)
-            .corner_radius(8.0)
-            .inner_margin(12.0);
+            .corner_radius(CORNER_RADIUS)
+            .inner_margin(PADDING);
 
         if let Some(width) = self.width {
             card = card.width(width);
@@ -172,11 +179,12 @@ impl Alert {
         card.show(ui, &theme, |ui| {
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = 12.0;
-                // Icon badge
+
+                // Icon
                 if self.show_icon {
-                    Badge::new(self.variant.icon())
-                        .color(accent_color)
-                        .show(ui);
+                    let icon_size = 16.0;
+                    let (rect, _) = ui.allocate_exact_size(vec2(icon_size, icon_size), Sense::hover());
+                    render_icon(ui.painter(), rect, self.variant.icon().data(), accent_color);
                 }
 
                 // Content
@@ -194,12 +202,15 @@ impl Alert {
                     ui.allocate_space(ui.available_size());
 
                     // Close button
-                    if Button::new("✕")
-                        .variant(ButtonVariant::Text)
-                        .min_size(vec2(24.0, 24.0))
-                        .show(ui)
-                        .clicked()
-                    {
+                    let close_response = IconButton::new(WindowIcon::Close.data())
+                        .variant(ButtonVariant::Ghost)
+                        .size(12.0)
+                        .padding(4.0)
+                        .icon_color(theme.muted_foreground())
+                        .hover_icon_color(theme.foreground())
+                        .show(ui);
+
+                    if close_response.clicked() {
                         dismissed = true;
                     }
                 }

@@ -1,10 +1,37 @@
 //! DatePicker Component
 //!
-//! Calendar date selection with input field and popover
-//! Modern design inspired by shadcn/ui with refined styling
+//! Calendar date selection styled like shadcn/ui.
+//! Combines a Button trigger with a Calendar popover.
+//!
+//! # Example
+//!
+//! ```rust,no_run
+//! # use egui::{Context, Ui};
+//! # fn example(ctx: &Context, ui: &mut Ui) {
+//! use armas::{DatePicker, Date, Theme};
+//!
+//! let theme = Theme::dark();
+//! let mut date_picker = DatePicker::new("birthday");
+//! let mut selected_date = None;
+//!
+//! date_picker.show(ctx, &theme, ui, &mut selected_date);
+//! # }
+//! ```
 
-use crate::{Input, Popover, PopoverPosition, Theme};
-use egui::{vec2, Color32, Id, Sense, Ui};
+use crate::icon::{render_icon, WindowIcon};
+use crate::{Popover, PopoverPosition, Theme};
+use egui::{vec2, Color32, Id, Rect, Sense, Ui};
+
+// shadcn calendar constants
+const CELL_SIZE: f32 = 32.0; // --cell-size: 2rem
+const CALENDAR_PADDING: f32 = 12.0; // p-3
+const CALENDAR_WIDTH: f32 = 252.0; // 7 * 32px + 6 * 2px gaps + padding
+const NAV_BUTTON_SIZE: f32 = 32.0; // h-[--cell-size] w-[--cell-size]
+const TRIGGER_WIDTH: f32 = 280.0; // w-[280px]
+const TRIGGER_HEIGHT: f32 = 40.0; // h-10
+const FONT_SIZE: f32 = 14.0; // text-sm
+const SMALL_FONT_SIZE: f32 = 12.0; // text-xs for weekday headers
+const CORNER_RADIUS: f32 = 6.0; // rounded-md
 
 /// A date value (year, month, day)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -77,6 +104,11 @@ impl Date {
         ((h + 6) % 7) as u32
     }
 
+    /// Format as human-readable (e.g., "January 15, 2024")
+    pub fn format_display(&self) -> String {
+        format!("{} {}, {}", self.month_name(), self.day, self.year)
+    }
+
     /// Format as YYYY-MM-DD
     pub fn format(&self) -> String {
         format!("{:04}-{:02}-{:02}", self.year, self.month, self.day)
@@ -116,7 +148,7 @@ impl Date {
     }
 }
 
-/// DatePicker component
+/// DatePicker component styled like shadcn/ui
 ///
 /// # Example
 ///
@@ -134,14 +166,12 @@ impl Date {
 /// ```
 #[derive(Clone)]
 pub struct DatePicker {
-    _id: Id,
+    id: Id,
     popover: Popover,
-    viewing_year: i32,
-    viewing_month: u32,
-    input_text: String,
-    is_open: bool,
     placeholder: String,
     label: Option<String>,
+    show_footer: bool,
+    width: f32,
 }
 
 impl DatePicker {
@@ -149,17 +179,16 @@ impl DatePicker {
     pub fn new(id: impl Into<Id>) -> Self {
         let id = id.into();
         Self {
-            _id: id,
+            id,
             popover: Popover::new(id.with("popover"))
                 .position(PopoverPosition::Bottom)
-                .style(crate::PopoverStyle::Elevated)
-                .width(280.0), // Smaller, tighter width (7 * 36px cells + 6 * 2px gaps + padding)
-            viewing_year: 0,  // Will be initialized on first show
-            viewing_month: 0, // Will be initialized on first show
-            input_text: String::new(),
-            is_open: false,
-            placeholder: "Select a date...".to_string(),
+                .style(crate::PopoverStyle::Default)
+                .padding(0.0) // shadcn: p-0
+                .width(CALENDAR_WIDTH + CALENDAR_PADDING * 2.0),
+            placeholder: "Pick a date".to_string(),
             label: None,
+            show_footer: false, // shadcn default: no footer
+            width: TRIGGER_WIDTH,
         }
     }
 
@@ -175,6 +204,18 @@ impl DatePicker {
         self
     }
 
+    /// Show Today/Clear footer buttons
+    pub fn show_footer(mut self, show: bool) -> Self {
+        self.show_footer = show;
+        self
+    }
+
+    /// Set trigger button width
+    pub fn width(mut self, width: f32) -> Self {
+        self.width = width;
+        self
+    }
+
     /// Show the date picker
     pub fn show(
         &mut self,
@@ -186,7 +227,7 @@ impl DatePicker {
         let mut response = DatePickerResponse { changed: false };
 
         // Load internal state from context
-        let state_id = self._id.with("state");
+        let state_id = self.id.with("state");
 
         // Get or initialize today's date (cached globally once per session)
         let today_id = Id::new("datepicker_today_cache");
@@ -200,563 +241,467 @@ impl DatePicker {
                 today
             });
 
-        let (is_open, viewing_year, viewing_month, mut input_text) = ctx.data(|d| {
-            d.get_temp::<(bool, i32, u32, String)>(state_id).unwrap_or((
-                false,
-                today.year,
-                today.month,
-                String::new(),
-            ))
+        let (is_open, viewing_year, viewing_month) = ctx.data(|d| {
+            d.get_temp::<(bool, i32, u32)>(state_id)
+                .unwrap_or((false, today.year, today.month))
         });
 
-        // Update input text from selected date
-        if let Some(date) = selected_date {
-            input_text = date.format();
-        }
-
-        // Apply loaded state to self
-        self.is_open = is_open;
-        self.viewing_year = viewing_year;
-        self.viewing_month = viewing_month;
-        self.input_text = input_text.clone();
+        let mut is_open = is_open;
+        let mut viewing_year = viewing_year;
+        let mut viewing_month = viewing_month;
 
         // Label
         if let Some(label) = &self.label {
             ui.label(
                 egui::RichText::new(label)
-                    .size(14.0)
+                    .size(FONT_SIZE)
                     .color(theme.foreground()),
             );
             ui.add_space(4.0);
         }
 
-        // Input field with calendar icon
-        let input = Input::new(&self.placeholder).left_icon("📅").width(300.0);
-        let input_response = input.show(ui, &mut self.input_text);
-        let input_rect = input_response.response.rect;
+        // Trigger button (shadcn outline variant style)
+        let trigger_size = vec2(self.width, TRIGGER_HEIGHT);
+        let (trigger_rect, trigger_response) =
+            ui.allocate_exact_size(trigger_size, Sense::click());
 
-        // Toggle popover on click
-        if input_response.response.clicked() {
-            self.is_open = !self.is_open;
+        if ui.is_rect_visible(trigger_rect) {
+            let hovered = trigger_response.hovered();
+            let has_value = selected_date.is_some();
+
+            // Background
+            ui.painter()
+                .rect_filled(trigger_rect, CORNER_RADIUS, theme.background());
+
+            // Border (outline variant)
+            let border_color = if hovered {
+                theme.ring()
+            } else {
+                theme.input()
+            };
+            ui.painter().rect_stroke(
+                trigger_rect,
+                CORNER_RADIUS,
+                egui::Stroke::new(1.0, border_color),
+                egui::StrokeKind::Inside,
+            );
+
+            // Calendar icon (left side)
+            let icon_size = 16.0;
+            let icon_rect = Rect::from_center_size(
+                trigger_rect.left_center() + vec2(16.0, 0.0),
+                vec2(icon_size, icon_size),
+            );
+
+            // Draw a simple calendar icon using the painter
+            let icon_color = theme.muted_foreground();
+            let ir = icon_rect;
+
+            // Calendar outline
+            ui.painter().rect_stroke(
+                Rect::from_min_size(ir.min + vec2(1.0, 2.0), vec2(14.0, 12.0)),
+                2.0,
+                egui::Stroke::new(1.5, icon_color),
+                egui::StrokeKind::Inside,
+            );
+            // Calendar top hooks
+            ui.painter().line_segment(
+                [ir.min + vec2(5.0, 0.0), ir.min + vec2(5.0, 4.0)],
+                egui::Stroke::new(1.5, icon_color),
+            );
+            ui.painter().line_segment(
+                [ir.min + vec2(11.0, 0.0), ir.min + vec2(11.0, 4.0)],
+                egui::Stroke::new(1.5, icon_color),
+            );
+            // Calendar horizontal line
+            ui.painter().line_segment(
+                [ir.min + vec2(1.0, 7.0), ir.min + vec2(15.0, 7.0)],
+                egui::Stroke::new(1.0, icon_color),
+            );
+
+            // Text (date or placeholder)
+            let text = if let Some(date) = selected_date {
+                date.format_display()
+            } else {
+                self.placeholder.clone()
+            };
+
+            let text_color = if has_value {
+                theme.foreground()
+            } else {
+                theme.muted_foreground()
+            };
+
+            ui.painter().text(
+                trigger_rect.left_center() + vec2(36.0, 0.0),
+                egui::Align2::LEFT_CENTER,
+                &text,
+                egui::FontId::proportional(FONT_SIZE),
+                text_color,
+            );
         }
 
-        // Try to parse input text
-        if input_response.changed {
-            if let Some(date) = Date::parse(&self.input_text) {
-                *selected_date = Some(date);
-                self.viewing_year = date.year;
-                self.viewing_month = date.month;
-                response.changed = true;
+        // Toggle popover on click
+        if trigger_response.clicked() {
+            is_open = !is_open;
+            // Navigate to selected date's month when opening
+            if is_open {
+                if let Some(date) = selected_date {
+                    viewing_year = date.year;
+                    viewing_month = date.month;
+                }
             }
         }
 
-        // Show calendar popover
-        // Reuse the cached today value
-
+        // Calendar popover
         let mut date_clicked = None;
         let mut goto_today = false;
         let mut clear_date = false;
-        let mut prev_month = false;
-        let mut next_month = false;
+        let mut prev_month_clicked = false;
+        let mut next_month_clicked = false;
 
-        let viewing_year = self.viewing_year;
-        let viewing_month = self.viewing_month;
+        let show_footer = self.show_footer;
 
-        // Set popover open state externally
-        self.popover.set_open(self.is_open);
+        self.popover.set_open(is_open);
 
-        let popover_response = self.popover.show(ctx, theme, input_rect, |ui| {
-            // Draw opaque background to counteract popover's opacity animation
-            let full_rect = ui.max_rect();
-            ui.painter().rect_filled(
-                full_rect,
-                theme.spacing.corner_radius,
-                egui::Color32::from_rgba_premultiplied(
-                    theme.card().r(),
-                    theme.card().g(),
-                    theme.card().b(),
-                    255,
-                ),
-            );
+        let popover_response = self.popover.show(ctx, theme, trigger_rect, |ui| {
+            ui.set_min_width(CALENDAR_WIDTH);
 
-            ui.vertical(|ui| {
-                ui.spacing_mut().item_spacing.y = theme.spacing.sm;
-                ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                    // Header with month/year navigation
-                    ui.horizontal(|ui| {
-                        ui.spacing_mut().item_spacing.x = theme.spacing.sm;
-                        // Previous month button
-                        let prev_size = vec2(32.0, 32.0);
-                        let (prev_rect, prev_response) =
-                            ui.allocate_exact_size(prev_size, Sense::click());
+            // Calendar content with padding
+            egui::Frame::new()
+                .inner_margin(CALENDAR_PADDING)
+                .show(ui, |ui| {
+                    ui.vertical(|ui| {
+                        ui.spacing_mut().item_spacing.y = 4.0;
 
-                        if ui.is_rect_visible(prev_rect) {
-                            let hovered = prev_response.hovered();
+                        // Header: navigation + month/year
+                        ui.horizontal(|ui| {
+                            // Previous month button (ghost variant)
+                            let (prev_rect, prev_response) =
+                                ui.allocate_exact_size(vec2(NAV_BUTTON_SIZE, NAV_BUTTON_SIZE), Sense::click());
 
-                            // Background on hover
-                            if hovered {
-                                ui.painter()
-                                    .rect_filled(prev_rect, 6.0, theme.muted());
-                            }
+                            if ui.is_rect_visible(prev_rect) {
+                                if prev_response.hovered() {
+                                    ui.painter().rect_filled(prev_rect, 4.0, theme.accent());
+                                }
 
-                            // Chevron icon
-                            ui.painter().text(
-                                prev_rect.center(),
-                                egui::Align2::CENTER_CENTER,
-                                "‹",
-                                egui::FontId::proportional(20.0),
-                                if hovered {
-                                    theme.foreground()
-                                } else {
-                                    theme.muted_foreground()
-                                },
-                            );
-                        }
-
-                        if prev_response.clicked() {
-                            prev_month = true;
-                        }
-
-                        // Month/Year label
-                        ui.with_layout(
-                            egui::Layout::centered_and_justified(egui::Direction::LeftToRight),
-                            |ui| {
-                                ui.label(
-                                    egui::RichText::new(format!(
-                                        "{} {}",
-                                        Date::new(viewing_year, viewing_month, 1)
-                                            .unwrap()
-                                            .month_name(),
-                                        viewing_year
-                                    ))
-                                    .size(14.0)
-                                    .strong()
-                                    .color(theme.foreground()),
+                                let icon_rect = Rect::from_center_size(
+                                    prev_rect.center(),
+                                    vec2(16.0, 16.0),
                                 );
-                            },
-                        );
-
-                        // Next month button
-                        let next_size = vec2(32.0, 32.0);
-                        let (next_rect, next_response) =
-                            ui.allocate_exact_size(next_size, Sense::click());
-
-                        if ui.is_rect_visible(next_rect) {
-                            let hovered = next_response.hovered();
-
-                            // Background on hover
-                            if hovered {
-                                ui.painter()
-                                    .rect_filled(next_rect, 6.0, theme.muted());
+                                render_icon(
+                                    ui.painter(),
+                                    icon_rect,
+                                    WindowIcon::ChevronLeft.data(),
+                                    if prev_response.hovered() {
+                                        theme.accent_foreground()
+                                    } else {
+                                        theme.foreground()
+                                    },
+                                );
                             }
 
-                            // Chevron icon
-                            ui.painter().text(
-                                next_rect.center(),
-                                egui::Align2::CENTER_CENTER,
-                                "›",
-                                egui::FontId::proportional(20.0),
-                                if hovered {
-                                    theme.foreground()
-                                } else {
-                                    theme.muted_foreground()
-                                },
-                            );
-                        }
+                            if prev_response.clicked() {
+                                prev_month_clicked = true;
+                            }
 
-                        if next_response.clicked() {
-                            next_month = true;
-                        }
-                    });
-
-                    ui.add_space(theme.spacing.xs);
-
-                    // Weekday headers (manual layout for perfect alignment)
-                    ui.horizontal(|ui| {
-                        ui.spacing_mut().item_spacing.x = theme.spacing.xs;
-                        for day in &["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] {
-                            ui.allocate_ui(vec2(36.0, 28.0), |ui| {
+                            // Month/Year label (centered)
+                            let label_width = CALENDAR_WIDTH - NAV_BUTTON_SIZE * 2.0 - 8.0;
+                            ui.allocate_ui(vec2(label_width, NAV_BUTTON_SIZE), |ui| {
                                 ui.centered_and_justified(|ui| {
                                     ui.label(
-                                        egui::RichText::new(*day)
-                                            .size(12.0)
-                                            .font(egui::FontId::new(
-                                                12.0,
-                                                egui::FontFamily::Name("Inter".into()),
-                                            ))
-                                            .color(theme.muted_foreground()),
+                                        egui::RichText::new(format!(
+                                            "{} {}",
+                                            Date::new(viewing_year, viewing_month, 1)
+                                                .unwrap()
+                                                .month_name(),
+                                            viewing_year
+                                        ))
+                                        .size(FONT_SIZE)
+                                        .strong()
+                                        .color(theme.foreground()),
                                     );
                                 });
                             });
-                        }
-                    });
 
-                    ui.add_space(theme.spacing.xs);
+                            // Next month button (ghost variant)
+                            let (next_rect, next_response) =
+                                ui.allocate_exact_size(vec2(NAV_BUTTON_SIZE, NAV_BUTTON_SIZE), Sense::click());
 
-                    // Calendar grid with custom day cells (manual layout for perfect alignment)
-                    let first_day = Date::new(viewing_year, viewing_month, 1).unwrap();
-                    let first_weekday = first_day.day_of_week();
-                    let days_in_month = Date::days_in_month(viewing_year, viewing_month);
+                            if ui.is_rect_visible(next_rect) {
+                                if next_response.hovered() {
+                                    ui.painter().rect_filled(next_rect, 4.0, theme.accent());
+                                }
 
-                    // Calculate previous/next month info
-                    let (prev_year, prev_month) = if viewing_month == 1 {
-                        (viewing_year - 1, 12)
-                    } else {
-                        (viewing_year, viewing_month - 1)
-                    };
-                    let (next_year, next_month) = if viewing_month == 12 {
-                        (viewing_year + 1, 1)
-                    } else {
-                        (viewing_year, viewing_month + 1)
-                    };
-                    let prev_month_days = Date::days_in_month(prev_year, prev_month);
-
-                    let cell_size = vec2(36.0, 36.0);
-                    let mut day_counter = 1;
-                    let _total_cells = 42; // 6 weeks * 7 days
-
-                    // Render 6 rows
-                    for row in 0..6 {
-                        ui.horizontal(|ui| {
-                            ui.spacing_mut().item_spacing.x = theme.spacing.xs;
-
-                            // Render 7 columns
-                            for col in 0..7 {
-                                let cell_index = row * 7 + col;
-
-                                // Determine which day to show
-                                let (day, is_current_month, actual_year, actual_month) =
-                                    if cell_index < first_weekday {
-                                        // Previous month
-                                        let day =
-                                            prev_month_days - (first_weekday - cell_index - 1);
-                                        (day, false, prev_year, prev_month)
-                                    } else if day_counter <= days_in_month {
-                                        // Current month
-                                        let day = day_counter;
-                                        day_counter += 1;
-                                        (day, true, viewing_year, viewing_month)
+                                let icon_rect = Rect::from_center_size(
+                                    next_rect.center(),
+                                    vec2(16.0, 16.0),
+                                );
+                                render_icon(
+                                    ui.painter(),
+                                    icon_rect,
+                                    WindowIcon::ChevronRight.data(),
+                                    if next_response.hovered() {
+                                        theme.accent_foreground()
                                     } else {
-                                        // Next month
-                                        let day = day_counter - days_in_month;
-                                        day_counter += 1;
-                                        (day, false, next_year, next_month)
-                                    };
+                                        theme.foreground()
+                                    },
+                                );
+                            }
 
-                                if is_current_month {
-                                    // Current month day - full interactivity
+                            if next_response.clicked() {
+                                next_month_clicked = true;
+                            }
+                        });
+
+                        ui.add_space(4.0);
+
+                        // Weekday headers
+                        ui.horizontal(|ui| {
+                            ui.spacing_mut().item_spacing.x = 2.0;
+                            for day in &["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] {
+                                ui.allocate_ui(vec2(CELL_SIZE, CELL_SIZE), |ui| {
+                                    ui.centered_and_justified(|ui| {
+                                        ui.label(
+                                            egui::RichText::new(*day)
+                                                .size(SMALL_FONT_SIZE)
+                                                .color(theme.muted_foreground()),
+                                        );
+                                    });
+                                });
+                            }
+                        });
+
+                        // Calendar grid
+                        let first_day = Date::new(viewing_year, viewing_month, 1).unwrap();
+                        let first_weekday = first_day.day_of_week();
+                        let days_in_month = Date::days_in_month(viewing_year, viewing_month);
+
+                        // Calculate previous/next month info
+                        let (prev_year, prev_month_num) = if viewing_month == 1 {
+                            (viewing_year - 1, 12)
+                        } else {
+                            (viewing_year, viewing_month - 1)
+                        };
+                        let (next_year, next_month_num) = if viewing_month == 12 {
+                            (viewing_year + 1, 1)
+                        } else {
+                            (viewing_year, viewing_month + 1)
+                        };
+                        let prev_month_days = Date::days_in_month(prev_year, prev_month_num);
+
+                        let mut day_counter = 1u32;
+
+                        // Render 6 rows
+                        for row in 0..6 {
+                            ui.horizontal(|ui| {
+                                ui.spacing_mut().item_spacing.x = 2.0;
+
+                                for col in 0..7 {
+                                    let cell_index = row * 7 + col;
+
+                                    // Determine which day to show
+                                    let (day, is_current_month, actual_year, actual_month) =
+                                        if cell_index < first_weekday {
+                                            let day = prev_month_days - (first_weekday - cell_index - 1);
+                                            (day, false, prev_year, prev_month_num)
+                                        } else if day_counter <= days_in_month {
+                                            let day = day_counter;
+                                            day_counter += 1;
+                                            (day, true, viewing_year, viewing_month)
+                                        } else {
+                                            let day = day_counter - days_in_month;
+                                            day_counter += 1;
+                                            (day, false, next_year, next_month_num)
+                                        };
+
                                     let date = Date::new(actual_year, actual_month, day).unwrap();
                                     let is_today = date == today;
                                     let is_selected = *selected_date == Some(date);
 
-                                    let (rect, response) =
-                                        ui.allocate_exact_size(cell_size, Sense::click());
+                                    let sense = if is_current_month {
+                                        Sense::click()
+                                    } else {
+                                        Sense::hover()
+                                    };
+
+                                    let (rect, cell_response) =
+                                        ui.allocate_exact_size(vec2(CELL_SIZE, CELL_SIZE), sense);
 
                                     if ui.is_rect_visible(rect) {
-                                        let hovered = response.hovered();
+                                        let hovered = cell_response.hovered() && is_current_month;
 
-                                        // Determine colors based on state (Flowbite-inspired)
-                                        let (bg_color, text_color, font_weight) = if is_selected {
-                                            // Selected: primary background with white text, bold
-                                            (
-                                                Some(theme.primary()),
-                                                Color32::WHITE,
-                                                true, // bold
-                                            )
+                                        // Determine colors based on state (shadcn style)
+                                        let (bg_color, text_color) = if is_selected {
+                                            // Selected: bg-primary text-primary-foreground
+                                            (Some(theme.primary()), theme.primary_foreground())
                                         } else if is_today {
-                                            // Today: turquoise background with white text
-                                            (
-                                                Some(Color32::from_rgb(0, 209, 178)), // hsl(171, 100%, 41%)
-                                                Color32::WHITE,
-                                                false,
-                                            )
+                                            // Today: bg-accent text-accent-foreground
+                                            (Some(theme.accent()), theme.accent_foreground())
                                         } else if hovered {
-                                            // Hover: darken surface slightly
-                                            let surface = theme.muted();
-                                            let darkened = Color32::from_rgb(
-                                                (surface.r() as f32 * 0.975) as u8,
-                                                (surface.g() as f32 * 0.975) as u8,
-                                                (surface.b() as f32 * 0.975) as u8,
-                                            );
-                                            (Some(darkened), theme.foreground(), false)
+                                            // Hover: bg-accent text-accent-foreground
+                                            (Some(theme.accent()), theme.accent_foreground())
+                                        } else if !is_current_month {
+                                            // Outside month: text-muted-foreground
+                                            (None, theme.muted_foreground())
                                         } else {
-                                            // Normal: transparent
-                                            (None, theme.foreground(), false)
+                                            // Normal
+                                            (None, theme.foreground())
                                         };
 
                                         // Background
                                         if let Some(bg) = bg_color {
-                                            ui.painter().rect_filled(
-                                                rect, 4.0, // 4px border radius like Flowbite
-                                                bg,
-                                            );
+                                            ui.painter().rect_filled(rect, 4.0, bg);
                                         }
 
-                                        // Day number with optional bold using Inter font
-                                        let font_id = if font_weight {
-                                            egui::FontId::new(
-                                                14.0,
-                                                egui::FontFamily::Name("Inter".into()),
-                                            )
-                                        } else {
-                                            egui::FontId::new(
-                                                13.0,
-                                                egui::FontFamily::Name("Inter".into()),
-                                            )
-                                        };
-
-                                        let galley = ui.painter().layout_no_wrap(
-                                            day.to_string(),
-                                            font_id,
-                                            text_color,
-                                        );
-
-                                        ui.painter().galley(
-                                            rect.center() - galley.size() / 2.0,
-                                            galley,
-                                            text_color,
-                                        );
-                                    }
-
-                                    if response.clicked() {
-                                        date_clicked = Some(date);
-                                    }
-                                } else {
-                                    // Previous/next month day - grey and non-interactive
-                                    let (rect, _response) =
-                                        ui.allocate_exact_size(cell_size, Sense::hover());
-
-                                    if ui.is_rect_visible(rect) {
-                                        // Day number in grey using Inter font
+                                        // Day number
                                         ui.painter().text(
                                             rect.center(),
                                             egui::Align2::CENTER_CENTER,
                                             day.to_string(),
-                                            egui::FontId::new(
-                                                13.0,
-                                                egui::FontFamily::Name("Inter".into()),
-                                            ),
-                                            theme.muted_foreground().linear_multiply(0.5), // Very muted grey
+                                            egui::FontId::proportional(FONT_SIZE),
+                                            text_color,
                                         );
                                     }
+
+                                    if cell_response.clicked() && is_current_month {
+                                        date_clicked = Some(date);
+                                    }
                                 }
-                            }
-                        });
-
-                        // Add vertical spacing between rows
-                        if row < 5 {
-                            ui.add_space(theme.spacing.xs);
-                        }
-                    }
-
-                    ui.add_space(theme.spacing.sm);
-
-                    // Subtle separator
-                    let sep_rect = ui.allocate_space(vec2(ui.available_width(), 1.0)).1;
-                    ui.painter().rect_filled(
-                        sep_rect,
-                        0.0,
-                        Color32::from_rgba_unmultiplied(
-                            theme.border().r(),
-                            theme.border().g(),
-                            theme.border().b(),
-                            50,
-                        ),
-                    );
-
-                    ui.add_space(theme.spacing.sm);
-
-                    // Footer with quick actions - hardcoded centered positions
-                    let button_width = 70.0;
-                    let button_height = 32.0;
-                    let button_spacing = 8.0;
-                    let total_button_width = button_width * 2.0 + button_spacing;
-                    let available_width = ui.available_width();
-                    let start_x = (available_width - total_button_width) / 2.0;
-
-                    let (footer_rect, _) = ui
-                        .allocate_exact_size(vec2(available_width, button_height), Sense::hover());
-
-                    // Today button - outlined style
-                    let today_text = "Today";
-                    let today_rect = egui::Rect::from_min_size(
-                        footer_rect.min + vec2(start_x, 0.0),
-                        vec2(button_width, button_height),
-                    );
-                    let today_response =
-                        ui.interact(today_rect, ui.id().with("today_btn"), Sense::click());
-
-                    if ui.is_rect_visible(today_rect) {
-                        let hovered = today_response.hovered();
-
-                        // Border
-                        ui.painter().rect_stroke(
-                            today_rect,
-                            4.0,
-                            egui::Stroke::new(
-                                1.0,
-                                if hovered {
-                                    theme.primary()
-                                } else {
-                                    theme.border()
-                                },
-                            ),
-                            egui::StrokeKind::Outside,
-                        );
-
-                        // Background on hover
-                        if hovered {
-                            ui.painter().rect_filled(
-                                today_rect,
-                                4.0,
-                                theme.primary().linear_multiply(0.1),
-                            );
+                            });
                         }
 
-                        // Text
-                        ui.painter().text(
-                            today_rect.center(),
-                            egui::Align2::CENTER_CENTER,
-                            today_text,
-                            egui::FontId::new(13.0, egui::FontFamily::Name("Inter".into())),
-                            if hovered {
-                                theme.primary()
-                            } else {
-                                theme.foreground()
-                            },
-                        );
-                    }
+                        // Optional footer with Today/Clear buttons
+                        if show_footer {
+                            ui.add_space(8.0);
 
-                    if today_response.clicked() {
-                        goto_today = true;
-                    }
+                            // Separator
+                            let sep_rect = ui.allocate_space(vec2(ui.available_width(), 1.0)).1;
+                            ui.painter().rect_filled(sep_rect, 0.0, theme.border());
 
-                    // Clear button - outlined style
-                    let clear_text = "Clear";
-                    let clear_rect = egui::Rect::from_min_size(
-                        footer_rect.min + vec2(start_x + button_width + button_spacing, 0.0),
-                        vec2(button_width, button_height),
-                    );
-                    let clear_response =
-                        ui.interact(clear_rect, ui.id().with("clear_btn"), Sense::click());
+                            ui.add_space(8.0);
 
-                    if ui.is_rect_visible(clear_rect) {
-                        let hovered = clear_response.hovered();
+                            ui.horizontal(|ui| {
+                                ui.spacing_mut().item_spacing.x = 8.0;
 
-                        // Border
-                        ui.painter().rect_stroke(
-                            clear_rect,
-                            4.0,
-                            egui::Stroke::new(
-                                1.0,
-                                if hovered {
-                                    theme.destructive()
-                                } else {
-                                    theme.border()
-                                },
-                            ),
-                            egui::StrokeKind::Outside,
-                        );
+                                // Today button (ghost variant)
+                                let today_btn_size = vec2(60.0, 32.0);
+                                let (today_rect, today_response) =
+                                    ui.allocate_exact_size(today_btn_size, Sense::click());
 
-                        // Background on hover
-                        if hovered {
-                            ui.painter().rect_filled(
-                                clear_rect,
-                                4.0,
-                                theme.destructive().linear_multiply(0.1),
-                            );
+                                if ui.is_rect_visible(today_rect) {
+                                    if today_response.hovered() {
+                                        ui.painter().rect_filled(today_rect, 4.0, theme.accent());
+                                    }
+
+                                    ui.painter().text(
+                                        today_rect.center(),
+                                        egui::Align2::CENTER_CENTER,
+                                        "Today",
+                                        egui::FontId::proportional(FONT_SIZE),
+                                        if today_response.hovered() {
+                                            theme.accent_foreground()
+                                        } else {
+                                            theme.foreground()
+                                        },
+                                    );
+                                }
+
+                                if today_response.clicked() {
+                                    goto_today = true;
+                                }
+
+                                // Clear button (ghost destructive variant)
+                                let clear_btn_size = vec2(60.0, 32.0);
+                                let (clear_rect, clear_response) =
+                                    ui.allocate_exact_size(clear_btn_size, Sense::click());
+
+                                if ui.is_rect_visible(clear_rect) {
+                                    if clear_response.hovered() {
+                                        ui.painter().rect_filled(
+                                            clear_rect,
+                                            4.0,
+                                            Color32::from_rgba_unmultiplied(
+                                                theme.destructive().r(),
+                                                theme.destructive().g(),
+                                                theme.destructive().b(),
+                                                25,
+                                            ),
+                                        );
+                                    }
+
+                                    ui.painter().text(
+                                        clear_rect.center(),
+                                        egui::Align2::CENTER_CENTER,
+                                        "Clear",
+                                        egui::FontId::proportional(FONT_SIZE),
+                                        if clear_response.hovered() {
+                                            theme.destructive()
+                                        } else {
+                                            theme.muted_foreground()
+                                        },
+                                    );
+                                }
+
+                                if clear_response.clicked() {
+                                    clear_date = true;
+                                }
+                            });
                         }
-
-                        // Text
-                        ui.painter().text(
-                            clear_rect.center(),
-                            egui::Align2::CENTER_CENTER,
-                            clear_text,
-                            egui::FontId::new(13.0, egui::FontFamily::Name("Inter".into())),
-                            if hovered {
-                                theme.destructive()
-                            } else {
-                                theme.foreground()
-                            },
-                        );
-                    }
-
-                    if clear_response.clicked() {
-                        clear_date = true;
-                    }
+                    });
                 });
-            });
         });
 
         // Handle clicking outside the popover to close
         if popover_response.clicked_outside || popover_response.should_close {
-            self.is_open = false;
+            is_open = false;
         }
 
         // Handle month navigation
-        if prev_month {
-            self.previous_month();
+        if prev_month_clicked {
+            if viewing_month == 1 {
+                viewing_month = 12;
+                viewing_year -= 1;
+            } else {
+                viewing_month -= 1;
+            }
         }
-        if next_month {
-            self.next_month();
+        if next_month_clicked {
+            if viewing_month == 12 {
+                viewing_month = 1;
+                viewing_year += 1;
+            } else {
+                viewing_month += 1;
+            }
         }
 
         // Handle date selection
         if let Some(date) = date_clicked {
             *selected_date = Some(date);
-            self.input_text = date.format();
-            self.is_open = false;
+            is_open = false;
             response.changed = true;
         }
 
         if goto_today {
             *selected_date = Some(today);
-            self.input_text = today.format();
-            self.viewing_year = today.year;
-            self.viewing_month = today.month;
-            self.is_open = false;
+            viewing_year = today.year;
+            viewing_month = today.month;
+            is_open = false;
             response.changed = true;
         }
 
         if clear_date {
             *selected_date = None;
-            self.input_text.clear();
-            self.is_open = false;
+            is_open = false;
             response.changed = true;
         }
 
         // Save internal state back to context
         ctx.data_mut(|d| {
-            d.insert_temp(
-                state_id,
-                (
-                    self.is_open,
-                    self.viewing_year,
-                    self.viewing_month,
-                    self.input_text.clone(),
-                ),
-            );
+            d.insert_temp(state_id, (is_open, viewing_year, viewing_month));
         });
 
         response
-    }
-
-    fn previous_month(&mut self) {
-        if self.viewing_month == 1 {
-            self.viewing_month = 12;
-            self.viewing_year -= 1;
-        } else {
-            self.viewing_month -= 1;
-        }
-    }
-
-    fn next_month(&mut self) {
-        if self.viewing_month == 12 {
-            self.viewing_month = 1;
-            self.viewing_year += 1;
-        } else {
-            self.viewing_month += 1;
-        }
     }
 }
 

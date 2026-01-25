@@ -8,7 +8,7 @@
 
 use lyon_tessellation::{
     path::Path as TessPath, BuffersBuilder, FillOptions, FillTessellator, FillVertex,
-    VertexBuffers,
+    StrokeOptions, StrokeTessellator, StrokeVertex, VertexBuffers,
 };
 use std::env;
 use std::fs::{self, File};
@@ -79,10 +79,11 @@ fn parse_svg(path: &Path) -> Result<(String, String, f32, f32), Box<dyn std::err
 
     // Tessellate the SVG paths into triangles
     let mut geometry: VertexBuffers<[f32; 2], u32> = VertexBuffers::new();
-    let mut tessellator = FillTessellator::new();
+    let mut fill_tessellator = FillTessellator::new();
+    let mut stroke_tessellator = StrokeTessellator::new();
 
     // Extract and tessellate all paths
-    tessellate_group(tree.root(), &mut tessellator, &mut geometry)?;
+    tessellate_group(tree.root(), &mut fill_tessellator, &mut stroke_tessellator, &mut geometry)?;
 
     // Generate Rust code for vertices
     let mut vertices_code = String::new();
@@ -152,29 +153,36 @@ fn extract_dimension(svg_data: &str, attr: &str) -> Option<f32> {
 
 fn tessellate_group(
     group: &usvg::Group,
-    tessellator: &mut FillTessellator,
+    fill_tessellator: &mut FillTessellator,
+    stroke_tessellator: &mut StrokeTessellator,
     geometry: &mut VertexBuffers<[f32; 2], u32>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     for node in group.children() {
-        tessellate_node(node, tessellator, geometry)?;
+        tessellate_node(node, fill_tessellator, stroke_tessellator, geometry)?;
     }
     Ok(())
 }
 
 fn tessellate_node(
     node: &usvg::Node,
-    tessellator: &mut FillTessellator,
+    fill_tessellator: &mut FillTessellator,
+    stroke_tessellator: &mut StrokeTessellator,
     geometry: &mut VertexBuffers<[f32; 2], u32>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     match node {
         usvg::Node::Path(path) => {
             // Convert usvg path to Lyon path
             let mut builder = TessPath::builder();
+            let mut has_begun = false;
 
             for segment in path.data().segments() {
                 match segment {
                     PathSegment::MoveTo(p) => {
+                        if has_begun {
+                            builder.end(false);
+                        }
                         builder.begin(lyon_tessellation::math::Point::new(p.x, p.y));
+                        has_begun = true;
                     }
                     PathSegment::LineTo(p) => {
                         builder.line_to(lyon_tessellation::math::Point::new(p.x, p.y));
@@ -194,23 +202,48 @@ fn tessellate_node(
                     }
                     PathSegment::Close => {
                         builder.end(true);
+                        has_begun = false;
                     }
                 }
             }
 
+            // End path if not closed
+            if has_begun {
+                builder.end(false);
+            }
+
             let lyon_path = builder.build();
 
-            // Tessellate with fill rule
-            tessellator.tessellate_path(
-                &lyon_path,
-                &FillOptions::default(),
-                &mut BuffersBuilder::new(geometry, |vertex: FillVertex| {
-                    [vertex.position().x, vertex.position().y]
-                }),
-            )?;
+            // Check if path has fill
+            if path.fill().is_some() {
+                fill_tessellator.tessellate_path(
+                    &lyon_path,
+                    &FillOptions::default(),
+                    &mut BuffersBuilder::new(geometry, |vertex: FillVertex| {
+                        [vertex.position().x, vertex.position().y]
+                    }),
+                )?;
+            }
+
+            // Check if path has stroke
+            if let Some(stroke) = path.stroke() {
+                let stroke_width = stroke.width().get();
+                let stroke_options = StrokeOptions::default()
+                    .with_line_width(stroke_width)
+                    .with_line_cap(lyon_tessellation::LineCap::Round)
+                    .with_line_join(lyon_tessellation::LineJoin::Round);
+
+                stroke_tessellator.tessellate_path(
+                    &lyon_path,
+                    &stroke_options,
+                    &mut BuffersBuilder::new(geometry, |vertex: StrokeVertex| {
+                        [vertex.position().x, vertex.position().y]
+                    }),
+                )?;
+            }
         }
         usvg::Node::Group(group) => {
-            tessellate_group(group, tessellator, geometry)?;
+            tessellate_group(group, fill_tessellator, stroke_tessellator, geometry)?;
         }
         _ => {}
     }

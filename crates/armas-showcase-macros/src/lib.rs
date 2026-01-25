@@ -251,15 +251,14 @@ fn generate_show_function(blocks: &[CodeBlock]) -> Result<proc_macro2::TokenStre
                 statements.push(quote! {
                     // Demo container with tabs
                     {
-                        use armas::{AnimatedTabs, TabStyle};
+                        use armas::Tabs;
 
                         let demo_id = ui.id().with(#code_string);
                         let mut active_tab = ui.ctx().data_mut(|d| d.get_temp::<usize>(demo_id).unwrap_or(0));
 
                         // Container with border
                         let container_rect = ui.available_rect_before_wrap();
-                        let mut tabs = AnimatedTabs::new(vec!["Preview", "Code"])
-                            .style(TabStyle::Underline)
+                        let mut tabs = Tabs::new(vec!["Preview", "Code"])
                             .active(active_tab);
 
                         let _ = ui.vertical(|ui| {

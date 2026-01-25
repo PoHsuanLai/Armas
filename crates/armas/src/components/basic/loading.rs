@@ -1,6 +1,30 @@
+//! Loading Components
+//!
+//! Loading indicators styled for consistent UX.
+//! Includes:
+//! - Spinner: Classic rotating bar spinner
+//! - LoadingDots: Pulsing dots animation
+//! - Skeleton: Content placeholder with shimmer
+//! - CircularProgress: Rotating arc spinner
+
 use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Rect, Response, Ui, Vec2};
 use std::f32::consts::PI;
+
+// Default sizes
+const SPINNER_SIZE: f32 = 40.0;
+const SPINNER_BAR_COUNT: usize = 12;
+const SPINNER_BAR_WIDTH: f32 = 2.0;
+
+const DOTS_SIZE: f32 = 8.0;
+const DOTS_SPACING: f32 = 12.0;
+const DOTS_COUNT: usize = 3;
+
+const SKELETON_CORNER_RADIUS: f32 = 6.0; // rounded-md
+const SKELETON_SHIMMER_WIDTH: f32 = 0.3;
+
+const CIRCULAR_SIZE: f32 = 40.0;
+const CIRCULAR_STROKE: f32 = 3.0;
 
 /// Rotating spinner with multiple bars
 ///
@@ -43,12 +67,12 @@ impl Spinner {
     /// Color defaults to theme primary color
     pub fn new() -> Self {
         Self {
-            size: 40.0,
+            size: SPINNER_SIZE,
             speed: 2.0 * PI,
             color: None, // Will use theme.primary()
             rotation: 0.0,
-            bar_count: 12,
-            bar_width: 2.0,
+            bar_count: SPINNER_BAR_COUNT,
+            bar_width: SPINNER_BAR_WIDTH,
         }
     }
 
@@ -174,12 +198,12 @@ impl LoadingDots {
     /// Color defaults to theme primary color
     pub fn new() -> Self {
         Self {
-            dot_size: 8.0,
-            spacing: 12.0,
+            dot_size: DOTS_SIZE,
+            spacing: DOTS_SPACING,
             color: None, // Will use theme.primary()
             phase: 0.0,
             speed: 1.5,
-            dot_count: 3,
+            dot_count: DOTS_COUNT,
         }
     }
 
@@ -311,8 +335,8 @@ impl Skeleton {
             highlight_color: None, // Will use theme.card()
             shimmer_pos: 0.0,
             speed: 0.5,
-            corner_radius: None, // Will use theme.spacing.xs
-            shimmer_width: 0.3,
+            corner_radius: Some(SKELETON_CORNER_RADIUS),
+            shimmer_width: SKELETON_SHIMMER_WIDTH,
         }
     }
 
@@ -458,9 +482,9 @@ impl CircularProgress {
     /// Color defaults to theme primary color
     pub fn new() -> Self {
         Self {
-            size: 40.0,
+            size: CIRCULAR_SIZE,
             color: None, // Will use theme.primary()
-            stroke_width: 3.0,
+            stroke_width: CIRCULAR_STROKE,
             rotation: 0.0,
             arc_length: 0.25,
             phase: 0.0,

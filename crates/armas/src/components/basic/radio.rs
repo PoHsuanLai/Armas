@@ -1,10 +1,41 @@
 //! Radio Button Components
 //!
-//! Material Design 3 radio buttons for single selection from a group
+//! Radio buttons styled like shadcn/ui RadioGroup.
+//! For single selection from a group of options.
+//!
+//! # Example
+//!
+//! ```rust,no_run
+//! # use egui::Ui;
+//! # fn example(ui: &mut Ui) {
+//! use armas::components::{Radio, RadioGroup};
+//!
+//! // Single radio
+//! Radio::new().label("Option").show(ui, true);
+//!
+//! // Radio group
+//! let mut selected = Some("opt1".to_string());
+//! RadioGroup::new(&mut selected)
+//!     .label("Choose one")
+//!     .show(ui, |group| {
+//!         group.option("opt1", "First");
+//!         group.option("opt2", "Second");
+//!     });
+//! # }
+//! ```
 
 use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Response, Sense, Stroke, Ui, Vec2};
+
+// shadcn RadioGroup constants
+const RADIO_SIZE: f32 = 16.0; // h-4 w-4 (default)
+const RADIO_SIZE_SM: f32 = 14.0; // Small variant
+const RADIO_SIZE_LG: f32 = 20.0; // Large variant
+const BORDER_WIDTH: f32 = 1.0; // border
+const INNER_CIRCLE_RATIO: f32 = 0.5; // Inner dot is 50% of outer
+const LABEL_FONT_SIZE: f32 = 14.0; // text-sm
+const DESCRIPTION_FONT_SIZE: f32 = 12.0; // text-xs
 
 /// Radio button size
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -17,9 +48,9 @@ pub enum RadioSize {
 impl RadioSize {
     fn diameter(&self) -> f32 {
         match self {
-            RadioSize::Small => 16.0,
-            RadioSize::Medium => 20.0,
-            RadioSize::Large => 24.0,
+            RadioSize::Small => RADIO_SIZE_SM,
+            RadioSize::Medium => RADIO_SIZE,
+            RadioSize::Large => RADIO_SIZE_LG,
         }
     }
 }
@@ -108,13 +139,13 @@ impl Radio {
                                 theme.foreground()
                             };
 
-                            ui.label(egui::RichText::new(label).size(14.0).color(label_color));
+                            ui.label(egui::RichText::new(label).size(LABEL_FONT_SIZE).color(label_color));
                         }
 
                         if let Some(description) = &self.description {
                             ui.label(
                                 egui::RichText::new(description)
-                                    .size(12.0)
+                                    .size(DESCRIPTION_FONT_SIZE)
                                     .color(theme.muted_foreground()),
                             );
                         }
@@ -128,28 +159,28 @@ impl Radio {
         RadioResponse { response, selected }
     }
 
-    /// Draw the radio button circle
+    /// Draw the radio button circle (shadcn style)
     fn draw_radio(&self, ui: &mut Ui, rect: egui::Rect, selected: bool, theme: &Theme) {
         let painter = ui.painter();
         let center = rect.center();
         let radius = rect.width() / 2.0;
 
-        // Outer circle
+        // Outer circle border (shadcn uses primary color when selected)
         let border_color = if self.disabled {
-            theme.border()
+            theme.muted_foreground().gamma_multiply(0.5)
         } else if selected {
             theme.primary()
         } else {
-            theme.border()
+            theme.primary() // shadcn uses primary for unselected border too
         };
 
-        painter.circle_stroke(center, radius, Stroke::new(2.0, border_color));
+        painter.circle_stroke(center, radius, Stroke::new(BORDER_WIDTH, border_color));
 
-        // Inner filled circle when selected
+        // Inner filled circle when selected (shadcn indicator)
         if selected {
-            let inner_radius = radius * 0.5;
+            let inner_radius = radius * INNER_CIRCLE_RATIO;
             let fill_color = if self.disabled {
-                theme.border()
+                theme.muted_foreground().gamma_multiply(0.5)
             } else {
                 theme.primary()
             };
@@ -311,7 +342,7 @@ impl<'a> RadioGroup<'a> {
             if let Some(label) = &self.label {
                 ui.label(
                     egui::RichText::new(label)
-                        .size(14.0)
+                        .size(LABEL_FONT_SIZE)
                         .strong()
                         .color(theme.foreground()),
                 );
@@ -360,8 +391,8 @@ mod tests {
 
     #[test]
     fn test_radio_size_dimensions() {
-        assert_eq!(RadioSize::Small.diameter(), 16.0);
-        assert_eq!(RadioSize::Medium.diameter(), 20.0);
-        assert_eq!(RadioSize::Large.diameter(), 24.0);
+        assert_eq!(RadioSize::Small.diameter(), RADIO_SIZE_SM);
+        assert_eq!(RadioSize::Medium.diameter(), RADIO_SIZE);
+        assert_eq!(RadioSize::Large.diameter(), RADIO_SIZE_LG);
     }
 }

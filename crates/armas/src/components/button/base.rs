@@ -1,73 +1,85 @@
-//! Base Button component with Material Design 3 styling
+//! Button component with shadcn/ui styling
 //!
-//! Provides variants following Material Design 3 guidelines:
-//! - Filled: Highest emphasis, solid background with primary color
-//! - FilledTonal: Medium-high emphasis, subtle background
-//! - Elevated: Filled tonal with shadow for separation
-//! - Outlined: Medium emphasis, transparent with border
-//! - Text: Lowest emphasis, minimal styling
+//! Provides variants following shadcn/ui conventions:
+//! - Default: Primary background, high emphasis
+//! - Secondary: Secondary background, medium emphasis
+//! - Outline: Border with transparent background
+//! - Ghost: No background, hover shows accent
+//! - Link: Text style with underline on hover
 
-use crate::animation::Interpolate;
 use crate::ext::ArmasContextExt;
 use egui::{Color32, Response, Sense, Ui, Vec2};
 
-/// Button style variant following Material Design 3
-#[derive(Clone, Copy, Debug, PartialEq)]
+// shadcn Button constants
+const CORNER_RADIUS: f32 = 6.0; // rounded-md
+const FONT_SIZE: f32 = 14.0; // text-sm
+
+/// Button style variant following shadcn/ui
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub enum ButtonVariant {
-    /// Filled button - highest emphasis for primary actions
-    Filled,
-    /// Filled tonal button - medium-high emphasis, alternative to filled
-    FilledTonal,
-    /// Elevated button - filled tonal with shadow for visual separation
-    Elevated,
-    /// Outlined button - medium emphasis for secondary actions
-    Outlined,
-    /// Text button - lowest emphasis for tertiary actions
-    Text,
+    /// Default button - primary background, highest emphasis
+    #[default]
+    Default,
+    /// Secondary button - secondary background, medium emphasis
+    Secondary,
+    /// Outline button - border with transparent background
+    Outline,
+    /// Ghost button - no background, hover shows accent
+    Ghost,
+    /// Link button - text style with underline on hover
+    Link,
 }
 
-/// Material Design inspired button component
-pub struct Button {
-    text: String,
-    variant: ButtonVariant,
-    min_size: Vec2,
-    max_width: Option<f32>,
-    enabled: bool,
-    text_align: egui::Align2,
-    text_color: Option<Color32>,
-    hover_text_color: Option<Color32>,
+/// Button size following shadcn/ui
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub enum ButtonSize {
+    /// Small - h-8 (32px), px-3
+    Small,
+    /// Default - h-9 (36px), px-4
+    #[default]
+    Default,
+    /// Large - h-10 (40px), px-6
+    Large,
 }
 
-impl Button {
-    /// Calculate contrasting text color based on background brightness
-    fn contrasting_text_color(bg_color: Color32) -> Color32 {
-        // Calculate relative luminance (perceived brightness)
-        let r = bg_color.r() as f32 / 255.0;
-        let g = bg_color.g() as f32 / 255.0;
-        let b = bg_color.b() as f32 / 255.0;
-
-        let luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-
-        // If background is bright (luminance > 0.5), use dark text
-        // Otherwise use light text
-        if luminance > 0.5 {
-            Color32::from_gray(20) // Dark text
-        } else {
-            Color32::from_gray(235) // Light text
+impl ButtonSize {
+    fn height(&self) -> f32 {
+        match self {
+            ButtonSize::Small => 32.0,
+            ButtonSize::Default => 36.0,
+            ButtonSize::Large => 40.0,
         }
     }
 
+    fn padding_x(&self) -> f32 {
+        match self {
+            ButtonSize::Small => 12.0, // px-3
+            ButtonSize::Default => 16.0, // px-4
+            ButtonSize::Large => 24.0, // px-6
+        }
+    }
+}
+
+/// Button component styled like shadcn/ui
+pub struct Button {
+    text: String,
+    variant: ButtonVariant,
+    size: ButtonSize,
+    enabled: bool,
+    full_width: bool,
+    min_width: Option<f32>,
+}
+
+impl Button {
     /// Create a new button with text
     pub fn new(text: impl Into<String>) -> Self {
         Self {
             text: text.into(),
-            variant: ButtonVariant::Filled,
-            min_size: Vec2::new(80.0, 32.0),
-            max_width: None,
+            variant: ButtonVariant::Default,
+            size: ButtonSize::Default,
             enabled: true,
-            text_align: egui::Align2::CENTER_CENTER,
-            text_color: None,
-            hover_text_color: None,
+            full_width: false,
+            min_width: None,
         }
     }
 
@@ -77,15 +89,9 @@ impl Button {
         self
     }
 
-    /// Set minimum size
-    pub fn min_size(mut self, size: Vec2) -> Self {
-        self.min_size = size;
-        self
-    }
-
-    /// Set maximum width (text will be truncated with ellipsis if it exceeds this)
-    pub fn max_width(mut self, max_width: f32) -> Self {
-        self.max_width = Some(max_width);
+    /// Set the button size
+    pub fn size(mut self, size: ButtonSize) -> Self {
+        self.size = size;
         self
     }
 
@@ -95,206 +101,169 @@ impl Button {
         self
     }
 
-    /// Set text alignment
-    pub fn text_align(mut self, align: egui::Align2) -> Self {
-        self.text_align = align;
+    /// Make button take full width of container
+    pub fn full_width(mut self, full: bool) -> Self {
+        self.full_width = full;
         self
     }
 
-    /// Set custom text color (overrides default)
-    pub fn text_color(mut self, color: Color32) -> Self {
-        self.text_color = Some(color);
-        self
-    }
-
-    /// Set custom hover text color (overrides default)
-    pub fn hover_text_color(mut self, color: Color32) -> Self {
-        self.hover_text_color = Some(color);
+    /// Set minimum width for the button
+    pub fn min_width(mut self, width: f32) -> Self {
+        self.min_width = Some(width);
         self
     }
 
     /// Show the button
     pub fn show(self, ui: &mut Ui) -> Response {
         let theme = ui.ctx().armas_theme();
-        let Button {
-            text,
-            variant,
-            min_size,
-            max_width,
-            enabled,
-            text_align,
-            text_color: custom_text_color,
-            hover_text_color: custom_hover_text_color,
-        } = self;
 
-        let sense = if enabled {
+        let sense = if self.enabled {
             Sense::click()
         } else {
             Sense::hover()
         };
 
-        // Calculate actual button size based on text
-        let font_id = egui::TextStyle::Button.resolve(ui.style());
-        let horizontal_padding = 24.0; // 12px on each side
+        // Calculate size
+        let height = self.size.height();
+        let padding_x = self.size.padding_x();
 
-        // Measure text to determine required width
+        // Measure text
+        let font_id = egui::FontId::proportional(FONT_SIZE);
         let text_galley = ui.painter().layout_no_wrap(
-            text.clone(),
+            self.text.clone(),
             font_id.clone(),
-            Color32::PLACEHOLDER, // Color doesn't matter for measurement
+            Color32::PLACEHOLDER,
         );
-        let text_width = text_galley.rect.width();
+        let galley_size = text_galley.rect.size();
+        let text_width = galley_size.x;
 
-        // Calculate button width: max(min_size.x, text_width + padding)
-        let mut button_width = text_width + horizontal_padding;
-        button_width = button_width.max(min_size.x);
+        let content_width = text_width + padding_x * 2.0;
+        let button_width = if self.full_width {
+            ui.available_width()
+        } else if let Some(min_w) = self.min_width {
+            content_width.max(min_w)
+        } else {
+            content_width
+        };
 
-        // Apply max_width if specified
-        if let Some(max_w) = max_width {
-            button_width = button_width.min(max_w);
-        }
-
-        let button_size = Vec2::new(button_width, min_size.y);
+        let button_size = Vec2::new(button_width, height);
         let (rect, mut response) = ui.allocate_exact_size(button_size, sense);
 
-        // Change cursor to pointer on hover when enabled
-        if enabled && response.hovered() {
+        if self.enabled && response.hovered() {
             response = response.on_hover_cursor(egui::CursorIcon::PointingHand);
         }
 
         if ui.is_rect_visible(rect) {
-            // Determine colors and shadow based on variant and state
-            let (bg_color, mut text_color, border_color, draw_shadow) = if !enabled {
-                // Disabled state
-                let disabled_bg = theme.muted();
-                let disabled_text = theme.muted_foreground();
-                (disabled_bg, disabled_text, theme.border(), false)
-            } else if response.hovered() {
-                // Hover state
-                match variant {
-                    ButtonVariant::Filled => {
-                        let hover_bg = theme.primary().interpolate(&theme.accent(), 0.2);
-                        // Calculate contrasting text color based on primary color brightness
-                        let text_color = Self::contrasting_text_color(theme.primary());
-                        (hover_bg, text_color, theme.primary(), false)
-                    }
-                    ButtonVariant::FilledTonal => {
-                        let hover_bg = theme.secondary().interpolate(&theme.accent(), 0.15);
-                        (hover_bg, theme.foreground(), theme.secondary(), false)
-                    }
-                    ButtonVariant::Elevated => {
-                        let hover_bg = theme.secondary().interpolate(&theme.accent(), 0.15);
-                        (hover_bg, theme.foreground(), theme.secondary(), true)
-                    }
-                    ButtonVariant::Outlined => {
-                        (theme.accent(), theme.primary(), theme.primary(), false)
-                    }
-                    ButtonVariant::Text => {
-                        (theme.accent(), theme.primary(), Color32::TRANSPARENT, false)
-                    }
-                }
+            let hovered = response.hovered() && self.enabled;
+
+            // Get colors based on variant and state
+            let (bg_color, text_color, border_color) = if !self.enabled {
+                // Disabled: opacity-50
+                (
+                    theme.primary().gamma_multiply(0.5),
+                    theme.primary_foreground().gamma_multiply(0.5),
+                    Color32::TRANSPARENT,
+                )
             } else {
-                // Normal state
-                match variant {
-                    ButtonVariant::Filled => {
-                        // Calculate contrasting text color based on primary color brightness
-                        let text_color = Self::contrasting_text_color(theme.primary());
-                        (theme.primary(), text_color, theme.primary(), false)
+                match self.variant {
+                    ButtonVariant::Default => {
+                        let bg = if hovered {
+                            theme.primary().gamma_multiply(0.9) // hover:bg-primary/90
+                        } else {
+                            theme.primary()
+                        };
+                        (bg, theme.primary_foreground(), Color32::TRANSPARENT)
                     }
-                    ButtonVariant::FilledTonal => {
-                        let tonal_bg = theme.secondary();
-                        (tonal_bg, theme.foreground(), theme.secondary(), false)
+                    ButtonVariant::Secondary => {
+                        let bg = if hovered {
+                            theme.secondary().gamma_multiply(0.8) // hover:bg-secondary/80
+                        } else {
+                            theme.secondary()
+                        };
+                        (bg, theme.secondary_foreground(), Color32::TRANSPARENT)
                     }
-                    ButtonVariant::Elevated => {
-                        let tonal_bg = theme.secondary();
-                        (tonal_bg, theme.foreground(), theme.secondary(), true)
+                    ButtonVariant::Outline => {
+                        let bg = if hovered {
+                            theme.accent()
+                        } else {
+                            Color32::TRANSPARENT
+                        };
+                        let text = if hovered {
+                            theme.accent_foreground()
+                        } else {
+                            theme.foreground()
+                        };
+                        (bg, text, theme.border())
                     }
-                    ButtonVariant::Outlined => (
-                        Color32::TRANSPARENT,
-                        theme.foreground(),
-                        theme.primary(),
-                        false,
-                    ),
-                    ButtonVariant::Text => (
-                        Color32::TRANSPARENT,
-                        theme.foreground(),
-                        Color32::TRANSPARENT,
-                        false,
-                    ),
+                    ButtonVariant::Ghost => {
+                        let bg = if hovered {
+                            theme.accent()
+                        } else {
+                            Color32::TRANSPARENT
+                        };
+                        let text = if hovered {
+                            theme.accent_foreground()
+                        } else {
+                            theme.foreground()
+                        };
+                        (bg, text, Color32::TRANSPARENT)
+                    }
+                    ButtonVariant::Link => {
+                        (Color32::TRANSPARENT, theme.primary(), Color32::TRANSPARENT)
+                    }
                 }
             };
-
-            // Apply custom text colors if provided
-            if response.hovered() {
-                if let Some(hover_color) = custom_hover_text_color {
-                    text_color = hover_color;
-                }
-            } else if let Some(normal_color) = custom_text_color {
-                text_color = normal_color;
-            }
-
-            // Draw shadow for elevated variant
-            if draw_shadow {
-                let shadow_color = Color32::from_black_alpha(60);
-                ui.painter().rect_filled(
-                    rect.translate(Vec2::new(0.0, 2.0)),
-                    theme.spacing.corner_radius_small,
-                    shadow_color,
-                );
-            }
 
             // Draw background
-            ui.painter()
-                .rect_filled(rect, theme.spacing.corner_radius_small, bg_color);
+            if bg_color != Color32::TRANSPARENT {
+                ui.painter().rect_filled(rect, CORNER_RADIUS, bg_color);
+            }
 
-            // Draw border for outlined variant
-            if variant == ButtonVariant::Outlined {
+            // Draw border for outline variant
+            if border_color != Color32::TRANSPARENT {
                 ui.painter().rect_stroke(
                     rect,
-                    theme.spacing.corner_radius_small,
-                    egui::Stroke::new(1.5, border_color),
-                    egui::StrokeKind::Middle,
+                    CORNER_RADIUS,
+                    egui::Stroke::new(1.0, border_color),
+                    egui::StrokeKind::Inside,
                 );
             }
 
-            // Draw text with proper clipping/truncation
-            let available_text_width = rect.width() - horizontal_padding;
+            // Draw text
+            let text_pos = rect.center() - galley_size / 2.0;
+            ui.painter().galley(egui::pos2(text_pos.x, text_pos.y), text_galley, text_color);
 
-            // Create galley with truncation if needed
-            let final_galley = if text_width > available_text_width {
-                // Text is too long, truncate with ellipsis
-                ui.painter()
-                    .layout(text, font_id.clone(), text_color, available_text_width)
-            } else {
-                // Text fits, use normal layout
-                text_galley
-            };
-
-            // Calculate text position based on alignment
-            // galley() uses top-left corner, so we need to adjust for centering
-            let galley_height = final_galley.rect.height();
-            let galley_width = final_galley.rect.width();
-
-            let text_pos = match text_align {
-                egui::Align2::LEFT_CENTER => {
-                    egui::pos2(rect.left() + 12.0, rect.center().y - galley_height / 2.0)
-                }
-                egui::Align2::RIGHT_CENTER => egui::pos2(
-                    rect.right() - 12.0 - galley_width,
-                    rect.center().y - galley_height / 2.0,
-                ),
-                _ => {
-                    // CENTER_CENTER
-                    egui::pos2(
-                        rect.center().x - galley_width / 2.0,
-                        rect.center().y - galley_height / 2.0,
-                    )
-                }
-            };
-
-            ui.painter().galley(text_pos, final_galley, text_color);
+            // Draw underline for Link variant on hover
+            if self.variant == ButtonVariant::Link && hovered {
+                let underline_y = text_pos.y + galley_size.y + 1.0;
+                ui.painter().line_segment(
+                    [
+                        egui::pos2(text_pos.x, underline_y),
+                        egui::pos2(text_pos.x + galley_size.x, underline_y),
+                    ],
+                    egui::Stroke::new(1.0, text_color),
+                );
+            }
         }
 
         response
     }
+}
+
+// Keep old variant name as alias for backwards compatibility during migration
+pub use ButtonVariant as Variant;
+
+// Aliases for old variant names (deprecated, will remove later)
+#[allow(non_upper_case_globals)]
+impl ButtonVariant {
+    /// Alias for Default (was Filled)
+    pub const Filled: ButtonVariant = ButtonVariant::Default;
+    /// Alias for Outline (was Outlined)
+    pub const Outlined: ButtonVariant = ButtonVariant::Outline;
+    /// Alias for Ghost (was Text)
+    pub const Text: ButtonVariant = ButtonVariant::Ghost;
+    /// Alias for Secondary (was FilledTonal)
+    pub const FilledTonal: ButtonVariant = ButtonVariant::Secondary;
+    /// Elevated is now Secondary
+    pub const Elevated: ButtonVariant = ButtonVariant::Secondary;
 }

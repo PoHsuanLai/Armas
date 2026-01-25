@@ -1,11 +1,11 @@
 # Breadcrumbs
 
-Navigation path indicator showing the current location in a hierarchy.
+Navigation path indicator styled like shadcn/ui Breadcrumb.
 
 ## Basic Usage
 
 ```demo
-let response = Breadcrumbs::new()
+Breadcrumbs::new()
     .show(ui, |breadcrumbs| {
         breadcrumbs.item("Home", None);
         breadcrumbs.item("Projects", None);
@@ -13,15 +13,14 @@ let response = Breadcrumbs::new()
     });
 ```
 
-## Custom Separator
+## With Icons
 
 ```demo
 Breadcrumbs::new()
-    .separator("/")
     .show(ui, |breadcrumbs| {
-        breadcrumbs.item("Users", None);
-        breadcrumbs.item("John", None);
-        breadcrumbs.item("Projects", None).current();
+        breadcrumbs.item("Home", Some("🏠"));
+        breadcrumbs.item("Documents", Some("📁"));
+        breadcrumbs.item("Report.pdf", Some("📄")).current();
     });
 ```
 
@@ -40,25 +39,67 @@ if let Some(index) = response.clicked {
 }
 ```
 
+## Custom Spacing
+
+```demo
+Breadcrumbs::new()
+    .spacing(12.0)
+    .show(ui, |breadcrumbs| {
+        breadcrumbs.item("Level 1", None);
+        breadcrumbs.item("Level 2", None);
+        breadcrumbs.item("Level 3", None).current();
+    });
+```
+
 ## API Reference
 
 ### Breadcrumbs
 
+#### Constructor
+
+```rust
+Breadcrumbs::new() -> Self
+```
+
+#### Builder Methods
+
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
-| `::new()` | - | - | Create new breadcrumbs |
-| `.separator()` | `&str` | `">"` | Separator between items |
-| `.spacing()` | `f32` | `4.0` | Spacing between items |
-| `.show()` | closure | - | Render with closure-based API |
+| `.spacing()` | `f32` | `6.0` | Gap between items (shadcn gap-1.5) |
+
+#### Show Method
+
+```rust
+pub fn show<R>(
+    self,
+    ui: &mut Ui,
+    content: impl FnOnce(&mut BreadcrumbsBuilder) -> R,
+) -> BreadcrumbsResponse
+```
+
+### BreadcrumbsBuilder
+
+| Method | Description |
+|--------|-------------|
+| `.item(label, icon)` | Add a breadcrumb item with optional icon |
 
 ### ItemBuilder (chainable from .item())
 
-| Method | Type | Description |
-|--------|------|-------------|
-| `.current()` | - | Mark as current/active item |
+| Method | Description |
+|--------|-------------|
+| `.current()` | Mark as current/active item (non-clickable) |
 
-### Response
+### BreadcrumbsResponse
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `clicked` | `Option<usize>` | Index of clicked breadcrumb |
+
+## shadcn/ui Styling
+
+The Breadcrumbs follows shadcn/ui conventions:
+
+- **List**: `text-muted-foreground`, `gap-1.5` (6px), `text-sm` (14px)
+- **Link**: `hover:text-foreground transition-colors`
+- **Current page**: `text-foreground font-normal`
+- **Separator**: ChevronRight icon at `size-3.5` (14px)

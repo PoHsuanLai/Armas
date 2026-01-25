@@ -17,11 +17,11 @@ fn test_button_renders() {
 #[test]
 fn test_button_variants() {
     let variants = [
-        ButtonVariant::Filled,
-        ButtonVariant::FilledTonal,
-        ButtonVariant::Elevated,
-        ButtonVariant::Outlined,
-        ButtonVariant::Text,
+        ButtonVariant::Default,
+        ButtonVariant::Secondary,
+        ButtonVariant::Outline,
+        ButtonVariant::Ghost,
+        ButtonVariant::Link,
     ];
 
     for variant in variants {
@@ -42,48 +42,37 @@ fn test_button_disabled() {
     harness.run();
 }
 
-/// Test Button with custom min size
+/// Test Button with custom min width
 #[test]
-fn test_button_min_size() {
+fn test_button_min_width() {
     let mut harness = Harness::new_ui(|ui| {
-        Button::new("Wide Button")
-            .min_size(egui::vec2(200.0, 48.0))
-            .show(ui);
+        Button::new("Wide Button").min_width(200.0).show(ui);
     });
 
     harness.run();
 }
 
-/// Test Button with max width (text truncation)
+/// Test Button with different sizes
 #[test]
-fn test_button_max_width() {
-    let mut harness = Harness::new_ui(|ui| {
-        Button::new("This is a very long button text that should be truncated")
-            .max_width(100.0)
-            .show(ui);
-    });
+fn test_button_sizes() {
+    let sizes = [ButtonSize::Small, ButtonSize::Default, ButtonSize::Large];
 
-    harness.run();
-}
-
-/// Test Button with different text alignments
-#[test]
-fn test_button_text_alignment() {
-    let alignments = [
-        egui::Align2::LEFT_CENTER,
-        egui::Align2::CENTER_CENTER,
-        egui::Align2::RIGHT_CENTER,
-    ];
-
-    for align in alignments {
+    for size in sizes {
         let mut harness = Harness::new_ui(|ui| {
-            Button::new("Aligned")
-                .min_size(egui::vec2(150.0, 32.0))
-                .text_align(align)
-                .show(ui);
+            Button::new("Sized").size(size).show(ui);
         });
         harness.run();
     }
+}
+
+/// Test Button with full width
+#[test]
+fn test_button_full_width() {
+    let mut harness = Harness::new_ui(|ui| {
+        Button::new("Full Width").full_width(true).show(ui);
+    });
+
+    harness.run();
 }
 
 /// Test multiple buttons in a row
@@ -91,11 +80,13 @@ fn test_button_text_alignment() {
 fn test_multiple_buttons() {
     let mut harness = Harness::new_ui(|ui| {
         ui.horizontal(|ui| {
-            Button::new("Primary").variant(ButtonVariant::Filled).show(ui);
-            Button::new("Secondary")
-                .variant(ButtonVariant::Outlined)
+            Button::new("Primary")
+                .variant(ButtonVariant::Default)
                 .show(ui);
-            Button::new("Cancel").variant(ButtonVariant::Text).show(ui);
+            Button::new("Secondary")
+                .variant(ButtonVariant::Outline)
+                .show(ui);
+            Button::new("Cancel").variant(ButtonVariant::Ghost).show(ui);
         });
     });
 
@@ -108,11 +99,11 @@ fn test_multiple_buttons() {
 //     let mut harness = Harness::new_ui(|ui| {
 //         ui.vertical(|ui| {
 //             ui.spacing_mut().item_spacing.y = 8.0;
-//             Button::new("Filled").variant(ButtonVariant::Filled).show(ui);
-//             Button::new("Tonal").variant(ButtonVariant::FilledTonal).show(ui);
-//             Button::new("Elevated").variant(ButtonVariant::Elevated).show(ui);
-//             Button::new("Outlined").variant(ButtonVariant::Outlined).show(ui);
-//             Button::new("Text").variant(ButtonVariant::Text).show(ui);
+//             Button::new("Default").variant(ButtonVariant::Default).show(ui);
+//             Button::new("Secondary").variant(ButtonVariant::Secondary).show(ui);
+//             Button::new("Outline").variant(ButtonVariant::Outline).show(ui);
+//             Button::new("Ghost").variant(ButtonVariant::Ghost).show(ui);
+//             Button::new("Link").variant(ButtonVariant::Link).show(ui);
 //         });
 //     });
 //

@@ -1,6 +1,6 @@
 # Pagination
 
-Page navigation for paginated content. Styled to match shadcn/ui pagination.
+Page navigation styled like shadcn/ui Pagination.
 
 ## Basic Usage
 
@@ -10,34 +10,26 @@ let (_, page) = Pagination::new(1, 10)
     .show(ui);
 ```
 
-## Icons Only (No Labels)
+## Many Pages
 
 ```demo
-let (_, page) = Pagination::new(1, 10)
-    .id(ui.id().with("icons"))
-    .show_labels(false)
-    .show(ui);
-```
-
-## Custom Visible Pages
-
-```demo
-let (_, page) = Pagination::new(1, 20)
-    .id(ui.id().with("custom"))
-    .max_visible_pages(5)
+let (_, page) = Pagination::new(5, 20)
+    .id(ui.id().with("many"))
     .show(ui);
 ```
 
 ## Custom Sibling Count
 
+Show more pages around the current page:
+
 ```demo
-let (_, page) = Pagination::new(1, 20)
+let (_, page) = Pagination::new(10, 20)
     .id(ui.id().with("siblings"))
     .sibling_count(2)
     .show(ui);
 ```
 
-## Without Previous/Next
+## Without Previous/Next Buttons
 
 ```demo
 let (_, page) = Pagination::new(1, 5)
@@ -48,15 +40,37 @@ let (_, page) = Pagination::new(1, 5)
 
 ## API Reference
 
+### Pagination
+
+#### Constructor
+
+```rust
+Pagination::new(initial_page: usize, total_pages: usize) -> Self
+```
+
+#### Builder Methods
+
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
-| `::new()` | `(usize, usize)` | - | Create with initial page and total pages |
-| `.id()` | `impl Into<Id>` | - | Set ID for state persistence |
-| `.max_visible_pages()` | `usize` | `7` | Maximum page buttons to show |
-| `.sibling_count()` | `usize` | `1` | Pages on each side of current |
+| `.id()` | `impl Into<Id>` | None | Set ID for state persistence |
+| `.sibling_count()` | `usize` | `1` | Pages to show on each side of current |
 | `.show_prev_next()` | `bool` | `true` | Show previous/next buttons |
-| `.show_labels()` | `bool` | `true` | Show text labels on prev/next |
 
-## Return Value
+#### Show Method
 
-Returns `(Response, usize)` - the egui Response and current page number.
+```rust
+pub fn show(self, ui: &mut Ui) -> (Response, usize)
+```
+
+Returns the egui Response and current page number (1-indexed).
+
+## shadcn/ui Styling
+
+The Pagination follows shadcn/ui conventions:
+
+- **Gap**: `gap-1` (4px) between items
+- **Button size**: `size-9` (36px) for page numbers
+- **Page buttons**: Ghost variant, Outline variant for current
+- **Previous/Next**: Ghost buttons with chevron icons
+- **Ellipsis**: Three dots (MoreHorizontal icon style)
+- **Disabled state**: Muted foreground color

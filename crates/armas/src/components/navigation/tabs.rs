@@ -1,65 +1,59 @@
+//! Tabs Component
+//!
+//! Tab navigation styled like shadcn/ui Tabs.
+//! Features a muted background container with animated active indicator.
+
 use crate::ext::ArmasContextExt;
-use crate::Theme;
-use egui::{Color32, Pos2, Ui, Vec2};
+use egui::{Pos2, Ui, Vec2};
 
-/// Tab style variants
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TabStyle {
-    /// Underline style (default)
-    Underline,
-    /// Pill/button style
-    Pill,
-    /// Segment style (connected buttons)
-    Segment,
-}
+// shadcn Tabs constants
+const LIST_HEIGHT: f32 = 36.0; // h-9
+const LIST_PADDING: f32 = 3.0; // p-[3px]
+const LIST_RADIUS: f32 = 8.0; // rounded-lg
+const TRIGGER_RADIUS: f32 = 6.0; // rounded-md
+const TRIGGER_PADDING_X: f32 = 8.0; // px-2
+const TRIGGER_GAP: f32 = 6.0; // gap-1.5
+const FONT_SIZE: f32 = 14.0; // text-sm
 
-/// Animated tabs component
+/// Tabs component for switching between content sections
 ///
-/// A tab navigation component with smooth animations and multiple style variants.
-/// Perfect for organizing content into switchable sections.
+/// Styled like shadcn/ui Tabs with a muted background and active indicator.
 ///
 /// # Example
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
-/// use armas::components::{AnimatedTabs, TabStyle};
+/// use armas::Tabs;
 ///
-/// let mut tabs = AnimatedTabs::new(vec!["Tab 1".to_string(), "Tab 2".to_string()]);
-///
+/// let mut tabs = Tabs::new(vec!["Account", "Password"]);
 /// if let Some(new_index) = tabs.show(ui) {
 ///     // Tab changed to new_index
 /// }
 /// # }
 /// ```
-pub struct AnimatedTabs {
+pub struct Tabs {
     /// Tab labels
     labels: Vec<String>,
     /// Active tab index
-    pub active_index: usize,
-    /// Tab style
-    style: TabStyle,
+    active_index: usize,
     /// Animate indicator
     animate: bool,
-    /// Indicator position (0.0 to num_tabs as f32)
+    /// Indicator position for animation
     indicator_pos: f32,
-    /// Indicator width multiplier
-    indicator_width: f32,
-    /// Whether to persist state internally (disable when state is managed externally)
+    /// Whether to persist state internally
     persist_state: bool,
 }
 
-impl AnimatedTabs {
-    /// Create new animated tabs
+impl Tabs {
+    /// Create new tabs with labels
     pub fn new(labels: Vec<impl Into<String>>) -> Self {
         Self {
             labels: labels.into_iter().map(|l| l.into()).collect(),
             active_index: 0,
-            style: TabStyle::Underline,
             animate: true,
             indicator_pos: 0.0,
-            indicator_width: 1.0,
-            persist_state: true, // Enable by default
+            persist_state: true,
         }
     }
 
@@ -67,13 +61,7 @@ impl AnimatedTabs {
     pub fn active(mut self, index: usize) -> Self {
         self.active_index = index.min(self.labels.len().saturating_sub(1));
         self.indicator_pos = self.active_index as f32;
-        self.persist_state = false; // Disable internal persistence when externally managed
-        self
-    }
-
-    /// Set tab style
-    pub fn style(mut self, style: TabStyle) -> Self {
-        self.style = style;
+        self.persist_state = false;
         self
     }
 
@@ -90,27 +78,25 @@ impl AnimatedTabs {
             return None;
         }
 
-        // Load previous state from egui memory only if internal persistence is enabled
+        // Load state if persisting
         if self.persist_state {
             let tabs_id = ui.id().with("tabs_state");
-
             let (stored_active, stored_indicator): (usize, f32) = ui.ctx().data_mut(|d| {
                 d.get_persisted(tabs_id)
                     .unwrap_or((self.active_index, self.active_index as f32))
             });
 
-            // Use stored state if no explicit active was set
             if self.active_index == 0 && stored_active > 0 {
                 self.active_index = stored_active;
             }
             self.indicator_pos = stored_indicator;
         }
 
-        // Update animation
+        // Animate
         let dt = ui.input(|i| i.stable_dt);
         if self.animate {
             let target = self.active_index as f32;
-            let speed = 10.0;
+            let speed = 12.0;
             self.indicator_pos += (target - self.indicator_pos) * speed * dt;
 
             if (self.indicator_pos - target).abs() > 0.01 {
@@ -120,18 +106,102 @@ impl AnimatedTabs {
             self.indicator_pos = self.active_index as f32;
         }
 
-        let result = match self.style {
-            TabStyle::Underline => self.show_underline(ui, &theme),
-            TabStyle::Pill => self.show_pill(ui, &theme),
-            TabStyle::Segment => self.show_segment(ui, &theme),
-        };
+        // Calculate tab widths based on text (approximate: 8px per character)
+        let font_id = egui::FontId::proportional(FONT_SIZE);
+        let tab_widths: Vec<f32> = self
+            .labels
+            .iter()
+            .map(|label| {
+                let text_width = 8.0 * label.len() as f32;
+                text_width + TRIGGER_PADDING_X * 2.0
+            })
+            .collect();
 
-        // Store state if changed
-        if let Some(new_index) = result {
+        let total_width: f32 = tab_widths.iter().sum::<f32>() + TRIGGER_GAP * (self.labels.len().saturating_sub(1)) as f32 + LIST_PADDING * 2.0;
+
+        // Allocate space for the TabsList container
+        let (list_rect, _) = ui.allocate_exact_size(
+            Vec2::new(total_width, LIST_HEIGHT),
+            egui::Sense::hover(),
+        );
+
+        // Draw TabsList background (bg-muted rounded-lg)
+        ui.painter()
+            .rect_filled(list_rect, LIST_RADIUS, theme.muted());
+
+        let mut selected = None;
+        let inner_height = LIST_HEIGHT - LIST_PADDING * 2.0;
+
+        // Calculate cumulative x positions
+        let mut x_positions: Vec<f32> = Vec::with_capacity(self.labels.len());
+        let mut current_x = list_rect.min.x + LIST_PADDING;
+        for (i, width) in tab_widths.iter().enumerate() {
+            x_positions.push(current_x);
+            current_x += width;
+            if i < self.labels.len() - 1 {
+                current_x += TRIGGER_GAP;
+            }
+        }
+
+        // Draw animated active indicator background
+        if !tab_widths.is_empty() {
+            // Interpolate position and width for smooth animation
+            let floor_idx = (self.indicator_pos.floor() as usize).min(tab_widths.len() - 1);
+            let ceil_idx = (self.indicator_pos.ceil() as usize).min(tab_widths.len() - 1);
+            let t = self.indicator_pos.fract();
+
+            let start_x = x_positions[floor_idx] + (x_positions[ceil_idx] - x_positions[floor_idx]) * t;
+            let width = tab_widths[floor_idx] + (tab_widths[ceil_idx] - tab_widths[floor_idx]) * t;
+
+            let active_rect = egui::Rect::from_min_size(
+                Pos2::new(start_x, list_rect.min.y + LIST_PADDING),
+                Vec2::new(width, inner_height),
+            );
+
+            // Active tab gets bg-background with subtle shadow
+            ui.painter()
+                .rect_filled(active_rect, TRIGGER_RADIUS, theme.background());
+        }
+
+        // Draw tab triggers
+        for (index, label) in self.labels.iter().enumerate() {
+            let tab_rect = egui::Rect::from_min_size(
+                Pos2::new(x_positions[index], list_rect.min.y + LIST_PADDING),
+                Vec2::new(tab_widths[index], inner_height),
+            );
+
+            let is_active = index == self.active_index;
+            let is_hovered = ui.rect_contains_pointer(tab_rect);
+
+            // Text color: foreground for active, muted-foreground for inactive
+            let text_color = if is_active {
+                theme.foreground()
+            } else {
+                theme.muted_foreground()
+            };
+
+            // Draw label
+            ui.painter().text(
+                tab_rect.center(),
+                egui::Align2::CENTER_CENTER,
+                label,
+                font_id.clone(),
+                text_color,
+            );
+
+            // Handle click
+            if is_hovered && ui.input(|i| i.pointer.primary_clicked()) {
+                selected = Some(index);
+                self.active_index = index;
+            }
+        }
+
+        // Update active if changed
+        if let Some(new_index) = selected {
             self.active_index = new_index;
         }
 
-        // Persist state to egui memory only if internal persistence is enabled
+        // Persist state
         if self.persist_state {
             let tabs_id = ui.id().with("tabs_state");
             ui.ctx().data_mut(|d| {
@@ -139,209 +209,20 @@ impl AnimatedTabs {
             });
         }
 
-        result
-    }
-
-    /// Show underline style tabs
-    fn show_underline(&mut self, ui: &mut Ui, theme: &Theme) -> Option<usize> {
-        let mut selected = None;
-        let num_tabs = self.labels.len();
-        let available_width = ui.available_width();
-        let tab_width = available_width / num_tabs as f32;
-        let height = 44.0;
-
-        let (rect, _) =
-            ui.allocate_exact_size(Vec2::new(available_width, height), egui::Sense::hover());
-
-        // Draw tabs
-        for (index, label) in self.labels.iter().enumerate() {
-            let x = rect.min.x + index as f32 * tab_width;
-            let tab_rect = egui::Rect::from_min_size(
-                Pos2::new(x, rect.min.y),
-                Vec2::new(tab_width, height - 2.0),
-            );
-
-            let is_active = index == self.active_index;
-            let is_hovered = ui.rect_contains_pointer(tab_rect);
-
-            // Background
-            if is_hovered && !is_active {
-                ui.painter().rect_filled(tab_rect, 0.0, theme.accent());
-            }
-
-            // Label
-            let label_color = if is_active {
-                theme.primary()
-            } else {
-                theme.muted_foreground()
-            };
-
-            ui.painter().text(
-                tab_rect.center(),
-                egui::Align2::CENTER_CENTER,
-                label,
-                egui::FontId::proportional(15.0),
-                label_color,
-            );
-
-            // Check for click
-            if is_hovered && ui.input(|i| i.pointer.primary_clicked()) {
-                selected = Some(index);
-                self.active_index = index;
-            }
-        }
-
-        // Animated indicator
-        let indicator_x = rect.min.x + self.indicator_pos * tab_width;
-        let indicator_width = tab_width * self.indicator_width;
-        let indicator_height = 2.0;
-
-        ui.painter().rect_filled(
-            egui::Rect::from_min_size(
-                Pos2::new(indicator_x, rect.max.y - indicator_height),
-                Vec2::new(indicator_width, indicator_height),
-            ),
-            0.0,
-            theme.primary(),
-        );
-
         selected
     }
+}
 
-    /// Show pill style tabs
-    fn show_pill(&mut self, ui: &mut Ui, theme: &Theme) -> Option<usize> {
-        let mut selected = None;
+// Backwards compatibility alias
+#[doc(hidden)]
+pub type AnimatedTabs = Tabs;
 
-        ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = 8.0;
-            for (index, label) in self.labels.iter().enumerate() {
-                let is_active = index == self.active_index;
-
-                let (rect, response) =
-                    ui.allocate_exact_size(Vec2::new(100.0, 36.0), egui::Sense::click());
-
-                let is_hovered = response.hovered();
-
-                // Background
-                let bg_color = if is_active {
-                    theme.primary()
-                } else if is_hovered {
-                    theme.accent()
-                } else {
-                    theme.card()
-                };
-
-                ui.painter().rect_filled(rect, 18.0, bg_color);
-
-                // Label
-                let label_color = if is_active {
-                    Color32::WHITE
-                } else {
-                    theme.foreground()
-                };
-
-                ui.painter().text(
-                    rect.center(),
-                    egui::Align2::CENTER_CENTER,
-                    label,
-                    egui::FontId::proportional(14.0),
-                    label_color,
-                );
-
-                if response.clicked() {
-                    selected = Some(index);
-                    self.active_index = index;
-                }
-            }
-        });
-
-        selected
-    }
-
-    /// Show segment style tabs
-    fn show_segment(&mut self, ui: &mut Ui, theme: &Theme) -> Option<usize> {
-        let mut selected = None;
-        let num_tabs = self.labels.len();
-        let segment_width = 120.0;
-        let height = 36.0;
-        let total_width = segment_width * num_tabs as f32;
-
-        let (rect, _) =
-            ui.allocate_exact_size(Vec2::new(total_width, height), egui::Sense::hover());
-
-        // Draw container background
-        ui.painter().rect_filled(rect, 4.0, theme.card());
-
-        // Draw container border
-        ui.painter().rect_stroke(
-            rect,
-            4.0,
-            egui::Stroke::new(1.0, theme.border()),
-            egui::StrokeKind::Middle,
-        );
-
-        // Draw segments
-        for (index, label) in self.labels.iter().enumerate() {
-            let x = rect.min.x + index as f32 * segment_width;
-            let segment_rect = egui::Rect::from_min_size(
-                Pos2::new(x, rect.min.y),
-                Vec2::new(segment_width, height),
-            );
-
-            let is_active = index == self.active_index;
-            let is_hovered = ui.rect_contains_pointer(segment_rect);
-
-            // Active background with animation
-            if is_active {
-                let active_x = rect.min.x + self.indicator_pos * segment_width;
-                let active_rect = egui::Rect::from_min_size(
-                    Pos2::new(active_x, rect.min.y + 2.0),
-                    Vec2::new(segment_width, height - 4.0),
-                );
-
-                ui.painter().rect_filled(active_rect, 3.0, theme.primary());
-            }
-
-            // Hover effect
-            if is_hovered && !is_active {
-                ui.painter()
-                    .rect_filled(segment_rect.shrink(2.0), 3.0, theme.accent());
-            }
-
-            // Divider (except for last segment) - drawn manually
-            if index < num_tabs - 1 {
-                let divider_x = segment_rect.max.x;
-                ui.painter().line_segment(
-                    [
-                        Pos2::new(divider_x, rect.min.y + 8.0),
-                        Pos2::new(divider_x, rect.max.y - 8.0),
-                    ],
-                    egui::Stroke::new(1.0, theme.border()),
-                );
-            }
-
-            // Label
-            let label_color = if is_active {
-                Color32::WHITE
-            } else {
-                theme.foreground()
-            };
-
-            ui.painter().text(
-                segment_rect.center(),
-                egui::Align2::CENTER_CENTER,
-                label,
-                egui::FontId::proportional(14.0),
-                label_color,
-            );
-
-            // Check for click
-            if is_hovered && ui.input(|i| i.pointer.primary_clicked()) {
-                selected = Some(index);
-                self.active_index = index;
-            }
-        }
-
-        selected
-    }
+// Keep TabStyle for backwards compatibility but mark as deprecated
+#[doc(hidden)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum TabStyle {
+    #[default]
+    Underline,
+    Pill,
+    Segment,
 }

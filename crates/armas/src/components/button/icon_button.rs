@@ -48,7 +48,7 @@ impl<'a> IconButton<'a> {
     pub fn new(icon_data: &'a IconData) -> Self {
         Self {
             icon_data,
-            variant: ButtonVariant::Filled,
+            variant: ButtonVariant::Default,
             size: 24.0,
             padding: 8.0,
             enabled: true,
@@ -107,61 +107,53 @@ impl<'a> IconButton<'a> {
         let (rect, response) = ui.allocate_exact_size(total_size, sense);
 
         if ui.is_rect_visible(rect) {
-            let visuals = ui.style().interact(&response);
-
             // Determine colors based on variant and state
             let (bg_color, mut icon_color) = match self.variant {
-                ButtonVariant::Filled => {
+                ButtonVariant::Default => {
                     let bg = if response.is_pointer_button_down_on() {
                         theme.primary().linear_multiply(0.9)
                     } else if response.hovered() {
-                        let mut color = theme.primary();
-                        color = color.linear_multiply(1.08);
-                        color
+                        theme.primary().linear_multiply(1.08)
                     } else {
                         theme.primary()
                     };
-                    (Some(bg), theme.foreground())
+                    (Some(bg), theme.primary_foreground())
                 }
-                ButtonVariant::FilledTonal => {
+                ButtonVariant::Secondary => {
                     let bg = if response.is_pointer_button_down_on() {
                         theme.secondary()
                     } else if response.hovered() {
-                        let mut color = theme.secondary();
-                        color = color.linear_multiply(1.08);
-                        color
+                        theme.secondary().linear_multiply(1.08)
                     } else {
                         theme.secondary()
                     };
-                    (Some(bg), theme.foreground())
+                    (Some(bg), theme.secondary_foreground())
                 }
-                ButtonVariant::Elevated => {
-                    let bg = if response.is_pointer_button_down_on() {
-                        theme.card()
-                    } else if response.hovered() {
-                        let mut color = theme.card();
-                        color = color.linear_multiply(1.05);
-                        color
-                    } else {
-                        theme.card()
-                    };
-                    (Some(bg), theme.primary())
-                }
-                ButtonVariant::Outlined => {
+                ButtonVariant::Outline => {
                     let bg = if response.hovered() {
-                        Some(theme.muted().linear_multiply(0.5))
+                        Some(theme.accent())
                     } else {
                         None
                     };
-                    (bg, theme.primary())
+                    let icon = if response.hovered() {
+                        theme.accent_foreground()
+                    } else {
+                        theme.foreground()
+                    };
+                    (bg, icon)
                 }
-                ButtonVariant::Text => {
+                ButtonVariant::Ghost | ButtonVariant::Link => {
                     let bg = if response.hovered() {
-                        Some(visuals.bg_fill)
+                        Some(theme.accent())
                     } else {
                         None
                     };
-                    (bg, theme.primary())
+                    let icon = if response.hovered() {
+                        theme.accent_foreground()
+                    } else {
+                        theme.foreground()
+                    };
+                    (bg, icon)
                 }
             };
 
@@ -182,10 +174,8 @@ impl<'a> IconButton<'a> {
             // Draw background if needed
             if let Some(bg) = bg_color {
                 let rounding = match self.variant {
-                    ButtonVariant::Filled
-                    | ButtonVariant::FilledTonal
-                    | ButtonVariant::Elevated => total_size.x / 2.0, // Circular
-                    _ => 12.0, // Rounded corners
+                    ButtonVariant::Default | ButtonVariant::Secondary => total_size.x / 2.0, // Circular
+                    _ => 6.0, // rounded-md
                 };
                 let final_bg = if !self.enabled {
                     bg.linear_multiply(0.5)
@@ -195,24 +185,11 @@ impl<'a> IconButton<'a> {
                 ui.painter().rect_filled(rect, rounding, final_bg);
             }
 
-            // Draw outline for outlined variant
-            if self.variant == ButtonVariant::Outlined {
+            // Draw outline for outline variant
+            if self.variant == ButtonVariant::Outline {
                 let stroke = egui::Stroke::new(1.0, theme.border());
                 ui.painter()
-                    .rect_stroke(rect, 12.0, stroke, egui::epaint::StrokeKind::Outside);
-            }
-
-            // Draw shadow for elevated variant
-            if self.variant == ButtonVariant::Elevated
-                && !response.is_pointer_button_down_on()
-                && self.enabled
-            {
-                let shadow_rect = rect.translate(egui::vec2(0.0, 2.0));
-                ui.painter().rect_filled(
-                    shadow_rect,
-                    total_size.x / 2.0,
-                    egui::Color32::from_black_alpha(20),
-                );
+                    .rect_stroke(rect, 6.0, stroke, egui::epaint::StrokeKind::Inside);
             }
 
             // Draw icon

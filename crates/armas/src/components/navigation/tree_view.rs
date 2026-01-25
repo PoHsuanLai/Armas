@@ -1,6 +1,6 @@
-//! File Tree Component
+//! Tree View Component
 //!
-//! A simple file/folder tree view component.
+//! A hierarchical tree view for displaying nested items like files/folders.
 
 use crate::ext::ArmasContextExt;
 use egui::{Pos2, Response, Sense, Ui, Vec2};
@@ -22,17 +22,17 @@ const INDENT_WIDTH: f32 = 16.0;
 // Data Structures
 // ============================================================================
 
-/// A file or folder item
+/// A tree view item (file or folder)
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BrowserItem {
+pub struct TreeItem {
     pub name: String,
     pub path: PathBuf,
     pub is_directory: bool,
 }
 
-impl BrowserItem {
-    /// Create a file item
-    pub fn file(name: impl Into<String>, path: impl Into<PathBuf>) -> Self {
+impl TreeItem {
+    /// Create a leaf item (file)
+    pub fn leaf(name: impl Into<String>, path: impl Into<PathBuf>) -> Self {
         Self {
             name: name.into(),
             path: path.into(),
@@ -40,33 +40,69 @@ impl BrowserItem {
         }
     }
 
-    /// Create a folder item
-    pub fn folder(name: impl Into<String>, path: impl Into<PathBuf>) -> Self {
+    /// Create a branch item (folder/directory)
+    pub fn branch(name: impl Into<String>, path: impl Into<PathBuf>) -> Self {
         Self {
             name: name.into(),
             path: path.into(),
             is_directory: true,
         }
     }
+
+    /// Create a file item (alias for leaf)
+    pub fn file(name: impl Into<String>, path: impl Into<PathBuf>) -> Self {
+        Self::leaf(name, path)
+    }
+
+    /// Create a folder item (alias for branch)
+    pub fn folder(name: impl Into<String>, path: impl Into<PathBuf>) -> Self {
+        Self::branch(name, path)
+    }
 }
 
-/// Response from the browser
+/// Response from the tree view
 #[derive(Debug, Clone)]
-pub struct BrowserResponse {
+pub struct TreeViewResponse {
     pub response: Response,
-    /// File selected this frame
+    /// Item selected this frame
     pub selected: Option<PathBuf>,
-    /// Folder expanded/collapsed this frame
+    /// Branch expanded/collapsed this frame
     pub toggled: Option<PathBuf>,
 }
 
 // ============================================================================
-// Browser Component
+// TreeView Component
 // ============================================================================
 
-/// Simple file/folder tree
+/// Hierarchical tree view component
+///
+/// Displays nested items in a collapsible tree structure.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
+/// use armas::{TreeView, TreeItem};
+///
+/// let items = vec![
+///     TreeItem::folder("src", "/src"),
+///     TreeItem::file("main.rs", "/src/main.rs"),
+///     TreeItem::file("lib.rs", "/src/lib.rs"),
+/// ];
+///
+/// let mut tree = TreeView::new()
+///     .items(items)
+///     .root_path("/");
+///
+/// let response = tree.show(ui);
+/// if let Some(path) = response.selected {
+///     // Handle file selection
+/// }
+/// # }
+/// ```
 #[derive(Clone, Default, Serialize, Deserialize)]
-pub struct Browser {
+pub struct TreeView {
     // State
     selected: Option<PathBuf>,
     #[serde(skip)]
@@ -75,12 +111,12 @@ pub struct Browser {
     // Config
     width: f32,
     height: f32,
-    items: Vec<BrowserItem>,
+    items: Vec<TreeItem>,
     root_path: String,
     show_lines: bool,
 }
 
-impl Browser {
+impl TreeView {
     pub fn new() -> Self {
         Self {
             root_path: "/".to_string(),
@@ -101,7 +137,7 @@ impl Browser {
     }
 
     /// Set items
-    pub fn items(mut self, items: Vec<BrowserItem>) -> Self {
+    pub fn items(mut self, items: Vec<TreeItem>) -> Self {
         self.items = items;
         self
     }
@@ -118,17 +154,17 @@ impl Browser {
         self
     }
 
-    /// Get selected file
+    /// Get selected item
     pub fn selected(&self) -> Option<&PathBuf> {
         self.selected.as_ref()
     }
 
-    /// Check if folder is expanded
+    /// Check if branch is expanded
     pub fn is_expanded(&self, path: &PathBuf) -> bool {
         self.expanded.contains(&path.to_string_lossy().to_string())
     }
 
-    /// Toggle folder expanded state
+    /// Toggle branch expanded state
     fn toggle(&mut self, path: &PathBuf) {
         let key = path.to_string_lossy().to_string();
         if !self.expanded.remove(&key) {
@@ -136,8 +172,8 @@ impl Browser {
         }
     }
 
-    /// Show the tree
-    pub fn show(&mut self, ui: &mut Ui) -> BrowserResponse {
+    /// Show the tree view
+    pub fn show(&mut self, ui: &mut Ui) -> TreeViewResponse {
         let theme = ui.ctx().armas_theme();
 
         let available = ui.available_size();
@@ -151,7 +187,7 @@ impl Browser {
 
         ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
             egui::ScrollArea::vertical()
-                .id_salt("browser_scroll")
+                .id_salt("tree_view_scroll")
                 .show(ui, |ui| {
                     ui.add_space(theme.spacing.xs);
                     let mut levels_last = Vec::new();
@@ -167,7 +203,7 @@ impl Browser {
                 });
         });
 
-        BrowserResponse {
+        TreeViewResponse {
             response,
             selected: selected_this_frame,
             toggled: toggled_this_frame,
@@ -206,7 +242,7 @@ impl Browser {
     fn show_item(
         &mut self,
         ui: &mut Ui,
-        item: &BrowserItem,
+        item: &TreeItem,
         width: f32,
         depth: usize,
         is_last: bool,
@@ -328,7 +364,7 @@ impl Browser {
         });
     }
 
-    fn get_children(&self, parent: Option<&PathBuf>) -> Vec<BrowserItem> {
+    fn get_children(&self, parent: Option<&PathBuf>) -> Vec<TreeItem> {
         let root = PathBuf::from(&self.root_path);
 
         let mut items: Vec<_> = self.items.iter().filter(|item| {
@@ -352,3 +388,11 @@ impl Browser {
         items
     }
 }
+
+// Backwards compatibility aliases
+#[doc(hidden)]
+pub type Browser = TreeView;
+#[doc(hidden)]
+pub type BrowserItem = TreeItem;
+#[doc(hidden)]
+pub type BrowserResponse = TreeViewResponse;
