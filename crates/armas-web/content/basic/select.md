@@ -11,7 +11,7 @@ let mut select = Select::build(|s| {
     s.option("3", "Option 3");
 })
 .id("select_1");
-select.show(ui);
+select.show(ui, &theme);
 ```
 
 ## Basic Usage (Traditional API)
@@ -25,7 +25,7 @@ let options = vec![
 
 let mut select = Select::new(options)
     .id("select_1b");
-select.show(ui);
+select.show(ui, &theme);
 ```
 
 ## With Label
@@ -40,7 +40,7 @@ let options = vec![
 let mut select = Select::new(options)
     .id("select_2")
     .label("Country");
-select.show(ui);
+select.show(ui, &theme);
 ```
 
 ## With Icons
@@ -54,7 +54,7 @@ let options = vec![
 
 let mut select = Select::new(options)
     .id("select_3");
-select.show(ui);
+select.show(ui, &theme);
 ```
 
 ## With Descriptions
@@ -71,7 +71,7 @@ let options = vec![
 
 let mut select = Select::new(options)
     .id("select_4");
-select.show(ui);
+select.show(ui, &theme);
 ```
 
 ## Closure API with Icons and Descriptions
@@ -87,7 +87,7 @@ let mut select = Select::build(|s| {
 })
 .id("select_closure")
 .label("Choose a Fruit");
-select.show(ui);
+select.show(ui, &theme);
 ```
 
 ## With Disabled Options
@@ -102,7 +102,7 @@ let options = vec![
 
 let mut select = Select::new(options)
     .id("select_5");
-select.show(ui);
+select.show(ui, &theme);
 ```
 
 ## With Pre-Selection
@@ -117,7 +117,7 @@ let options = vec![
 let mut select = Select::new(options)
     .id("select_6")
     .selected("green");
-select.show(ui);
+select.show(ui, &theme);
 ```
 
 ## Non-Searchable
@@ -132,7 +132,7 @@ let options = vec![
 let mut select = Select::new(options)
     .id("select_7")
     .searchable(false);
-select.show(ui);
+select.show(ui, &theme);
 ```
 
 ## Custom Width
@@ -146,7 +146,7 @@ let options = vec![
 let mut select = Select::new(options)
     .id("select_8")
     .width(300.0);
-select.show(ui);
+select.show(ui, &theme);
 ```
 
 ## Handling Selection
@@ -159,7 +159,7 @@ let options = vec![
 
 let mut select = Select::new(options)
     .id("select_9");
-let response = select.show(ui);
+let response = select.show(ui, &theme);
 
 if response.changed {
     if let Some(value) = response.selected_value {

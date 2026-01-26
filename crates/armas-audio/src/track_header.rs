@@ -373,7 +373,7 @@ impl TrackHeader {
                                 if Button::new("M")
                                     .variant(mute_variant)
                                     .min_width(button_size)
-                                    .show(ui)
+                                    .show(ui, &theme)
                                     .clicked()
                                 {
                                     controls.muted = !controls.muted;
@@ -390,7 +390,7 @@ impl TrackHeader {
                                 if Button::new("S")
                                     .variant(solo_variant)
                                     .min_width(button_size)
-                                    .show(ui)
+                                    .show(ui, &theme)
                                     .clicked()
                                 {
                                     controls.soloed = !controls.soloed;
@@ -407,7 +407,7 @@ impl TrackHeader {
                                 if Button::new("R")
                                     .variant(arm_variant)
                                     .min_width(button_size)
-                                    .show(ui)
+                                    .show(ui, &theme)
                                     .clicked()
                                 {
                                     controls.armed = !controls.armed;

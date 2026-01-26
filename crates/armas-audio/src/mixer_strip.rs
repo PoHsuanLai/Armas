@@ -8,7 +8,6 @@ use armas::components::basic::Badge;
 use armas::components::button::{Button, ButtonVariant};
 use armas::components::cards::{Card, CardVariant};
 use armas::components::overlays::Dialog;
-use armas::ext::ArmasContextExt;
 use armas::Separator;
 use egui::{Color32, Id, Response, Ui, Vec2};
 
@@ -24,7 +23,7 @@ use egui::{Color32, Id, Response, Ui, Vec2};
 /// use armas::components::MixerStrip;
 ///
 /// let mut strip = MixerStrip::new("Channel 1");
-/// strip.show(ui);
+/// strip.show(ui, &theme);
 /// # }
 /// ```
 /// A send on the mixer strip
@@ -344,8 +343,7 @@ impl MixerStrip {
     }
 
     /// Show the mixer strip
-    pub fn show(&mut self, ui: &mut Ui) -> MixerStripResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(&mut self, ui: &mut Ui, theme: &armas::Theme) -> MixerStripResponse {
         let scale = self.scale;
 
         // Track changes this frame
@@ -384,7 +382,7 @@ impl MixerStrip {
                     let sends_response = Button::new("Sends")
                         .variant(ButtonVariant::Outline)
                         .min_width(button_width_full)
-                        .show(ui);
+                        .show(ui, &theme);
 
                     if sends_response.clicked() {
                         sends_clicked = true;
@@ -408,19 +406,19 @@ impl MixerStrip {
                                     .corner_radius(4.0 * scale)
                                     .size(13.0 * scale)
                                     .vertical_padding(4.0 * scale)
-                                    .show(ui);
+                                    .show(ui, &theme);
                             },
                         );
                         ui.add_space(theme.spacing.xs * scale);
                     }
 
-                    Separator::new().show(ui);
+                    Separator::new().show(ui, &theme);
 
                     // Input routing (compact height, fixed width)
                     if Button::new(&self.input_route.name)
                         .variant(ButtonVariant::Outline)
                         .min_width(button_width_full)
-                        .show(ui)
+                        .show(ui, &theme)
                         .clicked()
                     {
                         input_routing_clicked = true;
@@ -433,7 +431,7 @@ impl MixerStrip {
                     if Button::new(&self.output_route.name)
                         .variant(ButtonVariant::Outline)
                         .min_width(button_width_full)
-                        .show(ui)
+                        .show(ui, &theme)
                         .clicked()
                     {
                         output_routing_clicked = true;
@@ -454,7 +452,7 @@ impl MixerStrip {
                             Slot::new().width(slot_width).height(slot_height)
                         };
 
-                        slot.show(ui);
+                        slot.show(ui, &theme);
                         ui.add_space(theme.spacing.xs * scale);
                     }
 
@@ -513,7 +511,7 @@ impl MixerStrip {
                         if Button::new("M")
                             .variant(ButtonVariant::Outline)
                             .min_width(button_width_grid)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             self.muted = !self.muted;
@@ -524,7 +522,7 @@ impl MixerStrip {
                         if Button::new("S")
                             .variant(ButtonVariant::Outline)
                             .min_width(button_width_grid)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             self.soloed = !self.soloed;
@@ -540,7 +538,7 @@ impl MixerStrip {
                         if Button::new("R")
                             .variant(ButtonVariant::Outline)
                             .min_width(button_width_grid)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             self.record_armed = !self.record_armed;
@@ -551,7 +549,7 @@ impl MixerStrip {
                         if Button::new("I")
                             .variant(ButtonVariant::Outline)
                             .min_width(button_width_grid)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             self.input_monitoring = !self.input_monitoring;
@@ -616,15 +614,15 @@ impl MixerStrip {
                             meter_color,                // Resolved color at top
                         );
 
-                        let _ = meter.show(ui);
+                        let _ = meter.show(ui, &theme);
 
                         // Fader (same height as meter - both now use full height)
                         // No scale needed - the dB value is displayed above
-                        let (_, new_level) = Fader::new(self.fader_level)
+                        let fader_resp = Fader::new(self.fader_level)
                             .id(self.id.with("fader"))
                             .size(fader_width, meter_fader_height)
-                            .show(ui);
-                        self.fader_level = new_level;
+                            .show(ui, &theme);
+                        self.fader_level = fader_resp.value;
                     });
 
                     ui.add_space(8.0 * scale);

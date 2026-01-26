@@ -9,7 +9,6 @@
 //! - Double-click to reset to default values
 
 use armas::animation::{VelocityDrag, VelocityDragConfig};
-use armas::ext::ArmasContextExt;
 use armas::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
@@ -205,8 +204,7 @@ impl<'a> XYPad<'a> {
     }
 
     /// Show the XY pad
-    pub fn show(self, ui: &mut Ui) -> XYPadResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &Theme) -> XYPadResponse {
 
         // Load previous state if ID is set
         if let Some(id) = self.id {
@@ -303,13 +301,13 @@ impl<'a> XYPad<'a> {
             // Draw based on variant
             match self.variant {
                 XYPadVariant::Filled => {
-                    self.draw_filled(painter, &theme, rect, corner_radius);
+                    self.draw_filled(painter, theme, rect, corner_radius);
                 }
                 XYPadVariant::Outlined => {
-                    self.draw_outlined(painter, &theme, rect, corner_radius);
+                    self.draw_outlined(painter, theme, rect, corner_radius);
                 }
                 XYPadVariant::Elevated => {
-                    self.draw_elevated(painter, &theme, rect, corner_radius);
+                    self.draw_elevated(painter, theme, rect, corner_radius);
                 }
             }
 

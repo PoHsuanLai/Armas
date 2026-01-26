@@ -81,7 +81,7 @@ let theme = ui.ctx().armas_theme();
 let mut tracks = vec![Track::new("Track 1", egui::Color32::from_rgb(100, 180, 255)).region(Region::new("Clip", 0.0, 4.0))];
 let mut playhead_pos = 0.0;
 let mut zoom = 1.0;
-ZoomControl::new(&mut zoom).id("zoom").min_zoom(0.5).max_zoom(2.0).show(ui);
+ZoomControl::new(&mut zoom).id("zoom").min_zoom(0.5).max_zoom(2.0).show(ui, &theme);
 ui.add_space(8.0);
 let zoomed_beat_width = 50.0 * zoom;
 Timeline::new().id(ui.id().with("zoom")).beat_width(zoomed_beat_width).measures(4).show(ui, &mut tracks, &mut playhead_pos, &theme);

@@ -7,7 +7,6 @@
 //! - Destructive (red)
 //! - Outline (border only)
 
-use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 
@@ -137,9 +136,8 @@ impl Badge {
     }
 
     /// Show the badge
-    pub fn show(self, ui: &mut Ui) -> BadgeResponse {
-        let theme = ui.ctx().armas_theme();
-        let (bg_color, text_color, border_color) = self.get_colors(&theme);
+    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> BadgeResponse {
+        let (bg_color, text_color, border_color) = self.get_colors(theme);
 
         // Calculate size using shadcn constants
         let font_id = egui::FontId::proportional(FONT_SIZE);
@@ -345,8 +343,7 @@ impl NotificationBadge {
     }
 
     /// Show the notification badge
-    pub fn show(&self, ui: &mut Ui) -> Response {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(&self, ui: &mut Ui, theme: &crate::Theme) -> Response {
 
         let color = self.color.unwrap_or_else(|| theme.destructive());
 

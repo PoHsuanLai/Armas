@@ -17,7 +17,7 @@ let mut strip = MixerStrip::new("Vocal")
     .pan(0.0)
     .meter_level(level);
 
-strip.show(ui);
+strip.show(ui, &theme);
 ```
 
 ## Multiple Channels
@@ -48,7 +48,7 @@ ui.horizontal(|ui| {
             .knob_color(*knob_color)
             .meter_color(*meter_color);
 
-        strip.show(ui);
+        strip.show(ui, &theme);
 
         if i < channels.len() - 1 {
             ui.add_space(4.0);
@@ -72,7 +72,7 @@ let mut strip = MixerStrip::new("Drum Bus")
     .pan(-0.3)
     .meter_level(level);
 
-strip.show(ui);
+strip.show(ui, &theme);
 ```
 
 ## API Reference

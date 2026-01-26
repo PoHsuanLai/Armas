@@ -6,7 +6,6 @@
 //! - CircularProgressBar: Circular/spinner progress
 //! - RingProgress: Ring with center label
 
-use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Ui, Vec2};
 use std::f32::consts::PI;
 
@@ -73,8 +72,7 @@ impl Progress {
     }
 
     /// Show the progress bar
-    pub fn show(self, ui: &mut Ui) -> egui::Response {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> egui::Response {
         let desired_width = self.width.unwrap_or(ui.available_width());
         let corner_radius = PROGRESS_CORNER_RADIUS.min(self.height / 2.0);
 
@@ -192,8 +190,7 @@ impl CircularProgressBar {
     }
 
     /// Show the circular progress
-    pub fn show(mut self, ui: &mut Ui) -> egui::Response {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(mut self, ui: &mut Ui, theme: &crate::Theme) -> egui::Response {
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 
         if ui.is_rect_visible(rect) {
@@ -344,8 +341,7 @@ impl RingProgress {
     }
 
     /// Show the ring progress
-    pub fn show(self, ui: &mut Ui) -> egui::Response {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> egui::Response {
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 
         if ui.is_rect_visible(rect) {

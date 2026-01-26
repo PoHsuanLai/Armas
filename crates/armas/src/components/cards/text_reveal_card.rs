@@ -3,7 +3,6 @@
 //! Card component that reveals text on mouse hover with clip-path effect
 
 use crate::animation::{Animation, EasingFunction};
-use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Text reveal card component
@@ -20,8 +19,11 @@ pub struct TextRevealCard {
     reveal_color: Color32,
 
     // Animation state
+    #[allow(dead_code)]
     reveal_animation: Animation<f32>,
+    #[allow(dead_code)]
     mouse_x: f32,
+    #[allow(dead_code)]
     is_hovered: bool,
 }
 
@@ -68,8 +70,7 @@ impl TextRevealCard {
     }
 
     /// Show the text reveal card
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
 
         // Use theme colors if not explicitly set
         let background_color = if self.background_color == Color32::PLACEHOLDER {
@@ -99,32 +100,35 @@ impl TextRevealCard {
 
         let dt = ui.input(|i| i.stable_dt);
 
+        // Note: Using mutable reference to self is incompatible with consuming self
+        // We need to track animation state in egui memory instead
+        let card_id = ui.id().with("text_reveal_card");
+        let animation_data: (f32, f32, bool) = ui.ctx().data_mut(|d| {
+            d.get_temp(card_id).unwrap_or((0.0, 0.0, false))
+        });
+
+        let (mut mouse_x, mut reveal_anim_value, mut is_hovered) = animation_data;
+
         // Track mouse position
         if response.hovered() {
             if let Some(hover_pos) = response.hover_pos() {
-                self.is_hovered = true;
-                self.mouse_x = hover_pos.x - rect.left();
+                is_hovered = true;
+                mouse_x = hover_pos.x - rect.left();
 
-                // Calculate width percentage
-                let width_percentage = (self.mouse_x / rect.width()).clamp(0.0, 1.0);
-
-                // Update animation target instantly on hover
-                self.reveal_animation.end = width_percentage;
-                self.reveal_animation.start = width_percentage;
-                self.reveal_animation.elapsed = self.reveal_animation.duration; // instant
+                // Calculate width percentage - instant reveal on hover
+                reveal_anim_value = (mouse_x / rect.width()).clamp(0.0, 1.0);
             }
-        } else if self.is_hovered {
+        } else if is_hovered {
             // Mouse left - animate back to 0
-            self.is_hovered = false;
-            self.reveal_animation.start = self.reveal_animation.value();
-            self.reveal_animation.end = 0.0;
-            self.reveal_animation.elapsed = 0.0;
-            self.reveal_animation.start();
+            is_hovered = false;
+            // Smooth transition back
+            reveal_anim_value = (reveal_anim_value - dt * 2.5).max(0.0);
+            if reveal_anim_value > 0.0 {
+                ui.ctx().request_repaint();
+            }
         }
 
-        // Update animation
-        self.reveal_animation.update(dt);
-        let reveal_percentage = self.reveal_animation.value();
+        let reveal_percentage = reveal_anim_value;
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
@@ -193,7 +197,7 @@ impl TextRevealCard {
             }
 
             // Draw subtle instruction text
-            if !self.is_hovered {
+            if !is_hovered {
                 let hint_color = theme.muted_foreground();
                 painter.text(
                     Pos2::new(reveal_rect.left(), reveal_y + theme.spacing.sm),
@@ -210,9 +214,10 @@ impl TextRevealCard {
             }
         }
 
-        if !self.reveal_animation.is_complete() {
-            ui.ctx().request_repaint();
-        }
+        // Save animation state
+        ui.ctx().data_mut(|d| {
+            d.insert_temp(card_id, (mouse_x, reveal_anim_value, is_hovered));
+        });
 
         response
     }

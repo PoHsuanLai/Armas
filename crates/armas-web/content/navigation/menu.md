@@ -5,7 +5,7 @@ Dropdown menus with keyboard navigation and nested submenus.
 ```demo
 let state_id = ui.id().with("menu_open_basic");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
-let button_response = Button::new("File").show(ui);
+let button_response = Button::new("File").show(ui, &theme);
 if button_response.clicked() {
     is_open = !is_open;
 }
@@ -28,7 +28,7 @@ ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
 ```demo
 let state_id = ui.id().with("menu_shortcuts");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
-let button_response = Button::new("Edit").show(ui);
+let button_response = Button::new("Edit").show(ui, &theme);
 if button_response.clicked() { is_open = !is_open; }
 let mut menu = Menu::new("shortcuts").open(is_open);
 let response = menu.show(ui.ctx(), button_response.rect, |menu| {
@@ -47,7 +47,7 @@ let state_id = ui.id().with("menu_checkbox");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let checkbox_state_id = ui.id().with("checkbox_states");
 let mut states = ui.ctx().data_mut(|d| d.get_temp::<[bool; 3]>(checkbox_state_id).unwrap_or([true, false, true]));
-let button_response = Button::new("View").show(ui);
+let button_response = Button::new("View").show(ui, &theme);
 if button_response.clicked() { is_open = !is_open; }
 let mut menu = Menu::new("checkbox").open(is_open);
 let response = menu.show(ui.ctx(), button_response.rect, |menu| {
@@ -67,7 +67,7 @@ ui.ctx().data_mut(|d| { d.insert_temp(state_id, is_open); d.insert_temp(checkbox
 ```demo
 let state_id = ui.id().with("menu_submenu");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
-let button_response = Button::new("File").show(ui);
+let button_response = Button::new("File").show(ui, &theme);
 if button_response.clicked() { is_open = !is_open; }
 let mut menu = Menu::new("submenu").open(is_open);
 let response = menu.show(ui.ctx(), button_response.rect, |menu| {
@@ -89,7 +89,7 @@ ui.ctx().data_mut(|d| d.insert_temp(state_id, is_open));
 ```demo
 let state_id = ui.id().with("menu_destructive");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
-let button_response = Button::new("Actions").show(ui);
+let button_response = Button::new("Actions").show(ui, &theme);
 if button_response.clicked() { is_open = !is_open; }
 let mut menu = Menu::new("destructive").open(is_open);
 let response = menu.show(ui.ctx(), button_response.rect, |menu| {

@@ -4,8 +4,9 @@ Tab navigation with animated indicator.
 
 ```demo
 let mut tabs = Tabs::new(vec!["Account", "Password"]);
-if let Some(new_index) = tabs.show(ui) {
-    // Tab changed to new_index
+let response = tabs.show(ui, &theme);
+if response.changed {
+    // Tab changed to response.selected
 }
 ```
 
@@ -13,12 +14,12 @@ if let Some(new_index) = tabs.show(ui) {
 
 ```demo
 let mut tabs = Tabs::new(vec!["Overview", "Analytics", "Reports"]).active(1);
-tabs.show(ui);
+tabs.show(ui, &theme);
 ```
 
 ## Without Animation
 
 ```demo
 let mut tabs = Tabs::new(vec!["Tab 1", "Tab 2", "Tab 3"]).animate(false);
-tabs.show(ui);
+tabs.show(ui, &theme);
 ```

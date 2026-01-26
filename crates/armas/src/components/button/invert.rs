@@ -42,7 +42,7 @@ impl InvertButton {
     }
 
     /// Show the button
-    pub fn show(self, ui: &mut Ui) -> Response {
+    pub fn show(self, ui: &mut Ui, _theme: &crate::Theme) -> Response {
         let InvertButton {
             text,
             min_size,

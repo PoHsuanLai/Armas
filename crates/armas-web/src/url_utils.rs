@@ -46,10 +46,13 @@ pub mod url {
 #[cfg(not(target_arch = "wasm32"))]
 pub mod url {
     // Native stubs (no-op)
+    #[allow(dead_code)]
     pub fn get_hash() -> Option<String> {
         None
     }
+    #[allow(dead_code)]
     pub fn set_hash(_path: &str) {}
+    #[allow(dead_code)]
     pub fn parse_route(_hash: &str) -> Option<(String, String)> {
         None
     }

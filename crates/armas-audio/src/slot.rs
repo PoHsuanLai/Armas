@@ -6,7 +6,6 @@
 //! Features an activity meter showing processing level and a bypass indicator.
 //! Colors are automatically assigned based on effect type (reverb, EQ, compressor, etc.).
 
-use armas::ext::ArmasContextExt;
 use armas::theme::Theme;
 use egui;
 
@@ -112,8 +111,7 @@ impl<'a> Slot<'a> {
     }
 
     /// Show the slot component
-    pub fn show(self, ui: &mut egui::Ui) -> SlotResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut egui::Ui, theme: &armas::Theme) -> SlotResponse {
         let font_size = ui.spacing().interact_size.y * 0.4;
         let (rect, response) =
             ui.allocate_exact_size(egui::vec2(self.width, self.height), egui::Sense::click());

@@ -107,8 +107,7 @@ impl Radio {
     }
 
     /// Show the radio button
-    pub fn show(&self, ui: &mut Ui, selected: bool) -> RadioResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(&self, ui: &mut Ui, selected: bool, theme: &crate::Theme) -> RadioResponse {
 
         let response = ui
             .horizontal(|ui| {
@@ -256,7 +255,8 @@ impl<'a> RadioGroupBuilder<'a> {
             radio = radio.description(desc);
         }
 
-        let response = radio.show(self.ui, is_selected);
+        let theme = self.ui.ctx().armas_theme();
+        let response = radio.show(self.ui, is_selected, &theme);
 
         // Update selection if clicked and not already selected
         if response.response.clicked() && !is_selected {

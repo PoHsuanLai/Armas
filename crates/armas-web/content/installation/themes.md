@@ -13,7 +13,7 @@ let mut selected = ui.data_mut(|d| d.get_temp::<usize>(theme_id).unwrap_or(0));
 ui.horizontal(|ui| {
     if Button::new("Dark")
         .variant(if selected == 0 { ButtonVariant::Filled } else { ButtonVariant::Outlined })
-        .show(ui)
+        .show(ui, &theme)
         .clicked()
     {
         selected = 0;
@@ -22,7 +22,7 @@ ui.horizontal(|ui| {
 
     if Button::new("Light")
         .variant(if selected == 1 { ButtonVariant::Filled } else { ButtonVariant::Outlined })
-        .show(ui)
+        .show(ui, &theme)
         .clicked()
     {
         selected = 1;
@@ -31,7 +31,7 @@ ui.horizontal(|ui| {
 
     if Button::new("Nord")
         .variant(if selected == 2 { ButtonVariant::Filled } else { ButtonVariant::Outlined })
-        .show(ui)
+        .show(ui, &theme)
         .clicked()
     {
         selected = 2;

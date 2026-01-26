@@ -2,7 +2,6 @@
 //!
 //! Keyboard shortcut display element.
 
-use crate::ext::ArmasContextExt;
 use crate::theme::Theme;
 use egui::{Response, Ui, Vec2};
 
@@ -33,8 +32,7 @@ impl Kbd {
     }
 
     /// Show the keyboard shortcut
-    pub fn show(self, ui: &mut Ui) -> Response {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
 
         // Check if this is a key combination
         let parts: Vec<&str> = self.text.split('+').map(|s| s.trim()).collect();

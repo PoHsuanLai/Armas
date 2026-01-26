@@ -3,7 +3,6 @@
 //! Grid of toggle buttons for rhythm programming and pattern creation.
 //! Perfect for drum machines and pattern-based sequencers.
 
-use armas::ext::ArmasContextExt;
 use armas::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
@@ -166,8 +165,7 @@ impl<'a> StepSequencer<'a> {
     }
 
     /// Show the step sequencer
-    pub fn show(self, ui: &mut Ui) -> StepSequencerResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> StepSequencerResponse {
 
         // Ensure steps vec has correct size
         self.steps.resize(self.num_steps, false);

@@ -115,8 +115,7 @@ impl Toggle {
     }
 
     /// Show the toggle and return whether it changed
-    pub fn show(&mut self, ui: &mut Ui, checked: &mut bool) -> ToggleResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(&mut self, ui: &mut Ui, checked: &mut bool, theme: &crate::Theme) -> ToggleResponse {
 
         // Load state from memory if ID is set
         if let Some(id) = self.id {
@@ -443,7 +442,8 @@ impl<'a> ToggleGroupBuilder<'a> {
             toggle = toggle.description(desc);
         }
 
-        let response = toggle.show(self.ui, &mut checked);
+        let theme = self.ui.ctx().armas_theme();
+        let response = toggle.show(self.ui, &mut checked, &theme);
 
         // Update state if changed
         if response.changed {

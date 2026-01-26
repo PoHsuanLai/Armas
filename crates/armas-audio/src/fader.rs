@@ -7,7 +7,6 @@
 //! Supports velocity-based dragging for fine control (hold Ctrl/Cmd).
 
 use armas::animation::{DragMode, VelocityDrag, VelocityDragConfig};
-use armas::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Persisted drag state for fader
@@ -46,6 +45,17 @@ pub enum FaderCurve {
     Logarithmic,
     /// Exponential response (useful for filter cutoff, more sensitive at higher values)
     Exponential,
+}
+
+/// Response from the fader control
+#[derive(Debug, Clone)]
+pub struct FaderResponse {
+    /// The UI response
+    pub response: Response,
+    /// Current fader value (0.0 to 1.0)
+    pub value: f32,
+    /// Whether the value changed this frame
+    pub changed: bool,
 }
 
 // Fader (minimal) default dimensions - just the track
@@ -183,9 +193,9 @@ impl Fader {
         self
     }
 
-    /// Show the fader and return the new value
-    pub fn show(mut self, ui: &mut Ui) -> (Response, f32) {
-        let theme = ui.ctx().armas_theme();
+    /// Show the fader and return the response
+    pub fn show(mut self, ui: &mut Ui, theme: &armas::Theme) -> FaderResponse {
+        let mut changed = false;
 
         // Generate stable ID for drag state
         let fader_id = self
@@ -237,6 +247,7 @@ impl Fader {
             if let Some(default) = self.default_value {
                 if (self.value - default).abs() > 0.001 {
                     self.value = default.clamp(0.0, 1.0);
+                    changed = true;
                     response.mark_changed();
                 }
             }
@@ -275,6 +286,7 @@ impl Fader {
                     let new_value = drag_state.drag_start_value - delta as f32;
                     if (new_value - self.value).abs() > 0.0001 {
                         self.value = new_value.clamp(0.0, 1.0);
+                        changed = true;
                         response.mark_changed();
                     }
                 } else {
@@ -295,6 +307,7 @@ impl Fader {
                     let thumb_top_pos = (pos.y - channel_top).clamp(0.0, thumb_travel_range);
                     let normalized = 1.0 - (thumb_top_pos / thumb_travel_range);
                     self.value = normalized;
+                    changed = true;
                     response.mark_changed();
                 }
 
@@ -381,7 +394,7 @@ impl Fader {
 
             // Draw scale markings
             if self.scale_position != FaderScalePosition::None {
-                self.draw_scale(ui, fader_rect, rect, &theme);
+                self.draw_scale(ui, fader_rect, rect, theme);
             }
         }
 
@@ -393,7 +406,11 @@ impl Fader {
             });
         }
 
-        (response, self.value)
+        FaderResponse {
+            response,
+            value: self.value,
+            changed,
+        }
     }
 
     /// Draw dB scale markings for fader
@@ -635,8 +652,7 @@ impl FaderStrip {
     }
 
     /// Show the fader strip and return the new value
-    pub fn show(mut self, ui: &mut Ui) -> (Response, f32) {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(mut self, ui: &mut Ui, theme: &armas::Theme) -> (Response, f32) {
         let desired_size = Vec2::new(self.width, self.height);
         let (rect, response) = ui.allocate_exact_size(desired_size, Sense::hover());
 
@@ -706,14 +722,14 @@ impl FaderStrip {
             let mut fader_ui = ui.new_child(egui::UiBuilder::new().max_rect(fader_rect));
 
             // Show the inner fader
-            let (fader_response, new_value) = Fader::new(self.value)
+            let fader_response = Fader::new(self.value)
                 .size(fader_width, fader_height)
-                .show(&mut fader_ui);
+                .show(&mut fader_ui, &theme);
 
-            self.value = new_value;
+            self.value = fader_response.value;
 
             // Return the fader's response (which handles interaction)
-            return (fader_response, self.value);
+            return (fader_response.response, self.value);
         }
 
         (response, self.value)

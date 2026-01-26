@@ -4,7 +4,7 @@ Divider line for separating content sections.
 
 ```demo
 ui.label("Above");
-Separator::new().show(ui);
+Separator::new().show(ui, &theme);
 ui.label("Below");
 ```
 
@@ -13,7 +13,7 @@ ui.label("Below");
 ```demo
 ui.horizontal(|ui| {
     ui.label("Left");
-    Separator::new().vertical().length(20.0).show(ui);
+    Separator::new().vertical().length(20.0).show(ui, &theme);
     ui.label("Right");
 });
 ```
@@ -23,9 +23,9 @@ ui.horizontal(|ui| {
 ```demo
 ui.vertical(|ui| {
     ui.label("Item 1");
-    Separator::new().show(ui);
+    Separator::new().show(ui, &theme);
     ui.label("Item 2");
-    Separator::new().show(ui);
+    Separator::new().show(ui, &theme);
     ui.label("Item 3");
 });
 ```

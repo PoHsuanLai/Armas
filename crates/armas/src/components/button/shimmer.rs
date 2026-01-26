@@ -51,7 +51,7 @@ impl ShimmerButton {
     }
 
     /// Show the button
-    pub fn show(self, ui: &mut Ui) -> Response {
+    pub fn show(self, ui: &mut Ui, _theme: &crate::Theme) -> Response {
         let ShimmerButton {
             text,
             min_size,

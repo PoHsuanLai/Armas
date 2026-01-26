@@ -85,12 +85,12 @@ impl Typewriter {
     }
 
     /// Show the typewriter text
-    pub fn show(self, ui: &mut Ui) -> Response {
+    pub fn show(&mut self, ui: &mut Ui, _theme: &armas::Theme) -> Response {
         self.show_styled(ui, RichText::new)
     }
 
     /// Show the typewriter text with custom styling
-    pub fn show_styled<F>(self, ui: &mut Ui, style_fn: F) -> Response
+    pub fn show_styled<F>(&mut self, ui: &mut Ui, style_fn: F) -> Response
     where
         F: FnOnce(String) -> RichText,
     {
@@ -222,12 +222,12 @@ impl WordTypewriter {
     }
 
     /// Show the word typewriter
-    pub fn show(self, ui: &mut Ui) -> Response {
+    pub fn show(&mut self, ui: &mut Ui, _theme: &armas::Theme) -> Response {
         self.show_styled(ui, RichText::new)
     }
 
     /// Show with custom styling
-    pub fn show_styled<F>(self, ui: &mut Ui, style_fn: F) -> Response
+    pub fn show_styled<F>(&mut self, ui: &mut Ui, style_fn: F) -> Response
     where
         F: FnOnce(String) -> RichText,
     {

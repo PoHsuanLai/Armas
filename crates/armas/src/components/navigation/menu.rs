@@ -707,7 +707,7 @@ fn render_item_content(
         );
         ui.scope_builder(egui::UiBuilder::new().max_rect(shortcut_rect), |ui| {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                Kbd::new(shortcut).show(ui);
+                Kbd::new(shortcut).show(ui, &theme);
             });
         });
     }

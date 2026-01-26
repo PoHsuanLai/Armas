@@ -5,7 +5,6 @@
 //! Built on top of Card component for consistency.
 
 use crate::components::button::IconButton;
-use crate::ext::ArmasContextExt;
 use crate::icon::{render_icon, WindowIcon};
 use crate::{ButtonVariant, Card, CardVariant, Theme};
 use egui::{vec2, Color32, Sense, Ui};
@@ -147,8 +146,7 @@ impl Alert {
     /// Show the alert using Card component
     ///
     /// Returns `AlertResponse` with information about user interaction
-    pub fn show(self, ui: &mut Ui) -> AlertResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> AlertResponse {
         let mut dismissed = false;
 
         let accent_color = self.custom_color.unwrap_or_else(|| self.variant.color(&theme));
@@ -208,7 +206,7 @@ impl Alert {
                         .padding(4.0)
                         .icon_color(theme.muted_foreground())
                         .hover_icon_color(theme.foreground())
-                        .show(ui);
+                        .show(ui, &theme);
 
                     if close_response.clicked() {
                         dismissed = true;
@@ -229,11 +227,11 @@ pub struct AlertResponse {
 }
 
 /// Simple helper to show an alert with just a message
-pub fn alert(ui: &mut Ui, message: impl Into<String>) {
-    Alert::new(message).show(ui);
+pub fn alert(ui: &mut Ui, message: impl Into<String>, theme: &crate::Theme) {
+    Alert::new(message).show(ui, theme);
 }
 
 /// Show a destructive alert
-pub fn alert_destructive(ui: &mut Ui, message: impl Into<String>) {
-    Alert::new(message).destructive().show(ui);
+pub fn alert_destructive(ui: &mut Ui, message: impl Into<String>, theme: &crate::Theme) {
+    Alert::new(message).destructive().show(ui, theme);
 }

@@ -371,7 +371,7 @@ impl FloatingWindow {
             if WindowIconWidget::new(WindowIcon::IntoFullScreen)
                 .size(12.0)
                 .color(theme.muted_foreground())
-                .show(ui)
+                .show(ui, theme)
                 .clicked()
             {
                 // Maximize action placeholder
@@ -390,7 +390,7 @@ impl FloatingWindow {
                 if WindowIconWidget::new(WindowIcon::Close)
                     .size(12.0)
                     .color(theme.muted_foreground())
-                    .show(ui)
+                    .show(ui, theme)
                     .clicked()
                 {
                     // Close is handled by egui::Window automatically

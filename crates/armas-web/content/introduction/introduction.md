@@ -17,15 +17,15 @@ ui.vertical(|ui| {
 
     Button::new("Primary Action")
         .variant(ButtonVariant::Filled)
-        .show(ui);
+        .show(ui, &theme);
 
     Button::new("Secondary Action")
         .variant(ButtonVariant::Outlined)
-        .show(ui);
+        .show(ui, &theme);
 
     Badge::new("New")
         .variant(BadgeVariant::Filled)
-        .show(ui);
+        .show(ui, &theme);
 });
 ```
 

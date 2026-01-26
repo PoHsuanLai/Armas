@@ -381,7 +381,7 @@ impl ToastManager {
                                     .padding(6.0)
                                     .icon_color(theme.muted_foreground())
                                     .hover_icon_color(theme.foreground())
-                                    .show(ui);
+                                    .show(ui, &theme);
 
                                 if close_response.clicked() {
                                     dismissed = true;

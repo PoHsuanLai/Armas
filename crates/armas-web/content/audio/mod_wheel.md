@@ -10,7 +10,7 @@ let mut value = 0.0;
 let response = ModWheel::new(&mut value)
     .wheel_type(WheelType::Modulation)
     .label("Mod".to_string())
-    .show(ui);
+    .show(ui, &theme);
 
 if response.changed() {
     ui.label(format!("Value: {:.2}", value));
@@ -28,7 +28,7 @@ ModWheel::new(&mut mod_value)
     .wheel_type(WheelType::Modulation)
     .label("Mod".to_string())
     .height(200.0)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Pitch Bend (Springs Back to Center)
@@ -40,7 +40,7 @@ ModWheel::new(&mut pitch)
     .wheel_type(WheelType::PitchBend)
     .label("Pitch".to_string())
     .height(200.0)
-    .show(ui);
+    .show(ui, &theme);
 
 ui.label("Release to return to center");
 ```
@@ -54,7 +54,7 @@ ModWheel::new(&mut expression)
     .wheel_type(WheelType::Expression)
     .label("Expr".to_string())
     .height(200.0)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Variants
@@ -68,7 +68,7 @@ ModWheel::new(&mut value)
     .wheel_type(WheelType::Modulation)
     .variant(WheelVariant::Filled)
     .height(180.0)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Outlined
@@ -80,7 +80,7 @@ ModWheel::new(&mut value)
     .wheel_type(WheelType::Modulation)
     .variant(WheelVariant::Outlined)
     .height(180.0)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Elevated
@@ -92,7 +92,7 @@ ModWheel::new(&mut value)
     .wheel_type(WheelType::Modulation)
     .variant(WheelVariant::Elevated)
     .height(180.0)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## With Value Display
@@ -105,7 +105,7 @@ ModWheel::new(&mut value)
     .label("Mod".to_string())
     .show_value(true)
     .height(200.0)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Custom Sizing
@@ -118,7 +118,7 @@ ModWheel::new(&mut value)
     .width(50.0)
     .height(250.0)
     .label("Wide".to_string())
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Pitch Bend Example
@@ -132,7 +132,7 @@ let response = ModWheel::new(&mut pitch_bend)
     .show_value(true)
     .show_center_line(true)
     .height(220.0)
-    .show(ui);
+    .show(ui, &theme);
 
 // Convert to semitones (+/- 2 semitones typical)
 let semitones = pitch_bend * 2.0;
@@ -150,7 +150,7 @@ ui.horizontal(|ui| {
         .wheel_type(WheelType::Modulation)
         .label("Mod".to_string())
         .height(180.0)
-        .show(ui);
+        .show(ui, &theme);
 
     ui.add_space(8.0);
 
@@ -158,7 +158,7 @@ ui.horizontal(|ui| {
         .wheel_type(WheelType::PitchBend)
         .label("Pitch".to_string())
         .height(180.0)
-        .show(ui);
+        .show(ui, &theme);
 });
 ```
 
@@ -268,7 +268,7 @@ ui.horizontal(|ui| {
         .label("Mod".to_string())
         .height(200.0)
         .variant(WheelVariant::Elevated)
-        .show(ui);
+        .show(ui, &theme);
 
     ui.add_space(12.0);
 
@@ -277,7 +277,7 @@ ui.horizontal(|ui| {
         .label("Pitch".to_string())
         .height(200.0)
         .variant(WheelVariant::Elevated)
-        .show(ui);
+        .show(ui, &theme);
 });
 ```
 
@@ -291,7 +291,7 @@ ModWheel::new(&mut dynamics)
     .label("Dynamics".to_string())
     .show_value(true)
     .height(220.0)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Filter Sweep
@@ -304,7 +304,7 @@ ModWheel::new(&mut filter_mod)
     .label("Filter".to_string())
     .height(200.0)
     .glow_intensity(1.2)
-    .show(ui);
+    .show(ui, &theme);
 
 let cutoff_hz = 100.0 + filter_mod * 5000.0;
 ui.label(format!("Cutoff: {:.0} Hz", cutoff_hz));

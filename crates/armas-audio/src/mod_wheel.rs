@@ -4,7 +4,6 @@
 //! Essential for expressive MIDI performance.
 
 use armas::animation::{VelocityDrag, VelocityDragConfig};
-use armas::ext::ArmasContextExt;
 use armas::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
@@ -183,8 +182,7 @@ impl<'a> ModWheel<'a> {
     }
 
     /// Show the mod wheel
-    pub fn show(self, ui: &mut Ui) -> Response {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> Response {
 
         // Load previous state if ID is set
         if let Some(id) = self.id {

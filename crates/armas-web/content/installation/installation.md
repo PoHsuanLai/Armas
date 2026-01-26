@@ -53,7 +53,7 @@ impl eframe::App for TestApp {
         egui::CentralPanel::default().show(ctx, |ui| {
             Button::new("Test Button")
                 .variant(ButtonVariant::Filled)
-                .show(ui);
+                .show(ui, &theme);
         });
     }
 }

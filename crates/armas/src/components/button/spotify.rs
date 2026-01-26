@@ -42,7 +42,7 @@ impl SpotifyButton {
     }
 
     /// Show the button
-    pub fn show(self, ui: &mut Ui) -> Response {
+    pub fn show(self, ui: &mut Ui, _theme: &crate::Theme) -> Response {
         let SpotifyButton {
             text,
             min_size,

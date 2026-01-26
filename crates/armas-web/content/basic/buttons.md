@@ -3,7 +3,7 @@
 Displays a button or a component that looks like a button.
 
 ```demo
-Button::new("Button").show(ui);
+Button::new("Button").show(ui, &theme);
 ```
 
 ## Variants
@@ -11,11 +11,11 @@ Button::new("Button").show(ui);
 ```demo
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
-    Button::new("Default").show(ui);
-    Button::new("Secondary").variant(ButtonVariant::Secondary).show(ui);
-    Button::new("Outline").variant(ButtonVariant::Outline).show(ui);
-    Button::new("Ghost").variant(ButtonVariant::Ghost).show(ui);
-    Button::new("Link").variant(ButtonVariant::Link).show(ui);
+    Button::new("Default").show(ui, &theme);
+    Button::new("Secondary").variant(ButtonVariant::Secondary).show(ui, &theme);
+    Button::new("Outline").variant(ButtonVariant::Outline).show(ui, &theme);
+    Button::new("Ghost").variant(ButtonVariant::Ghost).show(ui, &theme);
+    Button::new("Link").variant(ButtonVariant::Link).show(ui, &theme);
 });
 ```
 
@@ -24,22 +24,22 @@ ui.horizontal(|ui| {
 ```demo
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
-    Button::new("Small").size(ButtonSize::Small).show(ui);
-    Button::new("Default").show(ui);
-    Button::new("Large").size(ButtonSize::Large).show(ui);
+    Button::new("Small").size(ButtonSize::Small).show(ui, &theme);
+    Button::new("Default").show(ui, &theme);
+    Button::new("Large").size(ButtonSize::Large).show(ui, &theme);
 });
 ```
 
 ## Disabled
 
 ```demo
-Button::new("Disabled").enabled(false).show(ui);
+Button::new("Disabled").enabled(false).show(ui, &theme);
 ```
 
 ## Full Width
 
 ```demo
-Button::new("Full Width").full_width(true).show(ui);
+Button::new("Full Width").full_width(true).show(ui, &theme);
 ```
 
 ## With Icon
@@ -47,7 +47,7 @@ Button::new("Full Width").full_width(true).show(ui);
 ```demo
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
-    Button::new("← Back").variant(ButtonVariant::Outline).show(ui);
-    Button::new("Next →").show(ui);
+    Button::new("← Back").variant(ButtonVariant::Outline).show(ui, &theme);
+    Button::new("Next →").show(ui, &theme);
 });
 ```

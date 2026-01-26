@@ -3,29 +3,29 @@
 //! Complete scrollable timeline view combining ruler, playhead, track headers, and tracks.
 
 use crate::{
-    LoopRegionMarker, Marker, Playhead, PunchMarker, Region, SelectionRange, SnapGrid,
-    TimeRuler, TimelineTrack, TrackControls, TrackHeader,
+    TimelineRegion, TimelineMarker, RegionVariant, MarkerVariant,
+    Playhead, Region, SnapGrid, TimeRuler, TimelineTrack, TrackControls, TrackHeader,
 };
 use armas::theme::Theme;
 use egui::{pos2, vec2, Color32, Rect, Response, Sense, Ui, Vec2};
 
-/// Data for a cue point marker
+/// Data for a timeline marker
 #[derive(Debug, Clone)]
 pub struct MarkerData {
     /// Position in beats
     pub position: f32,
-    /// Marker content (label, tempo, time signature, etc.)
-    pub content: String,
+    /// Marker variant (cue, tempo, time signature)
+    pub variant: MarkerVariant,
     /// Optional custom color
     pub color: Option<Color32>,
 }
 
 impl MarkerData {
-    /// Create a new marker with label
+    /// Create a new cue marker with label
     pub fn new(position: f32, label: impl Into<String>) -> Self {
         Self {
             position,
-            content: label.into(),
+            variant: MarkerVariant::Cue(label.into()),
             color: None,
         }
     }
@@ -34,8 +34,8 @@ impl MarkerData {
     pub fn tempo(position: f32, bpm: f32) -> Self {
         Self {
             position,
-            content: format!("{:.0} BPM", bpm),
-            color: Some(Color32::from_rgb(0, 180, 180)), // Teal
+            variant: MarkerVariant::Tempo(bpm),
+            color: None,
         }
     }
 
@@ -43,8 +43,8 @@ impl MarkerData {
     pub fn time_signature(position: f32, numerator: u32, denominator: u32) -> Self {
         Self {
             position,
-            content: format!("{}/{}", numerator, denominator),
-            color: Some(Color32::from_rgb(150, 100, 200)), // Purple
+            variant: MarkerVariant::TimeSignature { numerator, denominator },
+            color: None,
         }
     }
 
@@ -1081,6 +1081,7 @@ impl<'a> Timeline<'a> {
         ui: &mut Ui,
         layout: &TimelineLayout,
         scroll_offset: Vec2,
+        theme: &Theme,
     ) {
         if self.markers.is_none() {
             return;
@@ -1109,15 +1110,13 @@ impl<'a> Timeline<'a> {
 
         if let Some(markers) = self.markers.as_mut() {
             for (i, marker_data) in markers.iter_mut().enumerate() {
-                let vertical_range = if marker_data.content.contains("BPM") {
-                    (0.33, 0.67)
-                } else if marker_data.content.contains('/') && marker_data.content.len() < 6 {
-                    (0.67, 1.0)
-                } else {
-                    (0.0, 0.33)
+                let vertical_range = match marker_data.variant {
+                    MarkerVariant::Tempo(_) => (0.33, 0.67),
+                    MarkerVariant::TimeSignature { .. } => (0.67, 1.0),
+                    MarkerVariant::Cue(_) => (0.0, 0.33),
                 };
 
-                let mut marker = Marker::new(&mut marker_data.position, &marker_data.content)
+                let mut marker = TimelineMarker::new(&mut marker_data.position, &mut marker_data.variant)
                     .beat_width(self.beat_width)
                     .measures(self.measures)
                     .beats_per_measure(self.beats_per_measure)
@@ -1129,7 +1128,7 @@ impl<'a> Timeline<'a> {
                     marker = marker.color(color);
                 }
 
-                marker.show(&mut marker_ui);
+                marker.show(&mut marker_ui, theme);
             }
         }
     }
@@ -1180,6 +1179,7 @@ impl<'a> Timeline<'a> {
         flat_list: &[TrackInfo],
         layout: &TimelineLayout,
         scroll_offset: Vec2,
+        theme: &Theme,
     ) {
         if flat_list.is_empty() || layout.timeline_height <= 0.0 {
             return;
@@ -1226,18 +1226,19 @@ impl<'a> Timeline<'a> {
                         loop_ui.set_clip_rect(tracks_rect);
 
                         let loop_response =
-                            LoopRegionMarker::new(&mut loop_data.start, &mut loop_data.end)
+                            TimelineRegion::new(&mut loop_data.start, &mut loop_data.end)
+                                .variant(RegionVariant::Loop)
                                 .beat_width(self.beat_width)
                                 .measures(self.measures)
                                 .beats_per_measure(self.beats_per_measure)
                                 .height(layout.content_height)
                                 .vertical_range(0.0, 0.5)
                                 .id(self.id.unwrap_or_else(|| ui.id()).with("loop_region"))
-                                .show(&mut loop_ui);
+                                .show(&mut loop_ui, theme);
 
                         if loop_response.region_clicked
-                            || loop_response.loop_start_changed
-                            || loop_response.loop_end_changed
+                            || loop_response.start_changed
+                            || loop_response.end_changed
                         {
                             top_marker = 0;
                         }
@@ -1252,21 +1253,22 @@ impl<'a> Timeline<'a> {
                         );
                         selection_ui.set_clip_rect(tracks_rect);
 
-                        let selection_response = SelectionRange::new(
+                        let selection_response = TimelineRegion::new(
                             &mut selection_data.start,
                             &mut selection_data.end,
                         )
+                        .variant(RegionVariant::Selection)
                         .beat_width(self.beat_width)
                         .measures(self.measures)
                         .beats_per_measure(self.beats_per_measure)
                         .height(layout.content_height)
                         .vertical_range(0.33, 0.67)
                         .id(self.id.unwrap_or_else(|| ui.id()).with("selection_range"))
-                        .show(&mut selection_ui);
+                        .show(&mut selection_ui, theme);
 
                         if selection_response.region_clicked
-                            || selection_response.selection_start_changed
-                            || selection_response.selection_end_changed
+                            || selection_response.start_changed
+                            || selection_response.end_changed
                         {
                             top_marker = 1;
                         }
@@ -1281,21 +1283,22 @@ impl<'a> Timeline<'a> {
                         );
                         punch_ui.set_clip_rect(tracks_rect);
 
-                        let punch_response = PunchMarker::new(
+                        let punch_response = TimelineRegion::new(
                             &mut punch_data.punch_in,
                             &mut punch_data.punch_out,
                         )
+                        .variant(RegionVariant::Punch)
                         .beat_width(self.beat_width)
                         .measures(self.measures)
                         .beats_per_measure(self.beats_per_measure)
                         .height(layout.content_height)
                         .vertical_range(0.5, 1.0)
                         .id(self.id.unwrap_or_else(|| ui.id()).with("punch_region"))
-                        .show(&mut punch_ui);
+                        .show(&mut punch_ui, theme);
 
                         if punch_response.region_clicked
-                            || punch_response.punch_in_changed
-                            || punch_response.punch_out_changed
+                            || punch_response.start_changed
+                            || punch_response.end_changed
                         {
                             top_marker = 2;
                         }
@@ -1553,13 +1556,13 @@ impl<'a> Timeline<'a> {
 
         // === RENDER OVERLAYS ===
         // Point markers in ruler
-        self.render_markers(ui, &layout, scroll_offset);
+        self.render_markers(ui, &layout, scroll_offset, theme);
 
         // Snap grid overlay
         self.render_snap_grid_overlay(ui, &layout, scroll_offset);
 
         // Region markers (loop, selection, punch)
-        self.render_region_markers(ui, &flat_list, &layout, scroll_offset);
+        self.render_region_markers(ui, &flat_list, &layout, scroll_offset, theme);
 
         // Playhead
         interactions.playhead_moved =

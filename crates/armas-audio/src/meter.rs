@@ -5,7 +5,6 @@
 
 use armas::animation::SpringAnimation;
 use armas::color::{lerp_color, with_alpha, ColorStop, Gradient};
-use armas::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Response from the audio meter
@@ -257,8 +256,7 @@ impl AudioMeter {
     }
 
     /// Show the meter and return the response
-    pub fn show(mut self, ui: &mut Ui) -> MeterResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(mut self, ui: &mut Ui, theme: &armas::Theme) -> MeterResponse {
 
         // Width only controls the meter tube, scale is additional space
         let scale_width = if self.scale_position != ScalePosition::None {
@@ -381,7 +379,7 @@ impl AudioMeter {
 
             // Draw scale markings (pass full rect which includes scale area)
             if self.scale_position != ScalePosition::None {
-                self.draw_scale(ui, rect, meter_rect, &theme);
+                self.draw_scale(ui, rect, meter_rect, theme);
             }
         }
 

@@ -96,7 +96,7 @@ let mut is_selected = ui.ctx().data_mut(|d| {
 
 let response = Radio::new()
     .label("Standalone Radio")
-    .show(ui, is_selected);
+    .show(ui, is_selected, &theme);
 
 if response.response.clicked() {
     is_selected = !is_selected;
@@ -140,17 +140,17 @@ ui.horizontal(|ui| {
     Radio::new()
         .size(RadioSize::Small)
         .label("Small")
-        .show(ui, true);
+        .show(ui, true, &theme);
 
     Radio::new()
         .size(RadioSize::Medium)
         .label("Medium")
-        .show(ui, true);
+        .show(ui, true, &theme);
 
     Radio::new()
         .size(RadioSize::Large)
         .label("Large")
-        .show(ui, true);
+        .show(ui, true, &theme);
 });
 ```
 

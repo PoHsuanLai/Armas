@@ -70,7 +70,7 @@ impl<'a> SiteHeader<'a> {
                         if Button::new("Docs")
                             .variant(ButtonVariant::Ghost)
                             .size(ButtonSize::Small)
-                            .show(ui)
+                            .show(ui, self.theme)
                             .clicked()
                         {
                             response.docs_clicked = true;
@@ -79,7 +79,7 @@ impl<'a> SiteHeader<'a> {
                         if Button::new("Components")
                             .variant(ButtonVariant::Ghost)
                             .size(ButtonSize::Small)
-                            .show(ui)
+                            .show(ui, self.theme)
                             .clicked()
                         {
                             response.components_clicked = true;
@@ -95,7 +95,7 @@ impl<'a> SiteHeader<'a> {
                         if Button::new("☰")
                             .variant(ButtonVariant::Ghost)
                             .size(ButtonSize::Small)
-                            .show(ui)
+                            .show(ui, self.theme)
                             .clicked()
                         {
                             response.hamburger_clicked = true;
@@ -106,7 +106,7 @@ impl<'a> SiteHeader<'a> {
                         if Button::new("GitHub")
                             .variant(ButtonVariant::Ghost)
                             .size(ButtonSize::Small)
-                            .show(ui)
+                            .show(ui, self.theme)
                             .clicked()
                         {
                             response.github_clicked = true;
@@ -118,7 +118,7 @@ impl<'a> SiteHeader<'a> {
                         if Button::new(icon)
                             .variant(ButtonVariant::Ghost)
                             .size(ButtonSize::Small)
-                            .show(ui)
+                            .show(ui, self.theme)
                             .clicked()
                         {
                             response.theme_toggle_clicked = true;

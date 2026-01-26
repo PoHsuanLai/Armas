@@ -2,7 +2,6 @@
 //!
 //! Simple horizontal or vertical divider line.
 
-use crate::ext::ArmasContextExt;
 use egui::{Response, Ui, Vec2};
 
 /// Separator orientation
@@ -62,8 +61,7 @@ impl Separator {
     }
 
     /// Show the separator
-    pub fn show(self, ui: &mut Ui) -> Response {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
         let color = theme.border();
 
         let size = match self.orientation {

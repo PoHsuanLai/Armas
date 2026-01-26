@@ -100,7 +100,7 @@ impl WindowIconWidget {
     }
 
     /// Show the icon
-    pub fn show(self, ui: &mut Ui) -> Response {
+    pub fn show(self, ui: &mut Ui, _theme: &crate::Theme) -> Response {
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), Sense::click());
 
         if ui.is_rect_visible(rect) {

@@ -15,7 +15,6 @@
 //! # }
 //! ```
 
-use crate::ext::ArmasContextExt;
 use crate::{Button, ButtonVariant};
 use egui::{vec2, Sense, Ui};
 
@@ -84,8 +83,7 @@ impl Pagination {
     }
 
     /// Show the pagination and return (Response, current_page)
-    pub fn show(self, ui: &mut Ui) -> (egui::Response, usize) {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> (egui::Response, usize) {
         let total_pages = self.total_pages;
 
         // Load state from memory if ID is set
@@ -125,7 +123,7 @@ impl Pagination {
                     let btn = Button::new(page_num.to_string())
                         .variant(variant)
                         .min_width(BUTTON_SIZE)
-                        .show(ui);
+                        .show(ui, &theme);
 
                     if btn.clicked() && !is_current {
                         current_page = *page_num;

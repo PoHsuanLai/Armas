@@ -16,19 +16,12 @@ pub mod automation_value_display;
 pub mod waveform_display;
 pub mod waveform_thumbnail;
 pub mod waveform_generator;
-pub mod sampler_playback_params;
-pub mod sampler_envelope_section;
-pub mod sampler_zone;
 pub mod fader;
 pub mod knob;
-pub mod loop_region_marker;
-pub mod marker;
+pub mod timeline_region;
+pub mod timeline_marker;
 pub mod meter;
-pub mod punch_marker;
-pub mod selection_range;
 pub mod snap_grid;
-pub mod tempo_marker;
-pub mod time_signature_marker;
 pub mod zoom_control;
 pub mod midi_controller;
 pub mod midi_pad;
@@ -52,14 +45,10 @@ pub mod xy_pad;
 // Re-exports
 pub use fader::{Fader, FaderScalePosition, FaderStrip};
 pub use knob::Knob;
-pub use loop_region_marker::{LoopRegionMarker, LoopRegionMarkerResponse};
-pub use marker::{Marker, MarkerResponse};
+pub use timeline_region::{TimelineRegion, TimelineRegionResponse, RegionVariant};
+pub use timeline_marker::{TimelineMarker, TimelineMarkerResponse, MarkerVariant};
 pub use meter::{AudioMeter, MeterStyle, ScalePosition};
-pub use punch_marker::{PunchMarker, PunchMarkerResponse};
-pub use selection_range::{SelectionRange, SelectionRangeResponse};
 pub use snap_grid::SnapGrid;
-pub use tempo_marker::{TempoMarker, TempoMarkerResponse};
-pub use time_signature_marker::{TimeSignatureMarker, TimeSignatureMarkerResponse};
 pub use zoom_control::{ZoomControl, ZoomControlResponse};
 pub use midi_controller::{
     ControllerLayout, ControllerSections, MidiController, MidiControllerResponse,
@@ -104,6 +93,3 @@ pub use waveform_generator::{
     generate_thumbnail_f32_mono, generate_thumbnail_f32_stereo,
     generate_thumbnail_i16_mono, generate_thumbnail_i16_stereo,
 };
-pub use sampler_playback_params::{PlaybackParams, PlaybackParamsUI, PlaybackParamsResponse};
-pub use sampler_envelope_section::{ADSREnvelope, EnvelopeSection, EnvelopeSectionResponse};
-pub use sampler_zone::{SampleZone, SampleZoneResponse};

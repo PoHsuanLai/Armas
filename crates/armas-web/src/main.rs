@@ -7,7 +7,7 @@ pub mod syntax;
 mod url_utils;
 
 use armas::*;
-use components::{SiteHeader, SiteHero, SiteSidebar};
+use components::{ComponentsListPage, SiteHeader, SiteHero, SiteSidebar};
 use eframe::egui;
 
 // =============================================================================
@@ -85,13 +85,20 @@ impl AppTheme {
 // App State
 // =============================================================================
 
+#[derive(Debug, Clone, PartialEq)]
+enum PageState {
+    Hero,
+    ComponentsList,
+    DocsPage(usize),
+}
+
 type PageShowFn = fn(&mut egui::Ui);
 type Page = (&'static str, PageShowFn);
 
 struct ShowcaseApp {
     theme: AppTheme,
     search_text: String,
-    selected_page: Option<usize>, // None = home/hero, Some(i) = docs page
+    page_state: PageState,
     sidebar_open: bool,
     pages: Vec<Page>,
 }
@@ -108,28 +115,33 @@ impl ShowcaseApp {
         cc.egui_ctx.set_armas_theme(theme.theme().clone());
 
         // Parse URL and set initial page
-        let selected_page = Self::page_from_url();
+        let page_state = Self::page_from_url();
 
         Self {
             theme,
             search_text: String::new(),
-            selected_page,
+            page_state,
             sidebar_open: false,
             pages: showcase_gen::get_pages(),
         }
     }
 
-    /// Parse current URL and return page index
-    fn page_from_url() -> Option<usize> {
+    /// Parse current URL and return page state
+    fn page_from_url() -> PageState {
         #[cfg(target_arch = "wasm32")]
         {
             if let Some(hash) = url_utils::url::get_hash() {
+                if hash == "components" || hash == "/components" {
+                    return PageState::ComponentsList;
+                }
                 if let Some((section, component)) = url_utils::url::parse_route(&hash) {
-                    return showcase_gen::get_page_by_route(&section, &component);
+                    if let Some(idx) = showcase_gen::get_page_by_route(&section, &component) {
+                        return PageState::DocsPage(idx);
+                    }
                 }
             }
         }
-        None
+        PageState::Hero
     }
 
     fn setup_fonts(ctx: &egui::Context) {
@@ -184,8 +196,8 @@ impl eframe::App for ShowcaseApp {
         #[cfg(target_arch = "wasm32")]
         {
             let url_page = Self::page_from_url();
-            if url_page != self.selected_page {
-                self.selected_page = url_page;
+            if url_page != self.page_state {
+                self.page_state = url_page;
             }
         }
 
@@ -206,9 +218,10 @@ impl eframe::App for ShowcaseApp {
             self.handle_header_response(ui.ctx(), header_response);
 
             // Main content
-            match self.selected_page {
-                None => self.render_hero(ui),
-                Some(_) => self.render_docs(ui),
+            match self.page_state {
+                PageState::Hero => self.render_hero(ui),
+                PageState::ComponentsList => self.render_components_list(ui),
+                PageState::DocsPage(_) => self.render_docs(ui),
             }
         });
 
@@ -221,20 +234,21 @@ impl eframe::App for ShowcaseApp {
 // =============================================================================
 
 impl ShowcaseApp {
-    /// Navigate to a page and sync URL
-    fn navigate_to(&mut self, page: Option<usize>) {
-        self.selected_page = page;
+    /// Navigate to a page state and sync URL
+    fn navigate_to(&mut self, state: PageState) {
+        self.page_state = state;
         self.sync_url_to_page();
     }
 
-    /// Sync URL hash to current page
+    /// Sync URL hash to current page state
     fn sync_url_to_page(&self) {
         #[cfg(target_arch = "wasm32")]
         {
-            match self.selected_page {
-                None => url_utils::url::set_hash(""),
-                Some(idx) => {
-                    if let Some((section, component)) = showcase_gen::get_route_by_index(idx) {
+            match &self.page_state {
+                PageState::Hero => url_utils::url::set_hash(""),
+                PageState::ComponentsList => url_utils::url::set_hash("components"),
+                PageState::DocsPage(idx) => {
+                    if let Some((section, component)) = showcase_gen::get_route_by_index(*idx) {
                         let route = format!("{}/{}", section, component);
                         url_utils::url::set_hash(&route);
                     }
@@ -249,10 +263,13 @@ impl ShowcaseApp {
         response: components::SiteHeaderResponse,
     ) {
         if response.logo_clicked {
-            self.navigate_to(None);
+            self.navigate_to(PageState::Hero);
         }
-        if response.docs_clicked || response.components_clicked {
-            self.navigate_to(Some(0));
+        if response.docs_clicked {
+            self.navigate_to(PageState::DocsPage(0));
+        }
+        if response.components_clicked {
+            self.navigate_to(PageState::ComponentsList);
         }
         if response.github_clicked {
             Self::open_url("https://github.com/PoHsuanLai/Armas");
@@ -262,8 +279,8 @@ impl ShowcaseApp {
         }
         if response.hamburger_clicked {
             // If on hero page, go to docs first
-            if self.selected_page.is_none() {
-                self.navigate_to(Some(0));
+            if matches!(self.page_state, PageState::Hero) {
+                self.navigate_to(PageState::ComponentsList);
             }
             self.sidebar_open = !self.sidebar_open;
         }
@@ -271,7 +288,7 @@ impl ShowcaseApp {
 
     fn handle_sidebar_response(&mut self, response: components::SiteSidebarResponse) {
         if let Some(idx) = response.selected_page {
-            self.navigate_to(Some(idx));
+            self.navigate_to(PageState::DocsPage(idx));
         }
     }
 }
@@ -283,8 +300,19 @@ impl ShowcaseApp {
 impl ShowcaseApp {
     fn render_hero(&mut self, ui: &mut egui::Ui) {
         let response = SiteHero::new(self.theme.theme()).show(ui);
-        if response.get_started_clicked || response.components_clicked {
-            self.navigate_to(Some(0));
+        if response.get_started_clicked {
+            self.navigate_to(PageState::DocsPage(0));
+        }
+        if response.components_clicked {
+            self.navigate_to(PageState::ComponentsList);
+        }
+    }
+
+    fn render_components_list(&mut self, ui: &mut egui::Ui) {
+        let theme = self.theme.theme().clone();
+        let response = ComponentsListPage::new(&theme, &self.pages).show(ui);
+        if let Some(idx) = response.selected_page {
+            self.navigate_to(PageState::DocsPage(idx));
         }
     }
 
@@ -369,7 +397,7 @@ impl ShowcaseApp {
                     ui.set_max_width(content_width);
                     ui.add_space(32.0);
 
-                    if let Some(idx) = self.selected_page {
+                    if let PageState::DocsPage(idx) = self.page_state {
                         if let Some((_, show_fn)) = self.pages.get(idx) {
                             show_fn(ui);
                         }

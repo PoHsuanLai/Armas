@@ -21,7 +21,7 @@ pub use crate::Theme;
 pub use crate::color::{BlendMode, ColorStop, Gradient};
 
 // Layout helpers
-pub use crate::layout::{AspectRatio, ContentMode, Table, TableStyle};
+pub use crate::layout::{AspectRatio, ContentMode, table, header_row, row, cell, cell_ui};
 
 // Common component enums
 pub use crate::components::{

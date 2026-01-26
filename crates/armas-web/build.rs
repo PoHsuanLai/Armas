@@ -30,7 +30,7 @@ fn main() {
     let mut file_order: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
     file_order.insert(
         "introduction",
-        vec!["introduction", "why_egui", "philosophy", "attributions"],
+        vec!["introduction", "api_guide", "why_egui", "philosophy", "attributions"],
     );
     file_order.insert("installation", vec!["quick_start", "cargo_setup", "wasm"]);
 
@@ -147,6 +147,7 @@ fn main() {
     code.push_str("}\n\n");
 
     // Generate route mapping function
+    code.push_str("#[allow(dead_code)]\n");
     code.push_str("pub fn get_page_by_route(section: &str, component: &str) -> Option<usize> {\n");
     code.push_str("    let route = format!(\"{}/{}\", section, component);\n");
     code.push_str("    match route.as_str() {\n");
@@ -167,6 +168,7 @@ fn main() {
     code.push_str("}\n\n");
 
     // Generate reverse mapping (index to route)
+    code.push_str("#[allow(dead_code)]\n");
     code.push_str("pub fn get_route_by_index(idx: usize) -> Option<(&'static str, &'static str)> {\n");
     code.push_str("    match idx {\n");
 

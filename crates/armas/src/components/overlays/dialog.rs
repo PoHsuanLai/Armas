@@ -272,6 +272,9 @@ impl Dialog {
                 response.closed = true;
                 self.fade_animation.reset();
             }
+
+            // Save the updated state back to context
+            ctx.data_mut(|d| d.insert_temp(state_id, is_open));
         }
 
         response

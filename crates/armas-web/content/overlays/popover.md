@@ -8,7 +8,7 @@ let mut popover = ui.ctx().data_mut(|d| d.get_temp::<Popover>(popover_id).unwrap
 let state_id = ui.id().with("popover_open");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
-let button_response = Button::new("Click me").show(ui);
+let button_response = Button::new("Click me").show(ui, &theme);
 if button_response.clicked() {
     is_open = !is_open;
 }
@@ -36,7 +36,7 @@ ui.horizontal(|ui| {
     let mut popover = ui.ctx().data_mut(|d| d.get_temp::<Popover>(popover_id).unwrap_or_else(|| Popover::new("color_primary").color(PopoverColor::Primary)));
     let state_id = ui.id().with("popover_open_primary");
     let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
-    let button_response = Button::new("Primary").show(ui);
+    let button_response = Button::new("Primary").show(ui, &theme);
     if button_response.clicked() { is_open = !is_open; }
     popover = popover.open(is_open);
     let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| { ui.label("Primary color theme"); });
@@ -47,7 +47,7 @@ ui.horizontal(|ui| {
     let mut popover = ui.ctx().data_mut(|d| d.get_temp::<Popover>(popover_id).unwrap_or_else(|| Popover::new("color_success").color(PopoverColor::Success)));
     let state_id = ui.id().with("popover_open_success");
     let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
-    let button_response = Button::new("Success").show(ui);
+    let button_response = Button::new("Success").show(ui, &theme);
     if button_response.clicked() { is_open = !is_open; }
     popover = popover.open(is_open);
     let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| { ui.label("Success color theme"); });
@@ -58,7 +58,7 @@ ui.horizontal(|ui| {
     let mut popover = ui.ctx().data_mut(|d| d.get_temp::<Popover>(popover_id).unwrap_or_else(|| Popover::new("color_error").color(PopoverColor::Error)));
     let state_id = ui.id().with("popover_open_error");
     let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
-    let button_response = Button::new("Error").show(ui);
+    let button_response = Button::new("Error").show(ui, &theme);
     if button_response.clicked() { is_open = !is_open; }
     popover = popover.open(is_open);
     let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| { ui.label("Error color theme"); });
@@ -78,7 +78,7 @@ ui.horizontal(|ui| {
     let mut popover = ui.ctx().data_mut(|d| d.get_temp::<Popover>(popover_id).unwrap_or_else(|| Popover::new("style_default")));
     let state_id = ui.id().with("popover_open_style_default");
     let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
-    let button_response = Button::new("Default").show(ui);
+    let button_response = Button::new("Default").show(ui, &theme);
     if button_response.clicked() { is_open = !is_open; }
     popover = popover.open(is_open);
     let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| { ui.label("Soft border"); });
@@ -89,7 +89,7 @@ ui.horizontal(|ui| {
     let mut popover = ui.ctx().data_mut(|d| d.get_temp::<Popover>(popover_id).unwrap_or_else(|| Popover::new("style_elevated").style(PopoverStyle::Elevated)));
     let state_id = ui.id().with("popover_open_style_elevated");
     let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
-    let button_response = Button::new("Elevated").show(ui);
+    let button_response = Button::new("Elevated").show(ui, &theme);
     if button_response.clicked() { is_open = !is_open; }
     popover = popover.open(is_open);
     let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| { ui.label("Extra padding"); });
@@ -100,7 +100,7 @@ ui.horizontal(|ui| {
     let mut popover = ui.ctx().data_mut(|d| d.get_temp::<Popover>(popover_id).unwrap_or_else(|| Popover::new("style_flat").style(PopoverStyle::Flat)));
     let state_id = ui.id().with("popover_open_style_flat");
     let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
-    let button_response = Button::new("Flat").show(ui);
+    let button_response = Button::new("Flat").show(ui, &theme);
     if button_response.clicked() { is_open = !is_open; }
     popover = popover.open(is_open);
     let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| { ui.label("No border"); });
@@ -125,7 +125,7 @@ ui.horizontal(|ui| {
         let mut popover = ui.ctx().data_mut(|d| d.get_temp::<Popover>(popover_id).unwrap_or_else(|| Popover::new(label).position(pos)));
         let state_id = ui.id().with(format!("open_{}", label));
         let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
-        let button_response = Button::new(label).show(ui);
+        let button_response = Button::new(label).show(ui, &theme);
         if button_response.clicked() { is_open = !is_open; }
         popover = popover.open(is_open);
         let response = popover.show(ui.ctx(), &theme, button_response.rect, |ui| { ui.label(format!("Appears {}", label.to_lowercase())); });
@@ -143,7 +143,7 @@ let mut popover = ui.ctx().data_mut(|d| d.get_temp::<Popover>(popover_id).unwrap
 let state_id = ui.id().with("popover_open_rich");
 let mut is_open = ui.ctx().data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false));
 let theme = ui.ctx().armas_theme();
-let anchor_response = Button::new("User Info").show(ui);
+let anchor_response = Button::new("User Info").show(ui, &theme);
 if anchor_response.clicked() { is_open = !is_open; }
 popover = popover.open(is_open);
 let response = popover.show(ui.ctx(), &theme, anchor_response.rect, |ui| {

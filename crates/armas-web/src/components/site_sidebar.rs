@@ -52,7 +52,7 @@ impl<'a> SiteSidebar<'a> {
                 Input::new("Search...")
                     .width(ui.available_width() - 8.0)
                     .variant(InputVariant::Outlined)
-                    .show(ui, self.search_text);
+                    .show(ui, self.search_text, self.theme);
 
                 ui.add_space(12.0);
 

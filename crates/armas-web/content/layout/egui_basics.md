@@ -16,9 +16,9 @@ ui.vertical(|ui| {
 ```demo
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 12.0;
-    Button::new("Save").variant(ButtonVariant::Filled).show(ui);
-    Button::new("Cancel").variant(ButtonVariant::Outlined).show(ui);
-    Button::new("Delete").variant(ButtonVariant::Text).show(ui);
+    Button::new("Save").variant(ButtonVariant::Filled).show(ui, &theme);
+    Button::new("Cancel").variant(ButtonVariant::Outlined).show(ui, &theme);
+    Button::new("Delete").variant(ButtonVariant::Text).show(ui, &theme);
 });
 ```
 
@@ -40,10 +40,10 @@ egui::Grid::new("demo_grid").spacing([16.0, 16.0]).show(ui, |ui| {
 ```demo
 egui::Grid::new("form_grid").spacing([12.0, 8.0]).show(ui, |ui| {
     ui.label("Name:");
-    Input::new("Enter name").show(ui, &mut String::new());
+    Input::new("Enter name").show(ui, &mut String::new(), &theme);
     ui.end_row();
     ui.label("Email:");
-    Input::new("Enter email").show(ui, &mut String::new());
+    Input::new("Enter email").show(ui, &mut String::new(), &theme);
     ui.end_row();
     ui.label("Role:");
     ui.label("Administrator");
@@ -77,7 +77,7 @@ ui.vertical(|ui| {
 ```demo
 ui.vertical_centered(|ui| {
     ui.label("Horizontally centered");
-    Button::new("Click Me").show(ui);
+    Button::new("Click Me").show(ui, &theme);
 });
 ```
 

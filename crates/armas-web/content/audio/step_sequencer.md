@@ -12,7 +12,7 @@ steps[8] = true;  // Ninth step
 
 let response = StepSequencer::new(&mut steps)
     .steps(16)
-    .show(ui);
+    .show(ui, &theme);
 
 if response.changed() {
     ui.label("Pattern changed!");
@@ -28,7 +28,7 @@ let current_step = 2; // Simulated playback position
 StepSequencer::new(&mut steps)
     .steps(8)
     .current_step(Some(current_step))
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## With Step Numbers
@@ -42,7 +42,7 @@ steps[10] = true;
 StepSequencer::new(&mut steps)
     .steps(16)
     .show_step_numbers(true)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Custom Step Size
@@ -54,7 +54,7 @@ StepSequencer::new(&mut steps)
     .steps(4)
     .step_size(60.0, 60.0)
     .gap(8.0)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Custom Accent Color
@@ -65,7 +65,7 @@ let mut steps = vec![true, false, true, true, false, true, false, false];
 StepSequencer::new(&mut steps)
     .steps(8)
     .accent_color(egui::Color32::from_rgb(255, 100, 100))
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## 16-Step Drum Pattern
@@ -82,7 +82,7 @@ ui.label("Kick:");
 StepSequencer::new(&mut kick_pattern)
     .steps(16)
     .accent_color(egui::Color32::from_rgb(255, 100, 100))
-    .show(ui);
+    .show(ui, &theme);
 
 let mut snare_pattern = vec![
     false, false, false, false,
@@ -95,7 +95,7 @@ ui.label("Snare:");
 StepSequencer::new(&mut snare_pattern)
     .steps(16)
     .accent_color(egui::Color32::from_rgb(100, 150, 255))
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## With Live Playback
@@ -108,7 +108,7 @@ StepSequencer::new(&mut steps)
     .steps(8)
     .current_step(Some(current_step))
     .glow_intensity(1.2)
-    .show(ui);
+    .show(ui, &theme);
 
 ui.label(format!("Playing step: {}", current_step + 1));
 ```
@@ -126,7 +126,7 @@ ui.vertical(|ui| {
         .steps(8)
         .step_size(35.0, 35.0)
         .accent_color(egui::Color32::from_rgb(255, 80, 80))
-        .show(ui);
+        .show(ui, &theme);
 
     ui.add_space(4.0);
     ui.label("Snare:");
@@ -134,7 +134,7 @@ ui.vertical(|ui| {
         .steps(8)
         .step_size(35.0, 35.0)
         .accent_color(egui::Color32::from_rgb(100, 150, 255))
-        .show(ui);
+        .show(ui, &theme);
 
     ui.add_space(4.0);
     ui.label("Hi-Hat:");
@@ -142,7 +142,7 @@ ui.vertical(|ui| {
         .steps(8)
         .step_size(35.0, 35.0)
         .accent_color(egui::Color32::from_rgb(255, 220, 100))
-        .show(ui);
+        .show(ui, &theme);
 });
 ```
 
@@ -229,7 +229,7 @@ let mut pattern = vec![
 StepSequencer::new(&mut pattern)
     .steps(16)
     .show_step_numbers(true)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### 808-Style Patterns
@@ -242,16 +242,16 @@ ui.vertical(|ui| {
     let mut oh = vec![false, false, false, false, true, false, false, false];
 
     ui.label("BD:");
-    StepSequencer::new(&mut bd).steps(8).show(ui);
+    StepSequencer::new(&mut bd).steps(8).show(ui, &theme);
 
     ui.label("SD:");
-    StepSequencer::new(&mut sd).steps(8).show(ui);
+    StepSequencer::new(&mut sd).steps(8).show(ui, &theme);
 
     ui.label("CH:");
-    StepSequencer::new(&mut ch).steps(8).show(ui);
+    StepSequencer::new(&mut ch).steps(8).show(ui, &theme);
 
     ui.label("OH:");
-    StepSequencer::new(&mut oh).steps(8).show(ui);
+    StepSequencer::new(&mut oh).steps(8).show(ui, &theme);
 });
 ```
 
@@ -269,7 +269,7 @@ let mut melody = vec![
 StepSequencer::new(&mut melody)
     .steps(16)
     .accent_color(egui::Color32::from_rgb(150, 200, 255))
-    .show(ui);
+    .show(ui, &theme);
 
 ui.label(format!("Active steps: {}", melody.iter().filter(|&&s| s).count()));
 ```
@@ -281,7 +281,7 @@ let mut steps = vec![true, false, true, true, false, true, false, false];
 
 StepSequencer::new(&mut steps)
     .steps(8)
-    .show(ui);
+    .show(ui, &theme);
 
 let active_count = steps.iter().filter(|&&s| s).count();
 let density = active_count as f32 / steps.len() as f32;

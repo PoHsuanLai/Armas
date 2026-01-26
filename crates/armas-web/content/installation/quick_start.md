@@ -32,7 +32,7 @@ impl eframe::App for MyApp {
         egui::CentralPanel::default().show(ctx, |ui| {
             Button::new("Click me")
                 .variant(ButtonVariant::Filled)
-                .show(ui);
+                .show(ui, &theme);
         });
     }
 }

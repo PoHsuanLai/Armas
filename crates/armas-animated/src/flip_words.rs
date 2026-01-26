@@ -2,7 +2,6 @@
 //!
 //! Animated text that cycles through a list of words with flip transitions
 
-use armas::ext::ArmasContextExt;
 use egui::{Align2, Color32, FontId, Pos2, Response, Ui, Vec2};
 
 /// Flip transition style
@@ -82,12 +81,11 @@ impl FlipWords {
     }
 
     /// Show the flip words animation
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
+    pub fn show(&mut self, ui: &mut Ui, theme: &armas::Theme) -> Response {
         if self.words.is_empty() {
             return ui.label("(no words)");
         }
 
-        let theme = ui.ctx().armas_theme();
         // Use theme color if not explicitly set
         let text_color = if self.color == Color32::PLACEHOLDER {
             theme.foreground()

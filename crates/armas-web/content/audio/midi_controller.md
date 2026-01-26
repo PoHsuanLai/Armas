@@ -10,7 +10,7 @@ use armas_audio::{MidiController, MidiControllerState};
 let mut state = MidiControllerState::default();
 
 let response = MidiController::new(&mut state)
-    .show(ui);
+    .show(ui, &theme);
 
 // Handle MIDI events
 if let Some(piano_response) = response.piano {
@@ -37,7 +37,7 @@ let mut state = MidiControllerState::default();
 
 MidiController::new(&mut state)
     .layout(ControllerLayout::Full)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Compact Layout
@@ -51,7 +51,7 @@ let mut state = MidiControllerState::default();
 
 MidiController::new(&mut state)
     .layout(ControllerLayout::Compact)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Performance Layout
@@ -65,7 +65,7 @@ let mut state = MidiControllerState::default();
 
 MidiController::new(&mut state)
     .layout(ControllerLayout::Performance)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Custom Sections
@@ -85,7 +85,7 @@ MidiController::new(&mut state)
         show_drum_pads: true,
         show_sequencer: false,
     })
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Piano Configuration
@@ -99,7 +99,7 @@ let mut state = MidiControllerState::default();
 
 MidiController::new(&mut state)
     .piano(2, 4) // 2 octaves starting from C4
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Drum Pad Grid
@@ -113,7 +113,7 @@ let mut state = MidiControllerState::default();
 
 MidiController::new(&mut state)
     .drum_pads(4, 4) // 4x4 grid
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Step Sequencer Steps
@@ -127,7 +127,7 @@ let mut state = MidiControllerState::default();
 
 MidiController::new(&mut state)
     .sequencer_steps(32) // 32-step sequencer
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Visual Variants
@@ -142,7 +142,7 @@ let mut state = MidiControllerState::default();
 MidiController::new(&mut state)
     .wheel_variant(WheelVariant::Elevated)
     .pad_variant(PadVariant::Outlined)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Complete DAW Controller
@@ -157,7 +157,7 @@ let response = MidiController::new(&mut state)
     .piano(3, 3) // 3 octaves from C3
     .drum_pads(4, 4)
     .sequencer_steps(16)
-    .show(ui);
+    .show(ui, &theme);
 
 // Piano keyboard events
 if let Some(piano) = response.piano {
@@ -322,7 +322,7 @@ The controller state maps directly to MIDI events:
 use armas_audio::{MidiController, MidiControllerState};
 
 let mut state = MidiControllerState::default();
-let response = MidiController::new(&mut state).show(ui);
+let response = MidiController::new(&mut state).show(ui, &theme);
 
 // Send MIDI events to your audio engine
 if let Some(piano) = response.piano {
@@ -357,7 +357,7 @@ MidiController::new(&mut state)
     .layout(ControllerLayout::Performance)
     .piano(2, 4) // 2 octaves from C4
     .drum_pads(4, 4)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Production Workstation
@@ -371,7 +371,7 @@ MidiController::new(&mut state)
     .layout(ControllerLayout::Full)
     .piano(5, 2) // 5 octaves from C2
     .sequencer_steps(32)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### MIDI Learn Interface
@@ -380,7 +380,7 @@ MidiController::new(&mut state)
 use armas_audio::{MidiController, MidiControllerState};
 
 let mut state = MidiControllerState::default();
-let response = MidiController::new(&mut state).show(ui);
+let response = MidiController::new(&mut state).show(ui, &theme);
 
 // Map any controller to parameters
 if response.mod_wheel_changed {

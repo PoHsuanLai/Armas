@@ -1,99 +1,77 @@
 # Table
 
-Styled tables with multiple visual variants.
+A responsive table component with minimal styling and borders.
 
 ```demo
-Table::new().show(ui, |table| {
-    table.header_row(|row| {
-        row.cell("Name");
-        row.cell("Role");
-        row.cell("Status");
+table(ui, |rows| {
+    header_row(rows, |cells| {
+        cell(cells, "Name");
+        cell(cells, "Role");
+        cell(cells, "Status");
     });
-    table.row(|row| {
-        row.cell("Alice");
-        row.cell("Engineer");
-        row.cell("Active");
+    row(rows, |cells| {
+        cell(cells, "Alice");
+        cell(cells, "Engineer");
+        cell(cells, "Active");
     });
-    table.row(|row| {
-        row.cell("Bob");
-        row.cell("Designer");
-        row.cell("Away");
+    row(rows, |cells| {
+        cell(cells, "Bob");
+        cell(cells, "Designer");
+        cell(cells, "Away");
     });
-    table.row(|row| {
-        row.cell("Charlie");
-        row.cell("Manager");
-        row.cell("Active");
+    row(rows, |cells| {
+        cell(cells, "Charlie");
+        cell(cells, "Manager");
+        cell(cells, "Active");
     });
 });
 ```
 
-## Styles
+## Basic Usage
 
 ```demo
-ui.vertical(|ui| {
-    ui.spacing_mut().item_spacing.y = 24.0;
-    ui.label("Striped");
-    Table::new().style(TableStyle::Striped).show(ui, |table| {
-        table.header_row(|row| {
-            row.cell("Product");
-            row.cell("Price");
-        });
-        table.row(|row| {
-            row.cell("Widget A");
-            row.cell("$19.99");
-        });
-        table.row(|row| {
-            row.cell("Widget B");
-            row.cell("$29.99");
-        });
+table(ui, |rows| {
+    header_row(rows, |cells| {
+        cell(cells, "Invoice");
+        cell(cells, "Status");
+        cell(cells, "Method");
+        cell(cells, "Amount");
     });
-    ui.label("Bordered");
-    Table::new().style(TableStyle::Bordered).show(ui, |table| {
-        table.header_row(|row| {
-            row.cell("Feature");
-            row.cell("Value");
-        });
-        table.row(|row| {
-            row.cell("Users");
-            row.cell("5");
-        });
-        table.row(|row| {
-            row.cell("Storage");
-            row.cell("10GB");
-        });
+    row(rows, |cells| {
+        cell(cells, "INV001");
+        cell(cells, "Paid");
+        cell(cells, "Credit Card");
+        cell(cells, "$250.00");
     });
-    ui.label("Lined");
-    Table::new().style(TableStyle::Lined).show(ui, |table| {
-        table.header_row(|row| {
-            row.cell("Task");
-            row.cell("Status");
-        });
-        table.row(|row| {
-            row.cell("Design mockups");
-            row.cell("Done");
-        });
-        table.row(|row| {
-            row.cell("Implement API");
-            row.cell("In Progress");
-        });
+    row(rows, |cells| {
+        cell(cells, "INV002");
+        cell(cells, "Pending");
+        cell(cells, "PayPal");
+        cell(cells, "$150.00");
+    });
+    row(rows, |cells| {
+        cell(cells, "INV003");
+        cell(cells, "Paid");
+        cell(cells, "Bank Transfer");
+        cell(cells, "$350.00");
     });
 });
 ```
 
-## Compact Mode
+## Multiple Rows
 
 ```demo
-Table::new().style(TableStyle::Striped).compact(true).show(ui, |table| {
-    table.header_row(|row| {
-        row.cell("ID");
-        row.cell("Name");
-        row.cell("Value");
+table(ui, |rows| {
+    header_row(rows, |cells| {
+        cell(cells, "ID");
+        cell(cells, "Name");
+        cell(cells, "Value");
     });
     for i in 1..=5 {
-        table.row(|row| {
-            row.cell(format!("{}", i));
-            row.cell(format!("Item {}", i));
-            row.cell(format!("{:.2}", i as f32 * 12.5));
+        row(rows, |cells| {
+            cell(cells, &format!("{}", i));
+            cell(cells, &format!("Item {}", i));
+            cell(cells, &format!("{:.2}", i as f32 * 12.5));
         });
     }
 });
@@ -102,36 +80,36 @@ Table::new().style(TableStyle::Striped).compact(true).show(ui, |table| {
 ## Custom Cell Content
 
 ```demo
-Table::new().style(TableStyle::Lined).show(ui, |table| {
-    table.header_row(|row| {
-        row.cell("User");
-        row.cell("Actions");
+table(ui, |rows| {
+    header_row(rows, |cells| {
+        cell(cells, "User");
+        cell(cells, "Actions");
     });
-    table.row(|row| {
-        row.cell_ui(|ui| {
+    row(rows, |cells| {
+        cell_ui(cells, |ui| {
             ui.horizontal(|ui| {
                 ui.label("@");
                 ui.label("Alice");
             });
         });
-        row.cell_ui(|ui| {
+        cell_ui(cells, |ui| {
             ui.horizontal(|ui| {
-                Button::new("Edit").variant(ButtonVariant::Text).show(ui);
-                Button::new("Delete").variant(ButtonVariant::Text).show(ui);
+                Button::new("Edit").variant(ButtonVariant::Text).show(ui, &theme);
+                Button::new("Delete").variant(ButtonVariant::Text).show(ui, &theme);
             });
         });
     });
-    table.row(|row| {
-        row.cell_ui(|ui| {
+    row(rows, |cells| {
+        cell_ui(cells, |ui| {
             ui.horizontal(|ui| {
                 ui.label("@");
                 ui.label("Bob");
             });
         });
-        row.cell_ui(|ui| {
+        cell_ui(cells, |ui| {
             ui.horizontal(|ui| {
-                Button::new("Edit").variant(ButtonVariant::Text).show(ui);
-                Button::new("Delete").variant(ButtonVariant::Text).show(ui);
+                Button::new("Edit").variant(ButtonVariant::Text).show(ui, &theme);
+                Button::new("Delete").variant(ButtonVariant::Text).show(ui, &theme);
             });
         });
     });
@@ -141,37 +119,37 @@ Table::new().style(TableStyle::Lined).show(ui, |table| {
 ## With Badges
 
 ```demo
-Table::new().style(TableStyle::Striped).show(ui, |table| {
-    table.header_row(|row| {
-        row.cell("Project");
-        row.cell("Status");
-        row.cell("Priority");
+table(ui, |rows| {
+    header_row(rows, |cells| {
+        cell(cells, "Project");
+        cell(cells, "Status");
+        cell(cells, "Priority");
     });
-    table.row(|row| {
-        row.cell("Website Redesign");
-        row.cell_ui(|ui| {
-            Badge::new("In Progress").color(theme.chart_4()).show(ui);
+    row(rows, |cells| {
+        cell(cells, "Website Redesign");
+        cell_ui(cells, |ui| {
+            Badge::new("In Progress").color(theme.chart_4()).show(ui, &theme);
         });
-        row.cell_ui(|ui| {
-            Badge::new("High").destructive().show(ui);
-        });
-    });
-    table.row(|row| {
-        row.cell("API Migration");
-        row.cell_ui(|ui| {
-            Badge::new("Completed").color(theme.chart_2()).show(ui);
-        });
-        row.cell_ui(|ui| {
-            Badge::new("High").destructive().show(ui);
+        cell_ui(cells, |ui| {
+            Badge::new("High").destructive().show(ui, &theme);
         });
     });
-    table.row(|row| {
-        row.cell("Documentation");
-        row.cell_ui(|ui| {
-            Badge::new("Pending").color(theme.chart_3()).show(ui);
+    row(rows, |cells| {
+        cell(cells, "API Migration");
+        cell_ui(cells, |ui| {
+            Badge::new("Completed").color(theme.chart_2()).show(ui, &theme);
         });
-        row.cell_ui(|ui| {
-            Badge::new("Low").color(theme.chart_4()).show(ui);
+        cell_ui(cells, |ui| {
+            Badge::new("High").destructive().show(ui, &theme);
+        });
+    });
+    row(rows, |cells| {
+        cell(cells, "Documentation");
+        cell_ui(cells, |ui| {
+            Badge::new("Pending").color(theme.chart_3()).show(ui, &theme);
+        });
+        cell_ui(cells, |ui| {
+            Badge::new("Low").color(theme.chart_4()).show(ui, &theme);
         });
     });
 });

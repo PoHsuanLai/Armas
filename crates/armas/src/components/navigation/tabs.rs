@@ -3,7 +3,6 @@
 //! Tab navigation styled like shadcn/ui Tabs.
 //! Features a muted background container with animated active indicator.
 
-use crate::ext::ArmasContextExt;
 use egui::{Pos2, Ui, Vec2};
 
 // shadcn Tabs constants
@@ -14,6 +13,17 @@ const TRIGGER_RADIUS: f32 = 6.0; // rounded-md
 const TRIGGER_PADDING_X: f32 = 8.0; // px-2
 const TRIGGER_GAP: f32 = 6.0; // gap-1.5
 const FONT_SIZE: f32 = 14.0; // text-sm
+
+/// Response from the tabs component
+#[derive(Debug, Clone)]
+pub struct TabsResponse {
+    /// The underlying egui response
+    pub response: egui::Response,
+    /// The newly selected tab index, if changed this frame
+    pub selected: Option<usize>,
+    /// Whether the selection changed this frame
+    pub changed: bool,
+}
 
 /// Tabs component for switching between content sections
 ///
@@ -71,11 +81,19 @@ impl Tabs {
         self
     }
 
-    /// Show the tabs and return selected index if changed
-    pub fn show(&mut self, ui: &mut Ui) -> Option<usize> {
-        let theme = ui.ctx().armas_theme();
+    /// Show the tabs and return the response
+    pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> TabsResponse {
+
         if self.labels.is_empty() {
-            return None;
+            let (_, empty_response) = ui.allocate_exact_size(
+                egui::Vec2::new(0.0, LIST_HEIGHT),
+                egui::Sense::hover(),
+            );
+            return TabsResponse {
+                response: empty_response,
+                selected: None,
+                changed: false,
+            };
         }
 
         // Load state if persisting
@@ -120,7 +138,7 @@ impl Tabs {
         let total_width: f32 = tab_widths.iter().sum::<f32>() + TRIGGER_GAP * (self.labels.len().saturating_sub(1)) as f32 + LIST_PADDING * 2.0;
 
         // Allocate space for the TabsList container
-        let (list_rect, _) = ui.allocate_exact_size(
+        let (list_rect, list_response) = ui.allocate_exact_size(
             Vec2::new(total_width, LIST_HEIGHT),
             egui::Sense::hover(),
         );
@@ -197,6 +215,7 @@ impl Tabs {
         }
 
         // Update active if changed
+        let changed = selected.is_some();
         if let Some(new_index) = selected {
             self.active_index = new_index;
         }
@@ -209,7 +228,11 @@ impl Tabs {
             });
         }
 
-        selected
+        TabsResponse {
+            response: list_response,
+            selected,
+            changed,
+        }
     }
 }
 

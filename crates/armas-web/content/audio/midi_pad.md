@@ -15,7 +15,7 @@ let pads = vec![
 let response = MidiPad::new()
     .grid(2, 2)
     .pads(pads)
-    .show(ui);
+    .show(ui, &theme);
 
 if let Some((note, velocity)) = response.pressed {
     ui.label(format!("Note {}, Velocity {}", note, velocity));
@@ -32,7 +32,7 @@ let pads = (0..16).map(|i| PadConfig::new(36 + i)).collect();
 MidiPad::new()
     .grid(4, 4)
     .pads(pads)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### 2x8 Grid
@@ -43,7 +43,7 @@ let pads = (0..16).map(|i| PadConfig::new(36 + i)).collect();
 MidiPad::new()
     .grid(2, 8)
     .pads(pads)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Custom Size
@@ -59,7 +59,7 @@ MidiPad::new()
     .pad_size(80.0)
     .gap(12.0)
     .pads(pads)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Variants
@@ -78,7 +78,7 @@ MidiPad::new()
     .grid(2, 2)
     .pads(pads)
     .variant(PadVariant::Filled)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Outlined
@@ -95,7 +95,7 @@ MidiPad::new()
     .grid(2, 2)
     .pads(pads)
     .variant(PadVariant::Outlined)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Elevated
@@ -112,7 +112,7 @@ MidiPad::new()
     .grid(2, 2)
     .pads(pads)
     .variant(PadVariant::Elevated)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Color Schemes
@@ -126,7 +126,7 @@ MidiPad::new()
     .grid(2, 3)
     .pads(pads)
     .color_scheme(PadColorScheme::Semantic)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Monochrome
@@ -138,7 +138,7 @@ MidiPad::new()
     .grid(2, 3)
     .pads(pads)
     .color_scheme(PadColorScheme::Monochrome)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Custom Colors
@@ -155,7 +155,7 @@ MidiPad::new()
     .grid(2, 2)
     .pads(pads)
     .color_scheme(PadColorScheme::Custom)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Velocity Display
@@ -177,7 +177,7 @@ MidiPad::new()
     .pads(pads)
     .pad_states(pad_states)
     .show_velocity(true)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Without Velocity
@@ -192,7 +192,7 @@ MidiPad::new()
     .grid(1, 2)
     .pads(pads)
     .show_velocity(false)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Glow Effects
@@ -214,7 +214,7 @@ MidiPad::new()
     .pads(pads)
     .pad_states(pad_states)
     .glow_intensity(1.2)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Drum Machine Example
@@ -245,7 +245,7 @@ let response = MidiPad::new()
     .pads(drum_pads)
     .variant(PadVariant::Filled)
     .pad_size(70.0)
-    .show(ui);
+    .show(ui, &theme);
 
 if let Some((note, vel)) = response.pressed {
     ui.label(format!("Trigger note {} at velocity {}", note, vel));
@@ -269,7 +269,7 @@ let response = MidiPad::new()
     .grid(2, 2)
     .pads(pads)
     .pad_states(pad_states.clone())
-    .show(ui);
+    .show(ui, &theme);
 
 // Update state based on user interaction
 if let Some((note, velocity)) = response.pressed {
@@ -437,7 +437,7 @@ MidiPad::new()
     .pad_size(65.0)
     .gap(6.0)
     .variant(PadVariant::Filled)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Finger Drumming
@@ -453,7 +453,7 @@ MidiPad::new()
     .pads(pads)
     .pad_size(120.0)
     .glow_intensity(1.5)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Sample Trigger Grid
@@ -472,7 +472,7 @@ MidiPad::new()
     .grid(2, 4)
     .pads(pads)
     .variant(PadVariant::Elevated)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Dependencies

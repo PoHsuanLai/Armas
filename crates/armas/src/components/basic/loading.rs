@@ -7,7 +7,6 @@
 //! - Skeleton: Content placeholder with shimmer
 //! - CircularProgress: Rotating arc spinner
 
-use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Rect, Response, Ui, Vec2};
 use std::f32::consts::PI;
 
@@ -101,7 +100,7 @@ impl Spinner {
     }
 
     /// Show the spinner
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
+    pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> Response {
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 
         // Calculate rotation from time for stateless animation
@@ -109,7 +108,7 @@ impl Spinner {
         self.rotation = (time * self.speed) % (2.0 * PI);
 
         // Draw the spinner
-        self.draw_spinner(ui, rect);
+        self.draw_spinner(ui, rect, theme);
 
         // Request repaint for animation
         ui.ctx().request_repaint();
@@ -118,8 +117,7 @@ impl Spinner {
     }
 
     /// Draw the rotating spinner
-    fn draw_spinner(&self, ui: &mut Ui, rect: Rect) {
-        let theme = ui.ctx().armas_theme();
+    fn draw_spinner(&self, ui: &mut Ui, rect: Rect, theme: &crate::Theme) {
         let painter = ui.painter();
         let center = rect.center();
         let radius = self.size / 2.0;
@@ -238,7 +236,7 @@ impl LoadingDots {
     }
 
     /// Show the loading dots
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
+    pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> Response {
         let width = (self.dot_count as f32 - 1.0) * self.spacing + self.dot_size;
         let height = self.dot_size;
 
@@ -250,7 +248,7 @@ impl LoadingDots {
         self.phase = (time * self.speed) % 1.0;
 
         // Draw the dots
-        self.draw_dots(ui, rect);
+        self.draw_dots(ui, rect, theme);
 
         // Request repaint for animation
         ui.ctx().request_repaint();
@@ -259,8 +257,7 @@ impl LoadingDots {
     }
 
     /// Draw the blinking dots
-    fn draw_dots(&self, ui: &mut Ui, rect: Rect) {
-        let theme = ui.ctx().armas_theme();
+    fn draw_dots(&self, ui: &mut Ui, rect: Rect, theme: &crate::Theme) {
         let painter = ui.painter();
         let y = rect.center().y;
 
@@ -371,7 +368,7 @@ impl Skeleton {
     }
 
     /// Show the skeleton loader
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
+    pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> Response {
         let (rect, response) =
             ui.allocate_exact_size(Vec2::new(self.width, self.height), egui::Sense::hover());
 
@@ -380,7 +377,7 @@ impl Skeleton {
         self.shimmer_pos = (time * self.speed) % 1.0;
 
         // Draw the skeleton
-        self.draw_skeleton(ui, rect);
+        self.draw_skeleton(ui, rect, theme);
 
         // Request repaint for animation
         ui.ctx().request_repaint();
@@ -389,8 +386,7 @@ impl Skeleton {
     }
 
     /// Draw the skeleton with shimmer effect
-    fn draw_skeleton(&self, ui: &mut Ui, rect: Rect) {
-        let theme = ui.ctx().armas_theme();
+    fn draw_skeleton(&self, ui: &mut Ui, rect: Rect, theme: &crate::Theme) {
         let painter = ui.painter();
 
         // Use custom colors or theme defaults
@@ -510,7 +506,7 @@ impl CircularProgress {
     }
 
     /// Show the circular progress
-    pub fn show(&mut self, ui: &mut Ui) -> Response {
+    pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> Response {
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 
         // Calculate animation from time for stateless animation
@@ -522,7 +518,7 @@ impl CircularProgress {
         self.arc_length = 0.1 + 0.6 * ((self.phase * PI).sin().abs());
 
         // Draw the arc
-        self.draw_arc(ui, rect);
+        self.draw_arc(ui, rect, theme);
 
         // Request repaint for animation
         ui.ctx().request_repaint();
@@ -531,8 +527,7 @@ impl CircularProgress {
     }
 
     /// Draw the rotating arc
-    fn draw_arc(&self, ui: &mut Ui, rect: Rect) {
-        let theme = ui.ctx().armas_theme();
+    fn draw_arc(&self, ui: &mut Ui, rect: Rect, theme: &crate::Theme) {
         let painter = ui.painter();
         let center = rect.center();
         let radius = (self.size - self.stroke_width) / 2.0;

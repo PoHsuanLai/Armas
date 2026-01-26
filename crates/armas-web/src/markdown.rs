@@ -365,7 +365,7 @@ fn render_code_block(
                 let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(button_rect), |ui| {
                     if Button::new("🌓 Theme")
                         .variant(ButtonVariant::Text)
-                        .show(ui)
+                        .show(ui, theme)
                         .on_hover_text("Toggle light/dark theme")
                         .clicked()
                     {
@@ -413,7 +413,7 @@ fn render_code_block(
                 let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(button_rect), |ui| {
                     if Button::new(button_text)
                         .variant(ButtonVariant::Text)
-                        .show(ui)
+                        .show(ui, theme)
                         .on_hover_text(button_tooltip)
                         .clicked()
                     {
@@ -511,25 +511,27 @@ fn render_table(
     ui.add_space(12.0);
 
     ui.push_id((base_id, id), |ui| {
-        use armas::{Table, TableStyle};
+        use armas::{table, header_row, row, cell_ui};
 
-        Table::new().style(TableStyle::Lined).show(ui, |table| {
+        table(ui, |table_rows| {
             // Render headers
-            table.header_row(|row| {
+            header_row(table_rows, |cells| {
                 for header in headers {
-                    row.cell(header);
+                    cell_ui(cells, |ui| {
+                        ui.label(header.as_str());
+                    });
                 }
             });
 
             // Render rows
             for data_row in rows {
-                table.row(|row| {
-                    for cell in data_row {
+                row(table_rows, |cells| {
+                    for cell_text in data_row {
                         // Parse inline code in cells
                         let mut segments = Vec::new();
                         let mut current = String::new();
                         let mut in_code = false;
-                        let chars = cell.chars().peekable();
+                        let chars = cell_text.chars().peekable();
 
                         for c in chars {
                             if c == '`' {
@@ -548,7 +550,7 @@ fn render_table(
                         }
 
                         // Render cell with inline formatting
-                        row.cell_ui(|ui| {
+                        cell_ui(cells, |ui| {
                             ui.horizontal_wrapped(|ui| {
                                 for (text, is_code) in segments {
                                     if is_code {

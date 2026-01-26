@@ -3,7 +3,6 @@
 //! A button variant specifically designed for rendering icons with Material Design 3 styling.
 
 use crate::components::button::ButtonVariant;
-use crate::ext::context::ArmasContextExt;
 use crate::icon::{render_icon, IconData};
 use egui::{Color32, Response, Sense, Ui, Vec2};
 
@@ -94,8 +93,7 @@ impl<'a> IconButton<'a> {
     }
 
     /// Show the icon button
-    pub fn show(self, ui: &mut Ui) -> Response {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
         let total_size = Vec2::splat(self.size + self.padding * 2.0);
 
         let sense = if self.enabled {

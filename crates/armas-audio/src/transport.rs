@@ -240,7 +240,7 @@ impl TransportControl {
                             .variant(ButtonVariant::Text)
                             .size(24.0)
                             .padding(4.0)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             rewind_clicked = true;
@@ -259,7 +259,7 @@ impl TransportControl {
                             .variant(ButtonVariant::Text)
                             .size(24.0)
                             .padding(4.0)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             match self.state {
@@ -279,7 +279,7 @@ impl TransportControl {
                             .variant(ButtonVariant::Text)
                             .size(24.0)
                             .padding(4.0)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             stop_clicked = true;
@@ -292,7 +292,7 @@ impl TransportControl {
                             .variant(ButtonVariant::Text)
                             .size(24.0)
                             .padding(4.0)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             forward_clicked = true;
@@ -341,7 +341,7 @@ impl TransportControl {
                                 .width(60.0)
                                 .font_size(16.0)
                                 .text_color(theme.foreground())
-                                .show(ui, &mut tempo_str);
+                                .show(ui, &mut tempo_str, theme);
 
                             if tempo_response.changed {
                                 if let Ok(new_bpm) = tempo_str.parse::<f32>() {
@@ -382,7 +382,7 @@ impl TransportControl {
                             .variant(ButtonVariant::Text)
                             .size(24.0)
                             .padding(4.0)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             self.loop_enabled = !self.loop_enabled;
@@ -394,7 +394,7 @@ impl TransportControl {
                             .variant(ButtonVariant::Text)
                             .size(24.0)
                             .padding(4.0)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             self.metronome_enabled = !self.metronome_enabled;
@@ -406,7 +406,7 @@ impl TransportControl {
                             .variant(ButtonVariant::Text)
                             .size(24.0)
                             .padding(4.0)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             record_clicked = true;

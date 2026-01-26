@@ -5,7 +5,6 @@
 
 use armas::components::basic::Slider;
 use armas::components::button::{Button, ButtonVariant};
-use armas::ext::ArmasContextExt;
 use egui::{Response, Ui};
 
 /// Zoom control component
@@ -124,8 +123,7 @@ impl<'a> ZoomControl<'a> {
     }
 
     /// Show the zoom control
-    pub fn show(self, ui: &mut Ui) -> ZoomControlResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> ZoomControlResponse {
 
         // Load state from memory if ID is set
         if let Some(id) = self.id {
@@ -158,7 +156,7 @@ impl<'a> ZoomControl<'a> {
                         if Button::new("−")
                             .variant(ButtonVariant::Secondary)
                             .min_width(28.0)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             *self.zoom_level =
@@ -174,7 +172,7 @@ impl<'a> ZoomControl<'a> {
                         let slider_response = Slider::new(self.min_zoom, self.max_zoom)
                             .width(self.slider_width)
                             .show_value(false)
-                            .show(ui, self.zoom_level);
+                            .show(ui, self.zoom_level, theme);
 
                         if slider_response.changed {
                             changed = true;
@@ -186,7 +184,7 @@ impl<'a> ZoomControl<'a> {
                         if Button::new("+")
                             .variant(ButtonVariant::Secondary)
                             .min_width(28.0)
-                            .show(ui)
+                            .show(ui, &theme)
                             .clicked()
                         {
                             *self.zoom_level =
@@ -205,7 +203,7 @@ impl<'a> ZoomControl<'a> {
                     if Button::new("1:1")
                         .variant(ButtonVariant::Ghost)
                         .min_width(36.0)
-                        .show(ui)
+                        .show(ui, &theme)
                         .clicked()
                     {
                         *self.zoom_level = 1.0;
@@ -217,7 +215,7 @@ impl<'a> ZoomControl<'a> {
                     if Button::new("Fit")
                         .variant(ButtonVariant::Ghost)
                         .min_width(36.0)
-                        .show(ui)
+                        .show(ui, &theme)
                         .clicked()
                     {
                         *self.zoom_level = 1.0; // Placeholder - would calculate based on content

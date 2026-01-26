@@ -614,7 +614,7 @@ impl Command {
             );
             ui.scope_builder(egui::UiBuilder::new().max_rect(kbd_rect), |ui| {
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    Kbd::new(shortcut_text).show(ui);
+                    Kbd::new(shortcut_text).show(ui, &theme);
                 });
             });
         }

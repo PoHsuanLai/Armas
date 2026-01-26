@@ -2,7 +2,7 @@
 //!
 //! Minimal utilities for specialized layout needs:
 //! - AspectRatio - Maintain aspect ratio with fit/fill modes
-//! - Table - Styled tables with striped, bordered, and lined variants
+//! - Table - Responsive table with shadcn/ui styling
 //! - BentoGrid - Variable-sized tile grid layout
 //!
 //! ## For everything else, use egui's built-ins:
@@ -16,10 +16,8 @@
 
 mod aspect_ratio;
 mod bento_grid;
-mod feature_grid;
 mod table;
 
 pub use aspect_ratio::{AspectRatio, ContentMode};
 pub use bento_grid::{BentoGrid, GridSpan};
-pub use feature_grid::{FeatureGrid, FeatureItem};
-pub use table::{Table, TableStyle};
+pub use table::{table, header_row, row, cell, cell_ui, TableRows, TableCells};

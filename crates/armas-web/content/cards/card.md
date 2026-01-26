@@ -58,7 +58,7 @@ let theme = ui.ctx().armas_theme();
 Card::new().variant(CardVariant::Outlined).title("Profile").width(300.0).show(ui, &theme, |ui| {
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = 12.0;
-        Avatar::new("JD").size_preset(AvatarSize::Large).show(ui);
+        Avatar::new("JD").size_preset(AvatarSize::Large).show(ui, &theme);
         ui.vertical(|ui| {
             ui.label(egui::RichText::new("John Doe").strong());
             ui.label("Software Engineer");

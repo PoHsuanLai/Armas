@@ -18,7 +18,7 @@ let mut tree: TreeView = ui.ctx().data_mut(|d| {
         TreeView::new().items(items.clone()).show_lines(true).width(280.0).height(300.0)
     })
 });
-let response = tree.show(ui);
+let response = tree.show(ui, &theme);
 ui.ctx().data_mut(|d| d.insert_persisted(tree_id, tree));
 if let Some(path) = response.selected {
     ui.label(format!("Selected: {:?}", path));
@@ -39,6 +39,6 @@ let tree_id = ui.id().with("tree_lines");
 let mut tree: TreeView = ui.ctx().data_mut(|d| {
     d.get_persisted(tree_id).unwrap_or_else(|| TreeView::new().items(items.clone()).show_lines(true).width(280.0).height(200.0))
 });
-tree.show(ui);
+tree.show(ui, &theme);
 ui.ctx().data_mut(|d| d.insert_persisted(tree_id, tree));
 ```

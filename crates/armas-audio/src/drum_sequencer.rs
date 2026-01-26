@@ -7,7 +7,6 @@
 //! - Optional viewport scrolling with momentum physics
 //! - Smooth inertia-based scrolling that continues after mouse release
 
-use armas::ext::ArmasContextExt;
 use armas::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 use std::collections::HashMap;
@@ -281,8 +280,7 @@ impl<'a> DrumSequencer<'a> {
     }
 
     /// Show the drum sequencer
-    pub fn show(self, ui: &mut Ui) -> DrumSequencerResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &Theme) -> DrumSequencerResponse {
         let mut step_toggled: HashMap<(usize, usize), bool> = HashMap::new();
         let mut changed = false;
 
@@ -446,7 +444,7 @@ impl<'a> DrumSequencer<'a> {
                     Vec2::new(row_label_width, row_height),
                 );
 
-                Self::draw_row_label_static(&painter, &theme, label_rect, row);
+                Self::draw_row_label_static(&painter, theme, label_rect, row);
 
                 // Draw steps for this row
                 for step_idx in 0..num_steps {
@@ -500,7 +498,7 @@ impl<'a> DrumSequencer<'a> {
 
                     Self::draw_step_static(
                         &painter,
-                        &theme,
+                        theme,
                         step_rect,
                         row.color,
                         is_active,

@@ -173,8 +173,7 @@ impl TreeView {
     }
 
     /// Show the tree view
-    pub fn show(&mut self, ui: &mut Ui) -> TreeViewResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> TreeViewResponse {
 
         let available = ui.available_size();
         let width = if self.width > 0.0 { self.width } else { available.x };
@@ -220,6 +219,7 @@ impl TreeView {
         selected: &mut Option<PathBuf>,
         toggled: &mut Option<PathBuf>,
     ) {
+        let theme = ui.ctx().armas_theme();
         let items = self.get_children(parent);
         let count = items.len();
 
@@ -227,7 +227,7 @@ impl TreeView {
             let is_expanded = item.is_directory && self.is_expanded(&item.path);
             let is_last = i == count - 1;
 
-            self.show_item(ui, &item, width, depth, is_last, levels_last, selected, toggled);
+            self.show_item(ui, &item, width, depth, is_last, levels_last, selected, toggled, &theme);
             ui.add_space(ITEM_GAP);
 
             if is_expanded {
@@ -249,8 +249,8 @@ impl TreeView {
         levels_last: &[bool],
         selected: &mut Option<PathBuf>,
         toggled: &mut Option<PathBuf>,
+        theme: &crate::Theme,
     ) {
-        let theme = ui.ctx().armas_theme();
         let is_selected = self.selected.as_ref() == Some(&item.path);
         let indent = depth as f32 * INDENT_WIDTH;
         let show_lines = self.show_lines && depth > 0;

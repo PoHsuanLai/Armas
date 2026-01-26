@@ -8,7 +8,6 @@
 //! - Disabled options
 //! - State persistence
 
-use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{vec2, Color32, CornerRadius, Key, Painter, Rect, Response, Sense, Stroke, TextEdit, Ui};
 
@@ -158,8 +157,7 @@ impl Select {
     // Main show method
     // ========================================================================
 
-    pub fn show(&mut self, ui: &mut Ui) -> SelectResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> SelectResponse {
         let width = self.width.unwrap_or(200.0);
         let mut changed = false;
         let mut new_value = None;

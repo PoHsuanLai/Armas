@@ -8,7 +8,7 @@ Button with animated shimmer background effect.
 
 ```demo
 ShimmerButton::new("Shimmer")
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Custom Size
@@ -16,7 +16,7 @@ ShimmerButton::new("Shimmer")
 ```demo
 ShimmerButton::new("Large Shimmer")
     .min_size(egui::vec2(150.0, 56.0))
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Disabled
@@ -24,7 +24,7 @@ ShimmerButton::new("Large Shimmer")
 ```demo
 ShimmerButton::new("Disabled")
     .enabled(false)
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Brutal Button
@@ -33,7 +33,7 @@ Brutalist design with stacked shadows.
 
 ```demo
 BrutalButton::new("Brutal")
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Custom Size
@@ -41,7 +41,7 @@ BrutalButton::new("Brutal")
 ```demo
 BrutalButton::new("Large Brutal")
     .min_size(egui::vec2(120.0, 48.0))
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Simple Button
@@ -50,7 +50,7 @@ Clean, minimalist button style.
 
 ```demo
 SimpleButton::new("Simple")
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Custom Size
@@ -58,7 +58,7 @@ SimpleButton::new("Simple")
 ```demo
 SimpleButton::new("Large Simple")
     .min_size(egui::vec2(140.0, 50.0))
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Sketch Button
@@ -67,7 +67,7 @@ Hand-drawn sketch style with rough edges.
 
 ```demo
 SketchButton::new("Sketch")
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Custom Size
@@ -75,7 +75,7 @@ SketchButton::new("Sketch")
 ```demo
 SketchButton::new("Large Sketch")
     .min_size(egui::vec2(130.0, 52.0))
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Invert Button
@@ -84,7 +84,7 @@ Button with color inversion effect on hover.
 
 ```demo
 InvertButton::new("Invert")
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Custom Size
@@ -92,7 +92,7 @@ InvertButton::new("Invert")
 ```demo
 InvertButton::new("Large Invert")
     .min_size(egui::vec2(140.0, 50.0))
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Figma Button
@@ -101,7 +101,7 @@ Figma-inspired button style.
 
 ```demo
 FigmaButton::new("Figma")
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Custom Size
@@ -109,7 +109,7 @@ FigmaButton::new("Figma")
 ```demo
 FigmaButton::new("Large Figma")
     .min_size(egui::vec2(140.0, 50.0))
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## Spotify Button
@@ -118,7 +118,7 @@ Spotify-inspired button with brand styling.
 
 ```demo
 SpotifyButton::new("Spotify")
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ### Custom Size
@@ -126,7 +126,7 @@ SpotifyButton::new("Spotify")
 ```demo
 SpotifyButton::new("Large Spotify")
     .min_size(egui::vec2(140.0, 50.0))
-    .show(ui);
+    .show(ui, &theme);
 ```
 
 ## All Variants Comparison
@@ -135,13 +135,13 @@ SpotifyButton::new("Large Spotify")
 ui.vertical(|ui| {
     ui.spacing_mut().item_spacing.y = 12.0;
 
-    ShimmerButton::new("Shimmer Button").show(ui);
-    BrutalButton::new("Brutal Button").show(ui);
-    SimpleButton::new("Simple Button").show(ui);
-    SketchButton::new("Sketch Button").show(ui);
-    InvertButton::new("Invert Button").show(ui);
-    FigmaButton::new("Figma Button").show(ui);
-    SpotifyButton::new("Spotify Button").show(ui);
+    ShimmerButton::new("Shimmer Button").show(ui, &theme);
+    BrutalButton::new("Brutal Button").show(ui, &theme);
+    SimpleButton::new("Simple Button").show(ui, &theme);
+    SketchButton::new("Sketch Button").show(ui, &theme);
+    InvertButton::new("Invert Button").show(ui, &theme);
+    FigmaButton::new("Figma Button").show(ui, &theme);
+    SpotifyButton::new("Spotify Button").show(ui, &theme);
 });
 ```
 
@@ -176,11 +176,11 @@ All specialty buttons share a similar API:
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 12.0;
 
-    if ShimmerButton::new("Save").show(ui).clicked() {
+    if ShimmerButton::new("Save").show(ui, &theme).clicked() {
         // Handle save
     }
 
-    if BrutalButton::new("Cancel").show(ui).clicked() {
+    if BrutalButton::new("Cancel").show(ui, &theme).clicked() {
         // Handle cancel
     }
 });
@@ -198,7 +198,7 @@ ui.vertical(|ui| {
 
     SimpleButton::new("Action")
         .enabled(enabled)
-        .show(ui);
+        .show(ui, &theme);
 });
 ```
 
@@ -210,15 +210,15 @@ ui.horizontal(|ui| {
 
     ShimmerButton::new("Small")
         .min_size(egui::vec2(60.0, 28.0))
-        .show(ui);
+        .show(ui, &theme);
 
     ShimmerButton::new("Medium")
         .min_size(egui::vec2(100.0, 36.0))
-        .show(ui);
+        .show(ui, &theme);
 
     ShimmerButton::new("Large")
         .min_size(egui::vec2(140.0, 48.0))
-        .show(ui);
+        .show(ui, &theme);
 });
 ```
 

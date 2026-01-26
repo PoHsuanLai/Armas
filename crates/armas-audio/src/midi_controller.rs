@@ -9,7 +9,6 @@ use crate::{
     XYPad, XYPadVariant,
 };
 use armas::components::cards::{Card, CardVariant};
-use armas::ext::ArmasContextExt;
 use egui::{Response, Ui};
 use std::collections::{HashMap, HashSet};
 
@@ -220,8 +219,7 @@ impl<'a> MidiController<'a> {
     }
 
     /// Show the MIDI controller
-    pub fn show(self, ui: &mut Ui) -> MidiControllerResponse {
-        let theme = ui.ctx().armas_theme();
+    pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> MidiControllerResponse {
 
         let mut piano_response = None;
         let mut drum_pad_response = None;
@@ -256,7 +254,7 @@ impl<'a> MidiController<'a> {
                                         .label("Mod")
                                         .height(180.0)
                                         .id("midi_controller_mod_wheel")
-                                        .show(ui);
+                                        .show(ui, &theme);
                                     mod_wheel_changed = mod_response.changed();
 
                                     let pitch_response = ModWheel::new(&mut self.state.pitch_wheel)
@@ -265,7 +263,7 @@ impl<'a> MidiController<'a> {
                                         .label("Pitch")
                                         .height(180.0)
                                         .id("midi_controller_pitch_wheel")
-                                        .show(ui);
+                                        .show(ui, &theme);
                                     pitch_wheel_changed = pitch_response.changed();
                                 });
                             });
@@ -284,7 +282,7 @@ impl<'a> MidiController<'a> {
                                         .x_label("X")
                                         .y_label("Y")
                                         .id("midi_controller_xy_pad")
-                                        .show(ui);
+                                        .show(ui, &theme);
                                 xy_pad_changed = xy_response.changed;
                             });
                         }
@@ -322,7 +320,7 @@ impl<'a> MidiController<'a> {
                                     .pad_states(self.state.drum_pads.clone())
                                     .variant(self.pad_variant)
                                     .color_scheme(PadColorScheme::Semantic)
-                                    .show(ui);
+                                    .show(ui, theme);
 
                                 // Update state with pressed/released pads
                                 if let Some((note, velocity)) = pad_response_inner.pressed {
@@ -358,7 +356,7 @@ impl<'a> MidiController<'a> {
                             .step_size(theme.spacing.xl, theme.spacing.xl)
                             .gap(theme.spacing.xs) // Tighter gap
                             .show_step_numbers(true)
-                            .show(ui);
+                            .show(ui, &theme);
 
                         sequencer_changed = seq_response.changed;
                     });
