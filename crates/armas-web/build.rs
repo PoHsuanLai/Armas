@@ -146,6 +146,45 @@ fn main() {
     code.push_str("    ]\n");
     code.push_str("}\n\n");
 
+    // Generate route mapping function
+    code.push_str("pub fn get_page_by_route(section: &str, component: &str) -> Option<usize> {\n");
+    code.push_str("    let route = format!(\"{}/{}\", section, component);\n");
+    code.push_str("    match route.as_str() {\n");
+
+    let mut idx = 0;
+    for (section_name, files) in &sections {
+        for (file_name, _) in files {
+            code.push_str(&format!(
+                "        \"{}/{}\" => Some({}),\n",
+                section_name, file_name, idx
+            ));
+            idx += 1;
+        }
+    }
+
+    code.push_str("        _ => None,\n");
+    code.push_str("    }\n");
+    code.push_str("}\n\n");
+
+    // Generate reverse mapping (index to route)
+    code.push_str("pub fn get_route_by_index(idx: usize) -> Option<(&'static str, &'static str)> {\n");
+    code.push_str("    match idx {\n");
+
+    idx = 0;
+    for (section_name, files) in &sections {
+        for (file_name, _) in files {
+            code.push_str(&format!(
+                "        {} => Some((\"{}\", \"{}\")),\n",
+                idx, section_name, file_name
+            ));
+            idx += 1;
+        }
+    }
+
+    code.push_str("        _ => None,\n");
+    code.push_str("    }\n");
+    code.push_str("}\n\n");
+
     // Generate get_nested_sections function (hierarchical structure)
     code.push_str("#[allow(clippy::vec_init_then_push)]\n");
     code.push_str("pub fn get_nested_sections() -> NestedSections {\n");

@@ -1,6 +1,6 @@
 # Select
 
-Searchable dropdown menus with keyboard navigation and customizable options.
+Searchable dropdown menus with keyboard navigation.
 
 ## Basic Usage (Closure-based API)
 
@@ -168,56 +168,3 @@ if response.changed {
 }
 ```
 
-## API Reference
-
-### Select
-
-**Creating a Select:**
-- `Select::new(options: Vec<SelectOption>)` - Create with pre-built options
-- `Select::build(|builder| { ... })` - Create with closure-based API
-
-**Configuration Methods:**
-
-| Method | Type | Default | Description |
-|--------|------|---------|-------------|
-| `.id()` | `egui::Id` | `None` | ID for state persistence |
-| `.selected()` | `&str` | `None` | Pre-selected value |
-| `.label()` | `&str` | `None` | Label text |
-| `.placeholder()` | `&str` | "Select..." | Placeholder text |
-| `.width()` | `f32` | `200.0` | Dropdown width |
-| `.max_height()` | `f32` | `300.0` | Max dropdown height |
-| `.searchable()` | `bool` | `true` | Enable search |
-
-### SelectOption (Traditional API)
-
-| Method | Type | Description |
-|--------|------|-------------|
-| `.icon()` | `&str` | Add icon (emoji) |
-| `.description()` | `&str` | Add description |
-| `.disabled()` | `bool` | Disable option |
-
-### SelectBuilder (Closure API)
-
-| Method | Returns | Description |
-|--------|---------|-------------|
-| `.option(value, label)` | `SelectOptionBuilder` | Add new option |
-
-**SelectOptionBuilder Methods:**
-- `.icon(&str)` - Add icon
-- `.description(&str)` - Add description
-- `.disabled(bool)` - Mark as disabled
-
-### SelectResponse
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `response` | `egui::Response` | The trigger button response |
-| `changed` | `bool` | Whether the selected value changed |
-| `selected_value` | `Option<String>` | The newly selected value |
-| `is_open` | `bool` | Whether the dropdown is currently open |
-
-## Dependencies
-
-- `egui = "0.33"`
-- Theme colors: `primary`, `surface`, `surface_variant`, `hover`
-- Keyboard navigation support (Arrow keys, Enter, Escape)

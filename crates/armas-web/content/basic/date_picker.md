@@ -1,6 +1,6 @@
 # DatePicker
 
-Calendar date selection styled like shadcn/ui. Combines a Button trigger with a Calendar popover.
+Calendar date selection with button trigger and popover.
 
 ## Basic Usage
 
@@ -201,63 +201,3 @@ ui.vertical(|ui| {
 });
 ```
 
-## Calendar Features
-
-The date picker calendar includes:
-- Button trigger with calendar icon (shadcn outline variant)
-- Month/year navigation with ghost buttons
-- Weekday headers (Su-Sa)
-- Current month days (clickable)
-- Previous/next month days (muted text)
-- Today highlighted with accent color
-- Selected date highlighted with primary color
-- Optional "Today" and "Clear" footer buttons
-
-## API Reference
-
-### DatePicker
-
-| Method | Type | Default | Description |
-|--------|------|---------|-------------|
-| `.placeholder()` | `&str` | "Pick a date" | Trigger button placeholder |
-| `.label()` | `&str` | `None` | Label text above trigger |
-| `.show_footer()` | `bool` | `false` | Show Today/Clear buttons |
-| `.width()` | `f32` | `280.0` | Trigger button width |
-
-### Date
-
-| Method | Type | Description |
-|--------|------|-------------|
-| `Date::new(y, m, d)` | `Option<Date>` | Create date (validates) |
-| `Date::today()` | `Date` | Get today's date |
-| `Date::parse(s)` | `Option<Date>` | Parse YYYY-MM-DD |
-| `.format()` | `String` | Format as YYYY-MM-DD |
-| `.format_display()` | `String` | Format as "Month Day, Year" |
-| `.month_name()` | `&str` | Get month name |
-| `.day_of_week()` | `u32` | Get day (0-6) |
-| `Date::is_leap_year(y)` | `bool` | Check leap year |
-| `Date::days_in_month(y, m)` | `u32` | Days in month |
-
-### DatePickerResponse
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `changed` | `bool` | Whether date changed |
-
-## shadcn/ui Styling
-
-The DatePicker follows shadcn/ui conventions:
-
-- **Trigger**: Outline variant button with calendar icon
-- **Cell size**: 32px (2rem)
-- **Today**: `bg-accent text-accent-foreground`
-- **Selected**: `bg-primary text-primary-foreground`
-- **Outside month**: `text-muted-foreground`
-- **Navigation**: Ghost variant buttons with chevron icons
-- **Popover**: No padding (`p-0`), content provides its own padding
-
-## Dependencies
-
-- `egui = "0.33"`
-- Theme colors: `primary`, `accent`, `foreground`, `muted-foreground`
-- Popover component for calendar overlay

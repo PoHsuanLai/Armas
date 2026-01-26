@@ -1,8 +1,6 @@
 # Kbd
 
-Keyboard shortcut display element. Styled to match shadcn/ui kbd.
-
-## Basic Usage
+Keyboard shortcut display element.
 
 ```demo
 Kbd::new("K").show(ui);
@@ -10,16 +8,10 @@ Kbd::new("K").show(ui);
 
 ## Key Combinations
 
-Key combinations are automatically split on `+`:
-
 ```demo
 ui.horizontal(|ui| {
+    ui.spacing_mut().item_spacing.x = 8.0;
     Kbd::new("Ctrl+K").show(ui);
-});
-```
-
-```demo
-ui.horizontal(|ui| {
     Kbd::new("Cmd+Shift+P").show(ui);
 });
 ```
@@ -42,31 +34,3 @@ ui.vertical(|ui| {
     });
 });
 ```
-
-## In Menu Items
-
-```demo
-ui.horizontal(|ui| {
-    ui.label("Open File");
-    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-        Kbd::new("Ctrl+O").show(ui);
-    });
-});
-```
-
-## API Reference
-
-| Method | Type | Description |
-|--------|------|-------------|
-| `::new()` | `impl Into<String>` | Create with key text |
-| `.show()` | `&mut Ui` | Display the kbd element |
-
-## Styling
-
-The component uses shadcn/ui styling:
-- Background: `muted`
-- Text: `muted-foreground`
-- Font size: 11px
-- Height: 20px
-- Min width: 20px
-- Border radius: 4px

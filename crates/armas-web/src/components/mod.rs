@@ -1,12 +1,9 @@
 //! Showcase-specific components for armas-web
 
-pub mod code_display;
-pub mod demo_card;
-pub mod header;
-pub mod hero;
-pub mod hero_section;
-pub mod section_header;
-pub mod variant_card;
+pub mod site_header;
+pub mod site_hero;
+pub mod site_sidebar;
 
-pub use header::Header;
-pub use hero::Hero;
+pub use site_header::{SiteHeader, SiteHeaderResponse};
+pub use site_hero::SiteHero;
+pub use site_sidebar::{SiteSidebar, SiteSidebarResponse};
