@@ -7,9 +7,9 @@
 
 Live Demo: [https://pohsuanlai.github.io/armas/](https://pohsuanlai.github.io/Armas/)
 
-A modern, theme-aware, [Material Design 3](https://m3.material.io/) compliant component library for [egui](https://github.com/emilk/egui).
+A modern, theme-aware, component library for [egui](https://github.com/emilk/egui).
 
-Armas brings the polished aesthetics of modern web development (inspired by Shadcn, HeroUI, and Aceternity) to the Rust native ecosystem. It is designed for professional tools, game engines (like Bevy), and high-performance applications that require a sophisticated look without sacrificing the immediate-mode performance benefits of egui.
+Armas brings the polished aesthetics of modern web development (inspired by Shadcn, HeroUI, and Aceternity) to the Rust native ecosystem.
 
 ## Motivation
 
