@@ -361,7 +361,7 @@ impl MixerStrip {
 
         // Apply scale to all dimensions
         let scaled_width = self.width * scale;
-        let button_height = 20.0 * scale;
+        let _button_height = 20.0 * scale;
         let slot_height = 20.0 * scale;
         let knob_diameter = 40.0 * scale;
         let meter_fader_height = 180.0 * scale;

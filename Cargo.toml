@@ -27,7 +27,6 @@ serde_json = "1.0"
 pedantic = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
 
-# Specific lints we want to enforce
 must_use_candidate = "warn"
 missing_errors_doc = "warn"
 missing_panics_doc = "warn"

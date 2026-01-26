@@ -1,0 +1,17 @@
+# Clippy configuration for ARMAS Design System
+# Documentation: https://rust-lang.github.io/rust-clippy/master/
+
+# Disallow methods with 'with_' prefix in builder pattern
+# We use simple method names like .color(), .size(), not .with_color()
+disallowed-names = []
+
+# Cognitive complexity threshold (lower = stricter)
+cognitive-complexity-threshold = 30
+
+# Type complexity threshold
+type-complexity-threshold = 250
+
+# Enable additional pedantic lints
+# We want high code quality across the board
+too-many-arguments-threshold = 7
+too-many-lines-threshold = 200

@@ -13,3 +13,8 @@ dist/
 /JUCE
 /hero-ui
 /ui
+
+*.md
+!README.md
+
+/assets

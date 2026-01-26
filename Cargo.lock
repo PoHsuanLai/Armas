@@ -225,7 +225,6 @@ name = "armas"
 version = "0.1.0"
 dependencies = [
  "armas-icon",
- "audio-automation 0.1.0",
  "chrono",
  "eframe",
  "egui 0.33.3",
@@ -251,7 +250,7 @@ version = "0.1.0"
 dependencies = [
  "armas",
  "armas-icon",
- "audio-automation 0.1.0 (git+https://github.com/PoHsuanLai/audio-automation.git)",
+ "audio-automation",
  "chrono",
  "egui 0.33.3",
  "egui-theme",
@@ -521,13 +520,6 @@ dependencies = [
  "atspi-common",
  "serde",
  "zbus",
-]
-
-[[package]]
-name = "audio-automation"
-version = "0.1.0"
-dependencies = [
- "serde",
 ]
 
 [[package]]
