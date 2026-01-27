@@ -1,17 +1,9 @@
-//! # egui-alig
+//! # Armas
 //!
-//! **ALIG** - A component library for egui
+//! UI component library for egui following shadcn/ui design patterns.
 //!
-//! A reusable component library for egui with Material Design inspired theming.
-//! Provides a clean, professional design language with serializable themes.
-//!
-//! ## Features
-//!
-//! - 🎨 **Material Design Color Palette** - Primary, secondary, surface, outline, semantic colors
-//! - 💾 **Serializable Themes** - Save/load themes as JSON
-//! - 🧩 **Reusable Components** - Slots, routing buttons, section headers
-//! - 🎯 **Builder Pattern API** - Clean, declarative UI code
-//! - ✨ **Professional Design** - Glassmorphism-inspired styling
+//! Includes 50+ reusable components with a theme system supporting serializable
+//! color palettes and spacing configurations.
 //!
 //! ## Example
 //!
@@ -21,7 +13,7 @@
 //! use armas::prelude::*;
 //!
 //! let theme = ui.ctx().armas_theme();
-//! // Create a button with shadcn/ui styling
+//!
 //! if Button::new("Click me")
 //!     .variant(ButtonVariant::Default)
 //!     .show(ui, &theme)

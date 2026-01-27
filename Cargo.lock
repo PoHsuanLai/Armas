@@ -222,7 +222,7 @@ dependencies = [
 
 [[package]]
 name = "armas"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "armas-icon",
  "chrono",
@@ -238,7 +238,7 @@ dependencies = [
 
 [[package]]
 name = "armas-animated"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "armas",
  "egui 0.33.3",
@@ -246,7 +246,7 @@ dependencies = [
 
 [[package]]
 name = "armas-audio"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "armas",
  "armas-icon",
@@ -262,7 +262,7 @@ dependencies = [
 
 [[package]]
 name = "armas-icon"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "egui 0.33.3",
  "lyon_tessellation",
@@ -271,7 +271,7 @@ dependencies = [
 
 [[package]]
 name = "armas-showcase-macros"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "proc-macro2",
  "pulldown-cmark",
@@ -282,7 +282,7 @@ dependencies = [
 
 [[package]]
 name = "armas-web"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "armas",
  "armas-animated",

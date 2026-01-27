@@ -1,6 +1,6 @@
 //! Audio Meter Component
 //!
-//! Professional DAW-style audio level meter with smooth animations,
+//! DAW-style audio level meter with smooth animations,
 //! peak hold, and customizable color gradients.
 
 use armas::animation::SpringAnimation;

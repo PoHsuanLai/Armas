@@ -13,8 +13,6 @@
 //! - [`AuroraBackground`] - Animated aurora borealis effect
 //! - [`MeteorShower`] - Falling meteor animation
 //! - [`Sparkles`] - Animated sparkle particles
-
-#![warn(missing_docs)]
 //! - [`Spotlight`] - Animated spotlight effect
 //! - [`DotPattern`] - Static dot grid pattern
 //! - [`GridPattern`] - Static grid pattern
@@ -23,6 +21,8 @@
 //! ## Effects
 //! - [`GradientText`] - Text with animated gradient colors
 //! - [`MovingBorder`] - Button with animated gradient border
+
+#![warn(missing_docs)]
 
 // Text animations
 pub mod flip_words;

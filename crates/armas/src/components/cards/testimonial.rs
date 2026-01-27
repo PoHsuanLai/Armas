@@ -57,7 +57,7 @@ impl TestimonialItem {
 /// Testimonial card component
 ///
 /// Displays customer testimonials with quotes, author info, and optional ratings.
-/// Perfect for social proof sections.
+/// Useful for social proof sections.
 ///
 /// # Example
 ///

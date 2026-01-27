@@ -1,6 +1,6 @@
 //! Transport Control Component
 //!
-//! Professional DAW transport bar with playback controls, time display,
+//! DAW transport bar with playback controls, time display,
 //! tempo, and loop/metronome controls.
 
 use crate::icons::TransportIcon;
@@ -92,7 +92,7 @@ pub struct TransportResponse {
 
 /// Transport Control component
 ///
-/// Professional DAW-style transport bar with playback controls, time display,
+/// DAW-style transport bar with playback controls, time display,
 /// tempo controls, and toggles for loop and metronome.
 ///
 /// # Example

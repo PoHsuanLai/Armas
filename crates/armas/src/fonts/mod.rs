@@ -264,17 +264,17 @@ impl Default for FontFamilyBuilder {
 /// with the Armas component library.
 ///
 /// ## Inter
-/// - **Best for**: General UI, buttons, labels
+/// - **Use case**: General UI, buttons, labels
 /// - **Download**: <https://fonts.google.com/specimen/Inter>
 /// - **Weights**: 100-900 (use 400, 500, 600, 700)
 ///
 /// ## Geist
-/// - **Best for**: Modern tech UIs
+/// - **Use case**: Modern tech UIs
 /// - **Download**: <https://vercel.com/font>
 /// - **Weights**: Regular, Medium, SemiBold, Bold
 ///
 /// ## JetBrains Mono
-/// - **Best for**: Code, monospace needs
+/// - **Use case**: Code, monospace needs
 /// - **Download**: <https://www.jetbrains.com/lp/mono/>
 /// - **Weights**: 100-800
 ///

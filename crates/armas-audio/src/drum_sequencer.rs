@@ -1,6 +1,6 @@
 //! Drum Sequencer Component
 //!
-//! Professional multi-row drum sequencer for DAW-style pattern programming.
+//! Multi-row drum sequencer for DAW-style pattern programming.
 //! Each row represents a drum sound with independent step patterns and velocity control.
 //!
 //! Features:
@@ -113,9 +113,9 @@ pub struct DrumSequencerResponse {
     pub changed: bool,
 }
 
-/// Professional drum sequencer component
+/// Drum sequencer component
 ///
-/// Multi-row step sequencer designed for drum programming in DAW applications.
+/// Multi-row step sequencer for drum programming in DAW applications.
 /// Each row represents a different drum sound with independent patterns.
 ///
 /// # Example

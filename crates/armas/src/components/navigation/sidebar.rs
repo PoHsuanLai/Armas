@@ -19,11 +19,11 @@
 //!     .variant(SidebarVariant::Floating)
 //!     .show(ui, |sidebar| {
 //!         sidebar.group_label("Platform");
-//!         sidebar.item("🏠", "Home").active(true);
-//!         sidebar.item("📧", "Messages").badge("5");
-//!         sidebar.group("⚙️", "Settings", |group| {
-//!             group.item("👤", "Profile");
-//!             group.item("🔒", "Security");
+//!         sidebar.item("Home", "Home").active(true);
+//!         sidebar.item("Messages", "Messages").badge("5");
+//!         sidebar.group("Settings", "Settings", |group| {
+//!             group.item("Profile", "Profile");
+//!             group.item("Security", "Security");
 //!         });
 //!     });
 //! # }
@@ -304,7 +304,7 @@ pub struct SidebarResponse {
 /// Sidebar::new()
 ///     .state(&mut sidebar_state)
 ///     .show(ui, |sidebar| {
-///         sidebar.item("🏠", "Home").active(true);
+///         sidebar.item("Home", "Home").active(true);
 ///     });
 ///
 /// // Toggle from anywhere:
@@ -320,8 +320,8 @@ pub struct SidebarResponse {
 ///     .collapsed(false)
 ///     .show(ui, |sidebar| {
 ///         sidebar.group_label("Platform");
-///         sidebar.item("🏠", "Home").active(true);
-///         sidebar.item("📧", "Messages").badge("5");
+///         sidebar.item("Home", "Home").active(true);
+///         sidebar.item("Messages", "Messages").badge("5");
 ///     })
 /// ```
 pub struct Sidebar<'a> {

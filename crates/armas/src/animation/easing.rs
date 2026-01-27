@@ -1,7 +1,9 @@
-/// Easing functions for animations
-///
-/// These functions transform a linear time value (0.0 to 1.0) into an eased value
-/// that creates more natural-looking animations.
+//! Easing functions for animations
+//!
+//! These functions transform a linear time value (0.0 to 1.0) into an eased value
+//! that creates more natural-looking animations.
+
+/// Easing function type
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum EasingFunction {
     /// No easing, linear interpolation

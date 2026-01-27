@@ -1,7 +1,7 @@
 //! XY Pad Component
 //!
 //! 2D touch controller for simultaneous control of two parameters.
-//! Perfect for filter controls, spatial effects, and expressive performance.
+//! Designed for filter controls, spatial effects, and expressive performance.
 //!
 //! Features:
 //! - Normal mode: Direct positioning - click/drag moves handle to cursor position

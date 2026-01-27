@@ -1,7 +1,7 @@
 //! Knob Component
 //!
-//! Polished metallic knob with 3D appearance and inner glow level indicator.
-//! Perfect for audio mixing, synthesizers, and effect controls.
+//! Metallic knob with 3D appearance and inner glow level indicator.
+//! Designed for audio mixing, synthesizers, and effect controls.
 //!
 //! Supports velocity-based dragging for fine control (hold Ctrl/Cmd).
 
@@ -55,7 +55,7 @@ pub enum KnobCurve {
     Exponential,
 }
 
-/// Polished metallic knob with inner glow indicator
+/// Metallic knob with inner glow indicator
 pub struct Knob {
     /// Knob diameter
     diameter: f32,

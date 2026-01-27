@@ -1,6 +1,6 @@
 //! Bento Grid Layout
 //!
-//! Modern grid layout with variable-sized tiles, inspired by macOS and Japanese bento boxes
+//! Grid layout with variable-sized tiles, inspired by macOS and Japanese bento boxes
 
 use crate::Theme;
 use egui::{Color32, Pos2, Rect, Sense, Stroke, Ui, Vec2};

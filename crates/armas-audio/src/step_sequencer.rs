@@ -1,7 +1,7 @@
 //! Step Sequencer Component
 //!
 //! Grid of toggle buttons for rhythm programming and pattern creation.
-//! Perfect for drum machines and pattern-based sequencers.
+//! Designed for drum machines and pattern-based sequencers.
 
 use armas::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};

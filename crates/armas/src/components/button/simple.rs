@@ -1,10 +1,10 @@
-//! Simple button - Elegant button with subtle lift on hover
+//! Simple button with subtle lift on hover
 //!
 //! Inspired by Aceternity UI's Simple button style
 
 use egui::{Color32, Response, Sense, Ui, Vec2};
 
-/// Simple elegant button with subtle lift effect
+/// Simple button with subtle lift effect
 pub struct SimpleButton {
     text: String,
     min_size: Vec2,

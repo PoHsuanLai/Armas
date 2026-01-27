@@ -19,8 +19,8 @@ pub enum ScrollDirection {
 
 /// Infinite scrolling banner/marquee component
 ///
-/// Displays content that scrolls continuously in a loop. Perfect for logos,
-/// announcements, or any repeating content.
+/// Displays content that scrolls continuously in a loop. Useful for logos,
+/// announcements, or repeating content.
 ///
 /// # Example
 ///

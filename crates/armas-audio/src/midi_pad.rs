@@ -1,7 +1,7 @@
 //! MIDI Pad Component
 //!
 //! Grid-based drum pad controller with velocity-sensitive visual feedback.
-//! Perfect for drum machines, samplers, and MPC-style controllers.
+//! Designed for drum machines, samplers, and MPC-style controllers.
 
 use armas::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};

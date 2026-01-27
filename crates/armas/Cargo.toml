@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 documentation.workspace = true
-description = "Armas - A component library for egui with Material Design inspired theming and reusable UI components."
+description = "UI component library for egui following shadcn/ui design patterns"
 keywords = ["egui", "ui", "theme", "components", "material-design"]
 categories = ["gui"]
 

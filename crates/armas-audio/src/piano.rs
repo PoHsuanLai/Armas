@@ -1,7 +1,7 @@
 //! Piano Component
 //!
 //! Interactive piano keyboard with glassmorphic styling.
-//! Perfect for DAW piano rolls and music applications.
+//! Designed for DAW piano rolls and music applications.
 //!
 //! Features:
 //! - Optional scrollable viewport with momentum physics
