@@ -84,9 +84,10 @@ impl AutomationData {
 }
 
 /// Region type with associated data
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum RegionType {
     /// Audio region (placeholder for waveform data)
+    #[default]
     Audio,
     /// MIDI region with optional MIDI notes
     Midi(MidiData),
@@ -94,16 +95,11 @@ pub enum RegionType {
     Automation(AutomationData),
 }
 
-impl Default for RegionType {
-    fn default() -> Self {
-        Self::Audio
-    }
-}
-
 /// Fade curve types for region fades
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum FadeCurve {
     /// Linear fade
+    #[default]
     Linear,
     /// Exponential fade (fast start, slow end)
     Exponential,
@@ -111,12 +107,6 @@ pub enum FadeCurve {
     Logarithmic,
     /// S-curve fade (smooth acceleration/deceleration)
     SCurve,
-}
-
-impl Default for FadeCurve {
-    fn default() -> Self {
-        Self::Linear
-    }
 }
 
 impl FadeCurve {

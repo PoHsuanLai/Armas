@@ -281,7 +281,7 @@ mod tests {
     #[test]
     fn test_border_colors() {
         let colors = vec![Color32::RED, Color32::GREEN, Color32::BLUE];
-        let button = MovingBorder::new("Test").border_colors(colors.clone());
+        let button = MovingBorder::new("Test").border_colors(colors);
         assert_eq!(button.border_colors.len(), 3);
     }
 }

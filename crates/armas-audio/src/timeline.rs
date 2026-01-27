@@ -134,7 +134,7 @@ pub struct Track {
     /// Is this folder collapsed? (only applies if `is_folder` is true)
     pub collapsed: bool,
     /// Child tracks (for folder tracks)
-    pub children: Vec<Track>,
+    pub children: Vec<Self>,
     /// Whether this track is selected
     pub selected: bool,
 }

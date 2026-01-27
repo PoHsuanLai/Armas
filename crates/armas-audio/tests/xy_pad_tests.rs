@@ -1,10 +1,10 @@
-//! Tests for XYPad component using egui_kittest
+//! Tests for `XYPad` component using `egui_kittest`
 
 use armas::ArmasContextExt;
 use armas_audio::xy_pad::{XYPad, XYPadVariant};
 use egui_kittest::Harness;
 
-/// Test that XYPad renders without panicking
+/// Test that `XYPad` renders without panicking
 #[test]
 fn test_xy_pad_renders() {
     let mut harness = Harness::new_ui(|ui| {
@@ -17,7 +17,7 @@ fn test_xy_pad_renders() {
     harness.run();
 }
 
-/// Test XYPad with custom size
+/// Test `XYPad` with custom size
 #[test]
 fn test_xy_pad_custom_size() {
     let mut harness = Harness::new_ui(|ui| {
@@ -30,7 +30,7 @@ fn test_xy_pad_custom_size() {
     harness.run();
 }
 
-/// Test XYPad with small size
+/// Test `XYPad` with small size
 #[test]
 fn test_xy_pad_small_size() {
     let mut harness = Harness::new_ui(|ui| {
@@ -43,7 +43,7 @@ fn test_xy_pad_small_size() {
     harness.run();
 }
 
-/// Test XYPad with Filled variant
+/// Test `XYPad` with Filled variant
 #[test]
 fn test_xy_pad_filled_variant() {
     let mut harness = Harness::new_ui(|ui| {
@@ -58,7 +58,7 @@ fn test_xy_pad_filled_variant() {
     harness.run();
 }
 
-/// Test XYPad with Outlined variant
+/// Test `XYPad` with Outlined variant
 #[test]
 fn test_xy_pad_outlined_variant() {
     let mut harness = Harness::new_ui(|ui| {
@@ -73,7 +73,7 @@ fn test_xy_pad_outlined_variant() {
     harness.run();
 }
 
-/// Test XYPad with Elevated variant
+/// Test `XYPad` with Elevated variant
 #[test]
 fn test_xy_pad_elevated_variant() {
     let mut harness = Harness::new_ui(|ui| {
@@ -88,7 +88,7 @@ fn test_xy_pad_elevated_variant() {
     harness.run();
 }
 
-/// Test XYPad with X label
+/// Test `XYPad` with X label
 #[test]
 fn test_xy_pad_x_label() {
     let mut harness = Harness::new_ui(|ui| {
@@ -103,7 +103,7 @@ fn test_xy_pad_x_label() {
     harness.run();
 }
 
-/// Test XYPad with Y label
+/// Test `XYPad` with Y label
 #[test]
 fn test_xy_pad_y_label() {
     let mut harness = Harness::new_ui(|ui| {
@@ -118,7 +118,7 @@ fn test_xy_pad_y_label() {
     harness.run();
 }
 
-/// Test XYPad with both labels
+/// Test `XYPad` with both labels
 #[test]
 fn test_xy_pad_both_labels() {
     let mut harness = Harness::new_ui(|ui| {
@@ -134,7 +134,7 @@ fn test_xy_pad_both_labels() {
     harness.run();
 }
 
-/// Test XYPad with crosshair hidden
+/// Test `XYPad` with crosshair hidden
 #[test]
 fn test_xy_pad_no_crosshair() {
     let mut harness = Harness::new_ui(|ui| {
@@ -149,7 +149,7 @@ fn test_xy_pad_no_crosshair() {
     harness.run();
 }
 
-/// Test XYPad with values displayed
+/// Test `XYPad` with values displayed
 #[test]
 fn test_xy_pad_show_values() {
     let mut harness = Harness::new_ui(|ui| {
@@ -164,7 +164,7 @@ fn test_xy_pad_show_values() {
     harness.run();
 }
 
-/// Test XYPad with custom handle size
+/// Test `XYPad` with custom handle size
 #[test]
 fn test_xy_pad_custom_handle_size() {
     let mut harness = Harness::new_ui(|ui| {
@@ -179,7 +179,7 @@ fn test_xy_pad_custom_handle_size() {
     harness.run();
 }
 
-/// Test XYPad with small handle size
+/// Test `XYPad` with small handle size
 #[test]
 fn test_xy_pad_small_handle_size() {
     let mut harness = Harness::new_ui(|ui| {
@@ -192,7 +192,7 @@ fn test_xy_pad_small_handle_size() {
     harness.run();
 }
 
-/// Test XYPad with custom glow intensity
+/// Test `XYPad` with custom glow intensity
 #[test]
 fn test_xy_pad_custom_glow_intensity() {
     let mut harness = Harness::new_ui(|ui| {
@@ -207,7 +207,7 @@ fn test_xy_pad_custom_glow_intensity() {
     harness.run();
 }
 
-/// Test XYPad with no glow
+/// Test `XYPad` with no glow
 #[test]
 fn test_xy_pad_no_glow() {
     let mut harness = Harness::new_ui(|ui| {
@@ -222,7 +222,7 @@ fn test_xy_pad_no_glow() {
     harness.run();
 }
 
-/// Test XYPad with custom ID
+/// Test `XYPad` with custom ID
 #[test]
 fn test_xy_pad_custom_id() {
     let mut harness = Harness::new_ui(|ui| {
@@ -235,7 +235,7 @@ fn test_xy_pad_custom_id() {
     harness.run();
 }
 
-/// Test XYPad at corner position (0, 0)
+/// Test `XYPad` at corner position (0, 0)
 #[test]
 fn test_xy_pad_corner_bottom_left() {
     let mut harness = Harness::new_ui(|ui| {
@@ -248,7 +248,7 @@ fn test_xy_pad_corner_bottom_left() {
     harness.run();
 }
 
-/// Test XYPad at corner position (1, 1)
+/// Test `XYPad` at corner position (1, 1)
 #[test]
 fn test_xy_pad_corner_top_right() {
     let mut harness = Harness::new_ui(|ui| {
@@ -261,7 +261,7 @@ fn test_xy_pad_corner_top_right() {
     harness.run();
 }
 
-/// Test XYPad at corner position (0, 1)
+/// Test `XYPad` at corner position (0, 1)
 #[test]
 fn test_xy_pad_corner_top_left() {
     let mut harness = Harness::new_ui(|ui| {
@@ -274,7 +274,7 @@ fn test_xy_pad_corner_top_left() {
     harness.run();
 }
 
-/// Test XYPad at corner position (1, 0)
+/// Test `XYPad` at corner position (1, 0)
 #[test]
 fn test_xy_pad_corner_bottom_right() {
     let mut harness = Harness::new_ui(|ui| {
@@ -287,7 +287,7 @@ fn test_xy_pad_corner_bottom_right() {
     harness.run();
 }
 
-/// Test XYPad response fields
+/// Test `XYPad` response fields
 #[test]
 fn test_xy_pad_response() {
     let mut harness = Harness::new_ui(|ui| {
@@ -307,7 +307,7 @@ fn test_xy_pad_response() {
     harness.run();
 }
 
-/// Test XYPad with full configuration
+/// Test `XYPad` with full configuration
 #[test]
 fn test_xy_pad_full_config() {
     let mut harness = Harness::new_ui(|ui| {
@@ -330,7 +330,7 @@ fn test_xy_pad_full_config() {
     harness.run();
 }
 
-/// Test XYPadVariant enum
+/// Test `XYPadVariant` enum
 #[test]
 fn test_xy_pad_variant_enum() {
     assert_eq!(XYPadVariant::Filled, XYPadVariant::Filled);
@@ -339,7 +339,7 @@ fn test_xy_pad_variant_enum() {
     assert_ne!(XYPadVariant::Filled, XYPadVariant::Outlined);
 }
 
-/// Test multiple XYPads
+/// Test multiple `XYPads`
 #[test]
 fn test_multiple_xy_pads() {
     let mut harness = Harness::new_ui(|ui| {

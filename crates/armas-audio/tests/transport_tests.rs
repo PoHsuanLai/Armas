@@ -1,10 +1,10 @@
-//! Tests for TransportControl component using egui_kittest
+//! Tests for `TransportControl` component using `egui_kittest`
 
 use armas::ArmasContextExt;
 use armas_audio::transport::{TransportButtons, TransportControl, TransportState};
 use egui_kittest::Harness;
 
-/// Test that TransportControl renders without panicking
+/// Test that `TransportControl` renders without panicking
 #[test]
 fn test_transport_renders() {
     let mut harness = Harness::new_ui(|ui| {
@@ -15,7 +15,7 @@ fn test_transport_renders() {
     harness.run();
 }
 
-/// Test TransportControl in stopped state
+/// Test `TransportControl` in stopped state
 #[test]
 fn test_transport_stopped_state() {
     let mut harness = Harness::new_ui(|ui| {
@@ -28,7 +28,7 @@ fn test_transport_stopped_state() {
     harness.run();
 }
 
-/// Test TransportControl in playing state
+/// Test `TransportControl` in playing state
 #[test]
 fn test_transport_playing_state() {
     let mut harness = Harness::new_ui(|ui| {
@@ -41,7 +41,7 @@ fn test_transport_playing_state() {
     harness.run();
 }
 
-/// Test TransportControl in paused state
+/// Test `TransportControl` in paused state
 #[test]
 fn test_transport_paused_state() {
     let mut harness = Harness::new_ui(|ui| {
@@ -54,7 +54,7 @@ fn test_transport_paused_state() {
     harness.run();
 }
 
-/// Test TransportControl in recording state
+/// Test `TransportControl` in recording state
 #[test]
 fn test_transport_recording_state() {
     let mut harness = Harness::new_ui(|ui| {
@@ -67,7 +67,7 @@ fn test_transport_recording_state() {
     harness.run();
 }
 
-/// Test TransportControl with custom tempo
+/// Test `TransportControl` with custom tempo
 #[test]
 fn test_transport_custom_tempo() {
     let mut harness = Harness::new_ui(|ui| {
@@ -78,7 +78,7 @@ fn test_transport_custom_tempo() {
     harness.run();
 }
 
-/// Test TransportControl with slow tempo
+/// Test `TransportControl` with slow tempo
 #[test]
 fn test_transport_slow_tempo() {
     let mut harness = Harness::new_ui(|ui| {
@@ -89,7 +89,7 @@ fn test_transport_slow_tempo() {
     harness.run();
 }
 
-/// Test TransportControl with fast tempo
+/// Test `TransportControl` with fast tempo
 #[test]
 fn test_transport_fast_tempo() {
     let mut harness = Harness::new_ui(|ui| {
@@ -100,7 +100,7 @@ fn test_transport_fast_tempo() {
     harness.run();
 }
 
-/// Test TransportControl with custom time signature 4/4
+/// Test `TransportControl` with custom time signature 4/4
 #[test]
 fn test_transport_time_sig_4_4() {
     let mut harness = Harness::new_ui(|ui| {
@@ -113,7 +113,7 @@ fn test_transport_time_sig_4_4() {
     harness.run();
 }
 
-/// Test TransportControl with 3/4 time signature
+/// Test `TransportControl` with 3/4 time signature
 #[test]
 fn test_transport_time_sig_3_4() {
     let mut harness = Harness::new_ui(|ui| {
@@ -126,7 +126,7 @@ fn test_transport_time_sig_3_4() {
     harness.run();
 }
 
-/// Test TransportControl with 6/8 time signature
+/// Test `TransportControl` with 6/8 time signature
 #[test]
 fn test_transport_time_sig_6_8() {
     let mut harness = Harness::new_ui(|ui| {
@@ -139,7 +139,7 @@ fn test_transport_time_sig_6_8() {
     harness.run();
 }
 
-/// Test TransportControl with custom current time
+/// Test `TransportControl` with custom current time
 #[test]
 fn test_transport_custom_time() {
     let mut harness = Harness::new_ui(|ui| {
@@ -152,7 +152,7 @@ fn test_transport_custom_time() {
     harness.run();
 }
 
-/// Test TransportControl with loop enabled
+/// Test `TransportControl` with loop enabled
 #[test]
 fn test_transport_loop_enabled() {
     let mut harness = Harness::new_ui(|ui| {
@@ -163,7 +163,7 @@ fn test_transport_loop_enabled() {
     harness.run();
 }
 
-/// Test TransportControl with metronome enabled
+/// Test `TransportControl` with metronome enabled
 #[test]
 fn test_transport_metronome_enabled() {
     let mut harness = Harness::new_ui(|ui| {
@@ -176,7 +176,7 @@ fn test_transport_metronome_enabled() {
     harness.run();
 }
 
-/// Test TransportControl with custom width
+/// Test `TransportControl` with custom width
 #[test]
 fn test_transport_custom_width() {
     let mut harness = Harness::new_ui(|ui| {
@@ -187,7 +187,7 @@ fn test_transport_custom_width() {
     harness.run();
 }
 
-/// Test TransportControl with custom button color
+/// Test `TransportControl` with custom button color
 #[test]
 fn test_transport_custom_button_color() {
     let mut harness = Harness::new_ui(|ui| {
@@ -200,7 +200,7 @@ fn test_transport_custom_button_color() {
     harness.run();
 }
 
-/// Test TransportControl with custom button configuration
+/// Test `TransportControl` with custom button configuration
 #[test]
 fn test_transport_custom_buttons() {
     let mut harness = Harness::new_ui(|ui| {
@@ -220,7 +220,7 @@ fn test_transport_custom_buttons() {
     harness.run();
 }
 
-/// Test TransportControl with minimal buttons
+/// Test `TransportControl` with minimal buttons
 #[test]
 fn test_transport_minimal_buttons() {
     let mut harness = Harness::new_ui(|ui| {
@@ -240,7 +240,7 @@ fn test_transport_minimal_buttons() {
     harness.run();
 }
 
-/// Test TransportControl response fields
+/// Test `TransportControl` response fields
 #[test]
 fn test_transport_response() {
     let mut harness = Harness::new_ui(|ui| {
@@ -263,7 +263,7 @@ fn test_transport_response() {
     harness.run();
 }
 
-/// Test TransportControl with full configuration
+/// Test `TransportControl` with full configuration
 #[test]
 fn test_transport_full_config() {
     let mut harness = Harness::new_ui(|ui| {
@@ -282,7 +282,7 @@ fn test_transport_full_config() {
     harness.run();
 }
 
-/// Test TransportState enum
+/// Test `TransportState` enum
 #[test]
 fn test_transport_state_enum() {
     assert_eq!(TransportState::Stopped, TransportState::Stopped);
@@ -292,7 +292,7 @@ fn test_transport_state_enum() {
     assert_ne!(TransportState::Stopped, TransportState::Playing);
 }
 
-/// Test TransportButtons default
+/// Test `TransportButtons` default
 #[test]
 fn test_transport_buttons_default() {
     let buttons = TransportButtons::default();
@@ -305,7 +305,7 @@ fn test_transport_buttons_default() {
     assert!(buttons.show_metronome);
 }
 
-/// Test TransportControl default
+/// Test `TransportControl` default
 #[test]
 fn test_transport_default() {
     let mut harness = Harness::new_ui(|ui| {
@@ -317,7 +317,7 @@ fn test_transport_default() {
     harness.run();
 }
 
-/// Test TransportControl with light theme
+/// Test `TransportControl` with light theme
 #[test]
 fn test_transport_light_theme() {
     let mut harness = Harness::new_ui(|ui| {

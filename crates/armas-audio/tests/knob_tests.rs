@@ -1,4 +1,4 @@
-//! Tests for Knob component using egui_kittest
+//! Tests for Knob component using `egui_kittest`
 
 use armas::ArmasContextExt;
 use armas_audio::knob::{Knob, KnobCurve};

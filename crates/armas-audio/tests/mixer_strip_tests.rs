@@ -1,14 +1,14 @@
-//! Tests for MixerStrip component using egui_kittest
+//! Tests for `MixerStrip` component using `egui_kittest`
 //!
-//! Note: MixerStrip contains AudioMeter which has spring animation,
-//! so we use harness.step() instead of harness.run() for rendering tests.
+//! Note: `MixerStrip` contains `AudioMeter` which has spring animation,
+//! so we use `harness.step()` instead of `harness.run()` for rendering tests.
 
 use armas::ArmasContextExt;
 use armas_audio::mixer_strip::{Insert, MixerStrip, Route, Send};
 use egui::Color32;
 use egui_kittest::Harness;
 
-/// Test that MixerStrip renders without panicking
+/// Test that `MixerStrip` renders without panicking
 #[test]
 fn test_mixer_strip_renders() {
     let mut harness = Harness::new_ui(|ui| {
@@ -21,7 +21,7 @@ fn test_mixer_strip_renders() {
     harness.step();
 }
 
-/// Test MixerStrip with custom width
+/// Test `MixerStrip` with custom width
 #[test]
 fn test_mixer_strip_custom_width() {
     let mut harness = Harness::new_ui(|ui| {
@@ -33,7 +33,7 @@ fn test_mixer_strip_custom_width() {
     harness.step();
 }
 
-/// Test MixerStrip with custom scale
+/// Test `MixerStrip` with custom scale
 #[test]
 fn test_mixer_strip_custom_scale() {
     let mut harness = Harness::new_ui(|ui| {
@@ -45,7 +45,7 @@ fn test_mixer_strip_custom_scale() {
     harness.step();
 }
 
-/// Test MixerStrip with small scale
+/// Test `MixerStrip` with small scale
 #[test]
 fn test_mixer_strip_small_scale() {
     let mut harness = Harness::new_ui(|ui| {
@@ -57,7 +57,7 @@ fn test_mixer_strip_small_scale() {
     harness.step();
 }
 
-/// Test MixerStrip with custom fader level
+/// Test `MixerStrip` with custom fader level
 #[test]
 fn test_mixer_strip_custom_fader_level() {
     let mut harness = Harness::new_ui(|ui| {
@@ -69,7 +69,7 @@ fn test_mixer_strip_custom_fader_level() {
     harness.step();
 }
 
-/// Test MixerStrip with fader at minimum
+/// Test `MixerStrip` with fader at minimum
 #[test]
 fn test_mixer_strip_fader_minimum() {
     let mut harness = Harness::new_ui(|ui| {
@@ -81,7 +81,7 @@ fn test_mixer_strip_fader_minimum() {
     harness.step();
 }
 
-/// Test MixerStrip with fader at maximum
+/// Test `MixerStrip` with fader at maximum
 #[test]
 fn test_mixer_strip_fader_maximum() {
     let mut harness = Harness::new_ui(|ui| {
@@ -93,7 +93,7 @@ fn test_mixer_strip_fader_maximum() {
     harness.step();
 }
 
-/// Test MixerStrip with custom pan
+/// Test `MixerStrip` with custom pan
 #[test]
 fn test_mixer_strip_custom_pan() {
     let mut harness = Harness::new_ui(|ui| {
@@ -105,7 +105,7 @@ fn test_mixer_strip_custom_pan() {
     harness.step();
 }
 
-/// Test MixerStrip with pan hard left
+/// Test `MixerStrip` with pan hard left
 #[test]
 fn test_mixer_strip_pan_left() {
     let mut harness = Harness::new_ui(|ui| {
@@ -117,7 +117,7 @@ fn test_mixer_strip_pan_left() {
     harness.step();
 }
 
-/// Test MixerStrip with pan hard right
+/// Test `MixerStrip` with pan hard right
 #[test]
 fn test_mixer_strip_pan_right() {
     let mut harness = Harness::new_ui(|ui| {
@@ -129,7 +129,7 @@ fn test_mixer_strip_pan_right() {
     harness.step();
 }
 
-/// Test MixerStrip muted
+/// Test `MixerStrip` muted
 #[test]
 fn test_mixer_strip_muted() {
     let mut harness = Harness::new_ui(|ui| {
@@ -141,7 +141,7 @@ fn test_mixer_strip_muted() {
     harness.step();
 }
 
-/// Test MixerStrip soloed
+/// Test `MixerStrip` soloed
 #[test]
 fn test_mixer_strip_soloed() {
     let mut harness = Harness::new_ui(|ui| {
@@ -153,7 +153,7 @@ fn test_mixer_strip_soloed() {
     harness.step();
 }
 
-/// Test MixerStrip record armed
+/// Test `MixerStrip` record armed
 #[test]
 fn test_mixer_strip_record_armed() {
     let mut harness = Harness::new_ui(|ui| {
@@ -165,7 +165,7 @@ fn test_mixer_strip_record_armed() {
     harness.step();
 }
 
-/// Test MixerStrip input monitoring
+/// Test `MixerStrip` input monitoring
 #[test]
 fn test_mixer_strip_input_monitoring() {
     let mut harness = Harness::new_ui(|ui| {
@@ -177,7 +177,7 @@ fn test_mixer_strip_input_monitoring() {
     harness.step();
 }
 
-/// Test MixerStrip with meter level
+/// Test `MixerStrip` with meter level
 #[test]
 fn test_mixer_strip_meter_level() {
     let mut harness = Harness::new_ui(|ui| {
@@ -189,7 +189,7 @@ fn test_mixer_strip_meter_level() {
     harness.step();
 }
 
-/// Test MixerStrip with custom card color
+/// Test `MixerStrip` with custom card color
 #[test]
 fn test_mixer_strip_custom_card_color() {
     let mut harness = Harness::new_ui(|ui| {
@@ -201,7 +201,7 @@ fn test_mixer_strip_custom_card_color() {
     harness.step();
 }
 
-/// Test MixerStrip with custom knob color
+/// Test `MixerStrip` with custom knob color
 #[test]
 fn test_mixer_strip_custom_knob_color() {
     let mut harness = Harness::new_ui(|ui| {
@@ -213,7 +213,7 @@ fn test_mixer_strip_custom_knob_color() {
     harness.step();
 }
 
-/// Test MixerStrip with custom meter color
+/// Test `MixerStrip` with custom meter color
 #[test]
 fn test_mixer_strip_custom_meter_color() {
     let mut harness = Harness::new_ui(|ui| {
@@ -225,7 +225,7 @@ fn test_mixer_strip_custom_meter_color() {
     harness.step();
 }
 
-/// Test MixerStrip with custom inserts
+/// Test `MixerStrip` with custom inserts
 #[test]
 fn test_mixer_strip_custom_inserts() {
     let mut harness = Harness::new_ui(|ui| {
@@ -243,7 +243,7 @@ fn test_mixer_strip_custom_inserts() {
     harness.step();
 }
 
-/// Test MixerStrip with custom sends
+/// Test `MixerStrip` with custom sends
 #[test]
 fn test_mixer_strip_custom_sends() {
     let mut harness = Harness::new_ui(|ui| {
@@ -256,7 +256,7 @@ fn test_mixer_strip_custom_sends() {
     harness.step();
 }
 
-/// Test MixerStrip with custom input route
+/// Test `MixerStrip` with custom input route
 #[test]
 fn test_mixer_strip_custom_input_route() {
     let mut harness = Harness::new_ui(|ui| {
@@ -268,7 +268,7 @@ fn test_mixer_strip_custom_input_route() {
     harness.step();
 }
 
-/// Test MixerStrip with custom output route
+/// Test `MixerStrip` with custom output route
 #[test]
 fn test_mixer_strip_custom_output_route() {
     let mut harness = Harness::new_ui(|ui| {
@@ -280,7 +280,7 @@ fn test_mixer_strip_custom_output_route() {
     harness.step();
 }
 
-/// Test MixerStrip getter methods
+/// Test `MixerStrip` getter methods
 #[test]
 fn test_mixer_strip_getters() {
     let _theme = armas::Theme::dark();
@@ -314,7 +314,7 @@ fn test_mixer_strip_getters() {
     assert_eq!(strip.get_output_route().name, "Main");
 }
 
-/// Test MixerStrip response fields
+/// Test `MixerStrip` response fields
 #[test]
 fn test_mixer_strip_response() {
     let mut harness = Harness::new_ui(|ui| {
@@ -338,7 +338,7 @@ fn test_mixer_strip_response() {
     harness.step();
 }
 
-/// Test MixerStrip with full configuration
+/// Test `MixerStrip` with full configuration
 #[test]
 fn test_mixer_strip_full_config() {
     let mut harness = Harness::new_ui(|ui| {
@@ -375,7 +375,7 @@ fn test_mixer_strip_full_config() {
     harness.step();
 }
 
-/// Test multiple MixerStrips (mixer view)
+/// Test multiple `MixerStrips` (mixer view)
 #[test]
 fn test_multiple_mixer_strips() {
     let mut harness = Harness::new_ui(|ui| {
@@ -433,7 +433,7 @@ fn test_route_struct() {
     assert_eq!(route.name, "Main");
 }
 
-/// Test MixerStrip default
+/// Test `MixerStrip` default
 #[test]
 fn test_mixer_strip_default() {
     let mut harness = Harness::new_ui(|ui| {
