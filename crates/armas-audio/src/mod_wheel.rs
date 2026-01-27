@@ -43,15 +43,16 @@ struct ModWheelDragState {
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # fn example(ui: &mut Ui) {
-/// use armas::components::audio::{ModWheel, WheelType};
+/// # use armas::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::{ModWheel, WheelType};
 ///
 /// let mut value = 0.0;
 ///
 /// let response = ModWheel::new(&mut value)
 ///     .wheel_type(WheelType::Modulation)
 ///     .label("Mod")
-///     .show(ui);
+///     .show(ui, theme);
 ///
 /// if response.changed() {
 ///     println!("Modulation: {:.2}", value);

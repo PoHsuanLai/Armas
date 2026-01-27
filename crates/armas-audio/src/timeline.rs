@@ -247,15 +247,15 @@ pub struct TimelineResponse {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::components::audio::{Timeline, Track, Region};
+/// use armas_audio::{Timeline, Track, Region};
 ///
 /// fn ui(ui: &mut egui::Ui, theme: &armas::Theme) {
 ///     let mut tracks = vec![
 ///         Track::new("Vocals", egui::Color32::from_rgb(255, 100, 100))
-///             .with_region(Region::new("Verse", 0.0, 4.0))
-///             .with_region(Region::new("Chorus", 8.0, 4.0)),
+///             .region(Region::new("Verse", 0.0, 4.0))
+///             .region(Region::new("Chorus", 8.0, 4.0)),
 ///         Track::new("Guitar", egui::Color32::from_rgb(100, 255, 100))
-///             .with_region(Region::new("Riff", 0.0, 8.0)),
+///             .region(Region::new("Riff", 0.0, 8.0)),
 ///     ];
 ///
 ///     let mut playhead_pos = 0.0;
@@ -592,9 +592,11 @@ impl<'a> Timeline<'a> {
     ///
     /// # Example
     /// ```
+    /// use armas_audio::Timeline;
     /// Timeline::new()
     ///     .min_zoom(0.25)  // Allow zooming to 1/4 size
     ///     .max_zoom(3.0)   // Allow zooming to 3x size
+    /// # ;
     /// ```
     #[must_use]
     pub fn min_zoom(mut self, min: f32) -> Self {
@@ -657,8 +659,10 @@ impl<'a> Timeline<'a> {
     ///
     /// # Example
     /// ```
+    /// use armas_audio::Timeline;
     /// Timeline::new()
     ///     .empty_message("No tracks yet. Click '+' to add a track.")
+    /// # ;
     /// ```
     pub fn empty_message(mut self, message: impl Into<String>) -> Self {
         self.empty_message = Some(message.into());

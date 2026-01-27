@@ -1,6 +1,6 @@
 //! Tests for AudioMeter component using egui_kittest
 
-use armas::Theme;
+use armas::ArmasContextExt;
 use armas_audio::meter::{AudioMeter, MeterStyle, ScalePosition};
 use egui::Color32;
 use egui_kittest::Harness;
@@ -9,7 +9,8 @@ use egui_kittest::Harness;
 #[test]
 fn test_meter_renders() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.5).show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.5).show(ui, &theme);
     });
 
     // Use step() because meter has spring animation
@@ -20,7 +21,8 @@ fn test_meter_renders() {
 #[test]
 fn test_meter_custom_width() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.5).width(30.0).show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.5).width(30.0).show(ui, &theme);
     });
 
     harness.step();
@@ -30,7 +32,8 @@ fn test_meter_custom_width() {
 #[test]
 fn test_meter_custom_height() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.5).height(300.0).show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.5).height(300.0).show(ui, &theme);
     });
 
     harness.step();
@@ -40,7 +43,10 @@ fn test_meter_custom_height() {
 #[test]
 fn test_meter_smooth_style() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.75).style(MeterStyle::Smooth).show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.75)
+            .style(MeterStyle::Smooth)
+            .show(ui, &theme);
     });
 
     harness.step();
@@ -50,9 +56,10 @@ fn test_meter_smooth_style() {
 #[test]
 fn test_meter_segmented_style() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         AudioMeter::new(0.75)
             .style(MeterStyle::Segmented(16))
-            .show(ui);
+            .show(ui, &theme);
     });
 
     harness.step();
@@ -62,9 +69,10 @@ fn test_meter_segmented_style() {
 #[test]
 fn test_meter_segmented_24() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         AudioMeter::new(0.6)
             .style(MeterStyle::Segmented(24))
-            .show(ui);
+            .show(ui, &theme);
     });
 
     harness.step();
@@ -73,9 +81,9 @@ fn test_meter_segmented_24() {
 /// Test AudioMeter with VU colors preset
 #[test]
 fn test_meter_vu_colors() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.8).vu_colors(&theme).show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.8).vu_colors(&theme).show(ui, &theme);
     });
 
     harness.step();
@@ -85,9 +93,10 @@ fn test_meter_vu_colors() {
 #[test]
 fn test_meter_monochrome() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         AudioMeter::new(0.7)
             .monochrome(Color32::from_rgb(100, 200, 255))
-            .show(ui);
+            .show(ui, &theme);
     });
 
     harness.step();
@@ -97,9 +106,10 @@ fn test_meter_monochrome() {
 #[test]
 fn test_meter_custom_color_range() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         AudioMeter::new(0.6)
             .color_range(Color32::BLUE, Color32::RED)
-            .show(ui);
+            .show(ui, &theme);
     });
 
     harness.step();
@@ -109,7 +119,8 @@ fn test_meter_custom_color_range() {
 #[test]
 fn test_meter_scale_right() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.5).scale_right().show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.5).scale_right().show(ui, &theme);
     });
 
     harness.step();
@@ -119,7 +130,8 @@ fn test_meter_scale_right() {
 #[test]
 fn test_meter_scale_left() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.5).scale_left().show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.5).scale_left().show(ui, &theme);
     });
 
     harness.step();
@@ -129,7 +141,8 @@ fn test_meter_scale_left() {
 #[test]
 fn test_meter_show_scale() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.5).show_scale().show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.5).show_scale().show(ui, &theme);
     });
 
     harness.step();
@@ -139,9 +152,10 @@ fn test_meter_show_scale() {
 #[test]
 fn test_meter_scale_position_enum() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         AudioMeter::new(0.5)
             .scale_position(ScalePosition::Right)
-            .show(ui);
+            .show(ui, &theme);
     });
 
     harness.step();
@@ -151,9 +165,10 @@ fn test_meter_scale_position_enum() {
 #[test]
 fn test_meter_custom_peak_color() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         AudioMeter::new(0.9)
             .peak_color(Color32::from_rgb(255, 200, 0))
-            .show(ui);
+            .show(ui, &theme);
     });
 
     harness.step();
@@ -163,7 +178,8 @@ fn test_meter_custom_peak_color() {
 #[test]
 fn test_meter_custom_corner_radius() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.5).corner_radius(8.0).show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.5).corner_radius(8.0).show(ui, &theme);
     });
 
     harness.step();
@@ -173,7 +189,10 @@ fn test_meter_custom_corner_radius() {
 #[test]
 fn test_meter_custom_background_opacity() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.5).background_opacity(0.5).show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.5)
+            .background_opacity(0.5)
+            .show(ui, &theme);
     });
 
     harness.step();
@@ -183,7 +202,8 @@ fn test_meter_custom_background_opacity() {
 #[test]
 fn test_meter_glassmorphic_disabled() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.5).glassmorphic(false).show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.5).glassmorphic(false).show(ui, &theme);
     });
 
     harness.step();
@@ -193,7 +213,8 @@ fn test_meter_glassmorphic_disabled() {
 #[test]
 fn test_meter_animation_speed() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.5).animation_speed(400.0).show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.5).animation_speed(400.0).show(ui, &theme);
     });
 
     harness.step();
@@ -203,7 +224,10 @@ fn test_meter_animation_speed() {
 #[test]
 fn test_meter_animation_damping() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.5).animation_damping(25.0).show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.5)
+            .animation_damping(25.0)
+            .show(ui, &theme);
     });
 
     harness.step();
@@ -213,7 +237,8 @@ fn test_meter_animation_damping() {
 #[test]
 fn test_meter_minimum_level() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.0).show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(0.0).show(ui, &theme);
     });
 
     harness.step();
@@ -223,7 +248,8 @@ fn test_meter_minimum_level() {
 #[test]
 fn test_meter_maximum_level() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(1.0).show(ui);
+        let theme = ui.ctx().armas_theme();
+        AudioMeter::new(1.0).show(ui, &theme);
     });
 
     harness.step();
@@ -233,7 +259,8 @@ fn test_meter_maximum_level() {
 #[test]
 fn test_meter_response() {
     let mut harness = Harness::new_ui(|ui| {
-        let response = AudioMeter::new(0.5).show(ui);
+        let theme = ui.ctx().armas_theme();
+        let response = AudioMeter::new(0.5).show(ui, &theme);
 
         // Check response fields exist
         let _ = response.response;
@@ -249,6 +276,7 @@ fn test_meter_response() {
 #[test]
 fn test_meter_full_config() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         AudioMeter::new(0.75)
             .width(25.0)
             .height(250.0)
@@ -261,7 +289,7 @@ fn test_meter_full_config() {
             .glassmorphic(true)
             .animation_speed(300.0)
             .animation_damping(20.0)
-            .show(ui);
+            .show(ui, &theme);
     });
 
     harness.step();
@@ -271,9 +299,16 @@ fn test_meter_full_config() {
 #[test]
 fn test_stereo_meters() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         ui.horizontal(|ui| {
-            AudioMeter::new(0.7).width(15.0).height(200.0).show(ui);
-            AudioMeter::new(0.65).width(15.0).height(200.0).show(ui);
+            AudioMeter::new(0.7)
+                .width(15.0)
+                .height(200.0)
+                .show(ui, &theme);
+            AudioMeter::new(0.65)
+                .width(15.0)
+                .height(200.0)
+                .show(ui, &theme);
         });
     });
 
@@ -302,8 +337,9 @@ fn test_meter_style_enum() {
 #[test]
 fn test_meter_default() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let meter = AudioMeter::default();
-        meter.show(ui);
+        meter.show(ui, &theme);
     });
 
     harness.step();

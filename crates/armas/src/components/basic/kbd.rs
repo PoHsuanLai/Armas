@@ -13,12 +13,14 @@ use egui::{Response, Ui, Vec2};
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas::Kbd;
+/// use armas::ext::ArmasContextExt;
 ///
+/// let theme = ui.ctx().armas_theme();
 /// // Single key
-/// Kbd::new("K").show(ui);
+/// Kbd::new("K").show(ui, &theme);
 ///
 /// // Key combination (auto-splits on +)
-/// Kbd::new("Ctrl+K").show(ui);
+/// Kbd::new("Ctrl+K").show(ui, &theme);
 /// # }
 /// ```
 pub struct Kbd {

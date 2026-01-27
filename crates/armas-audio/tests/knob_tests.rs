@@ -1,14 +1,14 @@
 //! Tests for Knob component using egui_kittest
 
-use armas::Theme;
+use armas::ArmasContextExt;
 use armas_audio::knob::{Knob, KnobCurve};
 use egui_kittest::Harness;
 
 /// Test that Knob renders without panicking
 #[test]
 fn test_knob_renders() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value).show(ui, &mut value, &theme);
     });
@@ -19,8 +19,8 @@ fn test_knob_renders() {
 /// Test Knob with custom diameter
 #[test]
 fn test_knob_custom_diameter() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value).diameter(80.0).show(ui, &mut value, &theme);
     });
@@ -31,8 +31,8 @@ fn test_knob_custom_diameter() {
 /// Test Knob with small diameter
 #[test]
 fn test_knob_small_diameter() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value).diameter(30.0).show(ui, &mut value, &theme);
     });
@@ -43,8 +43,8 @@ fn test_knob_small_diameter() {
 /// Test Knob with label
 #[test]
 fn test_knob_with_label() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value)
             .label("Volume")
@@ -57,8 +57,8 @@ fn test_knob_with_label() {
 /// Test Knob with value display hidden
 #[test]
 fn test_knob_hide_value() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.75;
         Knob::new(value)
             .show_value(false)
@@ -71,8 +71,8 @@ fn test_knob_hide_value() {
 /// Test Knob with custom glow color
 #[test]
 fn test_knob_custom_glow_color() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value)
             .glow_color(egui::Color32::from_rgb(255, 100, 50))
@@ -85,8 +85,8 @@ fn test_knob_custom_glow_color() {
 /// Test Knob with custom color
 #[test]
 fn test_knob_custom_color() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value)
             .color(egui::Color32::from_rgb(100, 100, 120))
@@ -99,8 +99,8 @@ fn test_knob_custom_color() {
 /// Test Knob with linear response curve
 #[test]
 fn test_knob_linear_curve() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value)
             .response_curve(KnobCurve::Linear)
@@ -113,8 +113,8 @@ fn test_knob_linear_curve() {
 /// Test Knob with logarithmic response curve
 #[test]
 fn test_knob_logarithmic_curve() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value)
             .response_curve(KnobCurve::Logarithmic)
@@ -127,8 +127,8 @@ fn test_knob_logarithmic_curve() {
 /// Test Knob with exponential response curve
 #[test]
 fn test_knob_exponential_curve() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value)
             .response_curve(KnobCurve::Exponential)
@@ -141,8 +141,8 @@ fn test_knob_exponential_curve() {
 /// Test Knob with custom angle range
 #[test]
 fn test_knob_custom_angle_range() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value)
             .angle_range(-3.0, 3.0)
@@ -155,8 +155,8 @@ fn test_knob_custom_angle_range() {
 /// Test Knob with custom sensitivity
 #[test]
 fn test_knob_custom_sensitivity() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value)
             .sensitivity(0.005)
@@ -169,8 +169,8 @@ fn test_knob_custom_sensitivity() {
 /// Test Knob with velocity mode disabled
 #[test]
 fn test_knob_velocity_mode_disabled() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value)
             .velocity_mode(false)
@@ -183,8 +183,8 @@ fn test_knob_velocity_mode_disabled() {
 /// Test Knob with custom value range
 #[test]
 fn test_knob_custom_value_range() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value)
             .value_range(0.0, 100.0)
@@ -197,8 +197,8 @@ fn test_knob_custom_value_range() {
 /// Test Knob with default value for double-click reset
 #[test]
 fn test_knob_default_value() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.8;
         Knob::new(value)
             .default_value(0.5)
@@ -211,8 +211,8 @@ fn test_knob_default_value() {
 /// Test Knob at minimum value
 #[test]
 fn test_knob_minimum_value() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.0;
         Knob::new(value).show(ui, &mut value, &theme);
     });
@@ -223,8 +223,8 @@ fn test_knob_minimum_value() {
 /// Test Knob at maximum value
 #[test]
 fn test_knob_maximum_value() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 1.0;
         Knob::new(value).show(ui, &mut value, &theme);
     });
@@ -235,8 +235,8 @@ fn test_knob_maximum_value() {
 /// Test Knob response fields
 #[test]
 fn test_knob_response() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         let response = Knob::new(value).show(ui, &mut value, &theme);
 
@@ -252,8 +252,8 @@ fn test_knob_response() {
 /// Test Knob with full configuration
 #[test]
 fn test_knob_full_config() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value)
             .diameter(70.0)
@@ -277,8 +277,8 @@ fn test_knob_full_config() {
 /// Test multiple Knobs in a row
 #[test]
 fn test_multiple_knobs() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         ui.horizontal(|ui| {
             let mut volume = 0.75;
             let mut pan = 0.5;
@@ -307,8 +307,8 @@ fn test_multiple_knobs() {
 /// Test Knob with light theme
 #[test]
 fn test_knob_light_theme() {
-    let theme = Theme::light();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut value = 0.5;
         Knob::new(value)
             .diameter(60.0)

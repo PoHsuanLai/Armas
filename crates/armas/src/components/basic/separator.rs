@@ -22,12 +22,14 @@ pub enum SeparatorOrientation {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas::Separator;
+/// use armas::ext::ArmasContextExt;
 ///
+/// let theme = ui.ctx().armas_theme();
 /// // Horizontal separator (default)
-/// Separator::new().show(ui);
+/// Separator::new().show(ui, &theme);
 ///
 /// // Vertical separator
-/// Separator::new().vertical().show(ui);
+/// Separator::new().vertical().show(ui, &theme);
 /// # }
 /// ```
 pub struct Separator {

@@ -27,15 +27,17 @@ pub enum PlayheadHandleShape {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::components::audio::Playhead;
+/// use armas_audio::Playhead;
+/// use egui::Rect;
 ///
 /// fn ui(ui: &mut egui::Ui, theme: &armas::Theme) {
 ///     let mut position = 4.5; // Current beat position
+///     let timeline_rect = ui.available_rect_before_wrap();
 ///
 ///     Playhead::new()
 ///         .beat_width(60.0)
 ///         .height(400.0)
-///         .show(ui, &mut position, theme);
+///         .show_in_rect(ui, timeline_rect, &mut position, theme);
 /// }
 /// ```
 pub struct Playhead {

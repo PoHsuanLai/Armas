@@ -60,15 +60,16 @@ pub enum XYPadVariant {
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # fn example(ui: &mut Ui) {
-/// use armas::components::audio::XYPad;
+/// # use armas::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::XYPad;
 ///
 /// let mut x = 0.5;
 /// let mut y = 0.5;
 ///
 /// let response = XYPad::new(&mut x, &mut y)
 ///     .size(200.0)
-///     .show(ui);
+///     .show(ui, theme);
 ///
 /// if response.changed() {
 ///     println!("X: {:.2}, Y: {:.2}", x, y);

@@ -1,5 +1,6 @@
 //! Tests for XYPad component using egui_kittest
 
+use armas::ArmasContextExt;
 use armas_audio::xy_pad::{XYPad, XYPadVariant};
 use egui_kittest::Harness;
 
@@ -7,9 +8,10 @@ use egui_kittest::Harness;
 #[test]
 fn test_xy_pad_renders() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        XYPad::new(&mut x, &mut y).show(ui);
+        XYPad::new(&mut x, &mut y).show(ui, &theme);
     });
 
     harness.run();
@@ -19,9 +21,10 @@ fn test_xy_pad_renders() {
 #[test]
 fn test_xy_pad_custom_size() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        XYPad::new(&mut x, &mut y).size(300.0).show(ui);
+        XYPad::new(&mut x, &mut y).size(300.0).show(ui, &theme);
     });
 
     harness.run();
@@ -31,9 +34,10 @@ fn test_xy_pad_custom_size() {
 #[test]
 fn test_xy_pad_small_size() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        XYPad::new(&mut x, &mut y).size(100.0).show(ui);
+        XYPad::new(&mut x, &mut y).size(100.0).show(ui, &theme);
     });
 
     harness.run();
@@ -43,11 +47,12 @@ fn test_xy_pad_small_size() {
 #[test]
 fn test_xy_pad_filled_variant() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
         XYPad::new(&mut x, &mut y)
             .variant(XYPadVariant::Filled)
-            .show(ui);
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -57,11 +62,12 @@ fn test_xy_pad_filled_variant() {
 #[test]
 fn test_xy_pad_outlined_variant() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
         XYPad::new(&mut x, &mut y)
             .variant(XYPadVariant::Outlined)
-            .show(ui);
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -71,11 +77,12 @@ fn test_xy_pad_outlined_variant() {
 #[test]
 fn test_xy_pad_elevated_variant() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
         XYPad::new(&mut x, &mut y)
             .variant(XYPadVariant::Elevated)
-            .show(ui);
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -85,9 +92,12 @@ fn test_xy_pad_elevated_variant() {
 #[test]
 fn test_xy_pad_x_label() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        XYPad::new(&mut x, &mut y).x_label("Cutoff").show(ui);
+        XYPad::new(&mut x, &mut y)
+            .x_label("Cutoff")
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -97,9 +107,12 @@ fn test_xy_pad_x_label() {
 #[test]
 fn test_xy_pad_y_label() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        XYPad::new(&mut x, &mut y).y_label("Resonance").show(ui);
+        XYPad::new(&mut x, &mut y)
+            .y_label("Resonance")
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -109,12 +122,13 @@ fn test_xy_pad_y_label() {
 #[test]
 fn test_xy_pad_both_labels() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
         XYPad::new(&mut x, &mut y)
             .x_label("Cutoff")
             .y_label("Resonance")
-            .show(ui);
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -124,9 +138,12 @@ fn test_xy_pad_both_labels() {
 #[test]
 fn test_xy_pad_no_crosshair() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        XYPad::new(&mut x, &mut y).show_crosshair(false).show(ui);
+        XYPad::new(&mut x, &mut y)
+            .show_crosshair(false)
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -136,9 +153,12 @@ fn test_xy_pad_no_crosshair() {
 #[test]
 fn test_xy_pad_show_values() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        XYPad::new(&mut x, &mut y).show_values(true).show(ui);
+        XYPad::new(&mut x, &mut y)
+            .show_values(true)
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -148,9 +168,12 @@ fn test_xy_pad_show_values() {
 #[test]
 fn test_xy_pad_custom_handle_size() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        XYPad::new(&mut x, &mut y).handle_size(24.0).show(ui);
+        XYPad::new(&mut x, &mut y)
+            .handle_size(24.0)
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -160,9 +183,10 @@ fn test_xy_pad_custom_handle_size() {
 #[test]
 fn test_xy_pad_small_handle_size() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        XYPad::new(&mut x, &mut y).handle_size(8.0).show(ui);
+        XYPad::new(&mut x, &mut y).handle_size(8.0).show(ui, &theme);
     });
 
     harness.run();
@@ -172,9 +196,12 @@ fn test_xy_pad_small_handle_size() {
 #[test]
 fn test_xy_pad_custom_glow_intensity() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        XYPad::new(&mut x, &mut y).glow_intensity(1.0).show(ui);
+        XYPad::new(&mut x, &mut y)
+            .glow_intensity(1.0)
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -184,9 +211,12 @@ fn test_xy_pad_custom_glow_intensity() {
 #[test]
 fn test_xy_pad_no_glow() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        XYPad::new(&mut x, &mut y).glow_intensity(0.0).show(ui);
+        XYPad::new(&mut x, &mut y)
+            .glow_intensity(0.0)
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -196,9 +226,10 @@ fn test_xy_pad_no_glow() {
 #[test]
 fn test_xy_pad_custom_id() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        XYPad::new(&mut x, &mut y).id("filter_xy").show(ui);
+        XYPad::new(&mut x, &mut y).id("filter_xy").show(ui, &theme);
     });
 
     harness.run();
@@ -208,9 +239,10 @@ fn test_xy_pad_custom_id() {
 #[test]
 fn test_xy_pad_corner_bottom_left() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.0;
         let mut y = 0.0;
-        XYPad::new(&mut x, &mut y).show(ui);
+        XYPad::new(&mut x, &mut y).show(ui, &theme);
     });
 
     harness.run();
@@ -220,9 +252,10 @@ fn test_xy_pad_corner_bottom_left() {
 #[test]
 fn test_xy_pad_corner_top_right() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 1.0;
         let mut y = 1.0;
-        XYPad::new(&mut x, &mut y).show(ui);
+        XYPad::new(&mut x, &mut y).show(ui, &theme);
     });
 
     harness.run();
@@ -232,9 +265,10 @@ fn test_xy_pad_corner_top_right() {
 #[test]
 fn test_xy_pad_corner_top_left() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.0;
         let mut y = 1.0;
-        XYPad::new(&mut x, &mut y).show(ui);
+        XYPad::new(&mut x, &mut y).show(ui, &theme);
     });
 
     harness.run();
@@ -244,9 +278,10 @@ fn test_xy_pad_corner_top_left() {
 #[test]
 fn test_xy_pad_corner_bottom_right() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 1.0;
         let mut y = 0.0;
-        XYPad::new(&mut x, &mut y).show(ui);
+        XYPad::new(&mut x, &mut y).show(ui, &theme);
     });
 
     harness.run();
@@ -256,9 +291,10 @@ fn test_xy_pad_corner_bottom_right() {
 #[test]
 fn test_xy_pad_response() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.5;
         let mut y = 0.5;
-        let response = XYPad::new(&mut x, &mut y).show(ui);
+        let response = XYPad::new(&mut x, &mut y).show(ui, &theme);
 
         // Check response fields exist
         let _ = response.response;
@@ -275,6 +311,7 @@ fn test_xy_pad_response() {
 #[test]
 fn test_xy_pad_full_config() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let mut x = 0.3;
         let mut y = 0.7;
         XYPad::new(&mut x, &mut y)
@@ -287,7 +324,7 @@ fn test_xy_pad_full_config() {
             .show_values(true)
             .handle_size(20.0)
             .glow_intensity(0.8)
-            .show(ui);
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -306,6 +343,7 @@ fn test_xy_pad_variant_enum() {
 #[test]
 fn test_multiple_xy_pads() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         ui.horizontal(|ui| {
             let mut x1 = 0.5;
             let mut y1 = 0.5;
@@ -316,13 +354,13 @@ fn test_multiple_xy_pads() {
                 .id("pad1")
                 .size(150.0)
                 .x_label("Filter")
-                .show(ui);
+                .show(ui, &theme);
 
             XYPad::new(&mut x2, &mut y2)
                 .id("pad2")
                 .size(150.0)
                 .x_label("Effect")
-                .show(ui);
+                .show(ui, &theme);
         });
     });
 

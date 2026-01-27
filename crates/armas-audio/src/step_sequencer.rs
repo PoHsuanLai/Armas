@@ -32,8 +32,9 @@ impl StepSequencerResponse {
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # fn example(ui: &mut Ui) {
-/// use armas::components::audio::StepSequencer;
+/// # use armas::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::StepSequencer;
 ///
 /// let mut steps = vec![false; 16]; // 16 steps, all off
 /// steps[0] = true;  // First step on
@@ -42,7 +43,7 @@ impl StepSequencerResponse {
 /// let response = StepSequencer::new(&mut steps)
 ///     .steps(16)
 ///     .current_step(Some(2))
-///     .show(ui);
+///     .show(ui, theme);
 ///
 /// if response.changed() {
 ///     println!("Pattern changed!");

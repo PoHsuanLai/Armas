@@ -29,12 +29,14 @@ const RING_THICKNESS: f32 = 12.0;
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas::Progress;
+/// use armas::ext::ArmasContextExt;
 ///
+/// let theme = ui.ctx().armas_theme();
 /// // Basic progress (0-100)
-/// Progress::new(65).show(ui);
+/// Progress::new(65.0).show(ui, &theme);
 ///
 /// // With custom width
-/// Progress::new(33).width(200.0).show(ui);
+/// Progress::new(33.0).width(200.0).show(ui, &theme);
 /// # }
 /// ```
 pub struct Progress {
@@ -117,17 +119,19 @@ impl Progress {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas::CircularProgressBar;
+/// use armas::ext::ArmasContextExt;
 ///
+/// let theme = ui.ctx().armas_theme();
 /// // Determinate progress (0-100)
-/// CircularProgressBar::new(75)
+/// CircularProgressBar::new(75.0)
 ///     .size(80.0)
 ///     .show_percentage(true)
-///     .show(ui);
+///     .show(ui, &theme);
 ///
 /// // Indeterminate/loading mode
 /// CircularProgressBar::indeterminate()
 ///     .size(60.0)
-///     .show(ui);
+///     .show(ui, &theme);
 /// # }
 /// ```
 pub struct CircularProgressBar {
@@ -284,11 +288,13 @@ impl CircularProgressBar {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas::RingProgress;
+/// use armas::ext::ArmasContextExt;
 ///
-/// RingProgress::new(75)
+/// let theme = ui.ctx().armas_theme();
+/// RingProgress::new(75.0)
 ///     .size(120.0)
 ///     .label("Complete")
-///     .show(ui);
+///     .show(ui, &theme);
 /// # }
 /// ```
 pub struct RingProgress {

@@ -1,12 +1,14 @@
 //! Tests for Command component using egui_kittest
 
 use armas::components::navigation::Command;
+use armas::ArmasContextExt;
 use egui_kittest::Harness;
 
 /// Test that Command renders without panicking (closed by default)
 #[test]
 fn test_command_renders() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         let mut menu = Command::new();
         menu.show(ui, |cmd| {
             cmd.item("cmd1", "Command 1");
@@ -21,6 +23,7 @@ fn test_command_renders() {
 #[test]
 fn test_command_placeholder() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         let mut menu = Command::new().placeholder("Search commands...");
         menu.show(ui, |cmd| {
             cmd.item("test", "Test Command");
@@ -34,6 +37,7 @@ fn test_command_placeholder() {
 #[test]
 fn test_command_groups() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         let mut menu = Command::new();
         menu.show(ui, |cmd| {
             cmd.group("File");
@@ -52,6 +56,7 @@ fn test_command_groups() {
 #[test]
 fn test_command_icons() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         let mut menu = Command::new();
         menu.show(ui, |cmd| {
             cmd.item("new", "New File").icon("📄");
@@ -67,6 +72,7 @@ fn test_command_icons() {
 #[test]
 fn test_command_shortcuts() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         let mut menu = Command::new();
         menu.show(ui, |cmd| {
             cmd.item("copy", "Copy").shortcut("⌘C");
@@ -82,6 +88,7 @@ fn test_command_shortcuts() {
 #[test]
 fn test_command_full_config() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         let mut menu = Command::new();
         menu.show(ui, |cmd| {
             cmd.group("File Operations");
@@ -104,6 +111,7 @@ fn test_command_full_config() {
 #[test]
 fn test_command_custom_trigger() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         let mut menu = Command::new().trigger(egui::Key::P, egui::Modifiers::COMMAND);
         menu.show(ui, |cmd| {
             cmd.item("cmd", "Command");
@@ -117,6 +125,7 @@ fn test_command_custom_trigger() {
 #[test]
 fn test_command_response() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         let mut menu = Command::new();
         let response = menu.show(ui, |cmd| {
             cmd.item("test", "Test");
@@ -133,6 +142,7 @@ fn test_command_response() {
 #[test]
 fn test_command_many_items() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         let mut menu = Command::new();
         menu.show(ui, |cmd| {
             for i in 1..=20 {

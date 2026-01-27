@@ -21,11 +21,13 @@ use egui::{Color32, Response, Sense, Ui, Vec2};
 /// # };
 /// # fn example(ui: &mut Ui) {
 /// use armas::components::button::{IconButton, ButtonVariant};
+/// use armas::ext::ArmasContextExt;
 ///
+/// let theme = ui.ctx().armas_theme();
 /// if IconButton::new(&MY_ICON)
 ///     .variant(ButtonVariant::Filled)
 ///     .size(24.0)
-///     .show(ui)
+///     .show(ui, &theme)
 ///     .clicked()
 /// {
 ///     // Handle button click

@@ -19,11 +19,12 @@ use egui::{Color32, Id, Response, Ui, Vec2};
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # fn example(ui: &mut Ui) {
-/// use armas::components::MixerStrip;
+/// # use armas::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::MixerStrip;
 ///
 /// let mut strip = MixerStrip::new("Channel 1");
-/// strip.show(ui, &theme);
+/// strip.show(ui, theme);
 /// # }
 /// ```
 /// A send on the mixer strip

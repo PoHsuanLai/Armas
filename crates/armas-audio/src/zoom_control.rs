@@ -16,15 +16,16 @@ use egui::{Response, Ui};
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # fn example(ui: &mut Ui) {
-/// use armas::components::audio::ZoomControl;
+/// # use armas::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::ZoomControl;
 ///
 /// let mut zoom_level = 1.0;
 ///
 /// let response = ZoomControl::new(&mut zoom_level)
 ///     .min_zoom(0.1)
 ///     .max_zoom(10.0)
-///     .show(ui);
+///     .show(ui, theme);
 ///
 /// if response.changed {
 ///     println!("New zoom: {}", zoom_level);

@@ -47,19 +47,21 @@ impl BadgeVariant {
 ///
 /// ```rust,no_run
 /// use armas::components::{Badge, BadgeVariant};
+/// use armas::ext::ArmasContextExt;
 ///
 /// fn ui(ui: &mut egui::Ui) {
+///     let theme = ui.ctx().armas_theme();
 ///     // Default badge
-///     Badge::new("New").show(ui);
+///     Badge::new("New").show(ui, &theme);
 ///
 ///     // Secondary badge
-///     Badge::new("Draft").variant(BadgeVariant::Secondary).show(ui);
+///     Badge::new("Draft").variant(BadgeVariant::Secondary).show(ui, &theme);
 ///
 ///     // Destructive badge
-///     Badge::new("Error").variant(BadgeVariant::Destructive).show(ui);
+///     Badge::new("Error").variant(BadgeVariant::Destructive).show(ui, &theme);
 ///
 ///     // Outline badge
-///     Badge::new("Outline").variant(BadgeVariant::Outline).show(ui);
+///     Badge::new("Outline").variant(BadgeVariant::Outline).show(ui, &theme);
 /// }
 /// ```
 pub struct Badge {

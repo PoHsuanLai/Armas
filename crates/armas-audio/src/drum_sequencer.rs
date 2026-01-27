@@ -122,8 +122,9 @@ pub struct DrumSequencerResponse {
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # use armas::components::audio::{DrumSequencer, DrumRow, DrumStep};
-/// # fn example(ui: &mut Ui) {
+/// # use armas::Theme;
+/// # use armas_audio::{DrumSequencer, DrumRow, DrumStep};
+/// # fn example(ui: &mut Ui, theme: &Theme) {
 /// let mut rows = vec![
 ///     DrumRow::new("Kick", 16),
 ///     DrumRow::new("Snare", 16),
@@ -133,7 +134,7 @@ pub struct DrumSequencerResponse {
 /// let response = DrumSequencer::new(&mut rows)
 ///     .steps(16)
 ///     .current_step(Some(2))
-///     .show(ui);
+///     .show(ui, theme);
 /// # }
 /// ```
 pub struct DrumSequencer<'a> {

@@ -23,7 +23,7 @@ pub struct SnapGridResponse {
 /// ```rust,no_run
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
-/// use armas::components::audio::SnapGrid;
+/// use armas_audio::SnapGrid;
 ///
 /// SnapGrid::new()
 ///     .beat_width(60.0)

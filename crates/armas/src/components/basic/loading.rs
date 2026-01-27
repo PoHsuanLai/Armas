@@ -34,9 +34,11 @@ const CIRCULAR_STROKE: f32 = 3.0;
 ///
 /// ```rust,no_run
 /// use armas::components::Spinner;
+/// use armas::ext::ArmasContextExt;
 ///
 /// fn ui(ui: &mut egui::Ui, spinner: &mut Spinner) {
-///     spinner.show(ui);
+///     let theme = ui.ctx().armas_theme();
+///     spinner.show(ui, &theme);
 /// }
 /// ```
 #[derive(Debug, Clone)]
@@ -164,9 +166,11 @@ impl Spinner {
 ///
 /// ```rust,no_run
 /// use armas::components::LoadingDots;
+/// use armas::ext::ArmasContextExt;
 ///
 /// fn ui(ui: &mut egui::Ui, dots: &mut LoadingDots) {
-///     dots.show(ui);
+///     let theme = ui.ctx().armas_theme();
+///     dots.show(ui, &theme);
 /// }
 /// ```
 #[derive(Debug, Clone)]
@@ -296,9 +300,11 @@ impl LoadingDots {
 ///
 /// ```rust,no_run
 /// use armas::components::Skeleton;
+/// use armas::ext::ArmasContextExt;
 ///
 /// fn ui(ui: &mut egui::Ui, skeleton: &mut Skeleton) {
-///     skeleton.show(ui);
+///     let theme = ui.ctx().armas_theme();
+///     skeleton.show(ui, &theme);
 /// }
 /// ```
 #[derive(Debug, Clone)]
@@ -446,9 +452,11 @@ impl Default for Skeleton {
 ///
 /// ```rust,no_run
 /// use armas::components::CircularProgress;
+/// use armas::ext::ArmasContextExt;
 ///
 /// fn ui(ui: &mut egui::Ui, progress: &mut CircularProgress) {
-///     progress.show(ui);
+///     let theme = ui.ctx().armas_theme();
+///     progress.show(ui, &theme);
 /// }
 /// ```
 #[derive(Debug, Clone)]

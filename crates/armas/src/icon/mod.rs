@@ -9,12 +9,14 @@
 //! # use egui::Ui;
 //! # fn example(ui: &mut Ui) {
 //! use armas::icon::{WindowIcon, WindowIconWidget};
+//! use armas::ext::ArmasContextExt;
 //! use egui::Color32;
 //!
+//! let theme = ui.ctx().armas_theme();
 //! WindowIconWidget::new(WindowIcon::Close)
 //!     .size(12.0)
 //!     .color(Color32::WHITE)
-//!     .show(ui);
+//!     .show(ui, &theme);
 //! # }
 //! ```
 

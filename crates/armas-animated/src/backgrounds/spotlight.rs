@@ -13,7 +13,8 @@ use egui::{Color32, Pos2, Rect, Response, Ui};
 /// ```rust,no_run
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
-/// use armas::{Theme, effects::Spotlight};
+/// use armas::Theme;
+/// use armas_animated::backgrounds::Spotlight;
 ///
 /// let theme = Theme::dark();
 /// let mut spotlight = Spotlight::new(&theme);

@@ -1,14 +1,14 @@
 //! Tests for TransportControl component using egui_kittest
 
-use armas::Theme;
+use armas::ArmasContextExt;
 use armas_audio::transport::{TransportButtons, TransportControl, TransportState};
 use egui_kittest::Harness;
 
 /// Test that TransportControl renders without panicking
 #[test]
 fn test_transport_renders() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new().show(ui, &theme);
     });
 
@@ -18,8 +18,8 @@ fn test_transport_renders() {
 /// Test TransportControl in stopped state
 #[test]
 fn test_transport_stopped_state() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new()
             .state(TransportState::Stopped)
             .show(ui, &theme);
@@ -31,8 +31,8 @@ fn test_transport_stopped_state() {
 /// Test TransportControl in playing state
 #[test]
 fn test_transport_playing_state() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new()
             .state(TransportState::Playing)
             .show(ui, &theme);
@@ -44,8 +44,8 @@ fn test_transport_playing_state() {
 /// Test TransportControl in paused state
 #[test]
 fn test_transport_paused_state() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new()
             .state(TransportState::Paused)
             .show(ui, &theme);
@@ -57,8 +57,8 @@ fn test_transport_paused_state() {
 /// Test TransportControl in recording state
 #[test]
 fn test_transport_recording_state() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new()
             .state(TransportState::Recording)
             .show(ui, &theme);
@@ -70,8 +70,8 @@ fn test_transport_recording_state() {
 /// Test TransportControl with custom tempo
 #[test]
 fn test_transport_custom_tempo() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new().tempo(140.0).show(ui, &theme);
     });
 
@@ -81,8 +81,8 @@ fn test_transport_custom_tempo() {
 /// Test TransportControl with slow tempo
 #[test]
 fn test_transport_slow_tempo() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new().tempo(60.0).show(ui, &theme);
     });
 
@@ -92,8 +92,8 @@ fn test_transport_slow_tempo() {
 /// Test TransportControl with fast tempo
 #[test]
 fn test_transport_fast_tempo() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new().tempo(200.0).show(ui, &theme);
     });
 
@@ -103,8 +103,8 @@ fn test_transport_fast_tempo() {
 /// Test TransportControl with custom time signature 4/4
 #[test]
 fn test_transport_time_sig_4_4() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new()
             .time_signature(4, 4)
             .show(ui, &theme);
@@ -116,8 +116,8 @@ fn test_transport_time_sig_4_4() {
 /// Test TransportControl with 3/4 time signature
 #[test]
 fn test_transport_time_sig_3_4() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new()
             .time_signature(3, 4)
             .show(ui, &theme);
@@ -129,8 +129,8 @@ fn test_transport_time_sig_3_4() {
 /// Test TransportControl with 6/8 time signature
 #[test]
 fn test_transport_time_sig_6_8() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new()
             .time_signature(6, 8)
             .show(ui, &theme);
@@ -142,8 +142,8 @@ fn test_transport_time_sig_6_8() {
 /// Test TransportControl with custom current time
 #[test]
 fn test_transport_custom_time() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new()
             .current_time(65.5) // 1:05.500
             .show(ui, &theme);
@@ -155,8 +155,8 @@ fn test_transport_custom_time() {
 /// Test TransportControl with loop enabled
 #[test]
 fn test_transport_loop_enabled() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new().loop_enabled(true).show(ui, &theme);
     });
 
@@ -166,8 +166,8 @@ fn test_transport_loop_enabled() {
 /// Test TransportControl with metronome enabled
 #[test]
 fn test_transport_metronome_enabled() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new()
             .metronome_enabled(true)
             .show(ui, &theme);
@@ -179,8 +179,8 @@ fn test_transport_metronome_enabled() {
 /// Test TransportControl with custom width
 #[test]
 fn test_transport_custom_width() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new().width(600.0).show(ui, &theme);
     });
 
@@ -190,8 +190,8 @@ fn test_transport_custom_width() {
 /// Test TransportControl with custom button color
 #[test]
 fn test_transport_custom_button_color() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new()
             .button_color(egui::Color32::from_rgb(100, 150, 200))
             .show(ui, &theme);
@@ -203,8 +203,8 @@ fn test_transport_custom_button_color() {
 /// Test TransportControl with custom button configuration
 #[test]
 fn test_transport_custom_buttons() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let buttons = TransportButtons {
             show_rewind: true,
             show_play: true,
@@ -223,8 +223,8 @@ fn test_transport_custom_buttons() {
 /// Test TransportControl with minimal buttons
 #[test]
 fn test_transport_minimal_buttons() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let buttons = TransportButtons {
             show_rewind: false,
             show_play: true,
@@ -243,8 +243,8 @@ fn test_transport_minimal_buttons() {
 /// Test TransportControl response fields
 #[test]
 fn test_transport_response() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let response = TransportControl::new()
             .tempo(120.0)
             .time_signature(4, 4)
@@ -266,8 +266,8 @@ fn test_transport_response() {
 /// Test TransportControl with full configuration
 #[test]
 fn test_transport_full_config() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new()
             .state(TransportState::Playing)
             .current_time(123.456)
@@ -308,8 +308,8 @@ fn test_transport_buttons_default() {
 /// Test TransportControl default
 #[test]
 fn test_transport_default() {
-    let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         let transport = TransportControl::default();
         transport.show(ui, &theme);
     });
@@ -320,8 +320,8 @@ fn test_transport_default() {
 /// Test TransportControl with light theme
 #[test]
 fn test_transport_light_theme() {
-    let theme = Theme::light();
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         TransportControl::new()
             .tempo(120.0)
             .state(TransportState::Playing)

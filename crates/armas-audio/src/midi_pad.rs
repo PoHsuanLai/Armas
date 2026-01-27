@@ -99,8 +99,9 @@ impl PadState {
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # fn example(ui: &mut Ui) {
-/// use armas::components::audio::{MidiPad, PadConfig, PadState, PadVariant};
+/// # use armas::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::{MidiPad, PadConfig, PadState, PadVariant};
 /// use std::collections::HashMap;
 ///
 /// // Define pad configuration (labels, colors, etc.)
@@ -120,7 +121,7 @@ impl PadState {
 ///     .pads(pads)
 ///     .pad_states(pad_states)
 ///     .variant(PadVariant::Filled)
-///     .show(ui);
+///     .show(ui, theme);
 ///
 /// // Handle user interaction
 /// if let Some((note, velocity)) = response.pressed {

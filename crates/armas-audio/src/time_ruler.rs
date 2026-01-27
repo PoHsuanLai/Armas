@@ -33,7 +33,7 @@ pub enum TimeDisplayMode {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::components::audio::{TimeRuler, GridDivision};
+/// use armas_audio::{TimeRuler, GridDivision};
 ///
 /// fn ui(ui: &mut egui::Ui, theme: &armas::Theme) {
 ///     TimeRuler::new()

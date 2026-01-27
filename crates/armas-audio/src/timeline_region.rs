@@ -58,7 +58,9 @@ impl RegionVariant {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas_audio::{TimelineRegion, RegionVariant};
+/// use armas::ext::ArmasContextExt;
 ///
+/// let theme = ui.ctx().armas_theme();
 /// let mut start = 4.0;  // beats
 /// let mut end = 16.0;   // beats
 ///
@@ -67,7 +69,7 @@ impl RegionVariant {
 ///     .beat_width(60.0)
 ///     .measures(16)
 ///     .snap_to_grid(true)
-///     .show(ui);
+///     .show(ui, &theme);
 ///
 /// if response.start_changed {
 ///     println!("Region start: {}", start);

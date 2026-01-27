@@ -142,7 +142,9 @@ fn test_drawer_form_content() {
         drawer.show(ctx, &theme, |ui| {
             ui.vertical(|ui| {
                 let mut enabled = true;
-                Toggle::new().label("Dark Mode").show(ui, &mut enabled);
+                Toggle::new()
+                    .label("Dark Mode")
+                    .show(ui, &mut enabled, &theme);
 
                 ui.add_space(8.0);
 
@@ -150,13 +152,13 @@ fn test_drawer_form_content() {
                 Slider::new(0.0, 100.0)
                     .label("Volume")
                     .suffix("%")
-                    .show(ui, &mut volume);
+                    .show(ui, &mut volume, &theme);
 
                 ui.add_space(16.0);
 
                 Button::new("Save Changes")
                     .variant(ButtonVariant::Default)
-                    .show(ui);
+                    .show(ui, &theme);
             });
         });
     });

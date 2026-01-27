@@ -27,19 +27,20 @@ pub struct SlotResponse {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::components::Slot;
+/// use armas_audio::Slot;
+/// use armas::Theme;
 ///
-/// fn ui(ui: &mut egui::Ui) {
+/// fn ui(ui: &mut egui::Ui, theme: &Theme) {
 ///     Slot::new()
 ///         .effect("Reverb")
 ///         .level(0.75)
-///         .show(ui);
+///         .show(ui, theme);
 ///
 ///     // Custom size
 ///     Slot::new()
 ///         .size(100.0, 40.0)
 ///         .effect("EQ")
-///         .show(ui);
+///         .show(ui, theme);
 /// }
 /// ```
 pub struct Slot<'a> {

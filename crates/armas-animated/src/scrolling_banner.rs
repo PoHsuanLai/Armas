@@ -27,7 +27,7 @@ pub enum ScrollDirection {
 /// ```rust,no_run
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
-/// use armas::components::{ScrollingBanner, ScrollDirection};
+/// use armas_animated::scrolling_banner::{ScrollingBanner, ScrollDirection};
 ///
 /// let mut banner = ScrollingBanner::new();
 ///

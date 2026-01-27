@@ -9,9 +9,11 @@
 //! # use egui::Ui;
 //! # fn example(ui: &mut Ui) {
 //! use armas::components::{Radio, RadioGroup};
+//! use armas::ext::ArmasContextExt;
 //!
+//! let theme = ui.ctx().armas_theme();
 //! // Single radio
-//! Radio::new().label("Option").show(ui, true);
+//! Radio::new().label("Option").show(ui, true, &theme);
 //!
 //! // Radio group
 //! let mut selected = Some("opt1".to_string());

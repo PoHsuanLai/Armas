@@ -108,18 +108,19 @@ pub struct MidiControllerResponse {
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # fn example(ui: &mut Ui) {
-/// use armas::components::audio::{MidiController, MidiControllerState};
+/// # use armas::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::{MidiController, MidiControllerState, ControllerLayout};
 ///
 /// let mut state = MidiControllerState::default();
 ///
 /// let response = MidiController::new(&mut state)
-///     .layout(armas::components::audio::ControllerLayout::Full)
-///     .show(ui);
+///     .layout(ControllerLayout::Full)
+///     .show(ui, theme);
 ///
 /// // Handle MIDI events
 /// if let Some(piano_response) = response.piano {
-///     for note in piano_response.notes_pressed {
+///     for note in piano_response.clicked_keys {
 ///         println!("Note pressed: {}", note);
 ///     }
 /// }

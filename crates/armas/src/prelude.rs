@@ -7,9 +7,10 @@
 //! # fn example(ui: &mut Ui) {
 //! use armas::prelude::*;
 //!
+//! let theme = ui.ctx().armas_theme();
 //! // Now you can use components directly
-//! Badge::new("Success").show(ui);
-//! Button::new("Click me").show(ui);
+//! Badge::new("Success").show(ui, &theme);
+//! Button::new("Click me").show(ui, &theme);
 //! # }
 //! ```
 

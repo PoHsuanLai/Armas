@@ -58,12 +58,14 @@ pub enum AvatarShape {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas::Avatar;
+/// use armas::ext::ArmasContextExt;
 ///
+/// let theme = ui.ctx().armas_theme();
 /// // Simple avatar with initials
-/// Avatar::new("JD").show(ui);
+/// Avatar::new("JD").show(ui, &theme);
 ///
 /// // Larger avatar
-/// Avatar::new("AM").size(48.0).show(ui);
+/// Avatar::new("AM").size(48.0).show(ui, &theme);
 /// # }
 /// ```
 pub struct Avatar {

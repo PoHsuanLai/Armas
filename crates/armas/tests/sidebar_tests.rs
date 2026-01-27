@@ -1,12 +1,14 @@
 //! Tests for Sidebar component using egui_kittest
 
 use armas::components::navigation::{CollapsibleMode, Sidebar};
+use armas::ArmasContextExt;
 use egui_kittest::Harness;
 
 /// Test that Sidebar renders without panicking
 #[test]
 fn test_sidebar_renders() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
             sidebar.item("🏠", "Home");
             sidebar.item("📧", "Messages");
@@ -22,6 +24,7 @@ fn test_sidebar_renders() {
 #[test]
 fn test_sidebar_expanded() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new().collapsed(false).show(ui, |sidebar| {
             sidebar.item("🏠", "Home");
             sidebar.item("📧", "Messages");
@@ -35,6 +38,7 @@ fn test_sidebar_expanded() {
 #[test]
 fn test_sidebar_collapsed() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new().collapsed(true).show(ui, |sidebar| {
             sidebar.item("🏠", "Home");
             sidebar.item("📧", "Messages");
@@ -48,6 +52,7 @@ fn test_sidebar_collapsed() {
 #[test]
 fn test_sidebar_active_item() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
             sidebar.item("🏠", "Home").active(true);
             sidebar.item("📧", "Messages");
@@ -62,6 +67,7 @@ fn test_sidebar_active_item() {
 #[test]
 fn test_sidebar_with_badge() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
             sidebar.item("🏠", "Home");
             sidebar.item("📧", "Messages").badge("5");
@@ -76,6 +82,7 @@ fn test_sidebar_with_badge() {
 #[test]
 fn test_sidebar_active_with_badge() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
             sidebar.item("🏠", "Home");
             sidebar.item("📧", "Messages").active(true).badge("3");
@@ -90,6 +97,7 @@ fn test_sidebar_active_with_badge() {
 #[test]
 fn test_sidebar_with_groups() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
             sidebar.item("🏠", "Home").active(true);
 
@@ -108,6 +116,7 @@ fn test_sidebar_with_groups() {
 #[test]
 fn test_sidebar_nested_groups() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
             sidebar.item("🏠", "Home");
 
@@ -125,6 +134,7 @@ fn test_sidebar_nested_groups() {
 #[test]
 fn test_sidebar_custom_collapsed_width() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new()
             .collapsed_width(50.0)
             .collapsed(true)
@@ -141,6 +151,7 @@ fn test_sidebar_custom_collapsed_width() {
 #[test]
 fn test_sidebar_custom_expanded_width() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new().expanded_width(300.0).show(ui, |sidebar| {
             sidebar.item("🏠", "Home");
             sidebar.item("📧", "Messages");
@@ -154,6 +165,7 @@ fn test_sidebar_custom_expanded_width() {
 #[test]
 fn test_sidebar_not_collapsible() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new()
             .collapsible(CollapsibleMode::None)
             .show(ui, |sidebar| {
@@ -169,6 +181,7 @@ fn test_sidebar_not_collapsible() {
 #[test]
 fn test_sidebar_no_icons() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new().show_icons(false).show(ui, |sidebar| {
             sidebar.item("", "Home");
             sidebar.item("", "Messages");
@@ -183,6 +196,7 @@ fn test_sidebar_no_icons() {
 #[test]
 fn test_sidebar_many_items() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
             sidebar.item("🏠", "Home").active(true);
             sidebar.item("📧", "Messages").badge("5");
@@ -202,6 +216,7 @@ fn test_sidebar_many_items() {
 #[test]
 fn test_sidebar_single_item() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
             sidebar.item("🏠", "Home");
         });
@@ -214,6 +229,7 @@ fn test_sidebar_single_item() {
 #[test]
 fn test_sidebar_response() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         let response = Sidebar::new().show(ui, |sidebar| {
             sidebar.item("🏠", "Home");
             sidebar.item("📧", "Messages");
@@ -232,6 +248,7 @@ fn test_sidebar_response() {
 #[test]
 fn test_sidebar_full_config() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new()
             .collapsed(false)
             .collapsed_width(60.0)
@@ -258,6 +275,7 @@ fn test_sidebar_full_config() {
 #[test]
 fn test_sidebar_app_layout() {
     let mut harness = Harness::new_ui(|ui| {
+        let _theme = ui.ctx().armas_theme();
         Sidebar::new()
             .collapsed_width(70.0)
             .expanded_width(240.0)

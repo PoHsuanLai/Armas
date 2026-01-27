@@ -9,7 +9,8 @@ fn test_slider_renders() {
     let mut value = 50.0;
 
     let mut harness = Harness::new_ui(|ui| {
-        Slider::new(0.0, 100.0).show(ui, &mut value);
+        let theme = ui.ctx().armas_theme();
+        Slider::new(0.0, 100.0).show(ui, &mut value, &theme);
     });
 
     harness.run();
@@ -21,7 +22,10 @@ fn test_slider_with_label() {
     let mut value = 75.0;
 
     let mut harness = Harness::new_ui(|ui| {
-        Slider::new(0.0, 100.0).label("Volume").show(ui, &mut value);
+        let theme = ui.ctx().armas_theme();
+        Slider::new(0.0, 100.0)
+            .label("Volume")
+            .show(ui, &mut value, &theme);
     });
 
     harness.run();
@@ -33,10 +37,11 @@ fn test_slider_with_suffix() {
     let mut value = 50.0;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Slider::new(0.0, 100.0)
             .label("Progress")
             .suffix("%")
-            .show(ui, &mut value);
+            .show(ui, &mut value, &theme);
     });
 
     harness.run();
@@ -48,10 +53,11 @@ fn test_slider_db_suffix() {
     let mut value = -6.0;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Slider::new(-60.0, 6.0)
             .label("Gain")
             .suffix(" dB")
-            .show(ui, &mut value);
+            .show(ui, &mut value, &theme);
     });
 
     harness.run();
@@ -63,10 +69,11 @@ fn test_slider_with_step() {
     let mut value = 50.0;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Slider::new(0.0, 100.0)
             .step(10.0)
             .label("Step by 10")
-            .show(ui, &mut value);
+            .show(ui, &mut value, &theme);
     });
 
     harness.run();
@@ -78,7 +85,10 @@ fn test_slider_hide_value() {
     let mut value = 0.5;
 
     let mut harness = Harness::new_ui(|ui| {
-        Slider::new(0.0, 1.0).show_value(false).show(ui, &mut value);
+        let theme = ui.ctx().armas_theme();
+        Slider::new(0.0, 1.0)
+            .show_value(false)
+            .show(ui, &mut value, &theme);
     });
 
     harness.run();
@@ -90,7 +100,10 @@ fn test_slider_custom_width() {
     let mut value = 50.0;
 
     let mut harness = Harness::new_ui(|ui| {
-        Slider::new(0.0, 100.0).width(300.0).show(ui, &mut value);
+        let theme = ui.ctx().armas_theme();
+        Slider::new(0.0, 100.0)
+            .width(300.0)
+            .show(ui, &mut value, &theme);
     });
 
     harness.run();
@@ -102,7 +115,10 @@ fn test_slider_custom_height() {
     let mut value = 50.0;
 
     let mut harness = Harness::new_ui(|ui| {
-        Slider::new(0.0, 100.0).height(32.0).show(ui, &mut value);
+        let theme = ui.ctx().armas_theme();
+        Slider::new(0.0, 100.0)
+            .height(32.0)
+            .show(ui, &mut value, &theme);
     });
 
     harness.run();
@@ -114,9 +130,10 @@ fn test_slider_at_minimum() {
     let mut value = 0.0;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Slider::new(0.0, 100.0)
             .label("At minimum")
-            .show(ui, &mut value);
+            .show(ui, &mut value, &theme);
     });
 
     harness.run();
@@ -128,9 +145,10 @@ fn test_slider_at_maximum() {
     let mut value = 100.0;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Slider::new(0.0, 100.0)
             .label("At maximum")
-            .show(ui, &mut value);
+            .show(ui, &mut value, &theme);
     });
 
     harness.run();
@@ -142,7 +160,10 @@ fn test_slider_negative_range() {
     let mut value = 0.0;
 
     let mut harness = Harness::new_ui(|ui| {
-        Slider::new(-100.0, 100.0).label("Pan").show(ui, &mut value);
+        let theme = ui.ctx().armas_theme();
+        Slider::new(-100.0, 100.0)
+            .label("Pan")
+            .show(ui, &mut value, &theme);
     });
 
     harness.run();
@@ -154,10 +175,11 @@ fn test_slider_fractional_values() {
     let mut value = 0.5;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Slider::new(0.0, 1.0)
             .label("Opacity")
             .step(0.1)
-            .show(ui, &mut value);
+            .show(ui, &mut value, &theme);
     });
 
     harness.run();
@@ -171,21 +193,22 @@ fn test_multiple_sliders() {
     let mut treble = 50.0;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         ui.vertical(|ui| {
             Slider::new(0.0, 100.0)
                 .label("Volume")
                 .suffix("%")
-                .show(ui, &mut volume);
+                .show(ui, &mut volume, &theme);
 
             Slider::new(0.0, 100.0)
                 .label("Bass")
                 .suffix("%")
-                .show(ui, &mut bass);
+                .show(ui, &mut bass, &theme);
 
             Slider::new(0.0, 100.0)
                 .label("Treble")
                 .suffix("%")
-                .show(ui, &mut treble);
+                .show(ui, &mut treble, &theme);
         });
     });
 

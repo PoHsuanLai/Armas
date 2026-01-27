@@ -74,14 +74,16 @@ impl MarkerVariant {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas_audio::{TimelineMarker, MarkerVariant};
+/// use armas::ext::ArmasContextExt;
 ///
+/// let theme = ui.ctx().armas_theme();
 /// let mut position = 16.0; // beats
 /// let mut variant = MarkerVariant::Cue("Chorus".to_string());
 ///
 /// let response = TimelineMarker::new(&mut position, &mut variant)
 ///     .beat_width(60.0)
 ///     .measures(16)
-///     .show(ui);
+///     .show(ui, &theme);
 /// # }
 /// ```
 pub struct TimelineMarker<'a> {

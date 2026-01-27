@@ -61,20 +61,22 @@ impl AlertVariant {
 ///
 /// ```rust,no_run
 /// use armas::components::{Alert, AlertVariant};
+/// use armas::ext::ArmasContextExt;
 ///
 /// fn ui(ui: &mut egui::Ui) {
+///     let theme = ui.ctx().armas_theme();
 ///     // Default info alert
-///     Alert::new("Operation completed").show(ui);
+///     Alert::new("Operation completed").show(ui, &theme);
 ///
 ///     // Destructive alert
 ///     Alert::new("Something went wrong")
 ///         .variant(AlertVariant::Destructive)
-///         .show(ui);
+///         .show(ui, &theme);
 ///
 ///     // Custom color alert
 ///     Alert::new("Custom alert")
 ///         .color(egui::Color32::from_rgb(100, 200, 150))
-///         .show(ui);
+///         .show(ui, &theme);
 /// }
 /// ```
 pub struct Alert {

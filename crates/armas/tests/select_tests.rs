@@ -16,7 +16,8 @@ fn test_select_renders() {
     let mut select = Select::new(options);
 
     let mut harness = Harness::new_ui(|ui| {
-        select.show(ui);
+        let theme = ui.ctx().armas_theme();
+        select.show(ui, &theme);
     });
 
     harness.run();
@@ -34,7 +35,8 @@ fn test_select_with_selection() {
     let mut select = Select::new(options).selected("banana");
 
     let mut harness = Harness::new_ui(|ui| {
-        select.show(ui);
+        let theme = ui.ctx().armas_theme();
+        select.show(ui, &theme);
     });
 
     harness.run();
@@ -52,7 +54,8 @@ fn test_select_with_label() {
     let mut select = Select::new(options).label("Size");
 
     let mut harness = Harness::new_ui(|ui| {
-        select.show(ui);
+        let theme = ui.ctx().armas_theme();
+        select.show(ui, &theme);
     });
 
     harness.run();
@@ -70,7 +73,8 @@ fn test_select_with_placeholder() {
     let mut select = Select::new(options).placeholder("Choose a color...");
 
     let mut harness = Harness::new_ui(|ui| {
-        select.show(ui);
+        let theme = ui.ctx().armas_theme();
+        select.show(ui, &theme);
     });
 
     harness.run();
@@ -88,7 +92,8 @@ fn test_select_with_icons() {
     let mut select = Select::new(options);
 
     let mut harness = Harness::new_ui(|ui| {
-        select.show(ui);
+        let theme = ui.ctx().armas_theme();
+        select.show(ui, &theme);
     });
 
     harness.run();
@@ -106,7 +111,8 @@ fn test_select_with_descriptions() {
     let mut select = Select::new(options).label("Select Plan");
 
     let mut harness = Harness::new_ui(|ui| {
-        select.show(ui);
+        let theme = ui.ctx().armas_theme();
+        select.show(ui, &theme);
     });
 
     harness.run();
@@ -124,7 +130,8 @@ fn test_select_with_disabled_options() {
     let mut select = Select::new(options);
 
     let mut harness = Harness::new_ui(|ui| {
-        select.show(ui);
+        let theme = ui.ctx().armas_theme();
+        select.show(ui, &theme);
     });
 
     harness.run();
@@ -142,7 +149,8 @@ fn test_select_not_searchable() {
     let mut select = Select::new(options).searchable(false);
 
     let mut harness = Harness::new_ui(|ui| {
-        select.show(ui);
+        let theme = ui.ctx().armas_theme();
+        select.show(ui, &theme);
     });
 
     harness.run();
@@ -159,7 +167,8 @@ fn test_select_custom_width() {
     let mut select = Select::new(options).width(300.0);
 
     let mut harness = Harness::new_ui(|ui| {
-        select.show(ui);
+        let theme = ui.ctx().armas_theme();
+        select.show(ui, &theme);
     });
 
     harness.run();
@@ -179,7 +188,8 @@ fn test_select_builder_api() {
     .selected("apple");
 
     let mut harness = Harness::new_ui(|ui| {
-        select.show(ui);
+        let theme = ui.ctx().armas_theme();
+        select.show(ui, &theme);
     });
 
     harness.run();
@@ -204,9 +214,10 @@ fn test_multiple_selects() {
     let mut language_select = Select::new(language_options).label("Language");
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         ui.vertical(|ui| {
-            country_select.show(ui);
-            language_select.show(ui);
+            country_select.show(ui, &theme);
+            language_select.show(ui, &theme);
         });
     });
 

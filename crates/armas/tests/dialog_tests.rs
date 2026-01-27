@@ -183,17 +183,19 @@ fn test_dialog_complex_content() {
                 ui.add_space(8.0);
 
                 let mut name = String::new();
-                Input::new("Name").label("Your Name").show(ui, &mut name);
+                Input::new("Name")
+                    .label("Your Name")
+                    .show(ui, &mut name, &theme);
 
                 ui.add_space(16.0);
 
                 ui.horizontal(|ui| {
                     Button::new("Cancel")
                         .variant(ButtonVariant::Outlined)
-                        .show(ui);
+                        .show(ui, &theme);
                     Button::new("Submit")
                         .variant(ButtonVariant::Filled)
-                        .show(ui);
+                        .show(ui, &theme);
                 });
             });
         });

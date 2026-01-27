@@ -7,7 +7,8 @@ use egui_kittest::Harness;
 #[test]
 fn test_pagination_renders() {
     let mut harness = Harness::new_ui(|ui| {
-        Pagination::new(1, 10).show(ui);
+        let theme = ui.ctx().armas_theme();
+        Pagination::new(1, 10).show(ui, &theme);
     });
 
     harness.run();
@@ -17,7 +18,8 @@ fn test_pagination_renders() {
 #[test]
 fn test_pagination_first_page() {
     let mut harness = Harness::new_ui(|ui| {
-        let (_, page) = Pagination::new(1, 10).show(ui);
+        let theme = ui.ctx().armas_theme();
+        let (_, page) = Pagination::new(1, 10).show(ui, &theme);
         assert_eq!(page, 1);
     });
 
@@ -28,7 +30,8 @@ fn test_pagination_first_page() {
 #[test]
 fn test_pagination_last_page() {
     let mut harness = Harness::new_ui(|ui| {
-        let (_, page) = Pagination::new(10, 10).show(ui);
+        let theme = ui.ctx().armas_theme();
+        let (_, page) = Pagination::new(10, 10).show(ui, &theme);
         assert_eq!(page, 10);
     });
 
@@ -39,7 +42,8 @@ fn test_pagination_last_page() {
 #[test]
 fn test_pagination_middle_page() {
     let mut harness = Harness::new_ui(|ui| {
-        let (_, page) = Pagination::new(5, 10).show(ui);
+        let theme = ui.ctx().armas_theme();
+        let (_, page) = Pagination::new(5, 10).show(ui, &theme);
         assert_eq!(page, 5);
     });
 
@@ -50,7 +54,8 @@ fn test_pagination_middle_page() {
 #[test]
 fn test_pagination_single_page() {
     let mut harness = Harness::new_ui(|ui| {
-        Pagination::new(1, 1).show(ui);
+        let theme = ui.ctx().armas_theme();
+        Pagination::new(1, 1).show(ui, &theme);
     });
 
     harness.run();
@@ -60,7 +65,8 @@ fn test_pagination_single_page() {
 #[test]
 fn test_pagination_few_pages() {
     let mut harness = Harness::new_ui(|ui| {
-        Pagination::new(2, 5).show(ui);
+        let theme = ui.ctx().armas_theme();
+        Pagination::new(2, 5).show(ui, &theme);
     });
 
     harness.run();
@@ -70,7 +76,8 @@ fn test_pagination_few_pages() {
 #[test]
 fn test_pagination_many_pages() {
     let mut harness = Harness::new_ui(|ui| {
-        Pagination::new(50, 100).show(ui);
+        let theme = ui.ctx().armas_theme();
+        Pagination::new(50, 100).show(ui, &theme);
     });
 
     harness.run();
@@ -80,7 +87,10 @@ fn test_pagination_many_pages() {
 #[test]
 fn test_pagination_no_prev_next() {
     let mut harness = Harness::new_ui(|ui| {
-        Pagination::new(3, 10).show_prev_next(false).show(ui);
+        let theme = ui.ctx().armas_theme();
+        Pagination::new(3, 10)
+            .show_prev_next(false)
+            .show(ui, &theme);
     });
 
     harness.run();
@@ -90,7 +100,8 @@ fn test_pagination_no_prev_next() {
 #[test]
 fn test_pagination_sibling_count() {
     let mut harness = Harness::new_ui(|ui| {
-        Pagination::new(10, 20).sibling_count(2).show(ui);
+        let theme = ui.ctx().armas_theme();
+        Pagination::new(10, 20).sibling_count(2).show(ui, &theme);
     });
 
     harness.run();
@@ -101,14 +112,16 @@ fn test_pagination_sibling_count() {
 fn test_pagination_clamps_initial_page() {
     // Page 0 should clamp to 1
     let mut harness = Harness::new_ui(|ui| {
-        let (_, page) = Pagination::new(0, 10).show(ui);
+        let theme = ui.ctx().armas_theme();
+        let (_, page) = Pagination::new(0, 10).show(ui, &theme);
         assert_eq!(page, 1);
     });
     harness.run();
 
     // Page > total should clamp to total
     let mut harness = Harness::new_ui(|ui| {
-        let (_, page) = Pagination::new(100, 10).show(ui);
+        let theme = ui.ctx().armas_theme();
+        let (_, page) = Pagination::new(100, 10).show(ui, &theme);
         assert_eq!(page, 10);
     });
     harness.run();
@@ -118,7 +131,8 @@ fn test_pagination_clamps_initial_page() {
 #[test]
 fn test_pagination_near_start() {
     let mut harness = Harness::new_ui(|ui| {
-        Pagination::new(2, 20).show(ui);
+        let theme = ui.ctx().armas_theme();
+        Pagination::new(2, 20).show(ui, &theme);
     });
 
     harness.run();
@@ -128,7 +142,8 @@ fn test_pagination_near_start() {
 #[test]
 fn test_pagination_near_end() {
     let mut harness = Harness::new_ui(|ui| {
-        Pagination::new(19, 20).show(ui);
+        let theme = ui.ctx().armas_theme();
+        Pagination::new(19, 20).show(ui, &theme);
     });
 
     harness.run();

@@ -490,7 +490,7 @@ pub struct TimelineTrackResponse {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::components::audio::{TimelineTrack, Region};
+/// use armas_audio::{TimelineTrack, Region};
 ///
 /// fn ui(ui: &mut egui::Ui, theme: &armas::Theme) {
 ///     let mut regions = vec![

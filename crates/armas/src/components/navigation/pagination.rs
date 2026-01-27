@@ -9,8 +9,10 @@
 //! # use egui::Ui;
 //! # fn example(ui: &mut Ui) {
 //! use armas::Pagination;
+//! use armas::ext::ArmasContextExt;
 //!
-//! let (_, current_page) = Pagination::new(1, 10).show(ui);
+//! let theme = ui.ctx().armas_theme();
+//! let (_, current_page) = Pagination::new(1, 10).show(ui, &theme);
 //! // current_page is the page after user interaction
 //! # }
 //! ```
@@ -35,8 +37,10 @@ const DEFAULT_SIBLING_COUNT: usize = 1;
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas::Pagination;
+/// use armas::ext::ArmasContextExt;
 ///
-/// let (_, current_page) = Pagination::new(1, 10).show(ui);
+/// let theme = ui.ctx().armas_theme();
+/// let (_, current_page) = Pagination::new(1, 10).show(ui, &theme);
 /// // current_page is the current page after any user interaction
 /// # }
 /// ```

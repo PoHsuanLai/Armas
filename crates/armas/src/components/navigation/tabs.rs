@@ -35,10 +35,13 @@ pub struct TabsResponse {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas::Tabs;
+/// use armas::ext::ArmasContextExt;
 ///
+/// let theme = ui.ctx().armas_theme();
 /// let mut tabs = Tabs::new(vec!["Account", "Password"]);
-/// if let Some(new_index) = tabs.show(ui) {
-///     // Tab changed to new_index
+/// let response = tabs.show(ui, &theme);
+/// if response.changed {
+///     // Tab changed to response.selected
 /// }
 /// # }
 /// ```

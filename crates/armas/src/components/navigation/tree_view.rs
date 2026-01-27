@@ -114,6 +114,7 @@ struct ShowItemParams<'a> {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas::{TreeView, TreeItem};
+/// use armas::ext::ArmasContextExt;
 ///
 /// let items = vec![
 ///     TreeItem::folder("src", "/src"),
@@ -121,11 +122,12 @@ struct ShowItemParams<'a> {
 ///     TreeItem::file("lib.rs", "/src/lib.rs"),
 /// ];
 ///
+/// let theme = ui.ctx().armas_theme();
 /// let mut tree = TreeView::new()
 ///     .items(items)
 ///     .root_path("/");
 ///
-/// let response = tree.show(ui);
+/// let response = tree.show(ui, &theme);
 /// if let Some(path) = response.selected {
 ///     // Handle file selection
 /// }

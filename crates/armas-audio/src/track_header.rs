@@ -46,16 +46,17 @@ pub struct TrackHeaderResponse {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas::components::audio::{TrackHeader, TrackControls};
+/// use armas_audio::{TrackHeader, TrackControls};
 ///
 /// fn ui(ui: &mut egui::Ui, theme: &armas::Theme) {
 ///     let mut name = "Audio 1".to_string();
 ///     let mut controls = TrackControls::default();
+///     let mut collapsed = false;
 ///
 ///     let response = TrackHeader::new()
 ///         .width(200.0)
 ///         .color(egui::Color32::from_rgb(100, 150, 255))
-///         .show(ui, &mut name, &mut controls, theme);
+///         .show(ui, &mut name, &mut controls, &mut collapsed, theme);
 ///
 ///     if response.mute_clicked {
 ///         println!("Mute toggled!");

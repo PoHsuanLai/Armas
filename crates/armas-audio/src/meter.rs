@@ -49,30 +49,30 @@ pub enum ScalePosition {
 /// # use egui::Ui;
 /// # use armas::Theme;
 /// # fn example(ui: &mut Ui, theme: &Theme) {
-/// use armas::components::{AudioMeter, MeterStyle};
+/// use armas_audio::{AudioMeter, MeterStyle};
 ///
 /// // Simple two-color meter
 /// let mut level = 0.75;
 /// AudioMeter::new(level)
 ///     .height(200.0)
 ///     .width(30.0)
-///     .show(ui);
+///     .show(ui, theme);
 ///
 /// // Traditional VU meter with green/yellow/red zones
 /// AudioMeter::new(level)
 ///     .vu_colors(theme)
-///     .show(ui);
+///     .show(ui, theme);
 ///
 /// // Segmented LED style
 /// AudioMeter::new(level)
 ///     .style(MeterStyle::Segmented(24))
-///     .show(ui);
+///     .show(ui, theme);
 ///
 /// // Monochrome with opacity gradient
 /// AudioMeter::new(level)
 ///     .monochrome(theme.primary())
-///     .show_scale(true)
-///     .show(ui);
+///     .show_scale()
+///     .show(ui, theme);
 /// # }
 /// ```
 pub struct AudioMeter {

@@ -7,7 +7,8 @@ use egui_kittest::Harness;
 #[test]
 fn test_button_renders() {
     let mut harness = Harness::new_ui(|ui| {
-        Button::new("Click me").show(ui);
+        let theme = ui.ctx().armas_theme();
+        Button::new("Click me").show(ui, &theme);
     });
 
     harness.run();
@@ -26,7 +27,8 @@ fn test_button_variants() {
 
     for variant in variants {
         let mut harness = Harness::new_ui(|ui| {
-            Button::new("Test Button").variant(variant).show(ui);
+            let theme = ui.ctx().armas_theme();
+            Button::new("Test Button").variant(variant).show(ui, &theme);
         });
         harness.run();
     }
@@ -36,7 +38,8 @@ fn test_button_variants() {
 #[test]
 fn test_button_disabled() {
     let mut harness = Harness::new_ui(|ui| {
-        Button::new("Disabled").enabled(false).show(ui);
+        let theme = ui.ctx().armas_theme();
+        Button::new("Disabled").enabled(false).show(ui, &theme);
     });
 
     harness.run();
@@ -46,7 +49,8 @@ fn test_button_disabled() {
 #[test]
 fn test_button_min_width() {
     let mut harness = Harness::new_ui(|ui| {
-        Button::new("Wide Button").min_width(200.0).show(ui);
+        let theme = ui.ctx().armas_theme();
+        Button::new("Wide Button").min_width(200.0).show(ui, &theme);
     });
 
     harness.run();
@@ -59,7 +63,8 @@ fn test_button_sizes() {
 
     for size in sizes {
         let mut harness = Harness::new_ui(|ui| {
-            Button::new("Sized").size(size).show(ui);
+            let theme = ui.ctx().armas_theme();
+            Button::new("Sized").size(size).show(ui, &theme);
         });
         harness.run();
     }
@@ -69,7 +74,8 @@ fn test_button_sizes() {
 #[test]
 fn test_button_full_width() {
     let mut harness = Harness::new_ui(|ui| {
-        Button::new("Full Width").full_width(true).show(ui);
+        let theme = ui.ctx().armas_theme();
+        Button::new("Full Width").full_width(true).show(ui, &theme);
     });
 
     harness.run();
@@ -79,14 +85,17 @@ fn test_button_full_width() {
 #[test]
 fn test_multiple_buttons() {
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         ui.horizontal(|ui| {
             Button::new("Primary")
                 .variant(ButtonVariant::Default)
-                .show(ui);
+                .show(ui, &theme);
             Button::new("Secondary")
                 .variant(ButtonVariant::Outline)
-                .show(ui);
-            Button::new("Cancel").variant(ButtonVariant::Ghost).show(ui);
+                .show(ui, &theme);
+            Button::new("Cancel")
+                .variant(ButtonVariant::Ghost)
+                .show(ui, &theme);
         });
     });
 
@@ -99,11 +108,11 @@ fn test_multiple_buttons() {
 //     let mut harness = Harness::new_ui(|ui| {
 //         ui.vertical(|ui| {
 //             ui.spacing_mut().item_spacing.y = 8.0;
-//             Button::new("Default").variant(ButtonVariant::Default).show(ui);
-//             Button::new("Secondary").variant(ButtonVariant::Secondary).show(ui);
-//             Button::new("Outline").variant(ButtonVariant::Outline).show(ui);
-//             Button::new("Ghost").variant(ButtonVariant::Ghost).show(ui);
-//             Button::new("Link").variant(ButtonVariant::Link).show(ui);
+//             Button::new("Default").variant(ButtonVariant::Default).show(ui, &theme);
+//             Button::new("Secondary").variant(ButtonVariant::Secondary).show(ui, &theme);
+//             Button::new("Outline").variant(ButtonVariant::Outline).show(ui, &theme);
+//             Button::new("Ghost").variant(ButtonVariant::Ghost).show(ui, &theme);
+//             Button::new("Link").variant(ButtonVariant::Link).show(ui, &theme);
 //         });
 //     });
 //

@@ -20,10 +20,11 @@
 //! # fn example(ui: &mut Ui) {
 //! use armas::prelude::*;
 //!
+//! let theme = ui.ctx().armas_theme();
 //! // Create a button with shadcn/ui styling
 //! if Button::new("Click me")
 //!     .variant(ButtonVariant::Default)
-//!     .show(ui)
+//!     .show(ui, &theme)
 //!     .clicked()
 //! {
 //!     // Handle click

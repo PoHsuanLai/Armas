@@ -101,7 +101,7 @@ pub struct TransportResponse {
 /// # use egui::Ui;
 /// # use armas::Theme;
 /// # fn example(ui: &mut Ui, theme: &Theme) {
-/// use armas::components::TransportControl;
+/// use armas_audio::TransportControl;
 ///
 /// let transport = TransportControl::new()
 ///     .tempo(120.0)

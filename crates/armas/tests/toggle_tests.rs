@@ -9,7 +9,10 @@ fn test_toggle_renders() {
     let mut checked = false;
 
     let mut harness = Harness::new_ui(|ui| {
-        Toggle::new().label("Enable feature").show(ui, &mut checked);
+        let theme = ui.ctx().armas_theme();
+        Toggle::new()
+            .label("Enable feature")
+            .show(ui, &mut checked, &theme);
     });
 
     harness.run();
@@ -21,10 +24,11 @@ fn test_toggle_switch_variant() {
     let mut checked = false;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Toggle::new()
             .variant(ToggleVariant::Switch)
             .label("Switch toggle")
-            .show(ui, &mut checked);
+            .show(ui, &mut checked, &theme);
     });
     harness.run();
 }
@@ -35,10 +39,11 @@ fn test_toggle_checkbox_variant() {
     let mut checked = false;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Toggle::new()
             .variant(ToggleVariant::Checkbox)
             .label("Checkbox toggle")
-            .show(ui, &mut checked);
+            .show(ui, &mut checked, &theme);
     });
     harness.run();
 }
@@ -49,10 +54,11 @@ fn test_toggle_size_small() {
     let mut checked = false;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Toggle::new()
             .size(ToggleSize::Small)
             .label("Small toggle")
-            .show(ui, &mut checked);
+            .show(ui, &mut checked, &theme);
     });
     harness.run();
 }
@@ -63,10 +69,11 @@ fn test_toggle_size_medium() {
     let mut checked = false;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Toggle::new()
             .size(ToggleSize::Medium)
             .label("Medium toggle")
-            .show(ui, &mut checked);
+            .show(ui, &mut checked, &theme);
     });
     harness.run();
 }
@@ -77,10 +84,11 @@ fn test_toggle_size_large() {
     let mut checked = false;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Toggle::new()
             .size(ToggleSize::Large)
             .label("Large toggle")
-            .show(ui, &mut checked);
+            .show(ui, &mut checked, &theme);
     });
     harness.run();
 }
@@ -91,10 +99,11 @@ fn test_toggle_disabled() {
     let mut checked = false;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Toggle::new()
             .disabled(true)
             .label("Disabled toggle")
-            .show(ui, &mut checked);
+            .show(ui, &mut checked, &theme);
     });
 
     harness.run();
@@ -108,10 +117,11 @@ fn test_toggle_with_description() {
     let mut checked = true;
 
     let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
         Toggle::new()
             .label("Dark mode")
             .description("Enable dark theme for better visibility at night")
-            .show(ui, &mut checked);
+            .show(ui, &mut checked, &theme);
     });
 
     // Use step() for animated components - run() expects the UI to settle
@@ -126,7 +136,7 @@ fn test_toggle_with_description() {
 //     let mut harness = Harness::new_ui(|ui| {
 //         Toggle::new()
 //             .label("Feature toggle")
-//             .show(ui, &mut checked);
+//             .show(ui, &mut checked, &theme);
 //     });
 //
 //     harness.fit_contents();
@@ -140,7 +150,7 @@ fn test_toggle_with_description() {
 //     let mut harness = Harness::new_ui(|ui| {
 //         Toggle::new()
 //             .label("Feature toggle")
-//             .show(ui, &mut checked);
+//             .show(ui, &mut checked, &theme);
 //     });
 //
 //     harness.fit_contents();
