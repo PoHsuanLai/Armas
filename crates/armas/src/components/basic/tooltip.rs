@@ -135,15 +135,23 @@ impl Tooltip {
 
         let text_size = text_galley.size();
         let tooltip_size = text_size + padding * 2.0;
-        let arrow_offset = if self.show_arrow { ARROW_SIZE + 2.0 } else { 4.0 };
+        let arrow_offset = if self.show_arrow {
+            ARROW_SIZE + 2.0
+        } else {
+            4.0
+        };
 
         // Determine position
         let target_rect = target_response.rect;
         let position = self.determine_position(ui, target_rect, tooltip_size, arrow_offset);
-        let tooltip_rect = self.calculate_tooltip_rect(target_rect, tooltip_size, arrow_offset, position);
+        let tooltip_rect =
+            self.calculate_tooltip_rect(target_rect, tooltip_size, arrow_offset, position);
 
         // Draw tooltip as an overlay (above everything else)
-        let layer_id = egui::LayerId::new(egui::Order::Tooltip, target_response.id.with("tooltip_layer"));
+        let layer_id = egui::LayerId::new(
+            egui::Order::Tooltip,
+            target_response.id.with("tooltip_layer"),
+        );
         let painter = ui.ctx().layer_painter(layer_id);
 
         // Background

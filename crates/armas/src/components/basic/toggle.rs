@@ -118,8 +118,12 @@ impl Toggle {
     }
 
     /// Show the toggle and return whether it changed
-    pub fn show(&mut self, ui: &mut Ui, checked: &mut bool, theme: &crate::Theme) -> ToggleResponse {
-
+    pub fn show(
+        &mut self,
+        ui: &mut Ui,
+        checked: &mut bool,
+        theme: &crate::Theme,
+    ) -> ToggleResponse {
         // Load state from memory if ID is set
         if let Some(id) = self.id {
             let state_id = id.with("toggle_state");
@@ -161,10 +165,10 @@ impl Toggle {
                 if ui.is_rect_visible(rect) {
                     match self.variant {
                         ToggleVariant::Switch => {
-                            self.draw_switch(ui, rect, *checked, &theme);
+                            self.draw_switch(ui, rect, *checked, theme);
                         }
                         ToggleVariant::Checkbox => {
-                            self.draw_checkbox(ui, rect, *checked, &theme);
+                            self.draw_checkbox(ui, rect, *checked, theme);
                         }
                     }
                 }

@@ -20,6 +20,7 @@ pub struct RetroGrid {
 
 impl RetroGrid {
     /// Create a new retro grid
+    #[must_use] 
     pub fn new(width: f32, height: f32) -> Self {
         Self {
             width,
@@ -35,37 +36,43 @@ impl RetroGrid {
     }
 
     /// Set grid line color
-    pub fn grid_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn grid_color(mut self, color: Color32) -> Self {
         self.grid_color = color;
         self
     }
 
     /// Set horizon glow color
-    pub fn horizon_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn horizon_color(mut self, color: Color32) -> Self {
         self.horizon_color = color;
         self
     }
 
     /// Set cell size
-    pub fn cell_size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn cell_size(mut self, size: f32) -> Self {
         self.cell_size = size.max(10.0);
         self
     }
 
     /// Set perspective depth (0.0 to 1.0)
-    pub fn perspective_depth(mut self, depth: f32) -> Self {
+    #[must_use] 
+    pub const fn perspective_depth(mut self, depth: f32) -> Self {
         self.perspective_depth = depth.clamp(0.0, 1.0);
         self
     }
 
     /// Enable/disable animation
-    pub fn animate(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn animate(mut self, enabled: bool) -> Self {
         self.animate = enabled;
         self
     }
 
     /// Set animation speed
-    pub fn animation_speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn animation_speed(mut self, speed: f32) -> Self {
         self.animation_speed = speed;
         self
     }
@@ -110,7 +117,7 @@ impl RetroGrid {
             0.0
         };
 
-        let horizon_y = rect.top() + rect.height() * 0.6;
+        let horizon_y = rect.height().mul_add(0.6, rect.top());
 
         // Draw horizontal lines (perspective grid)
         let num_h_lines = ((rect.bottom() - horizon_y) / (self.cell_size / 4.0)) as usize;
@@ -124,12 +131,11 @@ impl RetroGrid {
                 t
             };
 
-            let y = horizon_y
-                + (rect.bottom() - horizon_y) * animated_t.powf(1.0 - self.perspective_depth);
+            let y = (rect.bottom() - horizon_y).mul_add(animated_t.powf(1.0 - self.perspective_depth), horizon_y);
 
             let thickness = 1.0 + animated_t * 2.0;
 
-            let alpha = (animated_t.powf(0.5) * self.grid_color.a() as f32) as u8;
+            let alpha = (animated_t.sqrt() * f32::from(self.grid_color.a())) as u8;
             let line_color = Color32::from_rgba_unmultiplied(
                 self.grid_color.r(),
                 self.grid_color.g(),
@@ -149,14 +155,14 @@ impl RetroGrid {
 
         for i in 0..=num_v_lines {
             let t = i as f32 / num_v_lines as f32 - 0.5;
-            let x = rect.left() + (i as f32 * self.cell_size);
+            let x = (i as f32).mul_add(self.cell_size, rect.left());
 
             let bottom_point = Pos2::new(x, rect.bottom());
 
             let distance_from_center = (t.abs() * 2.0).min(1.0);
-            let thickness = 1.0 + (1.0 - distance_from_center) * 2.0;
+            let thickness = (1.0 - distance_from_center).mul_add(2.0, 1.0);
 
-            let alpha = ((1.0 - distance_from_center * 0.5) * self.grid_color.a() as f32) as u8;
+            let alpha = ((1.0 - distance_from_center * 0.5) * f32::from(self.grid_color.a())) as u8;
             let line_color = Color32::from_rgba_unmultiplied(
                 self.grid_color.r(),
                 self.grid_color.g(),
@@ -174,7 +180,7 @@ impl RetroGrid {
         let glow_height = 80.0;
         for i in 0..20 {
             let t = i as f32 / 20.0;
-            let alpha = ((1.0 - t) * self.horizon_color.a() as f32 * 0.5) as u8;
+            let alpha = ((1.0 - t) * f32::from(self.horizon_color.a()) * 0.5) as u8;
             let glow_color = Color32::from_rgba_unmultiplied(
                 self.horizon_color.r(),
                 self.horizon_color.g(),

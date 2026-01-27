@@ -1,7 +1,7 @@
 //! Tests for Select component using egui_kittest
 
-use armas::prelude::*;
 use armas::components::basic::SelectOption;
+use armas::prelude::*;
 use egui_kittest::Harness;
 
 /// Test that Select renders without panicking

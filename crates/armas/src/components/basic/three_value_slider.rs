@@ -169,7 +169,8 @@ impl ThreeValueSlider {
             // Track and thumb sizes (matching shadcn: h-1.5 track, size-4 thumb)
             let track_height = 6.0;
             let thumb_radius = 8.0;
-            let track_rect = Rect::from_center_size(rect.center(), vec2(rect.width(), track_height));
+            let track_rect =
+                Rect::from_center_size(rect.center(), vec2(rect.width(), track_height));
 
             // Calculate thumb positions
             let min_x = self.value_to_x(*min_bound, &track_rect);
@@ -197,7 +198,10 @@ impl ThreeValueSlider {
                     let dist_to_min = (pos.x - min_x).abs();
                     let dist_to_value = (pos.x - value_x).abs();
                     let dist_to_max = (pos.x - max_x).abs();
-                    if dist_to_value <= thumb_radius && dist_to_value <= dist_to_min && dist_to_value <= dist_to_max {
+                    if dist_to_value <= thumb_radius
+                        && dist_to_value <= dist_to_min
+                        && dist_to_value <= dist_to_max
+                    {
                         Some(DragTarget::Value)
                     } else if dist_to_min <= thumb_radius && dist_to_min <= dist_to_max {
                         Some(DragTarget::Min)
@@ -369,7 +373,13 @@ impl ThreeValueSlider {
                 }
 
                 self.update_values_from_drag(
-                    pos.x, track_rect, &drag_state, min_bound, value, max_bound, changed,
+                    pos.x,
+                    track_rect,
+                    &drag_state,
+                    min_bound,
+                    value,
+                    max_bound,
+                    changed,
                 );
             }
         }
@@ -450,7 +460,11 @@ impl ThreeValueSlider {
             pos2(min_x, track_rect.top()),
             pos2(max_x, track_rect.bottom()),
         );
-        painter.rect_filled(fill_rect, track_height / 2.0, theme.muted().gamma_multiply(1.5));
+        painter.rect_filled(
+            fill_rect,
+            track_height / 2.0,
+            theme.muted().gamma_multiply(1.5),
+        );
 
         // Highlight region from min to current value
         let value_fill_rect = Rect::from_min_max(
@@ -503,7 +517,11 @@ impl ThreeValueSlider {
 
         for (x, is_min) in [(min_x, true), (max_x, false)] {
             let center = pos2(x, track_rect.center().y);
-            let this_target = if is_min { DragTarget::Min } else { DragTarget::Max };
+            let this_target = if is_min {
+                DragTarget::Min
+            } else {
+                DragTarget::Max
+            };
 
             let is_active = response.dragged() && drag_state.target == this_target;
             let is_hovered = hovered_thumb == Some(this_target);
@@ -528,11 +546,7 @@ impl ThreeValueSlider {
             };
 
             painter.circle_filled(center, bound_radius, handle_color);
-            painter.circle_stroke(
-                center,
-                bound_radius,
-                Stroke::new(1.0, theme.primary()),
-            );
+            painter.circle_stroke(center, bound_radius, Stroke::new(1.0, theme.primary()));
         }
     }
 
@@ -570,7 +584,11 @@ impl ThreeValueSlider {
                     Color32::from_black_alpha(40),
                 );
                 painter.circle_filled(value_center, thumb_radius, value_color);
-                painter.circle_stroke(value_center, thumb_radius, Stroke::new(1.0, theme.primary()));
+                painter.circle_stroke(
+                    value_center,
+                    thumb_radius,
+                    Stroke::new(1.0, theme.primary()),
+                );
             }
             ValueThumbStyle::Diamond => {
                 let size = thumb_radius * 0.9;

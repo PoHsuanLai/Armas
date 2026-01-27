@@ -180,7 +180,8 @@ impl Toast {
     }
 
     fn color(&self, theme: &Theme) -> Color32 {
-        self.custom_color.unwrap_or_else(|| self.variant.color(theme))
+        self.custom_color
+            .unwrap_or_else(|| self.variant.color(theme))
     }
 }
 
@@ -359,8 +360,14 @@ impl ToastManager {
 
                             // Icon
                             let icon_size = 16.0;
-                            let (rect, _) = ui.allocate_exact_size(vec2(icon_size, icon_size), Sense::hover());
-                            render_icon(ui.painter(), rect, toast.variant.icon().data(), accent_color);
+                            let (rect, _) =
+                                ui.allocate_exact_size(vec2(icon_size, icon_size), Sense::hover());
+                            render_icon(
+                                ui.painter(),
+                                rect,
+                                toast.variant.icon().data(),
+                                accent_color,
+                            );
 
                             // Content
                             ui.vertical(|ui| {
@@ -381,7 +388,7 @@ impl ToastManager {
                                     .padding(6.0)
                                     .icon_color(theme.muted_foreground())
                                     .hover_icon_color(theme.foreground())
-                                    .show(ui, &theme);
+                                    .show(ui, theme);
 
                                 if close_response.clicked() {
                                     dismissed = true;

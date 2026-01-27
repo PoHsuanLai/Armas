@@ -224,7 +224,6 @@ impl MidiPad {
 
     /// Show the MIDI pad grid
     pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> MidiPadResponse {
-
         // Calculate total size
         let total_width = self.cols as f32 * self.pad_size + (self.cols - 1) as f32 * self.gap;
         let total_height = self.rows as f32 * self.pad_size + (self.rows - 1) as f32 * self.gap;
@@ -245,12 +244,15 @@ impl MidiPad {
                     let pad_index = row * self.cols + col;
 
                     // Get pad config or create default
-                    let pad_config = self.pads.get(pad_index).cloned().unwrap_or_else(|| {
-                        PadConfig::new(pad_index as u8)
-                    });
+                    let pad_config = self
+                        .pads
+                        .get(pad_index)
+                        .cloned()
+                        .unwrap_or_else(|| PadConfig::new(pad_index as u8));
 
                     // Get current pad state
-                    let velocity = self.pad_states
+                    let velocity = self
+                        .pad_states
                         .get(&pad_config.note)
                         .map(|s| s.velocity)
                         .unwrap_or(0);
@@ -258,20 +260,12 @@ impl MidiPad {
                     // Calculate pad rect
                     let pad_x = rect.min.x + col as f32 * (self.pad_size + self.gap);
                     let pad_y = rect.min.y + row as f32 * (self.pad_size + self.gap);
-                    let pad_rect = Rect::from_min_size(
-                        Pos2::new(pad_x, pad_y),
-                        Vec2::splat(self.pad_size),
-                    );
+                    let pad_rect =
+                        Rect::from_min_size(Pos2::new(pad_x, pad_y), Vec2::splat(self.pad_size));
 
                     // Draw the pad and handle interaction
-                    let pad_response = self.draw_pad(
-                        ui,
-                        &theme,
-                        pad_rect,
-                        &pad_config,
-                        pad_index,
-                        velocity,
-                    );
+                    let pad_response =
+                        self.draw_pad(ui, &theme, pad_rect, &pad_config, pad_index, velocity);
 
                     // Handle pad interaction
                     if pad_response.clicked() {
@@ -451,12 +445,7 @@ impl MidiPad {
         let bg_color = if is_pressed && self.show_velocity {
             // Show color with velocity-based alpha
             let alpha = (64.0 + (velocity as f32 / 127.0) * 191.0) as u8;
-            Color32::from_rgba_unmultiplied(
-                base_color.r(),
-                base_color.g(),
-                base_color.b(),
-                alpha,
-            )
+            Color32::from_rgba_unmultiplied(base_color.r(), base_color.g(), base_color.b(), alpha)
         } else if is_hovered {
             theme.muted()
         } else {

@@ -32,7 +32,10 @@ struct SubmenuState {
 
 impl SubmenuState {
     fn load(ctx: &egui::Context, menu_id: Id) -> Self {
-        ctx.data_mut(|d| d.get_temp(menu_id.with("submenu_state")).unwrap_or_default())
+        ctx.data_mut(|d| {
+            d.get_temp(menu_id.with("submenu_state"))
+                .unwrap_or_default()
+        })
     }
 
     fn save(&self, ctx: &egui::Context, menu_id: Id) {
@@ -89,11 +92,21 @@ const CHEVRON_SIZE: f32 = 16.0;
 
 #[derive(Clone)]
 enum MenuItemKind {
-    Item { destructive: bool },
+    Item {
+        destructive: bool,
+    },
     Separator,
-    Checkbox { checked: bool },
-    Radio { group: String, value: String, selected: bool },
-    Submenu { items: Vec<MenuItemData> },
+    Checkbox {
+        checked: bool,
+    },
+    Radio {
+        group: String,
+        value: String,
+        selected: bool,
+    },
+    Submenu {
+        items: Vec<MenuItemData>,
+    },
 }
 
 #[derive(Clone)]
@@ -136,7 +149,9 @@ impl MenuBuilder {
             inset: false,
             kind: MenuItemKind::Item { destructive: false },
         });
-        MenuItemBuilder { items: &mut self.items }
+        MenuItemBuilder {
+            items: &mut self.items,
+        }
     }
 
     /// Add a separator line
@@ -161,7 +176,9 @@ impl MenuBuilder {
             inset: false,
             kind: MenuItemKind::Checkbox { checked },
         });
-        MenuItemBuilder { items: &mut self.items }
+        MenuItemBuilder {
+            items: &mut self.items,
+        }
     }
 
     /// Add a radio item
@@ -184,7 +201,9 @@ impl MenuBuilder {
                 selected,
             },
         });
-        MenuItemBuilder { items: &mut self.items }
+        MenuItemBuilder {
+            items: &mut self.items,
+        }
     }
 
     /// Add a submenu
@@ -202,9 +221,13 @@ impl MenuBuilder {
             shortcut: None,
             disabled: false,
             inset: false,
-            kind: MenuItemKind::Submenu { items: sub_builder.items },
+            kind: MenuItemKind::Submenu {
+                items: sub_builder.items,
+            },
         });
-        MenuItemBuilder { items: &mut self.items }
+        MenuItemBuilder {
+            items: &mut self.items,
+        }
     }
 }
 
@@ -430,12 +453,7 @@ impl Menu {
         (is_open, selected_index)
     }
 
-    fn save_state(
-        &self,
-        ctx: &egui::Context,
-        is_open: bool,
-        selected_index: Option<usize>,
-    ) {
+    fn save_state(&self, ctx: &egui::Context, is_open: bool, selected_index: Option<usize>) {
         ctx.data_mut(|d| {
             if self.is_open.is_none() {
                 d.insert_temp(self.id.with("menu_state"), is_open);
@@ -481,7 +499,6 @@ impl Menu {
             }
         });
     }
-
 }
 
 // ============================================================================
@@ -532,7 +549,11 @@ fn render_items(
                     response.checkbox_toggled = Some((idx, !checked));
                 }
             }
-            MenuItemKind::Radio { group, value, selected } => {
+            MenuItemKind::Radio {
+                group,
+                value,
+                selected,
+            } => {
                 let (result, _) = render_item_with_hover(
                     ui,
                     theme,
@@ -592,7 +613,11 @@ fn render_item_with_hover(
 
     let (rect, item_response) = ui.allocate_exact_size(
         vec2(ui.available_width(), ITEM_HEIGHT),
-        if item.disabled { Sense::hover() } else { Sense::click() },
+        if item.disabled {
+            Sense::hover()
+        } else {
+            Sense::click()
+        },
     );
 
     let is_hovered = item_response.hovered() && !item.disabled;
@@ -603,7 +628,14 @@ fn render_item_with_hover(
     }
 
     // Render background
-    render_item_background(ui, theme, rect, is_selected || item_response.hovered(), destructive, item.disabled);
+    render_item_background(
+        ui,
+        theme,
+        rect,
+        is_selected || item_response.hovered(),
+        destructive,
+        item.disabled,
+    );
 
     // Render content
     render_item_content(
@@ -707,7 +739,7 @@ fn render_item_content(
         );
         ui.scope_builder(egui::UiBuilder::new().max_rect(shortcut_rect), |ui| {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                Kbd::new(shortcut).show(ui, &theme);
+                Kbd::new(shortcut).show(ui, theme);
             });
         });
     }
@@ -727,7 +759,8 @@ fn render_indicator(ui: &mut Ui, theme: &crate::Theme, rect: Rect, is_checkbox: 
         );
     } else {
         // Radio dot (filled circle)
-        ui.painter().circle_filled(indicator_pos, 3.0, theme.foreground());
+        ui.painter()
+            .circle_filled(indicator_pos, 3.0, theme.foreground());
     }
 }
 
@@ -748,7 +781,11 @@ fn render_submenu(
 
     let (rect, item_response) = ui.allocate_exact_size(
         vec2(ui.available_width(), ITEM_HEIGHT),
-        if item.disabled { Sense::hover() } else { Sense::click() },
+        if item.disabled {
+            Sense::hover()
+        } else {
+            Sense::click()
+        },
     );
 
     // Open submenu when hovering the trigger
@@ -789,10 +826,18 @@ fn render_submenu(
 
     // Chevron (right arrow)
     let chevron_rect = Rect::from_center_size(
-        egui::pos2(rect.right() - ITEM_PADDING_X - CHEVRON_SIZE / 2.0, rect.center().y),
+        egui::pos2(
+            rect.right() - ITEM_PADDING_X - CHEVRON_SIZE / 2.0,
+            rect.center().y,
+        ),
         vec2(CHEVRON_SIZE, CHEVRON_SIZE),
     );
-    render_icon(ui.painter(), chevron_rect, WindowIcon::ChevronRight.data(), icon_color);
+    render_icon(
+        ui.painter(),
+        chevron_rect,
+        WindowIcon::ChevronRight.data(),
+        icon_color,
+    );
 
     // Always render the submenu so it can animate closed
     // Position submenu to the right of the item
@@ -827,7 +872,12 @@ fn render_submenu(
     }
 }
 
-fn add_item_to_builder(builder: &mut MenuBuilder, item: &MenuItemData, menu_id: Id, menu_width: f32) {
+fn add_item_to_builder(
+    builder: &mut MenuBuilder,
+    item: &MenuItemData,
+    menu_id: Id,
+    menu_width: f32,
+) {
     match &item.kind {
         MenuItemKind::Separator => builder.separator(),
         MenuItemKind::Item { destructive } => {
@@ -857,7 +907,11 @@ fn add_item_to_builder(builder: &mut MenuBuilder, item: &MenuItemData, menu_id: 
                 b.disabled(true);
             }
         }
-        MenuItemKind::Radio { group, value, selected } => {
+        MenuItemKind::Radio {
+            group,
+            value,
+            selected,
+        } => {
             let mut b = builder.radio(&item.label, group, value, *selected);
             if let Some(icon) = &item.icon {
                 b = b.icon(icon);

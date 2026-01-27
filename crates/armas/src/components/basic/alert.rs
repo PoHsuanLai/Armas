@@ -149,16 +149,23 @@ impl Alert {
     pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> AlertResponse {
         let mut dismissed = false;
 
-        let accent_color = self.custom_color.unwrap_or_else(|| self.variant.color(&theme));
+        let accent_color = self
+            .custom_color
+            .unwrap_or_else(|| self.variant.color(theme));
         let bg_color = if self.custom_color.is_some() {
-            Color32::from_rgba_unmultiplied(accent_color.r(), accent_color.g(), accent_color.b(), 20)
+            Color32::from_rgba_unmultiplied(
+                accent_color.r(),
+                accent_color.g(),
+                accent_color.b(),
+                20,
+            )
         } else {
-            self.variant.background_color(&theme)
+            self.variant.background_color(theme)
         };
         let border_color = if self.custom_color.is_some() {
             accent_color
         } else {
-            self.variant.border_color(&theme)
+            self.variant.border_color(theme)
         };
 
         // Build the Card with alert-specific styling (shadcn style)
@@ -174,14 +181,15 @@ impl Alert {
         }
 
         // Show the card with alert content
-        card.show(ui, &theme, |ui| {
+        card.show(ui, theme, |ui| {
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = 12.0;
 
                 // Icon
                 if self.show_icon {
                     let icon_size = 16.0;
-                    let (rect, _) = ui.allocate_exact_size(vec2(icon_size, icon_size), Sense::hover());
+                    let (rect, _) =
+                        ui.allocate_exact_size(vec2(icon_size, icon_size), Sense::hover());
                     render_icon(ui.painter(), rect, self.variant.icon().data(), accent_color);
                 }
 
@@ -206,7 +214,7 @@ impl Alert {
                         .padding(4.0)
                         .icon_color(theme.muted_foreground())
                         .hover_icon_color(theme.foreground())
-                        .show(ui, &theme);
+                        .show(ui, theme);
 
                     if close_response.clicked() {
                         dismissed = true;

@@ -205,7 +205,6 @@ impl<'a> XYPad<'a> {
 
     /// Show the XY pad
     pub fn show(self, ui: &mut Ui, theme: &Theme) -> XYPadResponse {
-
         // Load previous state if ID is set
         if let Some(id) = self.id {
             let state_id_x = id.with("xy_pad_x");
@@ -256,13 +255,15 @@ impl<'a> XYPad<'a> {
             let modifiers = ui.ctx().input(|i| i.modifiers);
             // In velocity mode: Ctrl/Cmd switches to absolute mode
             // Without velocity mode: always absolute
-            let use_velocity = self.velocity_mode
-                && !modifiers.command
-                && !modifiers.ctrl;
+            let use_velocity = self.velocity_mode && !modifiers.command && !modifiers.ctrl;
 
             if let Some(pos) = response.interact_pointer_pos() {
-                drag_state.drag_x.begin(*self.x as f64, pos.x as f64, use_velocity);
-                drag_state.drag_y.begin(*self.y as f64, pos.y as f64, use_velocity);
+                drag_state
+                    .drag_x
+                    .begin(*self.x as f64, pos.x as f64, use_velocity);
+                drag_state
+                    .drag_y
+                    .begin(*self.y as f64, pos.y as f64, use_velocity);
             }
         }
 
@@ -270,8 +271,14 @@ impl<'a> XYPad<'a> {
             if let Some(pos) = response.interact_pointer_pos() {
                 if drag_state.drag_x.is_velocity_mode() {
                     // Velocity mode: incremental changes based on mouse speed
-                    let delta_x = drag_state.drag_x.update_tracked(pos.x as f64, 1.0, self.size as f64);
-                    let delta_y = drag_state.drag_y.update_tracked(pos.y as f64, 1.0, self.size as f64);
+                    let delta_x =
+                        drag_state
+                            .drag_x
+                            .update_tracked(pos.x as f64, 1.0, self.size as f64);
+                    let delta_y =
+                        drag_state
+                            .drag_y
+                            .update_tracked(pos.y as f64, 1.0, self.size as f64);
 
                     *self.x = (*self.x + delta_x as f32).clamp(0.0, 1.0);
                     // Y is inverted (up = higher value)
@@ -292,7 +299,8 @@ impl<'a> XYPad<'a> {
         }
 
         // Save drag state
-        ui.ctx().data_mut(|d| d.insert_temp(drag_state_id, drag_state));
+        ui.ctx()
+            .data_mut(|d| d.insert_temp(drag_state_id, drag_state));
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
@@ -318,11 +326,17 @@ impl<'a> XYPad<'a> {
 
                 let crosshair_color = theme.muted_foreground().gamma_multiply(0.3);
                 painter.line_segment(
-                    [Pos2::new(rect.min.x, handle_y), Pos2::new(rect.max.x, handle_y)],
+                    [
+                        Pos2::new(rect.min.x, handle_y),
+                        Pos2::new(rect.max.x, handle_y),
+                    ],
                     egui::Stroke::new(1.0, crosshair_color),
                 );
                 painter.line_segment(
-                    [Pos2::new(handle_x, rect.min.y), Pos2::new(handle_x, rect.max.y)],
+                    [
+                        Pos2::new(handle_x, rect.min.y),
+                        Pos2::new(handle_x, rect.max.y),
+                    ],
                     egui::Stroke::new(1.0, crosshair_color),
                 );
             }

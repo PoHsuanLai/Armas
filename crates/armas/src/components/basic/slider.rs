@@ -136,9 +136,7 @@ impl Slider {
         let mut changed = false;
 
         // Generate a stable ID for drag state
-        let slider_id = self
-            .id
-            .unwrap_or_else(|| ui.make_persistent_id("slider"));
+        let slider_id = self.id.unwrap_or_else(|| ui.make_persistent_id("slider"));
         let drag_state_id = slider_id.with("drag_state");
 
         // Load state from memory if ID is set
@@ -198,11 +196,11 @@ impl Slider {
                 };
 
                 if let Some(pos) = response.interact_pointer_pos() {
-                    let use_velocity = self.velocity_mode
-                        && ui.input(|i| {
-                            i.modifiers.command || i.modifiers.ctrl
-                        });
-                    drag_state.drag.begin(*value as f64, pos.x as f64, use_velocity);
+                    let use_velocity =
+                        self.velocity_mode && ui.input(|i| i.modifiers.command || i.modifiers.ctrl);
+                    drag_state
+                        .drag
+                        .begin(*value as f64, pos.x as f64, use_velocity);
                 }
 
                 ui.ctx()
@@ -217,10 +215,11 @@ impl Slider {
 
                     if drag_state.drag.mode() == DragMode::Velocity {
                         // Velocity mode: use drag helper
-                        let delta =
-                            drag_state
-                                .drag
-                                .update_tracked(pos.x as f64, range, rect.width() as f64);
+                        let delta = drag_state.drag.update_tracked(
+                            pos.x as f64,
+                            range,
+                            rect.width() as f64,
+                        );
                         let mut new_value = drag_state.drag_start_value + delta as f32;
 
                         // Apply step if specified
@@ -281,7 +280,8 @@ impl Slider {
                 let painter = ui.painter();
 
                 // Background track (using shadcn constants)
-                let track_rect = Rect::from_center_size(rect.center(), vec2(rect.width(), TRACK_HEIGHT));
+                let track_rect =
+                    Rect::from_center_size(rect.center(), vec2(rect.width(), TRACK_HEIGHT));
 
                 painter.rect_filled(track_rect, TRACK_HEIGHT / 2.0, theme.muted());
 

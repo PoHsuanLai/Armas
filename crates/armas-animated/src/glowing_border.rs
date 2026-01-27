@@ -22,7 +22,8 @@ pub struct GlowingBorder {
 
 impl GlowingBorder {
     /// Create a new glowing border container
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             width: None,
             height: None,
@@ -37,55 +38,64 @@ impl GlowingBorder {
     }
 
     /// Set container width (auto if not set)
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set container height (auto if not set)
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = Some(height);
         self
     }
 
     /// Set the glow color
-    pub fn glow_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn glow_color(mut self, color: Color32) -> Self {
         self.glow_color = color;
         self
     }
 
     /// Set background color
-    pub fn background(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn background(mut self, color: Color32) -> Self {
         self.background = color;
         self
     }
 
     /// Set corner radius
-    pub fn corner_radius(mut self, radius: f32) -> Self {
+    #[must_use] 
+    pub const fn corner_radius(mut self, radius: f32) -> Self {
         self.corner_radius = radius;
         self
     }
 
     /// Set border width
-    pub fn border_width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn border_width(mut self, width: f32) -> Self {
         self.border_width = width.max(1.0);
         self
     }
 
     /// Set glow intensity (0.0 to 2.0)
-    pub fn glow_intensity(mut self, intensity: f32) -> Self {
+    #[must_use] 
+    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.max(0.0);
         self
     }
 
     /// Set pulse speed
-    pub fn pulse_speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn pulse_speed(mut self, speed: f32) -> Self {
         self.pulse_speed = speed.max(0.0);
         self
     }
 
     /// Enable/disable pulsing
-    pub fn pulse(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn pulse(mut self, enabled: bool) -> Self {
         self.pulse = enabled;
         self
     }
@@ -117,7 +127,7 @@ impl GlowingBorder {
 
         // Calculate pulse multiplier
         let pulse_multiplier = if self.pulse {
-            0.6 + (time * self.pulse_speed * 2.0).sin() * 0.4
+            (time * self.pulse_speed * 2.0).sin().mul_add(0.4, 0.6)
         } else {
             1.0
         };

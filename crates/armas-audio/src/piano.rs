@@ -299,8 +299,9 @@ impl Piano {
         }
 
         let scroll_state_id = self.id.unwrap_or(egui::Id::new("piano")).with("scroll");
-        let mut state: PianoScrollState =
-            ui.ctx().data(|d| d.get_temp(scroll_state_id).unwrap_or_default());
+        let mut state: PianoScrollState = ui
+            .ctx()
+            .data(|d| d.get_temp(scroll_state_id).unwrap_or_default());
 
         let current_time = ui.ctx().input(|i| i.time);
         let dt = if state.last_frame_time > 0.0 {
@@ -353,7 +354,8 @@ impl Piano {
         let max_scroll = (layout.content_size - layout.display_size).max(0.0);
         state.offset = state.offset.clamp(-max_scroll, 0.0);
 
-        ui.ctx().data_mut(|d| d.insert_temp(scroll_state_id, state.clone()));
+        ui.ctx()
+            .data_mut(|d| d.insert_temp(scroll_state_id, state.clone()));
         state.offset
     }
 
@@ -455,7 +457,8 @@ impl Piano {
             }
 
             let response = ui.allocate_rect(key_rect, Sense::click_and_drag());
-            let is_pressed = self.pressed_keys.contains(&note) || response.is_pointer_button_down_on();
+            let is_pressed =
+                self.pressed_keys.contains(&note) || response.is_pointer_button_down_on();
 
             self.draw_key(KeyDrawParams {
                 painter,
@@ -466,7 +469,11 @@ impl Piano {
                 is_hovered: response.hovered(),
                 opacity: self.white_key_opacity,
                 glow_intensity: self.glow_intensity,
-                corner_radius: self.white_key_corner_radius(layout.is_horizontal, facing_up, facing_left),
+                corner_radius: self.white_key_corner_radius(
+                    layout.is_horizontal,
+                    facing_up,
+                    facing_left,
+                ),
                 note: if self.show_labels {
                     Some((note, layout.is_horizontal))
                 } else {
@@ -518,7 +525,8 @@ impl Piano {
             }
 
             let response = ui.allocate_rect(key_rect, Sense::click_and_drag());
-            let is_pressed = self.pressed_keys.contains(&note) || response.is_pointer_button_down_on();
+            let is_pressed =
+                self.pressed_keys.contains(&note) || response.is_pointer_button_down_on();
 
             self.draw_key(KeyDrawParams {
                 painter,
@@ -529,7 +537,11 @@ impl Piano {
                 is_hovered: response.hovered(),
                 opacity: self.black_key_opacity,
                 glow_intensity: self.glow_intensity,
-                corner_radius: self.black_key_corner_radius(layout.is_horizontal, facing_up, facing_left),
+                corner_radius: self.black_key_corner_radius(
+                    layout.is_horizontal,
+                    facing_up,
+                    facing_left,
+                ),
                 note: None,
             });
 
@@ -556,12 +568,9 @@ impl Piano {
                 Vec2::new(self.white_key_width, self.white_key_height),
             )
         } else {
-            let key_y = rect.max.y - scroll_offset - (white_key_index + 1) as f32 * self.white_key_width;
-            let key_x = if facing_left {
-                rect.min.x
-            } else {
-                rect.min.x
-            };
+            let key_y =
+                rect.max.y - scroll_offset - (white_key_index + 1) as f32 * self.white_key_width;
+            let key_x = if facing_left { rect.min.x } else { rect.min.x };
             Rect::from_min_size(
                 Pos2::new(key_x, key_y),
                 Vec2::new(self.white_key_height, self.white_key_width),
@@ -579,8 +588,7 @@ impl Piano {
         facing_left: bool,
     ) -> Rect {
         if layout.is_horizontal {
-            let key_x = rect.min.x + scroll_offset
-                + white_key_index as f32 * self.white_key_width
+            let key_x = rect.min.x + scroll_offset + white_key_index as f32 * self.white_key_width
                 - layout.black_key_size * 0.5;
             let key_y = if facing_up {
                 rect.max.y - layout.black_key_depth
@@ -592,7 +600,8 @@ impl Piano {
                 Vec2::new(layout.black_key_size, layout.black_key_depth),
             )
         } else {
-            let key_y = rect.max.y - scroll_offset
+            let key_y = rect.max.y
+                - scroll_offset
                 - white_key_index as f32 * self.white_key_width
                 - layout.black_key_size * 0.5;
             let key_x = if facing_left {
@@ -615,14 +624,34 @@ impl Piano {
     ) -> CornerRadius {
         if is_horizontal {
             if facing_up {
-                CornerRadius { nw: 4, ne: 4, sw: 0, se: 0 }
+                CornerRadius {
+                    nw: 4,
+                    ne: 4,
+                    sw: 0,
+                    se: 0,
+                }
             } else {
-                CornerRadius { nw: 0, ne: 0, sw: 4, se: 4 }
+                CornerRadius {
+                    nw: 0,
+                    ne: 0,
+                    sw: 4,
+                    se: 4,
+                }
             }
         } else if facing_left {
-            CornerRadius { nw: 4, ne: 0, sw: 4, se: 0 }
+            CornerRadius {
+                nw: 4,
+                ne: 0,
+                sw: 4,
+                se: 0,
+            }
         } else {
-            CornerRadius { nw: 0, ne: 4, sw: 0, se: 4 }
+            CornerRadius {
+                nw: 0,
+                ne: 4,
+                sw: 0,
+                se: 4,
+            }
         }
     }
 
@@ -650,8 +679,12 @@ impl Piano {
         };
 
         let base_color = if params.is_black { 20 } else { 255 };
-        let glass_color =
-            Color32::from_rgba_unmultiplied(base_color, base_color, base_color, (255.0 * opacity) as u8);
+        let glass_color = Color32::from_rgba_unmultiplied(
+            base_color,
+            base_color,
+            base_color,
+            (255.0 * opacity) as u8,
+        );
 
         // For black keys, draw an opaque background first to prevent white key lines showing through
         if params.is_black {
@@ -663,7 +696,9 @@ impl Piano {
         }
 
         // Background (glass effect)
-        params.painter.rect_filled(params.rect, params.corner_radius, glass_color);
+        params
+            .painter
+            .rect_filled(params.rect, params.corner_radius, glass_color);
 
         // Border
         let border_color = if params.is_pressed {
@@ -680,7 +715,13 @@ impl Piano {
 
         // Glow for pressed keys
         if params.is_pressed {
-            self.draw_key_glow(params.painter, params.rect, params.corner_radius, params.theme.primary(), params.glow_intensity);
+            self.draw_key_glow(
+                params.painter,
+                params.rect,
+                params.corner_radius,
+                params.theme.primary(),
+                params.glow_intensity,
+            );
         }
 
         // Shimmer
@@ -688,7 +729,13 @@ impl Piano {
 
         // Note label (white keys only)
         if let Some((note, is_horizontal)) = params.note {
-            self.draw_note_label(params.painter, params.theme, params.rect, note, is_horizontal);
+            self.draw_note_label(
+                params.painter,
+                params.theme,
+                params.rect,
+                note,
+                is_horizontal,
+            );
         }
     }
 
@@ -703,7 +750,8 @@ impl Piano {
         for i in 0..4 {
             let offset = (i + 1) as f32 * 1.5;
             let alpha = ((1.0 - i as f32 / 4.0) * 35.0 * intensity) as u8;
-            let glow_color = Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
+            let glow_color =
+                Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
             painter.rect_stroke(
                 rect.expand(offset),
                 corner_radius,

@@ -37,7 +37,10 @@ impl MarkerVariant {
         match self {
             MarkerVariant::Cue(label) => label.clone(),
             MarkerVariant::Tempo(bpm) => format!("{:.0} BPM", bpm),
-            MarkerVariant::TimeSignature { numerator, denominator } => {
+            MarkerVariant::TimeSignature {
+                numerator,
+                denominator,
+            } => {
                 format!("{}/{}", numerator, denominator)
             }
         }
@@ -48,7 +51,10 @@ impl MarkerVariant {
         match self {
             MarkerVariant::Cue(label) => format!("{} at {:.1} beats", label, position),
             MarkerVariant::Tempo(bpm) => format!("{:.0} BPM at {:.1} beats", bpm, position),
-            MarkerVariant::TimeSignature { numerator, denominator } => {
+            MarkerVariant::TimeSignature {
+                numerator,
+                denominator,
+            } => {
                 format!("{}/{} at {:.1} beats", numerator, denominator, position)
             }
         }
@@ -220,7 +226,9 @@ impl<'a> TimelineMarker<'a> {
         }
 
         let (rect, actual_height) = self.calculate_rect(ui, timeline_width);
-        let marker_color = self.color.unwrap_or_else(|| self.variant.default_color(&theme));
+        let marker_color = self
+            .color
+            .unwrap_or_else(|| self.variant.default_color(&theme));
 
         let mut interaction = MarkerInteraction {
             position_changed: false,
@@ -237,14 +245,8 @@ impl<'a> TimelineMarker<'a> {
                 self.draw_vertical_line(&painter, x_pos, &rect, actual_height, marker_color);
             }
 
-            interaction = self.draw_and_interact_badge(
-                ui,
-                &painter,
-                &theme,
-                x_pos,
-                &rect,
-                marker_color,
-            );
+            interaction =
+                self.draw_and_interact_badge(ui, &painter, &theme, x_pos, &rect, marker_color);
         }
 
         self.save_state(ui);
@@ -280,10 +282,8 @@ impl<'a> TimelineMarker<'a> {
     }
 
     fn create_disabled_response(&self, ui: &mut Ui, timeline_width: f32) -> TimelineMarkerResponse {
-        let (_rect, response) = ui.allocate_exact_size(
-            Vec2::new(timeline_width, 0.0),
-            Sense::hover(),
-        );
+        let (_rect, response) =
+            ui.allocate_exact_size(Vec2::new(timeline_width, 0.0), Sense::hover());
         TimelineMarkerResponse {
             response,
             position_changed: false,
@@ -301,14 +301,17 @@ impl<'a> TimelineMarker<'a> {
 
         let rect = Rect::from_min_size(
             Pos2::new(full_rect.min.x, full_rect.min.y + y_offset),
-            Vec2::new(timeline_width, actual_height)
+            Vec2::new(timeline_width, actual_height),
         );
 
         (rect, actual_height)
     }
 
     fn calculate_x_position(&self, rect: &Rect, timeline_width: f32) -> f32 {
-        rect.min.x + (*self.position * self.beat_width).max(0.0).min(timeline_width)
+        rect.min.x
+            + (*self.position * self.beat_width)
+                .max(0.0)
+                .min(timeline_width)
     }
 
     fn draw_vertical_line(
@@ -321,10 +324,7 @@ impl<'a> TimelineMarker<'a> {
     ) {
         let line_start = Pos2::new(x_pos, rect.min.y + 24.0);
         let line_end = Pos2::new(x_pos, rect.min.y + height);
-        painter.line_segment(
-            [line_start, line_end],
-            egui::Stroke::new(2.0, color),
-        );
+        painter.line_segment([line_start, line_end], egui::Stroke::new(2.0, color));
     }
 
     fn draw_and_interact_badge(
@@ -338,7 +338,8 @@ impl<'a> TimelineMarker<'a> {
     ) -> MarkerInteraction {
         let badge_text = self.variant.badge_text();
         let font_id = egui::FontId::proportional(11.0);
-        let galley = painter.layout_no_wrap(badge_text.clone(), font_id.clone(), theme.foreground());
+        let galley =
+            painter.layout_no_wrap(badge_text.clone(), font_id.clone(), theme.foreground());
 
         let badge_width = galley.size().x + 12.0;
         let badge_height = 20.0;

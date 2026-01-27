@@ -168,7 +168,6 @@ impl Input {
 
     /// Show the input field
     pub fn show(self, ui: &mut Ui, text: &mut String, theme: &crate::Theme) -> InputResponse {
-
         // Load state from memory if ID is set
         if let Some(id) = self.id {
             let state_id = id.with("input_state");
@@ -197,7 +196,7 @@ impl Input {
             }
 
             // Input field
-            let input_response = self.render_input(ui, text, width, &theme);
+            let input_response = self.render_input(ui, text, width, theme);
 
             // Description/helper text
             if let Some(desc) = &self.description {
@@ -315,7 +314,10 @@ impl Input {
                     egui::FontId::proportional(16.0),
                     placeholder_color,
                 );
-                let icon_pos = egui::pos2(x_offset, content_rect.center().y - icon_galley.size().y / 2.0);
+                let icon_pos = egui::pos2(
+                    x_offset,
+                    content_rect.center().y - icon_galley.size().y / 2.0,
+                );
                 painter.galley(icon_pos, icon_galley, placeholder_color);
                 x_offset += 24.0; // icon width + spacing
             }
@@ -326,7 +328,10 @@ impl Input {
             // Text input area
             let text_rect = egui::Rect::from_min_max(
                 egui::pos2(x_offset, content_rect.top()),
-                egui::pos2(content_rect.right() - right_icon_width, content_rect.bottom()),
+                egui::pos2(
+                    content_rect.right() - right_icon_width,
+                    content_rect.bottom(),
+                ),
             );
 
             // Right icon
@@ -337,7 +342,8 @@ impl Input {
                     placeholder_color,
                 );
                 let icon_x = content_rect.right() - icon_galley.size().x;
-                let icon_pos = egui::pos2(icon_x, content_rect.center().y - icon_galley.size().y / 2.0);
+                let icon_pos =
+                    egui::pos2(icon_x, content_rect.center().y - icon_galley.size().y / 2.0);
                 painter.galley(icon_pos, icon_galley, placeholder_color);
             }
 
@@ -352,10 +358,10 @@ impl Input {
             child_ui.style_mut().visuals.widgets.hovered.bg_stroke = Stroke::NONE;
             child_ui.style_mut().visuals.widgets.active.bg_stroke = Stroke::NONE;
             child_ui.style_mut().visuals.override_text_color = Some(text_color);
-            child_ui.style_mut().text_styles.insert(
-                egui::TextStyle::Body,
-                egui::FontId::proportional(FONT_SIZE),
-            );
+            child_ui
+                .style_mut()
+                .text_styles
+                .insert(egui::TextStyle::Body, egui::FontId::proportional(FONT_SIZE));
 
             let mut text_edit = TextEdit::singleline(text)
                 .hint_text(&self.placeholder)

@@ -90,70 +90,67 @@ impl<'a> SiteHeader<'a> {
                     }
 
                     // Right-aligned items
-                    ui.with_layout(
-                        egui::Layout::right_to_left(egui::Align::Center),
-                        |ui| {
-                            ui.spacing_mut().item_spacing.x = 0.0;
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        ui.spacing_mut().item_spacing.x = 0.0;
 
-                            if is_mobile {
-                                if Button::new("☰")
-                                    .variant(ButtonVariant::Ghost)
-                                    .size(ButtonSize::Small)
-                                    .show(ui, self.theme)
-                                    .clicked()
-                                {
-                                    response.hamburger_clicked = true;
-                                }
-                            } else {
-                                // Note: right-to-left layout, so items appear in reverse order
-                                if Button::new("Docs.rs")
-                                    .variant(ButtonVariant::Ghost)
-                                    .size(ButtonSize::Small)
-                                    .show(ui, self.theme)
-                                    .clicked()
-                                {
-                                    response.docs_rs_clicked = true;
-                                }
-
-                                if Button::new("Crates.io")
-                                    .variant(ButtonVariant::Ghost)
-                                    .size(ButtonSize::Small)
-                                    .show(ui, self.theme)
-                                    .clicked()
-                                {
-                                    response.crates_io_clicked = true;
-                                }
-
-                                if Button::new("GitHub")
-                                    .variant(ButtonVariant::Ghost)
-                                    .size(ButtonSize::Small)
-                                    .show(ui, self.theme)
-                                    .clicked()
-                                {
-                                    response.github_clicked = true;
-                                }
-
-                                Self::render_separator(ui, self.theme);
-
-                                let icon_data = if self.is_dark {
-                                    &crate::web_icons::LIGHT
-                                } else {
-                                    &crate::web_icons::DARK
-                                };
-                                if IconButton::new(icon_data)
-                                    .variant(ButtonVariant::Ghost)
-                                    .size(16.0)
-                                    .padding(4.0)
-                                    .show(ui, self.theme)
-                                    .clicked()
-                                {
-                                    response.theme_toggle_clicked = true;
-                                }
-
-                                Self::render_separator(ui, self.theme);
+                        if is_mobile {
+                            if Button::new("☰")
+                                .variant(ButtonVariant::Ghost)
+                                .size(ButtonSize::Small)
+                                .show(ui, self.theme)
+                                .clicked()
+                            {
+                                response.hamburger_clicked = true;
                             }
-                        },
-                    );
+                        } else {
+                            // Note: right-to-left layout, so items appear in reverse order
+                            if Button::new("Docs.rs")
+                                .variant(ButtonVariant::Ghost)
+                                .size(ButtonSize::Small)
+                                .show(ui, self.theme)
+                                .clicked()
+                            {
+                                response.docs_rs_clicked = true;
+                            }
+
+                            if Button::new("Crates.io")
+                                .variant(ButtonVariant::Ghost)
+                                .size(ButtonSize::Small)
+                                .show(ui, self.theme)
+                                .clicked()
+                            {
+                                response.crates_io_clicked = true;
+                            }
+
+                            if Button::new("GitHub")
+                                .variant(ButtonVariant::Ghost)
+                                .size(ButtonSize::Small)
+                                .show(ui, self.theme)
+                                .clicked()
+                            {
+                                response.github_clicked = true;
+                            }
+
+                            Self::render_separator(ui, self.theme);
+
+                            let icon_data = if self.is_dark {
+                                &crate::web_icons::LIGHT
+                            } else {
+                                &crate::web_icons::DARK
+                            };
+                            if IconButton::new(icon_data)
+                                .variant(ButtonVariant::Ghost)
+                                .size(16.0)
+                                .padding(4.0)
+                                .show(ui, self.theme)
+                                .clicked()
+                            {
+                                response.theme_toggle_clicked = true;
+                            }
+
+                            Self::render_separator(ui, self.theme);
+                        }
+                    });
                 });
             });
 

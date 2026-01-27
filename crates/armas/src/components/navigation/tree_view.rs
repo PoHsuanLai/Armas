@@ -179,10 +179,17 @@ impl TreeView {
 
     /// Show the tree view
     pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> TreeViewResponse {
-
         let available = ui.available_size();
-        let width = if self.width > 0.0 { self.width } else { available.x };
-        let height = if self.height > 0.0 { self.height } else { available.y };
+        let width = if self.width > 0.0 {
+            self.width
+        } else {
+            available.x
+        };
+        let height = if self.height > 0.0 {
+            self.height
+        } else {
+            available.y
+        };
 
         let mut selected_this_frame = None;
         let mut toggled_this_frame = None;
@@ -232,13 +239,31 @@ impl TreeView {
             let is_expanded = item.is_directory && self.is_expanded(&item.path);
             let is_last = i == count - 1;
 
-            self.show_item(ui, &item, width, depth, is_last, levels_last, selected, toggled, &theme);
+            self.show_item(
+                ui,
+                &item,
+                width,
+                depth,
+                is_last,
+                levels_last,
+                selected,
+                toggled,
+                &theme,
+            );
             ui.add_space(ITEM_GAP);
 
             if is_expanded {
                 let path = item.path.clone();
                 levels_last.push(is_last);
-                self.show_level(ui, Some(&path), width, depth + 1, levels_last, selected, toggled);
+                self.show_level(
+                    ui,
+                    Some(&path),
+                    width,
+                    depth + 1,
+                    levels_last,
+                    selected,
+                    toggled,
+                );
                 levels_last.pop();
             }
         }
@@ -264,16 +289,15 @@ impl TreeView {
             // Tree lines prefix
             if show_lines {
                 let prefix_width = indent;
-                let (prefix_rect, _) = ui.allocate_exact_size(
-                    Vec2::new(prefix_width, ITEM_HEIGHT),
-                    Sense::hover(),
-                );
+                let (prefix_rect, _) =
+                    ui.allocate_exact_size(Vec2::new(prefix_width, ITEM_HEIGHT), Sense::hover());
 
                 let line_color = theme.border();
 
                 // Draw vertical lines for each ancestor level
                 for level in 0..depth {
-                    let level_x = prefix_rect.left() + (level as f32 * INDENT_WIDTH) + INDENT_WIDTH / 2.0;
+                    let level_x =
+                        prefix_rect.left() + (level as f32 * INDENT_WIDTH) + INDENT_WIDTH / 2.0;
 
                     // Check if ancestor at this level was the last item
                     let ancestor_is_last = level < levels_last.len() && levels_last[level];
@@ -298,7 +322,14 @@ impl TreeView {
                 ui.painter().line_segment(
                     [
                         Pos2::new(line_x, prefix_rect.top()),
-                        Pos2::new(line_x, if is_last { center_y } else { prefix_rect.bottom() }),
+                        Pos2::new(
+                            line_x,
+                            if is_last {
+                                center_y
+                            } else {
+                                prefix_rect.bottom()
+                            },
+                        ),
                     ],
                     egui::Stroke::new(1.0, line_color),
                 );
@@ -316,10 +347,8 @@ impl TreeView {
             }
 
             let item_width = (width - indent - ITEM_PADDING_X).max(40.0);
-            let (rect, response) = ui.allocate_exact_size(
-                Vec2::new(item_width, ITEM_HEIGHT),
-                Sense::click(),
-            );
+            let (rect, response) =
+                ui.allocate_exact_size(Vec2::new(item_width, ITEM_HEIGHT), Sense::click());
             let hovered = response.hovered();
 
             // Background
@@ -372,22 +401,25 @@ impl TreeView {
     fn get_children(&self, parent: Option<&PathBuf>) -> Vec<TreeItem> {
         let root = PathBuf::from(&self.root_path);
 
-        let mut items: Vec<_> = self.items.iter().filter(|item| {
-            let item_parent = item.path.parent();
-            match (parent, item_parent) {
-                (None, Some(p)) => p == root,
-                (Some(expected), Some(actual)) => actual == expected.as_path(),
-                _ => false,
-            }
-        }).cloned().collect();
+        let mut items: Vec<_> = self
+            .items
+            .iter()
+            .filter(|item| {
+                let item_parent = item.path.parent();
+                match (parent, item_parent) {
+                    (None, Some(p)) => p == root,
+                    (Some(expected), Some(actual)) => actual == expected.as_path(),
+                    _ => false,
+                }
+            })
+            .cloned()
+            .collect();
 
         // Sort: folders first, then by name
-        items.sort_by(|a, b| {
-            match (a.is_directory, b.is_directory) {
-                (true, false) => std::cmp::Ordering::Less,
-                (false, true) => std::cmp::Ordering::Greater,
-                _ => a.name.cmp(&b.name),
-            }
+        items.sort_by(|a, b| match (a.is_directory, b.is_directory) {
+            (true, false) => std::cmp::Ordering::Less,
+            (false, true) => std::cmp::Ordering::Greater,
+            _ => a.name.cmp(&b.name),
         });
 
         items

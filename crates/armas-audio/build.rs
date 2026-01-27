@@ -7,8 +7,7 @@
 //! 4. Generates Rust code with icon data as constants
 
 use lyon_tessellation::{
-    path::Path as TessPath, BuffersBuilder, FillOptions, FillTessellator, FillVertex,
-    VertexBuffers,
+    path::Path as TessPath, BuffersBuilder, FillOptions, FillTessellator, FillVertex, VertexBuffers,
 };
 use std::env;
 use std::fs::{self, File};
@@ -25,7 +24,11 @@ fn main() {
 
     // Start generating the Rust code
     // Note: IconData is imported by the parent module
-    writeln!(output, "// Generated transport icon data - DO NOT EDIT MANUALLY\n").unwrap();
+    writeln!(
+        output,
+        "// Generated transport icon data - DO NOT EDIT MANUALLY\n"
+    )
+    .unwrap();
 
     // Parse transport icons
     let icons_dir = PathBuf::from("icons/transport");
@@ -44,17 +47,13 @@ fn main() {
                 match parse_svg(&path) {
                     Ok((vertices, indices, width, height)) => {
                         writeln!(output, "#[allow(missing_docs)]").unwrap();
-                        writeln!(
-                            output,
-                            "pub static {}: IconData = IconData {{",
-                            const_name
-                        )
-                        .unwrap();
-                        writeln!(output, "    name: \"{}\",", file_name).unwrap();
-                        writeln!(output, "    vertices: &[{}],", vertices).unwrap();
-                        writeln!(output, "    indices: &[{}],", indices).unwrap();
-                        writeln!(output, "    viewbox_width: {:.1},", width).unwrap();
-                        writeln!(output, "    viewbox_height: {:.1},", height).unwrap();
+                        writeln!(output, "pub static {const_name}: IconData = IconData {{")
+                            .unwrap();
+                        writeln!(output, "    name: \"{file_name}\",").unwrap();
+                        writeln!(output, "    vertices: &[{vertices}],").unwrap();
+                        writeln!(output, "    indices: &[{indices}],").unwrap();
+                        writeln!(output, "    viewbox_width: {width:.1},").unwrap();
+                        writeln!(output, "    viewbox_height: {height:.1},").unwrap();
                         writeln!(output, "}};\n").unwrap();
                     }
                     Err(e) => {
@@ -65,7 +64,10 @@ fn main() {
         }
     }
 
-    println!("cargo:rustc-env=TRANSPORT_ICONS_PATH={}", dest_path.display());
+    println!(
+        "cargo:rustc-env=TRANSPORT_ICONS_PATH={}",
+        dest_path.display()
+    );
 }
 
 fn parse_svg(path: &Path) -> Result<(String, String, f32, f32), Box<dyn std::error::Error>> {
@@ -100,7 +102,7 @@ fn parse_svg(path: &Path) -> Result<(String, String, f32, f32), Box<dyn std::err
         if i > 0 {
             indices_code.push_str(", ");
         }
-        indices_code.push_str(&format!("{}", index));
+        indices_code.push_str(&format!("{index}"));
     }
 
     Ok((vertices_code, indices_code, width, height))
@@ -138,7 +140,7 @@ fn extract_viewbox(svg_data: &str) -> Option<(f32, f32)> {
 }
 
 fn extract_dimension(svg_data: &str, attr: &str) -> Option<f32> {
-    let pattern = format!("{}=\"", attr);
+    let pattern = format!("{attr}=\"");
     if let Some(start) = svg_data.find(&pattern) {
         let value_str = &svg_data[start + pattern.len()..];
         if let Some(end) = value_str.find('"') {

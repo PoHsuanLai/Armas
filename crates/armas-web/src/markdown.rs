@@ -507,7 +507,7 @@ fn render_table(
     ui.add_space(12.0);
 
     ui.push_id((base_id, id), |ui| {
-        use armas::{table, header_row, row, cell_ui};
+        use armas::{cell_ui, header_row, row, table};
 
         table(ui, |table_rows| {
             // Render headers

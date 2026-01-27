@@ -31,7 +31,9 @@ impl<'a> SiteSidebar<'a> {
     }
 
     pub fn show(self, ui: &mut egui::Ui) -> SiteSidebarResponse {
-        let mut response = SiteSidebarResponse { selected_page: None };
+        let mut response = SiteSidebarResponse {
+            selected_page: None,
+        };
         let mut clicked_name: Option<String> = None;
 
         let sections = showcase_gen::get_nested_sections();

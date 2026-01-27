@@ -287,7 +287,10 @@ impl<'a> DrumSequencer<'a> {
         // Restore state from memory if ID is set
         if let Some(id) = self.id {
             let state_id = id.with("drum_sequencer_state");
-            if let Some(stored_state) = ui.ctx().data(|d| d.get_temp::<Vec<Vec<DrumStep>>>(state_id)) {
+            if let Some(stored_state) = ui
+                .ctx()
+                .data(|d| d.get_temp::<Vec<Vec<DrumStep>>>(state_id))
+            {
                 // Restore stored state to rows
                 for (row_idx, stored_steps) in stored_state.iter().enumerate() {
                     if row_idx < self.rows.len() && row_idx < stored_steps.len() {
@@ -327,15 +330,16 @@ impl<'a> DrumSequencer<'a> {
 
         // Calculate total content size
         let num_visible_rows = self.rows.iter().filter(|r| r.visible).count();
-        let content_width = row_label_width
-            + num_steps as f32 * step_width
-            + (num_steps - 1) as f32 * gap;
+        let content_width =
+            row_label_width + num_steps as f32 * step_width + (num_steps - 1) as f32 * gap;
         let content_height =
             num_visible_rows as f32 * row_height + (num_visible_rows - 1) as f32 * gap;
 
         // Determine actual size (viewport or content)
         let actual_width = viewport_width.unwrap_or(content_width).min(content_width);
-        let actual_height = viewport_height.unwrap_or(content_height).min(content_height);
+        let actual_height = viewport_height
+            .unwrap_or(content_height)
+            .min(content_height);
         let desired_size = Vec2::new(actual_width, actual_height);
 
         let (rect, response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
@@ -343,9 +347,9 @@ impl<'a> DrumSequencer<'a> {
         // Handle scrolling with momentum
         let scroll_offset = if scrollable {
             let scroll_state_id = id.unwrap_or(response.id).with("drum_seq_scroll");
-            let mut scroll_state: DrumSequencerScrollState = ui.ctx().data(|d| {
-                d.get_temp(scroll_state_id).unwrap_or_default()
-            });
+            let mut scroll_state: DrumSequencerScrollState = ui
+                .ctx()
+                .data(|d| d.get_temp(scroll_state_id).unwrap_or_default());
 
             let current_time = ui.ctx().input(|i| i.time);
             let dt = if scroll_state.last_frame_time > 0.0 {
@@ -375,7 +379,8 @@ impl<'a> DrumSequencer<'a> {
             if is_panning {
                 let drag_delta = response.drag_delta();
                 if momentum_scrolling {
-                    scroll_state.velocity = Vec2::new(drag_delta.x / dt.max(0.001), drag_delta.y / dt.max(0.001)) * 0.3;
+                    scroll_state.velocity =
+                        Vec2::new(drag_delta.x / dt.max(0.001), drag_delta.y / dt.max(0.001)) * 0.3;
                     scroll_state.is_animating = true;
                 }
                 scroll_state.offset += drag_delta;
@@ -406,7 +411,8 @@ impl<'a> DrumSequencer<'a> {
             scroll_state.offset.y = scroll_state.offset.y.clamp(-max_scroll_y, 0.0);
 
             // Save scroll state
-            ui.ctx().data_mut(|d| d.insert_temp(scroll_state_id, scroll_state.clone()));
+            ui.ctx()
+                .data_mut(|d| d.insert_temp(scroll_state_id, scroll_state.clone()));
 
             scroll_state.offset
         } else {
@@ -448,8 +454,10 @@ impl<'a> DrumSequencer<'a> {
 
                 // Draw steps for this row
                 for step_idx in 0..num_steps {
-                    let step_x =
-                        rect.min.x + scroll_offset.x + row_label_width + step_idx as f32 * (step_width + gap);
+                    let step_x = rect.min.x
+                        + scroll_offset.x
+                        + row_label_width
+                        + step_idx as f32 * (step_width + gap);
 
                     // Skip steps outside viewport
                     if scrollable && (step_x + step_width < rect.min.x || step_x > rect.max.x) {
@@ -512,7 +520,6 @@ impl<'a> DrumSequencer<'a> {
 
                 row_y += row_height + gap;
             }
-
         }
 
         if changed {
@@ -536,12 +543,7 @@ impl<'a> DrumSequencer<'a> {
         }
     }
 
-    fn draw_row_label_static(
-        painter: &egui::Painter,
-        theme: &Theme,
-        rect: Rect,
-        row: &DrumRow,
-    ) {
+    fn draw_row_label_static(painter: &egui::Painter, theme: &Theme, rect: Rect, row: &DrumRow) {
         let corner_radius = theme.spacing.corner_radius_small as f32;
 
         // Background - use row color with brightness adjustment
@@ -559,12 +561,8 @@ impl<'a> DrumSequencer<'a> {
         for i in 0..2 {
             let offset = (i + 1) as f32 * 1.5;
             let alpha = ((1.0 - i as f32 / 2.0) * 15.0) as u8;
-            let glow_color = Color32::from_rgba_unmultiplied(
-                row.color.r(),
-                row.color.g(),
-                row.color.b(),
-                alpha,
-            );
+            let glow_color =
+                Color32::from_rgba_unmultiplied(row.color.r(), row.color.g(), row.color.b(), alpha);
             painter.rect_stroke(
                 rect.expand(offset),
                 corner_radius,
@@ -656,11 +654,7 @@ impl<'a> DrumSequencer<'a> {
         show_velocity: bool,
         glow_intensity: f32,
     ) {
-        let mut fill_color = if is_active {
-            row_color
-        } else {
-            theme.muted()
-        };
+        let mut fill_color = if is_active { row_color } else { theme.muted() };
 
         if is_active && show_velocity {
             let velocity_factor = 1.0 + (velocity * 0.8);
@@ -687,7 +681,13 @@ impl<'a> DrumSequencer<'a> {
         );
 
         if is_active {
-            Self::draw_glow_effect(painter, rect, corner_radius, theme.primary(), glow_intensity);
+            Self::draw_glow_effect(
+                painter,
+                rect,
+                corner_radius,
+                theme.primary(),
+                glow_intensity,
+            );
         }
     }
 
@@ -714,7 +714,13 @@ impl<'a> DrumSequencer<'a> {
 
         painter.rect_filled(rect, corner_radius, bg_color);
 
-        let border_color = if is_active { row_color } else if is_hovered { theme.border() } else { theme.border() };
+        let border_color = if is_active {
+            row_color
+        } else if is_hovered {
+            theme.border()
+        } else {
+            theme.border()
+        };
         let border_width = if is_active { 2.0 } else { 1.5 };
 
         painter.rect_stroke(
@@ -761,7 +767,11 @@ impl<'a> DrumSequencer<'a> {
 
         painter.rect_filled(rect, corner_radius, fill_color);
 
-        let border_color = if is_active { theme.primary() } else { theme.border() };
+        let border_color = if is_active {
+            theme.primary()
+        } else {
+            theme.border()
+        };
         painter.rect_stroke(
             rect,
             corner_radius,
@@ -770,7 +780,13 @@ impl<'a> DrumSequencer<'a> {
         );
 
         if is_active {
-            Self::draw_glow_effect(painter, rect, corner_radius, theme.primary(), glow_intensity);
+            Self::draw_glow_effect(
+                painter,
+                rect,
+                corner_radius,
+                theme.primary(),
+                glow_intensity,
+            );
         }
     }
 
@@ -785,7 +801,12 @@ impl<'a> DrumSequencer<'a> {
         for i in 0..2 {
             let offset = (i + 1) as f32 * 1.5;
             let alpha = ((1.0 - i as f32 / 2.0) * 15.0 * glow_intensity) as u8;
-            let layer_color = Color32::from_rgba_unmultiplied(glow_color.r(), glow_color.g(), glow_color.b(), alpha);
+            let layer_color = Color32::from_rgba_unmultiplied(
+                glow_color.r(),
+                glow_color.g(),
+                glow_color.b(),
+                alpha,
+            );
             painter.rect_stroke(
                 rect.expand(offset),
                 corner_radius,

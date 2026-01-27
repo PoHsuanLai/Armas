@@ -265,8 +265,7 @@ impl DatePicker {
 
         // Trigger button (shadcn outline variant style)
         let trigger_size = vec2(self.width, TRIGGER_HEIGHT);
-        let (trigger_rect, trigger_response) =
-            ui.allocate_exact_size(trigger_size, Sense::click());
+        let (trigger_rect, trigger_response) = ui.allocate_exact_size(trigger_size, Sense::click());
 
         if ui.is_rect_visible(trigger_rect) {
             let hovered = trigger_response.hovered();
@@ -277,11 +276,7 @@ impl DatePicker {
                 .rect_filled(trigger_rect, CORNER_RADIUS, theme.background());
 
             // Border (outline variant)
-            let border_color = if hovered {
-                theme.ring()
-            } else {
-                theme.input()
-            };
+            let border_color = if hovered { theme.ring() } else { theme.input() };
             ui.painter().rect_stroke(
                 trigger_rect,
                 CORNER_RADIUS,
@@ -380,18 +375,18 @@ impl DatePicker {
                         // Header: navigation + month/year
                         ui.horizontal(|ui| {
                             // Previous month button (ghost variant)
-                            let (prev_rect, prev_response) =
-                                ui.allocate_exact_size(vec2(NAV_BUTTON_SIZE, NAV_BUTTON_SIZE), Sense::click());
+                            let (prev_rect, prev_response) = ui.allocate_exact_size(
+                                vec2(NAV_BUTTON_SIZE, NAV_BUTTON_SIZE),
+                                Sense::click(),
+                            );
 
                             if ui.is_rect_visible(prev_rect) {
                                 if prev_response.hovered() {
                                     ui.painter().rect_filled(prev_rect, 4.0, theme.accent());
                                 }
 
-                                let icon_rect = Rect::from_center_size(
-                                    prev_rect.center(),
-                                    vec2(16.0, 16.0),
-                                );
+                                let icon_rect =
+                                    Rect::from_center_size(prev_rect.center(), vec2(16.0, 16.0));
                                 render_icon(
                                     ui.painter(),
                                     icon_rect,
@@ -428,18 +423,18 @@ impl DatePicker {
                             });
 
                             // Next month button (ghost variant)
-                            let (next_rect, next_response) =
-                                ui.allocate_exact_size(vec2(NAV_BUTTON_SIZE, NAV_BUTTON_SIZE), Sense::click());
+                            let (next_rect, next_response) = ui.allocate_exact_size(
+                                vec2(NAV_BUTTON_SIZE, NAV_BUTTON_SIZE),
+                                Sense::click(),
+                            );
 
                             if ui.is_rect_visible(next_rect) {
                                 if next_response.hovered() {
                                     ui.painter().rect_filled(next_rect, 4.0, theme.accent());
                                 }
 
-                                let icon_rect = Rect::from_center_size(
-                                    next_rect.center(),
-                                    vec2(16.0, 16.0),
-                                );
+                                let icon_rect =
+                                    Rect::from_center_size(next_rect.center(), vec2(16.0, 16.0));
                                 render_icon(
                                     ui.painter(),
                                     icon_rect,
@@ -506,7 +501,8 @@ impl DatePicker {
                                     // Determine which day to show
                                     let (day, is_current_month, actual_year, actual_month) =
                                         if cell_index < first_weekday {
-                                            let day = prev_month_days - (first_weekday - cell_index - 1);
+                                            let day =
+                                                prev_month_days - (first_weekday - cell_index - 1);
                                             (day, false, prev_year, prev_month_num)
                                         } else if day_counter <= days_in_month {
                                             let day = day_counter;

@@ -12,8 +12,10 @@ const CELL_SPACING: f32 = 0.0;
 
 /// Get the current theme from UI context
 fn get_theme(ui: &egui::Ui) -> Theme {
-    ui.ctx()
-        .data(|d| d.get_temp::<Theme>(egui::Id::new("armas_theme")).unwrap_or_else(Theme::dark))
+    ui.ctx().data(|d| {
+        d.get_temp::<Theme>(egui::Id::new("armas_theme"))
+            .unwrap_or_else(Theme::dark)
+    })
 }
 
 /// Draw a horizontal border line spanning all columns
@@ -129,7 +131,6 @@ fn render_row<R>(
     result
 }
 
-
 /// Add a text cell to the current row
 pub fn cell(cells: &mut TableCells, text: impl Into<String>) {
     render_cell(cells, |ui, theme, is_header| {
@@ -149,26 +150,26 @@ fn render_cell<R>(
     cells: &mut TableCells,
     content: impl FnOnce(&mut egui::Ui, &Theme, bool) -> R,
 ) -> R {
-    let frame = egui::Frame::new()
-        .inner_margin(egui::Margin::same(CELL_PADDING as i8));
+    let frame = egui::Frame::new().inner_margin(egui::Margin::same(CELL_PADDING as i8));
 
-    let result = frame.show(cells.ui, |ui| {
-        // Set consistent min height for all cells in the row
-        let min_height = if cells.is_header {
-            HEADER_HEIGHT - CELL_PADDING * 2.0
-        } else {
-            0.0
-        };
+    let result = frame
+        .show(cells.ui, |ui| {
+            // Set consistent min height for all cells in the row
+            let min_height = if cells.is_header {
+                HEADER_HEIGHT - CELL_PADDING * 2.0
+            } else {
+                0.0
+            };
 
-        if min_height > 0.0 {
-            ui.set_min_height(min_height);
-        }
+            if min_height > 0.0 {
+                ui.set_min_height(min_height);
+            }
 
-        // Use horizontal layout to center content vertically
-        ui.horizontal_centered(|ui| {
-            content(ui, cells.theme, cells.is_header)
-        }).inner
-    }).inner;
+            // Use horizontal layout to center content vertically
+            ui.horizontal_centered(|ui| content(ui, cells.theme, cells.is_header))
+                .inner
+        })
+        .inner;
 
     cells.cell_index += 1;
     result
@@ -177,16 +178,8 @@ fn render_cell<R>(
 /// Create a styled label for table cell
 fn create_label(text: &str, theme: &Theme, is_header: bool) -> egui::Label {
     if is_header {
-        egui::Label::new(
-            egui::RichText::new(text)
-                .strong()
-                .color(theme.foreground())
-        )
+        egui::Label::new(egui::RichText::new(text).strong().color(theme.foreground()))
     } else {
-        egui::Label::new(
-            egui::RichText::new(text)
-                .color(theme.muted_foreground())
-        )
+        egui::Label::new(egui::RichText::new(text).color(theme.muted_foreground()))
     }
 }
-

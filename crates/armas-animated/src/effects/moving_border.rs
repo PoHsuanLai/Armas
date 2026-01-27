@@ -42,24 +42,28 @@ impl MovingBorder {
     }
 
     /// Set button width (auto if not set)
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set button height
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Set border width
-    pub fn border_width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn border_width(mut self, width: f32) -> Self {
         self.border_width = width.max(1.0);
         self
     }
 
     /// Set border gradient colors
+    #[must_use] 
     pub fn border_colors(mut self, colors: Vec<Color32>) -> Self {
         if !colors.is_empty() {
             self.border_colors = colors;
@@ -68,25 +72,29 @@ impl MovingBorder {
     }
 
     /// Set background color
-    pub fn background(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn background(mut self, color: Color32) -> Self {
         self.background = color;
         self
     }
 
     /// Set text color
-    pub fn text_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn text_color(mut self, color: Color32) -> Self {
         self.text_color = color;
         self
     }
 
     /// Set corner radius
-    pub fn corner_radius(mut self, radius: f32) -> Self {
+    #[must_use] 
+    pub const fn corner_radius(mut self, radius: f32) -> Self {
         self.corner_radius = radius;
         self
     }
 
     /// Set animation speed (default: 1.0)
-    pub fn animation_speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn animation_speed(mut self, speed: f32) -> Self {
         self.animation_speed = speed.max(0.1);
         self
     }
@@ -161,13 +169,13 @@ impl MovingBorder {
                 let color2 = border_colors[next_color_index];
 
                 let blended_color = Color32::from_rgba_unmultiplied(
-                    (color1.r() as f32 * (1.0 - blend_factor) + color2.r() as f32 * blend_factor)
+                    f32::from(color1.r()).mul_add(1.0 - blend_factor, f32::from(color2.r()) * blend_factor)
                         as u8,
-                    (color1.g() as f32 * (1.0 - blend_factor) + color2.g() as f32 * blend_factor)
+                    f32::from(color1.g()).mul_add(1.0 - blend_factor, f32::from(color2.g()) * blend_factor)
                         as u8,
-                    (color1.b() as f32 * (1.0 - blend_factor) + color2.b() as f32 * blend_factor)
+                    f32::from(color1.b()).mul_add(1.0 - blend_factor, f32::from(color2.b()) * blend_factor)
                         as u8,
-                    (color1.a() as f32 * (1.0 - blend_factor) + color2.a() as f32 * blend_factor)
+                    f32::from(color1.a()).mul_add(1.0 - blend_factor, f32::from(color2.a()) * blend_factor)
                         as u8,
                 );
 

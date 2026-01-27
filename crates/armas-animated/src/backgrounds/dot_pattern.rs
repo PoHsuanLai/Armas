@@ -32,7 +32,8 @@ impl Default for DotPattern {
 
 impl DotPattern {
     /// Create a new dot pattern with default settings
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             spacing: 20.0,
             dot_radius: 1.5,
@@ -45,43 +46,50 @@ impl DotPattern {
     }
 
     /// Set the width
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set the height
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = Some(height);
         self
     }
 
     /// Set dot spacing
-    pub fn spacing(mut self, spacing: f32) -> Self {
+    #[must_use] 
+    pub const fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing.max(1.0);
         self
     }
 
     /// Set dot radius
-    pub fn dot_radius(mut self, radius: f32) -> Self {
+    #[must_use] 
+    pub const fn dot_radius(mut self, radius: f32) -> Self {
         self.dot_radius = radius.max(0.5);
         self
     }
 
     /// Set dot color
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Enable fade effect at edges (0.0 to 1.0)
-    pub fn fade(mut self, fade: f32) -> Self {
+    #[must_use] 
+    pub const fn fade(mut self, fade: f32) -> Self {
         self.fade_distance = fade.clamp(0.0, 1.0);
         self
     }
 
     /// Enable glow effect
-    pub fn glow(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn glow(mut self, enabled: bool) -> Self {
         self.glow = enabled;
         self
     }
@@ -126,9 +134,9 @@ impl DotPattern {
                 let alpha = if self.fade_distance > 0.0 {
                     let distance_x = (dot_pos.x - center.x).abs() / (bounds.width() / 2.0);
                     let distance_y = (dot_pos.y - center.y).abs() / (bounds.height() / 2.0);
-                    let distance = (distance_x.powi(2) + distance_y.powi(2)).sqrt();
+                    let distance = distance_x.hypot(distance_y);
                     let fade_factor = 1.0 - (distance / self.fade_distance).min(1.0);
-                    (color.a() as f32 * fade_factor) as u8
+                    (f32::from(color.a()) * fade_factor) as u8
                 } else {
                     color.a()
                 };
@@ -141,7 +149,7 @@ impl DotPattern {
                         color.r(),
                         color.g(),
                         color.b(),
-                        (alpha as f32 * 0.3) as u8,
+                        (f32::from(alpha) * 0.3) as u8,
                     );
                     painter.circle_filled(dot_pos, self.dot_radius * 2.5, glow_color);
                 }

@@ -63,7 +63,8 @@ impl Default for ScrollingBanner {
 
 impl ScrollingBanner {
     /// Create a new scrolling banner with default settings
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             speed: 50.0,
             direction: ScrollDirection::Left,
@@ -76,48 +77,54 @@ impl ScrollingBanner {
     }
 
     /// Set the scroll speed in pixels per second
-    pub fn speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn speed(mut self, speed: f32) -> Self {
         self.speed = speed;
         self
     }
 
     /// Set the scroll direction
-    pub fn direction(mut self, direction: ScrollDirection) -> Self {
+    #[must_use] 
+    pub const fn direction(mut self, direction: ScrollDirection) -> Self {
         self.direction = direction;
         self
     }
 
     /// Set the gap between repeated content
-    pub fn gap(mut self, gap: f32) -> Self {
+    #[must_use] 
+    pub const fn gap(mut self, gap: f32) -> Self {
         self.gap = gap;
         self
     }
 
     /// Enable or disable pause on hover
-    pub fn pause_on_hover(mut self, pause: bool) -> Self {
+    #[must_use] 
+    pub const fn pause_on_hover(mut self, pause: bool) -> Self {
         self.pause_on_hover = pause;
         self
     }
 
     /// Enable or disable fade effect at edges
-    pub fn show_fade(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_fade(mut self, show: bool) -> Self {
         self.show_fade = show;
         self
     }
 
     /// Set the fade width
-    pub fn fade_width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn fade_width(mut self, width: f32) -> Self {
         self.fade_width = width;
         self
     }
 
     /// Pause the scrolling animation
-    pub fn pause(&mut self) {
+    pub const fn pause(&mut self) {
         self.paused = true;
     }
 
     /// Resume the scrolling animation
-    pub fn resume(&mut self) {
+    pub const fn resume(&mut self) {
         self.paused = false;
     }
 
@@ -182,16 +189,16 @@ impl ScrollingBanner {
             let offset_multiplier = i as f32;
             let position_offset = match self.direction {
                 ScrollDirection::Left => {
-                    Vec2::new(-offset + offset_multiplier * repeat_distance, 0.0)
+                    Vec2::new(offset_multiplier.mul_add(repeat_distance, -offset), 0.0)
                 }
                 ScrollDirection::Right => {
-                    Vec2::new(offset - offset_multiplier * repeat_distance, 0.0)
+                    Vec2::new(offset_multiplier.mul_add(-repeat_distance, offset), 0.0)
                 }
                 ScrollDirection::Up => {
-                    Vec2::new(0.0, -offset + offset_multiplier * repeat_distance)
+                    Vec2::new(0.0, offset_multiplier.mul_add(repeat_distance, -offset))
                 }
                 ScrollDirection::Down => {
-                    Vec2::new(0.0, offset - offset_multiplier * repeat_distance)
+                    Vec2::new(0.0, offset_multiplier.mul_add(-repeat_distance, offset))
                 }
             };
 
@@ -304,9 +311,9 @@ impl ScrollingBanner {
 
         for i in 0..steps {
             let x = if fade_left {
-                rect.min.x + i as f32 * step_width
+                (i as f32).mul_add(step_width, rect.min.x)
             } else {
-                rect.max.x - (i + 1) as f32 * step_width
+                ((i + 1) as f32).mul_add(-step_width, rect.max.x)
             };
 
             let alpha = ((steps - i) as f32 / steps as f32 * 255.0) as u8;
@@ -337,9 +344,9 @@ impl ScrollingBanner {
 
         for i in 0..steps {
             let y = if fade_top {
-                rect.min.y + i as f32 * step_height
+                (i as f32).mul_add(step_height, rect.min.y)
             } else {
-                rect.max.y - (i + 1) as f32 * step_height
+                ((i + 1) as f32).mul_add(-step_height, rect.max.y)
             };
 
             let alpha = ((steps - i) as f32 / steps as f32 * 255.0) as u8;

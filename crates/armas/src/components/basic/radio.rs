@@ -111,7 +111,6 @@ impl Radio {
 
     /// Show the radio button
     pub fn show(&self, ui: &mut Ui, selected: bool, theme: &crate::Theme) -> RadioResponse {
-
         let response = ui
             .horizontal(|ui| {
                 // Radio control
@@ -126,7 +125,7 @@ impl Radio {
                 );
 
                 if ui.is_rect_visible(rect) {
-                    self.draw_radio(ui, rect, selected, &theme);
+                    self.draw_radio(ui, rect, selected, theme);
                 }
 
                 // Label and description
@@ -141,7 +140,11 @@ impl Radio {
                                 theme.foreground()
                             };
 
-                            ui.label(egui::RichText::new(label).size(LABEL_FONT_SIZE).color(label_color));
+                            ui.label(
+                                egui::RichText::new(label)
+                                    .size(LABEL_FONT_SIZE)
+                                    .color(label_color),
+                            );
                         }
 
                         if let Some(description) = &self.description {

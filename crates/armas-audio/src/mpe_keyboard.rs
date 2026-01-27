@@ -402,9 +402,13 @@ impl MPEKeyboard {
             return 0.0;
         }
 
-        let scroll_state_id = self.id.unwrap_or(egui::Id::new("mpe_keyboard")).with("scroll");
-        let mut state: MPEScrollState =
-            ui.ctx().data(|d| d.get_temp(scroll_state_id).unwrap_or_default());
+        let scroll_state_id = self
+            .id
+            .unwrap_or(egui::Id::new("mpe_keyboard"))
+            .with("scroll");
+        let mut state: MPEScrollState = ui
+            .ctx()
+            .data(|d| d.get_temp(scroll_state_id).unwrap_or_default());
 
         let current_time = ui.ctx().input(|i| i.time);
         let dt = if state.last_frame_time > 0.0 {
@@ -453,7 +457,8 @@ impl MPEKeyboard {
         let max_scroll = (layout.content_size - layout.display_size).max(0.0);
         state.offset = state.offset.clamp(-max_scroll, 0.0);
 
-        ui.ctx().data_mut(|d| d.insert_temp(scroll_state_id, state.clone()));
+        ui.ctx()
+            .data_mut(|d| d.insert_temp(scroll_state_id, state.clone()));
         state.offset
     }
 
@@ -578,7 +583,11 @@ impl MPEKeyboard {
                 is_pressed,
                 is_hovered: response.hovered() && !is_pressed,
                 base_opacity: self.white_key_opacity,
-                corner_radius: self.white_key_corner_radius(layout.is_horizontal, facing_up, facing_left),
+                corner_radius: self.white_key_corner_radius(
+                    layout.is_horizontal,
+                    facing_up,
+                    facing_left,
+                ),
                 note_label: if self.show_labels {
                     Some((note, layout.is_horizontal))
                 } else {
@@ -645,7 +654,11 @@ impl MPEKeyboard {
                 is_pressed,
                 is_hovered: response.hovered() && !is_pressed,
                 base_opacity: self.black_key_opacity,
-                corner_radius: self.black_key_corner_radius(layout.is_horizontal, facing_up, facing_left),
+                corner_radius: self.black_key_corner_radius(
+                    layout.is_horizontal,
+                    facing_up,
+                    facing_left,
+                ),
                 note_label: None,
             });
 
@@ -673,16 +686,13 @@ impl MPEKeyboard {
             };
 
             // Calculate circle position based on pitch bend and slide
-            let circle_center = self.calculate_circle_position(
-                mpe_note,
-                base_rect,
-                layout,
-                key_rects,
-            );
+            let circle_center =
+                self.calculate_circle_position(mpe_note, base_rect, layout, key_rects);
 
             // Calculate circle radii based on velocity and pressure
             let velocity_radius = self.min_circle_radius + mpe_note.velocity * max_radius;
-            let pressure_radius = self.min_circle_radius + mpe_note.velocity * max_radius
+            let pressure_radius = self.min_circle_radius
+                + mpe_note.velocity * max_radius
                 + mpe_note.pressure * max_radius * 0.5;
 
             // Draw outer circle (pressure) - outline only
@@ -693,11 +703,7 @@ impl MPEKeyboard {
             );
 
             // Draw inner circle (velocity) - filled
-            painter.circle_filled(
-                circle_center,
-                velocity_radius,
-                fill_color,
-            );
+            painter.circle_filled(circle_center, velocity_radius, fill_color);
 
             // Draw a subtle glow around the circle
             for i in 0..3 {
@@ -766,12 +772,9 @@ impl MPEKeyboard {
                 Vec2::new(self.white_key_width, self.white_key_height),
             )
         } else {
-            let key_y = rect.max.y - scroll_offset - (white_key_index + 1) as f32 * self.white_key_width;
-            let key_x = if facing_left {
-                rect.min.x
-            } else {
-                rect.min.x
-            };
+            let key_y =
+                rect.max.y - scroll_offset - (white_key_index + 1) as f32 * self.white_key_width;
+            let key_x = if facing_left { rect.min.x } else { rect.min.x };
             Rect::from_min_size(
                 Pos2::new(key_x, key_y),
                 Vec2::new(self.white_key_height, self.white_key_width),
@@ -789,8 +792,7 @@ impl MPEKeyboard {
         facing_left: bool,
     ) -> Rect {
         if layout.is_horizontal {
-            let key_x = rect.min.x + scroll_offset
-                + white_key_index as f32 * self.white_key_width
+            let key_x = rect.min.x + scroll_offset + white_key_index as f32 * self.white_key_width
                 - layout.black_key_size * 0.5;
             let key_y = if facing_up {
                 rect.max.y - layout.black_key_depth
@@ -802,7 +804,8 @@ impl MPEKeyboard {
                 Vec2::new(layout.black_key_size, layout.black_key_depth),
             )
         } else {
-            let key_y = rect.max.y - scroll_offset
+            let key_y = rect.max.y
+                - scroll_offset
                 - white_key_index as f32 * self.white_key_width
                 - layout.black_key_size * 0.5;
             let key_x = if facing_left {
@@ -825,14 +828,34 @@ impl MPEKeyboard {
     ) -> CornerRadius {
         if is_horizontal {
             if facing_up {
-                CornerRadius { nw: 4, ne: 4, sw: 0, se: 0 }
+                CornerRadius {
+                    nw: 4,
+                    ne: 4,
+                    sw: 0,
+                    se: 0,
+                }
             } else {
-                CornerRadius { nw: 0, ne: 0, sw: 4, se: 4 }
+                CornerRadius {
+                    nw: 0,
+                    ne: 0,
+                    sw: 4,
+                    se: 4,
+                }
             }
         } else if facing_left {
-            CornerRadius { nw: 4, ne: 0, sw: 4, se: 0 }
+            CornerRadius {
+                nw: 4,
+                ne: 0,
+                sw: 4,
+                se: 0,
+            }
         } else {
-            CornerRadius { nw: 0, ne: 4, sw: 0, se: 4 }
+            CornerRadius {
+                nw: 0,
+                ne: 4,
+                sw: 0,
+                se: 4,
+            }
         }
     }
 
@@ -860,8 +883,12 @@ impl MPEKeyboard {
         };
 
         let base_color = if params.is_black { 20 } else { 255 };
-        let glass_color =
-            Color32::from_rgba_unmultiplied(base_color, base_color, base_color, (255.0 * opacity) as u8);
+        let glass_color = Color32::from_rgba_unmultiplied(
+            base_color,
+            base_color,
+            base_color,
+            (255.0 * opacity) as u8,
+        );
 
         // For black keys, draw an opaque background first to prevent white key lines showing through
         if params.is_black {
@@ -873,7 +900,9 @@ impl MPEKeyboard {
         }
 
         // Background (glass effect)
-        params.painter.rect_filled(params.rect, params.corner_radius, glass_color);
+        params
+            .painter
+            .rect_filled(params.rect, params.corner_radius, glass_color);
 
         // Border
         let border_color = if params.is_pressed {
@@ -893,7 +922,13 @@ impl MPEKeyboard {
 
         // Note label (white keys only)
         if let Some((note, is_horizontal)) = params.note_label {
-            self.draw_note_label(params.painter, params.theme, params.rect, note, is_horizontal);
+            self.draw_note_label(
+                params.painter,
+                params.theme,
+                params.rect,
+                note,
+                is_horizontal,
+            );
         }
     }
 

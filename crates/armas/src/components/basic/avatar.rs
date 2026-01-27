@@ -9,10 +9,12 @@ const DEFAULT_SIZE: f32 = 32.0; // size-8 (2rem)
 
 /// Avatar size presets
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Default)]
 pub enum AvatarSize {
     /// Extra small (24px)
     XSmall,
     /// Small (32px) - shadcn default
+    #[default]
     Small,
     /// Medium (40px)
     Medium,
@@ -37,11 +39,6 @@ impl AvatarSize {
     }
 }
 
-impl Default for AvatarSize {
-    fn default() -> Self {
-        AvatarSize::Small // shadcn default is size-8 (32px)
-    }
-}
 
 /// Avatar shape
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -107,7 +104,6 @@ impl Avatar {
 
     /// Show the avatar
     pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
-
         let (rect, response) = ui.allocate_exact_size(vec2(self.size, self.size), Sense::hover());
 
         if ui.is_rect_visible(rect) {

@@ -595,8 +595,10 @@ impl TimelineTrack {
             // Allocate full height without any top padding
 
             // Allocate space for the track content
-            let (rect, response) =
-                ui.allocate_exact_size(Vec2::new(total_width, content_height), Sense::click_and_drag());
+            let (rect, response) = ui.allocate_exact_size(
+                Vec2::new(total_width, content_height),
+                Sense::click_and_drag(),
+            );
 
             if ui.is_rect_visible(rect) {
                 let painter = ui.painter();
@@ -664,7 +666,9 @@ impl TimelineTrack {
                                     handled = true;
                                 }
                                 // Right edge resize handle
-                                else if rel_x >= region_width - EDGE_HANDLE_WIDTH && region.selected {
+                                else if rel_x >= region_width - EDGE_HANDLE_WIDTH
+                                    && region.selected
+                                {
                                     let new_end = (pos.x - rect.min.x) / self.beat_width;
                                     region_edge_dragged = Some((i, RegionEdge::End, new_end));
                                     handled = true;
@@ -676,20 +680,25 @@ impl TimelineTrack {
                                     if region.fades.fade_in > 0.0 {
                                         let fade_in_x = region.fades.fade_in * self.beat_width;
                                         if rel_x >= fade_in_x - FADE_HANDLE_WIDTH / 2.0
-                                            && rel_x <= fade_in_x + FADE_HANDLE_WIDTH / 2.0 {
+                                            && rel_x <= fade_in_x + FADE_HANDLE_WIDTH / 2.0
+                                        {
                                             let new_fade = rel_x / self.beat_width;
-                                            fade_handle_dragged = Some((i, FadeHandle::In, new_fade));
+                                            fade_handle_dragged =
+                                                Some((i, FadeHandle::In, new_fade));
                                             handled = true;
                                         }
                                     }
 
                                     // Fade out handle (if fade exists)
                                     if !handled && region.fades.fade_out > 0.0 {
-                                        let fade_out_x = region_width - (region.fades.fade_out * self.beat_width);
+                                        let fade_out_x = region_width
+                                            - (region.fades.fade_out * self.beat_width);
                                         if rel_x >= fade_out_x - FADE_HANDLE_WIDTH / 2.0
-                                            && rel_x <= fade_out_x + FADE_HANDLE_WIDTH / 2.0 {
+                                            && rel_x <= fade_out_x + FADE_HANDLE_WIDTH / 2.0
+                                        {
                                             let new_fade = (region_width - rel_x) / self.beat_width;
-                                            fade_handle_dragged = Some((i, FadeHandle::Out, new_fade));
+                                            fade_handle_dragged =
+                                                Some((i, FadeHandle::Out, new_fade));
                                             handled = true;
                                         }
                                     }
@@ -697,7 +706,8 @@ impl TimelineTrack {
 
                                 // Region body drag (move entire region) - only if no handle was grabbed
                                 if !handled {
-                                    let new_start = (pos.x - region_width / 2.0 - rect.min.x) / self.beat_width;
+                                    let new_start =
+                                        (pos.x - region_width / 2.0 - rect.min.x) / self.beat_width;
                                     region_dragged = Some((i, new_start));
                                 }
                             }
@@ -713,7 +723,13 @@ impl TimelineTrack {
 
                     // Draw interactive handles if region is selected
                     if region.selected {
-                        self.draw_region_handles(painter, region_rect, region, theme, self.beat_width);
+                        self.draw_region_handles(
+                            painter,
+                            region_rect,
+                            region,
+                            theme,
+                            self.beat_width,
+                        );
                     }
                 }
 
@@ -811,10 +827,7 @@ impl TimelineTrack {
                 format!(" {:.1}dB", gain_db)
             };
 
-            let gain_pos = Pos2::new(
-                name_pos.x + name_galley.rect.width() + 4.0,
-                name_pos.y,
-            );
+            let gain_pos = Pos2::new(name_pos.x + name_galley.rect.width() + 4.0, name_pos.y);
 
             painter.text(
                 gain_pos,
@@ -828,9 +841,7 @@ impl TimelineTrack {
         // Draw visualization based on region type
         if !region.muted {
             match &region.region_type {
-                RegionType::Audio => {
-                    self.draw_waveform_peaks(painter, rect, region_color, &[])
-                }
+                RegionType::Audio => self.draw_waveform_peaks(painter, rect, region_color, &[]),
                 RegionType::Midi(data) => self.draw_midi_pattern(painter, rect, region_color, data),
                 RegionType::Automation(data) => {
                     self.draw_automation_curve(painter, rect, region_color, data)
@@ -1075,22 +1086,14 @@ impl TimelineTrack {
             Pos2::new(rect.min.x, rect.min.y),
             Pos2::new(rect.min.x + HANDLE_WIDTH, rect.max.y),
         );
-        painter.rect_filled(
-            left_handle,
-            0.0,
-            handle_color,
-        );
+        painter.rect_filled(left_handle, 0.0, handle_color);
 
         // Right edge handle
         let right_handle = Rect::from_min_max(
             Pos2::new(rect.max.x - HANDLE_WIDTH, rect.min.y),
             Pos2::new(rect.max.x, rect.max.y),
         );
-        painter.rect_filled(
-            right_handle,
-            0.0,
-            handle_color,
-        );
+        painter.rect_filled(right_handle, 0.0, handle_color);
 
         // Draw fade curves if they exist
         if region.fades.fade_in > 0.0 {
@@ -1200,12 +1203,7 @@ impl TimelineTrack {
 
             painter.add(egui::Shape::convex_polygon(
                 fill_points,
-                Color32::from_rgba_unmultiplied(
-                    fade_color.r(),
-                    fade_color.g(),
-                    fade_color.b(),
-                    30,
-                ),
+                Color32::from_rgba_unmultiplied(fade_color.r(), fade_color.g(), fade_color.b(), 30),
                 egui::Stroke::NONE,
             ));
         } else {
@@ -1216,12 +1214,7 @@ impl TimelineTrack {
 
             painter.add(egui::Shape::convex_polygon(
                 fill_points,
-                Color32::from_rgba_unmultiplied(
-                    fade_color.r(),
-                    fade_color.g(),
-                    fade_color.b(),
-                    30,
-                ),
+                Color32::from_rgba_unmultiplied(fade_color.r(), fade_color.g(), fade_color.b(), 30),
                 egui::Stroke::NONE,
             ));
         }

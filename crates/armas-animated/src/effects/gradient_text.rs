@@ -51,24 +51,28 @@ impl GradientText {
     }
 
     /// Enable gradient animation
-    pub fn animated(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn animated(mut self, enabled: bool) -> Self {
         self.animated = enabled;
         self
     }
 
     /// Set animation speed
-    pub fn animation_speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn animation_speed(mut self, speed: f32) -> Self {
         self.animation_speed = speed;
         self
     }
 
     /// Set whether to apply gradient per character or smoothly
-    pub fn per_character(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn per_character(mut self, enabled: bool) -> Self {
         self.per_character = enabled;
         self
     }
 
     /// Set custom font
+    #[must_use] 
     pub fn font(mut self, font_id: FontId) -> Self {
         self.font_id = Some(font_id);
         self
@@ -139,7 +143,7 @@ impl GradientText {
 
                 let galley =
                     ui.painter()
-                        .layout_no_wrap(self.text.clone(), font_id.clone(), Color32::WHITE);
+                        .layout_no_wrap(self.text.clone(), font_id, Color32::WHITE);
                 ui.painter().galley(rect.min, galley, color);
             }
         }
@@ -169,7 +173,7 @@ fn interpolate_gradient(colors: &[Color32], t: f32) -> Color32 {
     let segment_index = (t / segment_size).floor() as usize;
     let segment_index = segment_index.min(segment_count - 1);
 
-    let local_t = (t - segment_index as f32 * segment_size) / segment_size;
+    let local_t = (segment_index as f32).mul_add(-segment_size, t) / segment_size;
 
     let from = colors[segment_index];
     let to = colors[segment_index + 1];
@@ -183,7 +187,7 @@ fn interpolate_gradient(colors: &[Color32], t: f32) -> Color32 {
 }
 
 fn lerp_u8(a: u8, b: u8, t: f32) -> u8 {
-    (a as f32 + (b as f32 - a as f32) * t) as u8
+    (f32::from(b) - f32::from(a)).mul_add(t, f32::from(a)) as u8
 }
 
 #[cfg(test)]

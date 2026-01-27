@@ -50,7 +50,9 @@ fn test_meter_smooth_style() {
 #[test]
 fn test_meter_segmented_style() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.75).style(MeterStyle::Segmented(16)).show(ui);
+        AudioMeter::new(0.75)
+            .style(MeterStyle::Segmented(16))
+            .show(ui);
     });
 
     harness.step();
@@ -60,7 +62,9 @@ fn test_meter_segmented_style() {
 #[test]
 fn test_meter_segmented_24() {
     let mut harness = Harness::new_ui(|ui| {
-        AudioMeter::new(0.6).style(MeterStyle::Segmented(24)).show(ui);
+        AudioMeter::new(0.6)
+            .style(MeterStyle::Segmented(24))
+            .show(ui);
     });
 
     harness.step();

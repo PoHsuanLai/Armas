@@ -64,21 +64,38 @@ impl ButtonGroup {
         let theme = ui.ctx().armas_theme();
 
         if self.labels.is_empty() {
-            return ButtonGroupResponse { clicked: None, selected: None, changed: false };
+            return ButtonGroupResponse {
+                clicked: None,
+                selected: None,
+                changed: false,
+            };
         }
 
         // Calculate item widths
         let font_id = egui::TextStyle::Button.resolve(ui.style());
-        let item_widths: Vec<f32> = self.labels.iter().map(|label| {
-            let galley = ui.painter().layout_no_wrap(label.clone(), font_id.clone(), Color32::PLACEHOLDER);
-            galley.rect.width() + HORIZONTAL_PADDING * 2.0
-        }).collect();
+        let item_widths: Vec<f32> = self
+            .labels
+            .iter()
+            .map(|label| {
+                let galley = ui.painter().layout_no_wrap(
+                    label.clone(),
+                    font_id.clone(),
+                    Color32::PLACEHOLDER,
+                );
+                galley.rect.width() + HORIZONTAL_PADDING * 2.0
+            })
+            .collect();
 
         let total_width: f32 = item_widths.iter().sum();
-        let (group_rect, _) = ui.allocate_exact_size(Vec2::new(total_width, BUTTON_HEIGHT), Sense::hover());
+        let (group_rect, _) =
+            ui.allocate_exact_size(Vec2::new(total_width, BUTTON_HEIGHT), Sense::hover());
 
         if !ui.is_rect_visible(group_rect) {
-            return ButtonGroupResponse { clicked: None, selected: self.selected, changed: false };
+            return ButtonGroupResponse {
+                clicked: None,
+                selected: self.selected,
+                changed: false,
+            };
         }
 
         // Outer border
@@ -101,15 +118,28 @@ impl ButtonGroup {
             let is_last = idx == item_count - 1;
             let is_selected = self.selected == Some(idx);
 
-            let rect = egui::Rect::from_min_size(egui::pos2(x, group_rect.top()), Vec2::new(width, BUTTON_HEIGHT));
+            let rect = egui::Rect::from_min_size(
+                egui::pos2(x, group_rect.top()),
+                Vec2::new(width, BUTTON_HEIGHT),
+            );
             let response = ui.allocate_rect(rect, Sense::click());
             let hovered = response.hovered();
 
             // Corner radius
             let corners = match (is_first, is_last) {
                 (true, true) => CornerRadius::same(CORNER_RADIUS as u8),
-                (true, false) => CornerRadius { nw: CORNER_RADIUS as u8, sw: CORNER_RADIUS as u8, ne: 0, se: 0 },
-                (false, true) => CornerRadius { nw: 0, sw: 0, ne: CORNER_RADIUS as u8, se: CORNER_RADIUS as u8 },
+                (true, false) => CornerRadius {
+                    nw: CORNER_RADIUS as u8,
+                    sw: CORNER_RADIUS as u8,
+                    ne: 0,
+                    se: 0,
+                },
+                (false, true) => CornerRadius {
+                    nw: 0,
+                    sw: 0,
+                    ne: CORNER_RADIUS as u8,
+                    se: CORNER_RADIUS as u8,
+                },
                 (false, false) => CornerRadius::ZERO,
             };
 
@@ -117,7 +147,12 @@ impl ButtonGroup {
             let bg = if is_selected {
                 theme.accent()
             } else if hovered {
-                Color32::from_rgba_unmultiplied(theme.accent().r(), theme.accent().g(), theme.accent().b(), 128)
+                Color32::from_rgba_unmultiplied(
+                    theme.accent().r(),
+                    theme.accent().g(),
+                    theme.accent().b(),
+                    128,
+                )
             } else {
                 Color32::TRANSPARENT
             };
@@ -129,7 +164,10 @@ impl ButtonGroup {
             // Separator
             if !is_first && self.variant == ButtonGroupVariant::Outline {
                 ui.painter().line_segment(
-                    [egui::pos2(rect.left(), rect.top() + 6.0), egui::pos2(rect.left(), rect.bottom() - 6.0)],
+                    [
+                        egui::pos2(rect.left(), rect.top() + 6.0),
+                        egui::pos2(rect.left(), rect.bottom() - 6.0),
+                    ],
                     Stroke::new(1.0, theme.border()),
                 );
             }
@@ -143,7 +181,9 @@ impl ButtonGroup {
                 theme.muted_foreground()
             };
 
-            let galley = ui.painter().layout_no_wrap(label.clone(), font_id.clone(), text_color);
+            let galley = ui
+                .painter()
+                .layout_no_wrap(label.clone(), font_id.clone(), text_color);
             let text_pos = rect.center() - galley.rect.size() / 2.0;
             ui.painter().galley(text_pos, galley, text_color);
 

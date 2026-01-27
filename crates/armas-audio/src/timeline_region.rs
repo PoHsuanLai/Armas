@@ -243,18 +243,14 @@ impl<'a> TimelineRegion<'a> {
         };
 
         if ui.is_rect_visible(rect) {
-            let region_color = self.color.unwrap_or_else(|| self.variant.default_color(&theme));
+            let region_color = self
+                .color
+                .unwrap_or_else(|| self.variant.default_color(&theme));
             let painter = self.get_painter(ui);
             let (start_x, end_x) = self.calculate_handle_positions(&rect, timeline_width);
 
-            interaction.region_clicked = self.draw_region_background(
-                ui,
-                &painter,
-                &rect,
-                region_color,
-                start_x,
-                end_x,
-            );
+            interaction.region_clicked =
+                self.draw_region_background(ui, &painter, &rect, region_color, start_x, end_x);
 
             interaction.start_changed = self.draw_and_interact_handle(
                 ui,
@@ -322,10 +318,8 @@ impl<'a> TimelineRegion<'a> {
     }
 
     fn create_disabled_response(&self, ui: &mut Ui, timeline_width: f32) -> TimelineRegionResponse {
-        let (_rect, response) = ui.allocate_exact_size(
-            Vec2::new(timeline_width, 0.0),
-            Sense::hover(),
-        );
+        let (_rect, response) =
+            ui.allocate_exact_size(Vec2::new(timeline_width, 0.0), Sense::hover());
         TimelineRegionResponse {
             response,
             start_changed: false,
@@ -343,7 +337,7 @@ impl<'a> TimelineRegion<'a> {
 
         let rect = Rect::from_min_size(
             Pos2::new(full_rect.min.x, full_rect.min.y + y_offset),
-            Vec2::new(timeline_width, actual_height)
+            Vec2::new(timeline_width, actual_height),
         );
 
         (rect, actual_height)
@@ -377,10 +371,8 @@ impl<'a> TimelineRegion<'a> {
             return false;
         }
 
-        let region_rect = Rect::from_min_max(
-            Pos2::new(start_x, rect.min.y),
-            Pos2::new(end_x, rect.max.y),
-        );
+        let region_rect =
+            Rect::from_min_max(Pos2::new(start_x, rect.min.y), Pos2::new(end_x, rect.max.y));
 
         painter.rect_filled(
             region_rect,
@@ -428,7 +420,11 @@ impl<'a> TimelineRegion<'a> {
             Vec2::new(self.handle_width, actual_height),
         );
 
-        let handle_id = self.id.unwrap_or_else(|| ui.id()).with(if is_start { "start_handle" } else { "end_handle" });
+        let handle_id = self.id.unwrap_or_else(|| ui.id()).with(if is_start {
+            "start_handle"
+        } else {
+            "end_handle"
+        });
         let handle_response = ui.interact(handle_rect, handle_id, Sense::click_and_drag());
 
         let mut changed = false;
@@ -462,7 +458,14 @@ impl<'a> TimelineRegion<'a> {
         changed
     }
 
-    fn draw_labels(&self, painter: &egui::Painter, theme: &Theme, rect: &Rect, start_x: f32, end_x: f32) {
+    fn draw_labels(
+        &self,
+        painter: &egui::Painter,
+        theme: &Theme,
+        rect: &Rect,
+        start_x: f32,
+        end_x: f32,
+    ) {
         if !self.show_labels {
             return;
         }
@@ -533,7 +536,11 @@ impl<'a> TimelineRegion<'a> {
         painter.rect_filled(rect, theme.spacing.corner_radius_small as f32, bg_color);
 
         // Handle border
-        let border_width = if self.variant == RegionVariant::Punch { 2.0 } else { 1.0 };
+        let border_width = if self.variant == RegionVariant::Punch {
+            2.0
+        } else {
+            1.0
+        };
         let border_color = match self.variant {
             RegionVariant::Punch => Color32::from_rgb(180, 40, 40),
             _ => theme.foreground().gamma_multiply(0.8),
@@ -558,35 +565,83 @@ impl<'a> TimelineRegion<'a> {
                 if is_start {
                     // [
                     painter.line_segment(
-                        [Pos2::new(center.x + bracket_width/2.0, center.y - bracket_height/2.0),
-                         Pos2::new(center.x - bracket_width/2.0, center.y - bracket_height/2.0)],
+                        [
+                            Pos2::new(
+                                center.x + bracket_width / 2.0,
+                                center.y - bracket_height / 2.0,
+                            ),
+                            Pos2::new(
+                                center.x - bracket_width / 2.0,
+                                center.y - bracket_height / 2.0,
+                            ),
+                        ],
                         egui::Stroke::new(1.5, bracket_color),
                     );
                     painter.line_segment(
-                        [Pos2::new(center.x - bracket_width/2.0, center.y - bracket_height/2.0),
-                         Pos2::new(center.x - bracket_width/2.0, center.y + bracket_height/2.0)],
+                        [
+                            Pos2::new(
+                                center.x - bracket_width / 2.0,
+                                center.y - bracket_height / 2.0,
+                            ),
+                            Pos2::new(
+                                center.x - bracket_width / 2.0,
+                                center.y + bracket_height / 2.0,
+                            ),
+                        ],
                         egui::Stroke::new(1.5, bracket_color),
                     );
                     painter.line_segment(
-                        [Pos2::new(center.x - bracket_width/2.0, center.y + bracket_height/2.0),
-                         Pos2::new(center.x + bracket_width/2.0, center.y + bracket_height/2.0)],
+                        [
+                            Pos2::new(
+                                center.x - bracket_width / 2.0,
+                                center.y + bracket_height / 2.0,
+                            ),
+                            Pos2::new(
+                                center.x + bracket_width / 2.0,
+                                center.y + bracket_height / 2.0,
+                            ),
+                        ],
                         egui::Stroke::new(1.5, bracket_color),
                     );
                 } else {
                     // ]
                     painter.line_segment(
-                        [Pos2::new(center.x - bracket_width/2.0, center.y - bracket_height/2.0),
-                         Pos2::new(center.x + bracket_width/2.0, center.y - bracket_height/2.0)],
+                        [
+                            Pos2::new(
+                                center.x - bracket_width / 2.0,
+                                center.y - bracket_height / 2.0,
+                            ),
+                            Pos2::new(
+                                center.x + bracket_width / 2.0,
+                                center.y - bracket_height / 2.0,
+                            ),
+                        ],
                         egui::Stroke::new(1.5, bracket_color),
                     );
                     painter.line_segment(
-                        [Pos2::new(center.x + bracket_width/2.0, center.y - bracket_height/2.0),
-                         Pos2::new(center.x + bracket_width/2.0, center.y + bracket_height/2.0)],
+                        [
+                            Pos2::new(
+                                center.x + bracket_width / 2.0,
+                                center.y - bracket_height / 2.0,
+                            ),
+                            Pos2::new(
+                                center.x + bracket_width / 2.0,
+                                center.y + bracket_height / 2.0,
+                            ),
+                        ],
                         egui::Stroke::new(1.5, bracket_color),
                     );
                     painter.line_segment(
-                        [Pos2::new(center.x + bracket_width/2.0, center.y + bracket_height/2.0),
-                         Pos2::new(center.x - bracket_width/2.0, center.y + bracket_height/2.0)],
+                        [
+                            Pos2::new(
+                                center.x + bracket_width / 2.0,
+                                center.y + bracket_height / 2.0,
+                            ),
+                            Pos2::new(
+                                center.x - bracket_width / 2.0,
+                                center.y + bracket_height / 2.0,
+                            ),
+                        ],
                         egui::Stroke::new(1.5, bracket_color),
                     );
                 }
@@ -643,23 +698,38 @@ impl<'a> TimelineRegion<'a> {
 
         // Glow effect
         if is_hovered {
-            let glow_layers = if self.variant == RegionVariant::Punch { 4 } else { 3 };
-            let glow_offset_mult = if self.variant == RegionVariant::Punch { 2.0 } else { 1.5 };
-            let glow_alpha_mult = if self.variant == RegionVariant::Punch { 60.0 } else { 40.0 };
+            let glow_layers = if self.variant == RegionVariant::Punch {
+                4
+            } else {
+                3
+            };
+            let glow_offset_mult = if self.variant == RegionVariant::Punch {
+                2.0
+            } else {
+                1.5
+            };
+            let glow_alpha_mult = if self.variant == RegionVariant::Punch {
+                60.0
+            } else {
+                40.0
+            };
 
             for i in 0..glow_layers {
                 let offset = (i + 1) as f32 * glow_offset_mult;
                 let alpha = ((1.0 - i as f32 / glow_layers as f32) * glow_alpha_mult) as u8;
-                let glow_color = Color32::from_rgba_unmultiplied(
-                    color.r(),
-                    color.g(),
-                    color.b(),
-                    alpha,
-                );
+                let glow_color =
+                    Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
                 painter.rect_stroke(
                     rect.expand(offset),
                     theme.spacing.corner_radius_small as f32,
-                    egui::Stroke::new(if self.variant == RegionVariant::Punch { 2.0 } else { 1.5 }, glow_color),
+                    egui::Stroke::new(
+                        if self.variant == RegionVariant::Punch {
+                            2.0
+                        } else {
+                            1.5
+                        },
+                        glow_color,
+                    ),
                     egui::StrokeKind::Outside,
                 );
             }
@@ -685,16 +755,13 @@ mod tests {
         let mut start = 4.0;
         let mut end = 12.0;
 
-        let selection = TimelineRegion::new(&mut start, &mut end)
-            .variant(RegionVariant::Selection);
+        let selection = TimelineRegion::new(&mut start, &mut end).variant(RegionVariant::Selection);
         assert_eq!(selection.variant, RegionVariant::Selection);
 
-        let loop_region = TimelineRegion::new(&mut start, &mut end)
-            .variant(RegionVariant::Loop);
+        let loop_region = TimelineRegion::new(&mut start, &mut end).variant(RegionVariant::Loop);
         assert_eq!(loop_region.variant, RegionVariant::Loop);
 
-        let punch = TimelineRegion::new(&mut start, &mut end)
-            .variant(RegionVariant::Punch);
+        let punch = TimelineRegion::new(&mut start, &mut end).variant(RegionVariant::Punch);
         assert_eq!(punch.variant, RegionVariant::Punch);
     }
 }

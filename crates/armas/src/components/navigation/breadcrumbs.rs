@@ -112,10 +112,9 @@ impl<'a> BreadcrumbsBuilder<'a> {
             self.ui.add_space(self.spacing);
 
             // Draw chevron right icon
-            let (rect, _) = self.ui.allocate_exact_size(
-                egui::vec2(SEPARATOR_SIZE, SEPARATOR_SIZE),
-                Sense::hover(),
-            );
+            let (rect, _) = self
+                .ui
+                .allocate_exact_size(egui::vec2(SEPARATOR_SIZE, SEPARATOR_SIZE), Sense::hover());
 
             if self.ui.is_rect_visible(rect) {
                 let painter = self.ui.painter();
@@ -214,11 +213,9 @@ impl<'a> ItemBuilder<'a> {
             if response.hovered() {
                 // Re-render with foreground color on hover
                 let rect = response.rect;
-                self.ui.painter().rect_filled(
-                    rect,
-                    0.0,
-                    egui::Color32::TRANSPARENT,
-                );
+                self.ui
+                    .painter()
+                    .rect_filled(rect, 0.0, egui::Color32::TRANSPARENT);
                 self.ui.painter().text(
                     rect.left_center(),
                     egui::Align2::LEFT_CENTER,

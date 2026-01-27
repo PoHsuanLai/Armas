@@ -21,9 +21,7 @@ fn test_slider_with_label() {
     let mut value = 75.0;
 
     let mut harness = Harness::new_ui(|ui| {
-        Slider::new(0.0, 100.0)
-            .label("Volume")
-            .show(ui, &mut value);
+        Slider::new(0.0, 100.0).label("Volume").show(ui, &mut value);
     });
 
     harness.run();
@@ -80,9 +78,7 @@ fn test_slider_hide_value() {
     let mut value = 0.5;
 
     let mut harness = Harness::new_ui(|ui| {
-        Slider::new(0.0, 1.0)
-            .show_value(false)
-            .show(ui, &mut value);
+        Slider::new(0.0, 1.0).show_value(false).show(ui, &mut value);
     });
 
     harness.run();
@@ -94,9 +90,7 @@ fn test_slider_custom_width() {
     let mut value = 50.0;
 
     let mut harness = Harness::new_ui(|ui| {
-        Slider::new(0.0, 100.0)
-            .width(300.0)
-            .show(ui, &mut value);
+        Slider::new(0.0, 100.0).width(300.0).show(ui, &mut value);
     });
 
     harness.run();
@@ -108,9 +102,7 @@ fn test_slider_custom_height() {
     let mut value = 50.0;
 
     let mut harness = Harness::new_ui(|ui| {
-        Slider::new(0.0, 100.0)
-            .height(32.0)
-            .show(ui, &mut value);
+        Slider::new(0.0, 100.0).height(32.0).show(ui, &mut value);
     });
 
     harness.run();
@@ -150,9 +142,7 @@ fn test_slider_negative_range() {
     let mut value = 0.0;
 
     let mut harness = Harness::new_ui(|ui| {
-        Slider::new(-100.0, 100.0)
-            .label("Pan")
-            .show(ui, &mut value);
+        Slider::new(-100.0, 100.0).label("Pan").show(ui, &mut value);
     });
 
     harness.run();

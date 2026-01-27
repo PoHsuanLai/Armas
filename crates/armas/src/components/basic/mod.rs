@@ -12,12 +12,12 @@ pub mod kbd;
 pub mod loading;
 pub mod progress;
 pub mod radio;
+pub mod range_slider;
 pub mod select;
 pub mod separator;
 pub mod slider;
-pub mod range_slider;
-pub mod three_value_slider;
 pub mod textarea;
+pub mod three_value_slider;
 pub mod toggle;
 pub mod tooltip;
 
@@ -32,12 +32,12 @@ pub use kbd::Kbd;
 pub use loading::{CircularProgress, LoadingDots, Skeleton, Spinner};
 pub use progress::{CircularProgressBar, Progress, RingProgress};
 pub use radio::{Radio, RadioGroup, RadioGroupResponse, RadioResponse, RadioSize};
+pub use range_slider::{RangeSlider, RangeSliderResponse};
 pub use select::{Select, SelectOption, SelectResponse};
 pub use separator::{Separator, SeparatorOrientation};
 pub use slider::{Slider, SliderResponse};
-pub use range_slider::{RangeSlider, RangeSliderResponse};
-pub use three_value_slider::{ThreeValueSlider, ThreeValueSliderResponse, ValueThumbStyle};
 pub use textarea::Textarea;
+pub use three_value_slider::{ThreeValueSlider, ThreeValueSliderResponse, ValueThumbStyle};
 pub use toggle::{
     Toggle, ToggleGroup, ToggleGroupResponse, ToggleGroupState, ToggleResponse, ToggleSize,
     ToggleVariant,

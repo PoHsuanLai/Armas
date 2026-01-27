@@ -5,7 +5,6 @@
 
 use armas::color::{ColorStop, Gradient};
 use egui::{Color32, Pos2, Rect, Response, Ui, Vec2};
-use std::f32::consts::PI;
 
 /// Configuration for an aurora blob
 #[derive(Clone, Debug)]
@@ -39,8 +38,8 @@ impl AuroraBlob {
             pos,
             radius,
             colors,
-            phase_x: (hash1 % 360) as f32 * PI / 180.0,
-            phase_y: (hash2 % 360) as f32 * PI / 180.0,
+            phase_x: ((hash1 % 360) as f32).to_radians(),
+            phase_y: ((hash2 % 360) as f32).to_radians(),
             freq_x: 0.5 + ((hash1 % 100) as f32 / 200.0),
             freq_y: 0.5 + ((hash2 % 100) as f32 / 200.0),
         }
@@ -50,8 +49,8 @@ impl AuroraBlob {
         // Smooth sinusoidal motion based on absolute time
         // time already includes speed_multiplier from AuroraBackground
         // Apply blob-specific frequency variation
-        let phase_x = time * self.freq_x + self.phase_x;
-        let phase_y = time * self.freq_y + self.phase_y;
+        let phase_x = time.mul_add(self.freq_x, self.phase_x);
+        let phase_y = time.mul_add(self.freq_y, self.phase_y);
 
         // Calculate new position with wrapping
         let center = bounds.center();
@@ -104,6 +103,7 @@ pub struct AuroraBackground {
 
 impl AuroraBackground {
     /// Create a new aurora background with default settings
+    #[must_use] 
     pub fn new(width: f32, height: f32) -> Self {
         Self {
             id: egui::Id::new("aurora_default"),
@@ -122,6 +122,7 @@ impl AuroraBackground {
     }
 
     /// Create aurora with cyberpunk color scheme
+    #[must_use] 
     pub fn cyberpunk(width: f32, height: f32) -> Self {
         let mut aurora = Self::new(width, height);
 
@@ -161,6 +162,7 @@ impl AuroraBackground {
     }
 
     /// Create aurora with aurora borealis color scheme
+    #[must_use] 
     pub fn borealis(width: f32, height: f32) -> Self {
         let mut aurora = Self::new(width, height);
 
@@ -200,6 +202,7 @@ impl AuroraBackground {
     }
 
     /// Create aurora with warm sunset colors
+    #[must_use] 
     pub fn sunset(width: f32, height: f32) -> Self {
         let mut aurora = Self::new(width, height);
 
@@ -239,18 +242,21 @@ impl AuroraBackground {
     }
 
     /// Set the speed multiplier for all blobs
-    pub fn speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn speed(mut self, speed: f32) -> Self {
         self.speed_multiplier = speed;
         self
     }
 
     /// Set a time offset to desynchronize from other aurora instances
-    pub fn time_offset(mut self, offset: f32) -> Self {
+    #[must_use] 
+    pub const fn time_offset(mut self, offset: f32) -> Self {
         self.time_offset = offset;
         self
     }
 
     /// Add a custom blob
+    #[must_use] 
     pub fn add_blob(mut self, pos: Pos2, radius: f32, colors: Vec<Color32>) -> Self {
         self.blobs.push(AuroraBlob::new(pos, radius, colors));
         self
@@ -274,7 +280,7 @@ impl AuroraBackground {
 
     fn paint_impl(self, ui: &mut Ui, bounds: Rect) {
         let base_time = ui.input(|i| i.time) as f32;
-        let time = (base_time * self.speed_multiplier) + self.time_offset;
+        let time = base_time.mul_add(self.speed_multiplier, self.time_offset);
 
         // Get or initialize state from egui memory
         let mut state = ui.data_mut(|d| {

@@ -1,7 +1,7 @@
 //! Tests for Menu component using egui_kittest
 
-use armas::prelude::*;
 use armas::components::navigation::Menu;
+use armas::prelude::*;
 use egui_kittest::Harness;
 
 /// Test that Menu renders when open
@@ -214,9 +214,7 @@ fn test_menu_custom_width() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("wide_menu")
-            .width(300.0)
-            .open(true);
+        let mut menu = Menu::new("wide_menu").width(300.0).open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             menu.item("This is a very long menu item text");

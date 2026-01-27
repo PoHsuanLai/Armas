@@ -52,9 +52,9 @@ impl ButtonSize {
 
     fn padding_x(&self) -> f32 {
         match self {
-            ButtonSize::Small => 12.0, // px-3
+            ButtonSize::Small => 12.0,   // px-3
             ButtonSize::Default => 16.0, // px-4
-            ButtonSize::Large => 24.0, // px-6
+            ButtonSize::Large => 24.0,   // px-6
         }
     }
 }
@@ -114,7 +114,6 @@ impl Button {
 
     /// Show the button
     pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
-
         let sense = if self.enabled {
             Sense::click()
         } else {
@@ -127,11 +126,9 @@ impl Button {
 
         // Measure text
         let font_id = egui::FontId::proportional(FONT_SIZE);
-        let text_galley = ui.painter().layout_no_wrap(
-            self.text.clone(),
-            font_id.clone(),
-            Color32::PLACEHOLDER,
-        );
+        let text_galley =
+            ui.painter()
+                .layout_no_wrap(self.text.clone(), font_id.clone(), Color32::PLACEHOLDER);
         let galley_size = text_galley.rect.size();
         let text_width = galley_size.x;
 
@@ -229,7 +226,8 @@ impl Button {
 
             // Draw text
             let text_pos = rect.center() - galley_size / 2.0;
-            ui.painter().galley(egui::pos2(text_pos.x, text_pos.y), text_galley, text_color);
+            ui.painter()
+                .galley(egui::pos2(text_pos.x, text_pos.y), text_galley, text_color);
 
             // Draw underline for Link variant on hover
             if self.variant == ButtonVariant::Link && hovered {

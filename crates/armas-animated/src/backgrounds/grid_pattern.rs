@@ -37,7 +37,8 @@ impl Default for GridPattern {
 
 impl GridPattern {
     /// Create a new grid pattern with default settings
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             spacing: 50.0,
             color: None,
@@ -52,50 +53,58 @@ impl GridPattern {
     }
 
     /// Set the width
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set the height
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = Some(height);
         self
     }
 
     /// Set the grid spacing
-    pub fn spacing(mut self, spacing: f32) -> Self {
+    #[must_use] 
+    pub const fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
         self
     }
 
     /// Set the grid line color
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Enable dots at intersections
-    pub fn dots(mut self, color: Color32, radius: f32) -> Self {
+    #[must_use] 
+    pub const fn dots(mut self, color: Color32, radius: f32) -> Self {
         self.dot_color = Some(color);
         self.dot_radius = radius;
         self
     }
 
     /// Set fade distance (0.0 to 1.0)
-    pub fn fade(mut self, fade: f32) -> Self {
+    #[must_use] 
+    pub const fn fade(mut self, fade: f32) -> Self {
         self.fade_distance = fade.clamp(0.0, 1.0);
         self
     }
 
     /// Enable perspective effect (3D-like grid)
-    pub fn perspective(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn perspective(mut self, enabled: bool) -> Self {
         self.perspective = enabled;
         self
     }
 
     /// Set line thickness
-    pub fn thickness(mut self, thickness: f32) -> Self {
+    #[must_use] 
+    pub const fn thickness(mut self, thickness: f32) -> Self {
         self.thickness = thickness;
         self
     }
@@ -146,7 +155,7 @@ impl GridPattern {
             let alpha = if self.fade_distance > 0.0 {
                 let distance_from_center = (line_x - center.x).abs() / (bounds.width() / 2.0);
                 let fade_factor = 1.0 - (distance_from_center / self.fade_distance).min(1.0);
-                (color.a() as f32 * fade_factor) as u8
+                (f32::from(color.a()) * fade_factor) as u8
             } else {
                 color.a()
             };
@@ -184,7 +193,7 @@ impl GridPattern {
             let alpha = if self.fade_distance > 0.0 {
                 let distance_from_center = (line_y - center.y).abs() / (bounds.height() / 2.0);
                 let fade_factor = 1.0 - (distance_from_center / self.fade_distance).min(1.0);
-                (color.a() as f32 * fade_factor) as u8
+                (f32::from(color.a()) * fade_factor) as u8
             } else {
                 color.a()
             };
@@ -222,9 +231,9 @@ impl GridPattern {
                     let alpha = if self.fade_distance > 0.0 {
                         let distance_x = (dot_x - center.x).abs() / (bounds.width() / 2.0);
                         let distance_y = (dot_y - center.y).abs() / (bounds.height() / 2.0);
-                        let distance = (distance_x.powi(2) + distance_y.powi(2)).sqrt();
+                        let distance = distance_x.hypot(distance_y);
                         let fade_factor = 1.0 - (distance / self.fade_distance).min(1.0);
-                        (dot_color.a() as f32 * fade_factor) as u8
+                        (f32::from(dot_color.a()) * fade_factor) as u8
                     } else {
                         dot_color.a()
                     };

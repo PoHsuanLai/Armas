@@ -198,9 +198,7 @@ impl Fader {
         let mut changed = false;
 
         // Generate stable ID for drag state
-        let fader_id = self
-            .id
-            .unwrap_or_else(|| ui.make_persistent_id("fader"));
+        let fader_id = self.id.unwrap_or_else(|| ui.make_persistent_id("fader"));
         let drag_state_id = fader_id.with("drag_state");
 
         // Load state from memory if ID is set
@@ -281,7 +279,10 @@ impl Fader {
 
                 if drag_state.drag.mode() == DragMode::Velocity {
                     // Velocity mode: faster movement = larger change
-                    let delta = drag_state.drag.update_tracked(pos.y as f64, 1.0, self.height as f64);
+                    let delta =
+                        drag_state
+                            .drag
+                            .update_tracked(pos.y as f64, 1.0, self.height as f64);
                     // Invert because dragging up should increase value
                     let new_value = drag_state.drag_start_value - delta as f32;
                     if (new_value - self.value).abs() > 0.0001 {

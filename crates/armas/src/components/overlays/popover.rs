@@ -253,10 +253,7 @@ impl Popover {
                 anchor_rect.left() - estimated_width - spacing,
                 anchor_rect.center().y,
             ),
-            PopoverPosition::Right => pos2(
-                anchor_rect.right() + spacing,
-                anchor_rect.center().y,
-            ),
+            PopoverPosition::Right => pos2(anchor_rect.right() + spacing, anchor_rect.center().y),
             PopoverPosition::Auto => unreachable!(),
         }
     }
@@ -279,9 +276,21 @@ impl Popover {
     fn get_style_params(&self, theme: &Theme) -> (f32, f32, f32) {
         let (stroke_width, rounding, default_padding) = match self.style {
             PopoverStyle::Default => (1.0, theme.spacing.corner_radius as f32, theme.spacing.md),
-            PopoverStyle::Elevated => (0.5, theme.spacing.corner_radius_large as f32, theme.spacing.lg),
-            PopoverStyle::Bordered => (2.0, theme.spacing.corner_radius_small as f32, theme.spacing.md),
-            PopoverStyle::Flat => (0.0, theme.spacing.corner_radius_small as f32, theme.spacing.md),
+            PopoverStyle::Elevated => (
+                0.5,
+                theme.spacing.corner_radius_large as f32,
+                theme.spacing.lg,
+            ),
+            PopoverStyle::Bordered => (
+                2.0,
+                theme.spacing.corner_radius_small as f32,
+                theme.spacing.md,
+            ),
+            PopoverStyle::Flat => (
+                0.0,
+                theme.spacing.corner_radius_small as f32,
+                theme.spacing.md,
+            ),
         };
         let padding = self.padding.unwrap_or(default_padding);
         (stroke_width, rounding, padding)

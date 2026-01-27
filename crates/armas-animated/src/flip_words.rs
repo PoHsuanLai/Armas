@@ -5,7 +5,7 @@
 use egui::{Align2, Color32, FontId, Pos2, Response, Ui, Vec2};
 
 /// Flip transition style
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FlipStyle {
     /// Vertical flip (rotate on X axis)
     Vertical,
@@ -37,10 +37,11 @@ pub struct FlipWords {
 
 impl FlipWords {
     /// Create a new flip words component
+    #[must_use] 
     pub fn new(words: Vec<impl Into<String>>) -> Self {
         // Note: color will be set from theme in show() if not overridden
         Self {
-            words: words.into_iter().map(|w| w.into()).collect(),
+            words: words.into_iter().map(std::convert::Into::into).collect(),
             duration: 2.5,
             transition_duration: 0.5,
             style: FlipStyle::Vertical,
@@ -51,31 +52,36 @@ impl FlipWords {
     }
 
     /// Set the duration each word is displayed (in seconds)
-    pub fn duration(mut self, seconds: f32) -> Self {
+    #[must_use] 
+    pub const fn duration(mut self, seconds: f32) -> Self {
         self.duration = seconds.max(0.5);
         self
     }
 
     /// Set the flip style
-    pub fn style(mut self, style: FlipStyle) -> Self {
+    #[must_use] 
+    pub const fn style(mut self, style: FlipStyle) -> Self {
         self.style = style;
         self
     }
 
     /// Set font size
-    pub fn font_size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn font_size(mut self, size: f32) -> Self {
         self.font_size = size;
         self
     }
 
     /// Set text color
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = color;
         self
     }
 
     /// Set highlight color for the active word
-    pub fn highlight(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn highlight(mut self, color: Color32) -> Self {
         self.highlight_color = Some(color);
         self
     }
@@ -159,7 +165,7 @@ impl FlipWords {
                                 Pos2::new(center.x, center.y + offset_y),
                                 Align2::CENTER_CENTER,
                                 current_word,
-                                font_id.clone(),
+                                font_id,
                                 faded_color,
                             );
                         }
@@ -217,7 +223,7 @@ impl FlipWords {
                                 center,
                                 Align2::CENTER_CENTER,
                                 current_word,
-                                font_id.clone(),
+                                font_id,
                                 faded_color,
                             );
                         } else {

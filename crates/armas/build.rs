@@ -25,7 +25,11 @@ fn main() {
 
     // Start generating the Rust code
     // Note: IconData is already imported by the parent module via `pub use armas_icon::IconData`
-    writeln!(output, "// Generated window icon data - DO NOT EDIT MANUALLY\n").unwrap();
+    writeln!(
+        output,
+        "// Generated window icon data - DO NOT EDIT MANUALLY\n"
+    )
+    .unwrap();
 
     // Parse window icons
     let icons_dir = PathBuf::from("icons/window");
@@ -44,12 +48,8 @@ fn main() {
                 match parse_svg(&path) {
                     Ok((vertices, indices, width, height)) => {
                         writeln!(output, "#[allow(missing_docs)]").unwrap();
-                        writeln!(
-                            output,
-                            "pub static {}: IconData = IconData {{",
-                            const_name
-                        )
-                        .unwrap();
+                        writeln!(output, "pub static {}: IconData = IconData {{", const_name)
+                            .unwrap();
                         writeln!(output, "    name: \"{}\",", file_name).unwrap();
                         writeln!(output, "    vertices: &[{}],", vertices).unwrap();
                         writeln!(output, "    indices: &[{}],", indices).unwrap();
@@ -84,7 +84,12 @@ fn parse_svg(path: &Path) -> Result<(String, String, f32, f32), Box<dyn std::err
     let mut stroke_tessellator = StrokeTessellator::new();
 
     // Extract and tessellate all paths
-    tessellate_group(tree.root(), &mut fill_tessellator, &mut stroke_tessellator, &mut geometry)?;
+    tessellate_group(
+        tree.root(),
+        &mut fill_tessellator,
+        &mut stroke_tessellator,
+        &mut geometry,
+    )?;
 
     // Generate Rust code for vertices
     let mut vertices_code = String::new();

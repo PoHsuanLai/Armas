@@ -124,7 +124,6 @@ impl<'a> ZoomControl<'a> {
 
     /// Show the zoom control
     pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> ZoomControlResponse {
-
         // Load state from memory if ID is set
         if let Some(id) = self.id {
             let state_id = id.with("zoom_state");

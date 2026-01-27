@@ -339,19 +339,14 @@ impl ShowcaseApp {
     fn render_mobile_sidebar(&mut self, ui: &mut egui::Ui) {
         let rect = ui.available_rect_before_wrap();
         let theme = self.theme.theme().clone();
-        ui.painter()
-            .rect_filled(rect, 0.0, theme.background());
+        ui.painter().rect_filled(rect, 0.0, theme.background());
 
         // Reserve bottom area for external links
         let links_height = 48.0;
-        let sidebar_rect = egui::Rect::from_min_max(
-            rect.min,
-            egui::pos2(rect.max.x, rect.max.y - links_height),
-        );
-        let links_rect = egui::Rect::from_min_max(
-            egui::pos2(rect.min.x, rect.max.y - links_height),
-            rect.max,
-        );
+        let sidebar_rect =
+            egui::Rect::from_min_max(rect.min, egui::pos2(rect.max.x, rect.max.y - links_height));
+        let links_rect =
+            egui::Rect::from_min_max(egui::pos2(rect.min.x, rect.max.y - links_height), rect.max);
 
         // Sidebar navigation
         let response = ui
@@ -368,10 +363,8 @@ impl ShowcaseApp {
         // External links at bottom
         ui.scope_builder(egui::UiBuilder::new().max_rect(links_rect), |ui| {
             // Top border
-            let line_rect = egui::Rect::from_min_size(
-                links_rect.min,
-                egui::vec2(links_rect.width(), 1.0),
-            );
+            let line_rect =
+                egui::Rect::from_min_size(links_rect.min, egui::vec2(links_rect.width(), 1.0));
             ui.painter().rect_filled(line_rect, 0.0, theme.border());
 
             ui.add_space(1.0);

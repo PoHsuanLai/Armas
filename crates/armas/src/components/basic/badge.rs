@@ -255,19 +255,11 @@ impl Badge {
 
         // When selected, use primary filled style
         if self.is_selected {
-            return (
-                theme.primary(),
-                theme.primary_foreground(),
-                theme.primary(),
-            );
+            return (theme.primary(), theme.primary_foreground(), theme.primary());
         }
 
         match self.variant {
-            BadgeVariant::Default => (
-                theme.primary(),
-                theme.primary_foreground(),
-                theme.primary(),
-            ),
+            BadgeVariant::Default => (theme.primary(), theme.primary_foreground(), theme.primary()),
             BadgeVariant::Secondary => (
                 theme.secondary(),
                 theme.secondary_foreground(),
@@ -344,7 +336,6 @@ impl NotificationBadge {
 
     /// Show the notification badge
     pub fn show(&self, ui: &mut Ui, theme: &crate::Theme) -> Response {
-
         let color = self.color.unwrap_or_else(|| theme.destructive());
 
         let text = if let Some(max) = self.max_count {

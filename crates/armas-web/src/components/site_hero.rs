@@ -47,8 +47,11 @@ impl<'a> SiteHero<'a> {
 
                 // Push content toward vertical center
                 let content_height = 200.0; // approximate: title + subtitle + buttons
-                let top_space = ((rect.height() - content_height) / 2.0)
-                    .max(if is_mobile { 60.0 } else { 120.0 });
+                let top_space = ((rect.height() - content_height) / 2.0).max(if is_mobile {
+                    60.0
+                } else {
+                    120.0
+                });
                 ui.add_space(top_space);
 
                 // Title

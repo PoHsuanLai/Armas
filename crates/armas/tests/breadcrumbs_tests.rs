@@ -61,13 +61,11 @@ fn test_breadcrumbs_with_icons() {
 #[test]
 fn test_breadcrumbs_custom_spacing() {
     let mut harness = Harness::new_ui(|ui| {
-        Breadcrumbs::new()
-            .spacing(8.0)
-            .show(ui, |bc| {
-                bc.item("A", None);
-                bc.item("B", None);
-                bc.item("C", None);
-            });
+        Breadcrumbs::new().spacing(8.0).show(ui, |bc| {
+            bc.item("A", None);
+            bc.item("B", None);
+            bc.item("C", None);
+        });
     });
 
     harness.run();
@@ -77,12 +75,10 @@ fn test_breadcrumbs_custom_spacing() {
 #[test]
 fn test_breadcrumbs_zero_spacing() {
     let mut harness = Harness::new_ui(|ui| {
-        Breadcrumbs::new()
-            .spacing(0.0)
-            .show(ui, |bc| {
-                bc.item("One", None);
-                bc.item("Two", None);
-            });
+        Breadcrumbs::new().spacing(0.0).show(ui, |bc| {
+            bc.item("One", None);
+            bc.item("Two", None);
+        });
     });
 
     harness.run();

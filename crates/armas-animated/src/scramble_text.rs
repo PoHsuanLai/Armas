@@ -65,7 +65,8 @@ impl ScrambleText {
     }
 
     /// Set scramble speed (progress per second, 0.0 to 1.0)
-    pub fn speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn speed(mut self, speed: f32) -> Self {
         self.speed = speed.max(0.1);
         self
     }
@@ -80,19 +81,22 @@ impl ScrambleText {
     }
 
     /// Set frame interval (seconds between character changes)
-    pub fn frame_interval(mut self, interval: f32) -> Self {
+    #[must_use] 
+    pub const fn frame_interval(mut self, interval: f32) -> Self {
         self.frame_interval = interval.max(0.01);
         self
     }
 
     /// Enable looping
-    pub fn loop_mode(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn loop_mode(mut self, enabled: bool) -> Self {
         self.loop_mode = enabled;
         self
     }
 
     /// Set delay before looping (seconds)
-    pub fn loop_delay(mut self, delay: f32) -> Self {
+    #[must_use] 
+    pub const fn loop_delay(mut self, delay: f32) -> Self {
         self.delay_before_loop = delay.max(0.0);
         self
     }

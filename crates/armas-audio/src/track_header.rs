@@ -194,7 +194,11 @@ impl TrackHeader {
 
         // Get actual egui measurements
         let text_height = ui.text_style_height(&egui::TextStyle::Body);
-        let content_spacing = if self.show_controls { spacing / 2.0 } else { 0.0 };
+        let content_spacing = if self.show_controls {
+            spacing / 2.0
+        } else {
+            0.0
+        };
         let buttons_height = if self.show_controls { button_size } else { 0.0 };
 
         let content_height = text_height + content_spacing + buttons_height;
@@ -215,10 +219,8 @@ impl TrackHeader {
 
         let card_response = card.show(ui, theme, |ui| {
             // Allocate exact size first (like TimelineTrack does)
-            let (track_rect, _) = ui.allocate_exact_size(
-                Vec2::new(self.width, self.height),
-                Sense::hover(),
-            );
+            let (track_rect, _) =
+                ui.allocate_exact_size(Vec2::new(self.width, self.height), Sense::hover());
 
             // Calculate vertical centering
             let content_y = track_rect.min.y + (self.height - content_height) / 2.0;
@@ -290,8 +292,7 @@ impl TrackHeader {
                             let inset = (i + 1) as f32 * 0.4;
                             let alpha = glow_alpha.saturating_sub((i * 8) as u8);
                             let inset_rect = rect.shrink(inset);
-                            let glow_color =
-                                Color32::from_rgba_unmultiplied(255, 255, 255, alpha);
+                            let glow_color = Color32::from_rgba_unmultiplied(255, 255, 255, alpha);
                             painter.rect_filled(inset_rect, 0.0, glow_color);
                         }
 
@@ -316,8 +317,7 @@ impl TrackHeader {
                             let inset = (i + 1) as f32 * 0.5;
                             let alpha = glow_alpha.saturating_sub((i * 6) as u8);
                             let inset_rect = rect.shrink(inset);
-                            let glow_color =
-                                Color32::from_rgba_unmultiplied(255, 255, 255, alpha);
+                            let glow_color = Color32::from_rgba_unmultiplied(255, 255, 255, alpha);
                             painter.rect_filled(inset_rect, 0.0, glow_color);
                         }
                     }

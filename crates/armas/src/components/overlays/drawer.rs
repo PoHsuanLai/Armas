@@ -188,7 +188,8 @@ impl Drawer {
                 .interactable(true)
                 .fixed_pos(screen_rect.min)
                 .show(ctx, |ui| {
-                    let backdrop_response = ui.allocate_response(screen_rect.size(), Sense::click());
+                    let backdrop_response =
+                        ui.allocate_response(screen_rect.size(), Sense::click());
                     ui.painter().rect_filled(screen_rect, 0.0, backdrop_color);
 
                     if backdrop_response.clicked() {
@@ -211,7 +212,8 @@ impl Drawer {
                 ui.set_clip_rect(drawer_rect);
 
                 // Background with rounded top corners
-                ui.painter().rect_filled(drawer_rect, BORDER_ROUNDING, theme.background());
+                ui.painter()
+                    .rect_filled(drawer_rect, BORDER_ROUNDING, theme.background());
 
                 // Top border
                 ui.painter().hline(
@@ -224,7 +226,10 @@ impl Drawer {
                 let mut handle_response = None;
                 if self.show_handle {
                     let handle_rect = Rect::from_center_size(
-                        Pos2::new(drawer_rect.center().x, drawer_rect.top() + HANDLE_TOP_MARGIN + HANDLE_HEIGHT / 2.0),
+                        Pos2::new(
+                            drawer_rect.center().x,
+                            drawer_rect.top() + HANDLE_TOP_MARGIN + HANDLE_HEIGHT / 2.0,
+                        ),
                         vec2(HANDLE_WIDTH, HANDLE_HEIGHT),
                     );
 
@@ -234,14 +239,12 @@ impl Drawer {
                         vec2(screen_rect.width(), HANDLE_TOP_MARGIN * 2.0 + HANDLE_HEIGHT),
                     );
 
-                    let drag_response = ui.interact(drag_area, self.id.with("handle"), Sense::drag());
+                    let drag_response =
+                        ui.interact(drag_area, self.id.with("handle"), Sense::drag());
 
                     // Draw handle
-                    ui.painter().rect_filled(
-                        handle_rect,
-                        HANDLE_ROUNDING,
-                        theme.muted(),
-                    );
+                    ui.painter()
+                        .rect_filled(handle_rect, HANDLE_ROUNDING, theme.muted());
 
                     handle_response = Some(drag_response);
                 }
@@ -279,10 +282,8 @@ impl Drawer {
                     drawer_rect.top()
                 };
 
-                let content_rect = Rect::from_min_max(
-                    Pos2::new(drawer_rect.left(), content_top),
-                    drawer_rect.max,
-                );
+                let content_rect =
+                    Rect::from_min_max(Pos2::new(drawer_rect.left(), content_top), drawer_rect.max);
 
                 let mut content_ui = ui.new_child(
                     egui::UiBuilder::new()

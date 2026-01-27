@@ -53,7 +53,7 @@ pub type BuildResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 /// Tessellate a single SVG file and return the Rust code for an `IconData` constant.
 ///
-/// The constant will be named `const_name` in SCREAMING_SNAKE_CASE.
+/// The constant will be named `const_name` in `SCREAMING_SNAKE_CASE`.
 ///
 /// # Example
 /// ```rust,no_run
@@ -69,19 +69,18 @@ pub fn generate_icon_constant(svg_path: &Path, const_name: &str) -> BuildResult<
     let mut code = String::new();
     code.push_str("#[allow(missing_docs)]\n");
     code.push_str(&format!(
-        "pub static {}: IconData = IconData {{\n",
-        const_name
+        "pub static {const_name}: IconData = IconData {{\n"
     ));
 
     let file_name = svg_path
         .file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("unknown");
-    code.push_str(&format!("    name: \"{}\",\n", file_name));
-    code.push_str(&format!("    vertices: &[{}],\n", vertices));
-    code.push_str(&format!("    indices: &[{}],\n", indices));
-    code.push_str(&format!("    viewbox_width: {:.1},\n", width));
-    code.push_str(&format!("    viewbox_height: {:.1},\n", height));
+    code.push_str(&format!("    name: \"{file_name}\",\n"));
+    code.push_str(&format!("    vertices: &[{vertices}],\n"));
+    code.push_str(&format!("    indices: &[{indices}],\n"));
+    code.push_str(&format!("    viewbox_width: {width:.1},\n"));
+    code.push_str(&format!("    viewbox_height: {height:.1},\n"));
     code.push_str("};\n");
 
     Ok(code)
@@ -89,7 +88,7 @@ pub fn generate_icon_constant(svg_path: &Path, const_name: &str) -> BuildResult<
 
 /// Tessellate all SVG files in a directory and write `IconData` constants to the output.
 ///
-/// Each SVG file is converted to a constant named after the file in SCREAMING_SNAKE_CASE
+/// Each SVG file is converted to a constant named after the file in `SCREAMING_SNAKE_CASE`
 /// (e.g., `my-icon.svg` → `MY_ICON`).
 pub fn generate_icons_from_dir(dir: &Path, output: &mut impl Write) -> BuildResult<()> {
     if !dir.exists() {
@@ -108,7 +107,7 @@ pub fn generate_icons_from_dir(dir: &Path, output: &mut impl Write) -> BuildResu
 
             match generate_icon_constant(&path, &const_name) {
                 Ok(code) => {
-                    writeln!(output, "{}", code)?;
+                    writeln!(output, "{code}")?;
                 }
                 Err(e) => {
                     eprintln!("Warning: Failed to parse {}: {}", path.display(), e);
@@ -158,7 +157,7 @@ pub fn tessellate_svg(path: &Path) -> BuildResult<(String, String, f32, f32)> {
         if i > 0 {
             indices_code.push_str(", ");
         }
-        indices_code.push_str(&format!("{}", index));
+        indices_code.push_str(&format!("{index}"));
     }
 
     Ok((vertices_code, indices_code, width, height))
@@ -194,7 +193,7 @@ fn extract_viewbox(svg_data: &str) -> Option<(f32, f32)> {
 }
 
 fn extract_dimension(svg_data: &str, attr: &str) -> Option<f32> {
-    let pattern = format!("{}=\"", attr);
+    let pattern = format!("{attr}=\"");
     if let Some(start) = svg_data.find(&pattern) {
         let value_str = &svg_data[start + pattern.len()..];
         if let Some(end) = value_str.find('"') {

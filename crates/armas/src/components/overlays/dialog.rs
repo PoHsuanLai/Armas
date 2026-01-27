@@ -214,7 +214,9 @@ impl Dialog {
                                 }
                             });
 
-                            ui.allocate_space(ui.available_size() - vec2(CLOSE_BUTTON_SIZE + 4.0, 0.0));
+                            ui.allocate_space(
+                                ui.available_size() - vec2(CLOSE_BUTTON_SIZE + 4.0, 0.0),
+                            );
 
                             if self.closable {
                                 let (close_rect, close_response) = ui.allocate_exact_size(
@@ -266,7 +268,8 @@ impl Dialog {
 
         // Re-check state after content runs (content may have modified it)
         if self.is_open.is_none() {
-            let state_after_content = ctx.data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(true));
+            let state_after_content =
+                ctx.data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(true));
             if !state_after_content && is_open {
                 // Content closed the dialog
                 response.closed = true;

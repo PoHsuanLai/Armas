@@ -154,7 +154,8 @@ impl RangeSlider {
             // Track and thumb sizes (matching shadcn: h-1.5 track, size-4 thumb)
             let track_height = 6.0;
             let thumb_radius = 8.0;
-            let track_rect = Rect::from_center_size(rect.center(), vec2(rect.width(), track_height));
+            let track_rect =
+                Rect::from_center_size(rect.center(), vec2(rect.width(), track_height));
 
             // Calculate thumb positions
             let min_x = self.value_to_x(*min_value, &track_rect);
@@ -402,8 +403,7 @@ impl RangeSlider {
             }
             DragTarget::Both => {
                 let delta_x = pos_x - drag_state.drag_start_x;
-                let delta_value =
-                    delta_x / track_rect.width() * (self.range_max - self.range_min);
+                let delta_value = delta_x / track_rect.width() * (self.range_max - self.range_min);
 
                 let range_size = drag_state.drag_start_max - drag_state.drag_start_min;
                 let mut new_min = drag_state.drag_start_min + delta_value;
@@ -461,7 +461,11 @@ impl RangeSlider {
         // Draw thumbs
         for (x, is_min) in [(min_x, true), (max_x, false)] {
             let center = pos2(x, track_rect.center().y);
-            let this_target = if is_min { DragTarget::Min } else { DragTarget::Max };
+            let this_target = if is_min {
+                DragTarget::Min
+            } else {
+                DragTarget::Max
+            };
 
             // Determine if this thumb is active (being dragged)
             let is_active = response.dragged()

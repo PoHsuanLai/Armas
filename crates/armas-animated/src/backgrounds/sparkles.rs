@@ -47,7 +47,7 @@ impl Sparkle {
 
         let t = self.lifetime / self.max_lifetime;
         // Sine wave for smooth twinkling
-        let twinkle = ((t * PI * 2.0).sin() + 1.0) / 2.0;
+        let twinkle = f32::midpoint((t * PI * 2.0).sin(), 1.0);
         twinkle * 0.8 + 0.2
     }
 
@@ -57,7 +57,7 @@ impl Sparkle {
         }
 
         let opacity = self.opacity();
-        let alpha = (self.color.a() as f32 * opacity) as u8;
+        let alpha = (f32::from(self.color.a()) * opacity) as u8;
         let color =
             Color32::from_rgba_unmultiplied(self.color.r(), self.color.g(), self.color.b(), alpha);
 
@@ -68,14 +68,14 @@ impl Sparkle {
 
         let mut star_points = Vec::new();
         for i in 0..(points * 2) {
-            let angle = (i as f32 / (points * 2) as f32) * PI * 2.0 - PI / 2.0;
+            let angle = ((i as f32 / (points * 2) as f32) * PI).mul_add(2.0, -(PI / 2.0));
             let radius = if i % 2 == 0 {
                 outer_radius
             } else {
                 inner_radius
             };
-            let x = self.position.x + angle.cos() * radius;
-            let y = self.position.y + angle.sin() * radius;
+            let x = angle.cos().mul_add(radius, self.position.x);
+            let y = angle.sin().mul_add(radius, self.position.y);
             star_points.push(Pos2::new(x, y));
         }
 
@@ -87,8 +87,8 @@ impl Sparkle {
 
         // Add glow
         for i in 1..4 {
-            let glow_radius = self.size + i as f32 * 1.5;
-            let glow_alpha = (alpha as f32 * 0.3 / i as f32) as u8;
+            let glow_radius = (i as f32).mul_add(1.5, self.size);
+            let glow_alpha = (f32::from(alpha) * 0.3 / i as f32) as u8;
             let glow_color = Color32::from_rgba_unmultiplied(
                 self.color.r(),
                 self.color.g(),
@@ -127,6 +127,7 @@ pub struct Sparkles {
 impl Sparkles {
     /// Create a new sparkles effect
     /// Colors will be set from theme context if not customized via `.colors()`
+    #[must_use] 
     pub fn new(width: f32, height: f32) -> Self {
         Self {
             id: egui::Id::new("sparkles_default"),
@@ -152,12 +153,14 @@ impl Sparkles {
     }
 
     /// Set number of sparkle particles
+    #[must_use] 
     pub fn particle_count(mut self, count: usize) -> Self {
         self.particle_count = count.max(5);
         self
     }
 
     /// Set sparkle colors
+    #[must_use] 
     pub fn colors(mut self, colors: Vec<Color32>) -> Self {
         if !colors.is_empty() {
             self.colors = colors;
@@ -166,7 +169,8 @@ impl Sparkles {
     }
 
     /// Set size range for sparkles
-    pub fn size_range(mut self, min: f32, max: f32) -> Self {
+    #[must_use] 
+    pub const fn size_range(mut self, min: f32, max: f32) -> Self {
         self.min_size = min.max(1.0);
         self.max_size = max.max(min);
         self
@@ -186,7 +190,7 @@ impl Sparkles {
             let x = (random() as f32 / 32768.0) * self.width;
             let y = (random() as f32 / 32768.0) * self.height;
             let size =
-                self.min_size + (random() as f32 / 32768.0) * (self.max_size - self.min_size);
+                (random() as f32 / 32768.0).mul_add(self.max_size - self.min_size, self.min_size);
             let delay = (i as f32 / self.particle_count as f32) * 2.0;
             let color_index = random() as usize % self.colors.len();
 

@@ -22,12 +22,10 @@ fn test_sidebar_renders() {
 #[test]
 fn test_sidebar_expanded() {
     let mut harness = Harness::new_ui(|ui| {
-        Sidebar::new()
-            .collapsed(false)
-            .show(ui, |sidebar| {
-                sidebar.item("🏠", "Home");
-                sidebar.item("📧", "Messages");
-            });
+        Sidebar::new().collapsed(false).show(ui, |sidebar| {
+            sidebar.item("🏠", "Home");
+            sidebar.item("📧", "Messages");
+        });
     });
 
     harness.step();
@@ -37,12 +35,10 @@ fn test_sidebar_expanded() {
 #[test]
 fn test_sidebar_collapsed() {
     let mut harness = Harness::new_ui(|ui| {
-        Sidebar::new()
-            .collapsed(true)
-            .show(ui, |sidebar| {
-                sidebar.item("🏠", "Home");
-                sidebar.item("📧", "Messages");
-            });
+        Sidebar::new().collapsed(true).show(ui, |sidebar| {
+            sidebar.item("🏠", "Home");
+            sidebar.item("📧", "Messages");
+        });
     });
 
     harness.step();
@@ -145,12 +141,10 @@ fn test_sidebar_custom_collapsed_width() {
 #[test]
 fn test_sidebar_custom_expanded_width() {
     let mut harness = Harness::new_ui(|ui| {
-        Sidebar::new()
-            .expanded_width(300.0)
-            .show(ui, |sidebar| {
-                sidebar.item("🏠", "Home");
-                sidebar.item("📧", "Messages");
-            });
+        Sidebar::new().expanded_width(300.0).show(ui, |sidebar| {
+            sidebar.item("🏠", "Home");
+            sidebar.item("📧", "Messages");
+        });
     });
 
     harness.step();
@@ -175,13 +169,11 @@ fn test_sidebar_not_collapsible() {
 #[test]
 fn test_sidebar_no_icons() {
     let mut harness = Harness::new_ui(|ui| {
-        Sidebar::new()
-            .show_icons(false)
-            .show(ui, |sidebar| {
-                sidebar.item("", "Home");
-                sidebar.item("", "Messages");
-                sidebar.item("", "Settings");
-            });
+        Sidebar::new().show_icons(false).show(ui, |sidebar| {
+            sidebar.item("", "Home");
+            sidebar.item("", "Messages");
+            sidebar.item("", "Settings");
+        });
     });
 
     harness.step();

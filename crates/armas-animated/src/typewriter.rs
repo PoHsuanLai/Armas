@@ -55,31 +55,36 @@ impl Typewriter {
     }
 
     /// Set typing speed (characters per second)
-    pub fn speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn speed(mut self, speed: f32) -> Self {
         self.speed = speed.max(0.1);
         self
     }
 
     /// Enable/disable cursor
-    pub fn cursor(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn cursor(mut self, enabled: bool) -> Self {
         self.cursor_enabled = enabled;
         self
     }
 
     /// Set cursor blink speed (blinks per second)
-    pub fn cursor_blink_speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn cursor_blink_speed(mut self, speed: f32) -> Self {
         self.cursor_blink_speed = speed.max(0.1);
         self
     }
 
     /// Enable looping
-    pub fn loop_mode(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn loop_mode(mut self, enabled: bool) -> Self {
         self.loop_mode = enabled;
         self
     }
 
     /// Set delay before looping (seconds)
-    pub fn loop_delay(mut self, delay: f32) -> Self {
+    #[must_use] 
+    pub const fn loop_delay(mut self, delay: f32) -> Self {
         self.delay_before_loop = delay.max(0.0);
         self
     }
@@ -140,7 +145,7 @@ impl Typewriter {
         };
 
         let display_text = if cursor_visible && (!is_complete || self.loop_mode) {
-            format!("{}|", visible_text)
+            format!("{visible_text}|")
         } else {
             visible_text
         };
@@ -204,19 +209,22 @@ impl WordTypewriter {
     }
 
     /// Set typing speed (words per second)
-    pub fn speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn speed(mut self, speed: f32) -> Self {
         self.speed = speed.max(0.1);
         self
     }
 
     /// Enable looping
-    pub fn loop_mode(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn loop_mode(mut self, enabled: bool) -> Self {
         self.loop_mode = enabled;
         self
     }
 
     /// Set delay before looping (seconds)
-    pub fn loop_delay(mut self, delay: f32) -> Self {
+    #[must_use] 
+    pub const fn loop_delay(mut self, delay: f32) -> Self {
         self.delay_before_loop = delay.max(0.0);
         self
     }

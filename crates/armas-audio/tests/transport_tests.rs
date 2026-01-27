@@ -157,9 +157,7 @@ fn test_transport_custom_time() {
 fn test_transport_loop_enabled() {
     let theme = Theme::dark();
     let mut harness = Harness::new_ui(|ui| {
-        TransportControl::new()
-            .loop_enabled(true)
-            .show(ui, &theme);
+        TransportControl::new().loop_enabled(true).show(ui, &theme);
     });
 
     harness.run();

@@ -26,7 +26,7 @@ struct Meteor {
 }
 
 impl Meteor {
-    fn new(
+    const fn new(
         start: Pos2,
         end: Pos2,
         speed: f32,
@@ -74,7 +74,7 @@ impl Meteor {
             let next_t = (i + 1) as f32 / trail_points as f32;
             let next_pos = tail_start + (current_pos - tail_start) * next_t;
 
-            let alpha = (t * self.color.a() as f32) as u8;
+            let alpha = (t * f32::from(self.color.a())) as u8;
             let trail_color = Color32::from_rgba_unmultiplied(
                 self.color.r(),
                 self.color.g(),
@@ -82,7 +82,7 @@ impl Meteor {
                 alpha,
             );
 
-            let thickness = self.thickness * (0.5 + 0.5 * t);
+            let thickness = self.thickness * 0.5f32.mul_add(t, 0.5);
 
             painter.line_segment([pos, next_pos], Stroke::new(thickness, trail_color));
         }
@@ -118,6 +118,7 @@ pub struct MeteorShower {
 
 impl MeteorShower {
     /// Create a new meteor shower with theme-based defaults
+    #[must_use] 
     pub fn new(width: f32, height: f32, theme: &Theme) -> Self {
         Self {
             id: egui::Id::new("meteor_default"),
@@ -140,25 +141,29 @@ impl MeteorShower {
     }
 
     /// Set the spawn rate (meteors per second)
+    #[must_use] 
     pub fn spawn_rate(mut self, rate: f32) -> Self {
         self.spawn_rate = 1.0 / rate;
         self
     }
 
     /// Set the angle in radians (0 = right, PI/2 = down)
-    pub fn angle(mut self, angle: f32) -> Self {
+    #[must_use] 
+    pub const fn angle(mut self, angle: f32) -> Self {
         self.angle = angle;
         self
     }
 
     /// Set the meteor color
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = color;
         self
     }
 
     /// Set speed range
-    pub fn speed_range(mut self, min: f32, max: f32) -> Self {
+    #[must_use] 
+    pub const fn speed_range(mut self, min: f32, max: f32) -> Self {
         self.speed_min = min;
         self.speed_max = max;
         self
@@ -194,12 +199,12 @@ impl MeteorShower {
         };
 
         // Calculate end position (shoot across screen)
-        let distance = (bounds.width().powi(2) + bounds.height().powi(2)).sqrt() + 100.0;
+        let distance = bounds.width().hypot(bounds.height()) + 100.0;
         let end = start + dir * distance;
 
         // Random speed
         let speed_t = ((hash >> 10) % 1000) as f32 / 1000.0;
-        let speed = self.speed_min + (self.speed_max - self.speed_min) * speed_t;
+        let speed = (self.speed_max - self.speed_min).mul_add(speed_t, self.speed_min);
 
         // Random tail length
         let tail_length = 80.0 + ((hash >> 20) % 100) as f32;

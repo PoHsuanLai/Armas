@@ -208,7 +208,8 @@ impl Sheet {
                 .interactable(true)
                 .fixed_pos(screen_rect.min)
                 .show(ctx, |ui| {
-                    let backdrop_response = ui.allocate_response(screen_rect.size(), Sense::click());
+                    let backdrop_response =
+                        ui.allocate_response(screen_rect.size(), Sense::click());
                     ui.painter().rect_filled(screen_rect, 0.0, backdrop_color);
 
                     if backdrop_response.clicked() {
@@ -245,22 +246,30 @@ impl Sheet {
                 ui.set_clip_rect(sheet_rect);
 
                 // Background with border
-                ui.painter().rect_filled(sheet_rect, 0.0, theme.background());
+                ui.painter()
+                    .rect_filled(sheet_rect, 0.0, theme.background());
 
                 // Border on the edge facing the content
                 let border_stroke = Stroke::new(BORDER_WIDTH, theme.border());
                 match self.side {
                     SheetSide::Right => {
-                        ui.painter().vline(sheet_rect.left(), sheet_rect.y_range(), border_stroke);
+                        ui.painter()
+                            .vline(sheet_rect.left(), sheet_rect.y_range(), border_stroke);
                     }
                     SheetSide::Left => {
-                        ui.painter().vline(sheet_rect.right(), sheet_rect.y_range(), border_stroke);
+                        ui.painter()
+                            .vline(sheet_rect.right(), sheet_rect.y_range(), border_stroke);
                     }
                     SheetSide::Top => {
-                        ui.painter().hline(sheet_rect.x_range(), sheet_rect.bottom(), border_stroke);
+                        ui.painter().hline(
+                            sheet_rect.x_range(),
+                            sheet_rect.bottom(),
+                            border_stroke,
+                        );
                     }
                     SheetSide::Bottom => {
-                        ui.painter().hline(sheet_rect.x_range(), sheet_rect.top(), border_stroke);
+                        ui.painter()
+                            .hline(sheet_rect.x_range(), sheet_rect.top(), border_stroke);
                     }
                 }
 
@@ -295,7 +304,12 @@ impl Sheet {
                     } else {
                         theme.muted_foreground()
                     };
-                    render_icon(ui.painter(), close_rect, WindowIcon::Close.data(), icon_color);
+                    render_icon(
+                        ui.painter(),
+                        close_rect,
+                        WindowIcon::Close.data(),
+                        icon_color,
+                    );
 
                     if close_response.clicked() {
                         response.closed = true;
@@ -303,10 +317,8 @@ impl Sheet {
                 }
 
                 // Content area
-                let content_rect = Rect::from_min_max(
-                    sheet_rect.min + vec2(0.0, 0.0),
-                    sheet_rect.max,
-                );
+                let content_rect =
+                    Rect::from_min_max(sheet_rect.min + vec2(0.0, 0.0), sheet_rect.max);
 
                 let mut content_ui = ui.new_child(
                     egui::UiBuilder::new()
@@ -322,7 +334,12 @@ impl Sheet {
                     content_ui.horizontal(|ui| {
                         ui.add_space(HEADER_PADDING);
                         ui.vertical(|ui| {
-                            ui.set_width(sheet_rect.width() - HEADER_PADDING * 2.0 - CLOSE_BUTTON_SIZE - CLOSE_BUTTON_OFFSET);
+                            ui.set_width(
+                                sheet_rect.width()
+                                    - HEADER_PADDING * 2.0
+                                    - CLOSE_BUTTON_SIZE
+                                    - CLOSE_BUTTON_OFFSET,
+                            );
 
                             if let Some(title) = &self.title {
                                 ui.label(

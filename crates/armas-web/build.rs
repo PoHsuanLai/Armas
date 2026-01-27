@@ -35,7 +35,13 @@ fn main() {
     let mut file_order: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
     file_order.insert(
         "introduction",
-        vec!["introduction", "api_guide", "why_egui", "philosophy", "attributions"],
+        vec![
+            "introduction",
+            "api_guide",
+            "why_egui",
+            "philosophy",
+            "attributions",
+        ],
     );
     file_order.insert("installation", vec!["quick_start", "cargo_setup", "wasm"]);
 
@@ -174,7 +180,9 @@ fn main() {
 
     // Generate reverse mapping (index to route)
     code.push_str("#[allow(dead_code)]\n");
-    code.push_str("pub fn get_route_by_index(idx: usize) -> Option<(&'static str, &'static str)> {\n");
+    code.push_str(
+        "pub fn get_route_by_index(idx: usize) -> Option<(&'static str, &'static str)> {\n",
+    );
     code.push_str("    match idx {\n");
 
     idx = 0;
@@ -342,7 +350,11 @@ fn generate_web_icons() {
     let dest_path = Path::new(&out_dir).join("web_icons.rs");
     let mut output = File::create(&dest_path).unwrap();
 
-    writeln!(output, "// Generated web icon data - DO NOT EDIT MANUALLY\n").unwrap();
+    writeln!(
+        output,
+        "// Generated web icon data - DO NOT EDIT MANUALLY\n"
+    )
+    .unwrap();
 
     if let Err(e) = armas_icon::build::generate_icons_from_dir(icons_dir, &mut output) {
         eprintln!("Warning: Failed to generate web icons: {}", e);

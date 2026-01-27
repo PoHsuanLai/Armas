@@ -10,9 +10,7 @@ fn test_drawer_renders_open() {
     let theme = Theme::dark();
 
     let mut harness = Harness::new(|ctx| {
-        let mut drawer = Drawer::new("test_drawer")
-            .title("Test Drawer")
-            .open(true);
+        let mut drawer = Drawer::new("test_drawer").title("Test Drawer").open(true);
 
         drawer.show(ctx, &theme, |ui| {
             ui.label("Drawer content");
@@ -28,9 +26,7 @@ fn test_drawer_closed() {
     let theme = Theme::dark();
 
     let mut harness = Harness::new(|ctx| {
-        let mut drawer = Drawer::new("test_drawer")
-            .title("Test Drawer")
-            .open(false);
+        let mut drawer = Drawer::new("test_drawer").title("Test Drawer").open(false);
 
         drawer.show(ctx, &theme, |ui| {
             ui.label("Drawer content");

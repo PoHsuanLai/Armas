@@ -166,13 +166,12 @@ impl<'a> StepSequencer<'a> {
 
     /// Show the step sequencer
     pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> StepSequencerResponse {
-
         // Ensure steps vec has correct size
         self.steps.resize(self.num_steps, false);
 
         // Calculate total size
-        let total_width = self.num_steps as f32 * self.step_width
-            + (self.num_steps - 1) as f32 * self.gap;
+        let total_width =
+            self.num_steps as f32 * self.step_width + (self.num_steps - 1) as f32 * self.gap;
         let total_height = self.step_height;
         let desired_size = Vec2::new(total_width, total_height);
 

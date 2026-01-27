@@ -20,4 +20,4 @@ mod table;
 
 pub use aspect_ratio::{AspectRatio, ContentMode};
 pub use bento_grid::{BentoGrid, GridSpan};
-pub use table::{table, header_row, row, cell, cell_ui, TableRows, TableCells};
+pub use table::{cell, cell_ui, header_row, row, table, TableCells, TableRows};

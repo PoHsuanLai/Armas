@@ -154,12 +154,16 @@ impl TimeRuler {
     /// Use this when the ruler is the only content and should define its own size.
     /// For use inside a scrollable timeline, use `show_clipped()` instead.
     pub fn show(self, ui: &mut Ui, theme: &Theme) -> TimeRulerResponse {
-        TimeRulerResponse { response: self.show_inner(ui, theme) }
+        TimeRulerResponse {
+            response: self.show_inner(ui, theme),
+        }
     }
 
     /// Show the time ruler without ScrollArea wrapper
     pub fn show_no_scroll(self, ui: &mut Ui, theme: &Theme) -> TimeRulerResponse {
-        TimeRulerResponse { response: self.show_inner(ui, theme) }
+        TimeRulerResponse {
+            response: self.show_inner(ui, theme),
+        }
     }
 
     /// Show the time ruler within a pre-allocated clipped area
@@ -179,11 +183,7 @@ impl TimeRuler {
             let painter = ui.painter();
 
             // Draw background (only within clip)
-            painter.rect_filled(
-                clip,
-                theme.spacing.corner_radius_small as f32,
-                theme.card(),
-            );
+            painter.rect_filled(clip, theme.spacing.corner_radius_small as f32, theme.card());
 
             // Draw bottom border
             painter.line_segment(
@@ -223,11 +223,7 @@ impl TimeRuler {
             let painter = ui.painter();
 
             // Draw background
-            painter.rect_filled(
-                rect,
-                theme.spacing.corner_radius_small as f32,
-                theme.card(),
-            );
+            painter.rect_filled(rect, theme.spacing.corner_radius_small as f32, theme.card());
 
             // Draw bottom border
             painter.line_segment(

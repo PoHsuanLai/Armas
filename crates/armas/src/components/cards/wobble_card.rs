@@ -30,7 +30,7 @@ impl WobbleCard {
         Self {
             width,
             height,
-            background: Color32::PLACEHOLDER, // Use theme.card()
+            background: Color32::PLACEHOLDER,   // Use theme.card()
             border: Some(Color32::PLACEHOLDER), // Use theme.border()
             corner_radius: 12.0,
             wobble_intensity: 1.0,

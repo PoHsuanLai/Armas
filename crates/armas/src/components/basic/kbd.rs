@@ -33,7 +33,6 @@ impl Kbd {
 
     /// Show the keyboard shortcut
     pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
-
         // Check if this is a key combination
         let parts: Vec<&str> = self.text.split('+').map(|s| s.trim()).collect();
 
@@ -45,13 +44,13 @@ impl Kbd {
                     if i > 0 {
                         ui.label("+");
                     }
-                    render_key(ui, part, &theme);
+                    render_key(ui, part, theme);
                 }
             });
             response.response
         } else {
             // Single key
-            render_key(ui, &self.text, &theme)
+            render_key(ui, &self.text, theme)
         }
     }
 }
@@ -63,9 +62,9 @@ fn render_key(ui: &mut Ui, text: &str, theme: &Theme) -> Response {
     let bg_color = theme.muted();
 
     // Calculate text size
-    let galley =
-        ui.painter()
-            .layout_no_wrap(text.to_string(), font_id.clone(), text_color);
+    let galley = ui
+        .painter()
+        .layout_no_wrap(text.to_string(), font_id.clone(), text_color);
 
     let text_size = galley.size();
     let padding_x = 8.0;

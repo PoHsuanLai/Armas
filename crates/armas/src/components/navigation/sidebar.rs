@@ -76,10 +76,15 @@ impl Default for SidebarState {
 impl SidebarState {
     /// Create new sidebar state
     pub fn new(open: bool) -> Self {
-        let target = if open { SIDEBAR_WIDTH } else { SIDEBAR_WIDTH_ICON };
+        let target = if open {
+            SIDEBAR_WIDTH
+        } else {
+            SIDEBAR_WIDTH_ICON
+        };
         Self {
             open,
-            width_spring: SpringAnimation::new(target, target).params(SPRING_STIFFNESS, SPRING_DAMPING),
+            width_spring: SpringAnimation::new(target, target)
+                .params(SPRING_STIFFNESS, SPRING_DAMPING),
             expanded_groups: std::collections::HashMap::new(),
             active_index: None,
         }
@@ -88,7 +93,11 @@ impl SidebarState {
     /// Toggle the sidebar open/closed
     pub fn toggle(&mut self) {
         self.open = !self.open;
-        let target = if self.open { SIDEBAR_WIDTH } else { SIDEBAR_WIDTH_ICON };
+        let target = if self.open {
+            SIDEBAR_WIDTH
+        } else {
+            SIDEBAR_WIDTH_ICON
+        };
         self.width_spring.set_target(target);
     }
 
@@ -96,7 +105,11 @@ impl SidebarState {
     pub fn set_open(&mut self, open: bool) {
         if self.open != open {
             self.open = open;
-            let target = if open { SIDEBAR_WIDTH } else { SIDEBAR_WIDTH_ICON };
+            let target = if open {
+                SIDEBAR_WIDTH
+            } else {
+                SIDEBAR_WIDTH_ICON
+            };
             self.width_spring.set_target(target);
         }
     }
@@ -237,7 +250,11 @@ impl<'a> SidebarBuilder<'a> {
         let group_id = format!("group_{}_{}", self.current_depth, label);
 
         // Get expanded state
-        let is_expanded = self.expanded_groups.get(&group_id).copied().unwrap_or(false);
+        let is_expanded = self
+            .expanded_groups
+            .get(&group_id)
+            .copied()
+            .unwrap_or(false);
 
         // Add the group header as an item
         let group_item = InternalSidebarItem {
@@ -404,7 +421,11 @@ impl<'a> Sidebar<'a> {
                 d.get_temp(sidebar_id).unwrap_or_else(|| {
                     let mut state = SidebarState::new(self.initial_open);
                     // Apply custom widths
-                    let target = if self.initial_open { expanded_width } else { collapsed_width };
+                    let target = if self.initial_open {
+                        expanded_width
+                    } else {
+                        collapsed_width
+                    };
                     state.width_spring = SpringAnimation::new(target, target)
                         .params(SPRING_STIFFNESS, SPRING_DAMPING);
                     state
@@ -438,7 +459,10 @@ impl<'a> Sidebar<'a> {
         let current_width = state.width_spring.value;
 
         // For floating/inset variants, add padding to the outer dimensions
-        let floating_padding = if matches!(self.variant, SidebarVariant::Floating | SidebarVariant::Inset) {
+        let floating_padding = if matches!(
+            self.variant,
+            SidebarVariant::Floating | SidebarVariant::Inset
+        ) {
             8.0
         } else {
             0.0
@@ -523,7 +547,8 @@ impl<'a> Sidebar<'a> {
             // When collapsed: center in available width
             // When expanded: left-align with padding
             // Use smooth interpolation to avoid jumps
-            let icon_left_aligned_x = content_rect.left() + ITEM_PADDING + ITEM_PADDING + ICON_SIZE / 2.0;
+            let icon_left_aligned_x =
+                content_rect.left() + ITEM_PADDING + ITEM_PADDING + ICON_SIZE / 2.0;
             let icon_centered_x = content_rect.left() + content_width / 2.0;
 
             // Smoothly interpolate between centered and left-aligned
@@ -587,7 +612,7 @@ impl<'a> Sidebar<'a> {
                 // Group labels
                 if item.is_group_label {
                     draw_group_label(
-                        &painter,
+                        painter,
                         &theme,
                         &content_rect,
                         current_y,
@@ -636,7 +661,11 @@ impl<'a> Sidebar<'a> {
 
                 if item_response.clicked() {
                     if item.is_group_header {
-                        let was_expanded = state.expanded_groups.get(&item.id).copied().unwrap_or(false);
+                        let was_expanded = state
+                            .expanded_groups
+                            .get(&item.id)
+                            .copied()
+                            .unwrap_or(false);
                         state.expanded_groups.insert(item.id.clone(), !was_expanded);
                     } else {
                         clicked_id = Some(item.id.clone());
@@ -710,8 +739,11 @@ impl<'a> Sidebar<'a> {
                     );
 
                     if item.is_group_header {
-                        let is_group_expanded =
-                            state.expanded_groups.get(&item.id).copied().unwrap_or(false);
+                        let is_group_expanded = state
+                            .expanded_groups
+                            .get(&item.id)
+                            .copied()
+                            .unwrap_or(false);
                         let chevron = if is_group_expanded { "▼" } else { "▶" };
                         painter.text(
                             Pos2::new(item_rect.right() - ITEM_PADDING - 8.0, item_rect.center().y),
@@ -724,14 +756,14 @@ impl<'a> Sidebar<'a> {
 
                     if let Some(badge) = &item.badge {
                         if !item.is_group_header {
-                            draw_badge(&painter, &theme, &item_rect, badge, label_opacity);
+                            draw_badge(painter, &theme, &item_rect, badge, label_opacity);
                         }
                     }
                 } else if let Some(badge) = &item.badge {
                     // When collapsed, show badge indicator on icon
                     if !item.is_group_header {
                         if let Some(icon_pos) = icon_center {
-                            draw_collapsed_badge(&painter, &theme, icon_pos, badge);
+                            draw_collapsed_badge(painter, &theme, icon_pos, badge);
                         }
                     }
                 }
@@ -763,7 +795,6 @@ impl<'a> Sidebar<'a> {
             is_expanded,
         }
     }
-
 }
 
 impl Default for Sidebar<'_> {
@@ -787,9 +818,8 @@ fn draw_group_label(
     expanded_width: f32,
     label: &str,
 ) {
-    let expansion_ratio = ((current_width - collapsed_width)
-        / (expanded_width - collapsed_width))
-        .clamp(0.0, 1.0);
+    let expansion_ratio =
+        ((current_width - collapsed_width) / (expanded_width - collapsed_width)).clamp(0.0, 1.0);
 
     if expansion_ratio > 0.5 {
         let opacity = ((expansion_ratio - 0.5) / 0.5).clamp(0.0, 1.0);
@@ -822,11 +852,7 @@ fn draw_collapsed_badge(
     // Background circle (destructive color for notification feel)
     painter.circle_filled(badge_pos, badge_radius, theme.destructive());
     // Border
-    painter.circle_stroke(
-        badge_pos,
-        badge_radius,
-        Stroke::new(1.0, theme.sidebar()),
-    );
+    painter.circle_stroke(badge_pos, badge_radius, Stroke::new(1.0, theme.sidebar()));
 }
 
 fn draw_badge(

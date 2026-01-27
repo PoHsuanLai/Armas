@@ -61,19 +61,28 @@ impl Accordion {
     }
 
     /// Show the accordion
-    pub fn show(self, ui: &mut Ui, mut content_fn: impl FnMut(&mut Ui, usize)) -> AccordionResponse {
+    pub fn show(
+        self,
+        ui: &mut Ui,
+        mut content_fn: impl FnMut(&mut Ui, usize),
+    ) -> AccordionResponse {
         let theme = ui.ctx().armas_theme();
         let dt = ui.input(|i| i.stable_dt);
 
         // Load state
         let state_id = self.id.with("accordion_state");
-        let mut open_indices: Vec<usize> = ui.ctx().data_mut(|d| d.get_temp(state_id).unwrap_or_default());
+        let mut open_indices: Vec<usize> = ui
+            .ctx()
+            .data_mut(|d| d.get_temp(state_id).unwrap_or_default());
 
         // Load spring animations for each item
         let mut springs: Vec<SpringAnimation> = ui.ctx().data_mut(|d| {
             d.get_temp(self.id.with("accordion_springs"))
                 .unwrap_or_else(|| {
-                    self.titles.iter().map(|_| SpringAnimation::new(0.0, 0.0).params(180.0, 22.0)).collect()
+                    self.titles
+                        .iter()
+                        .map(|_| SpringAnimation::new(0.0, 0.0).params(180.0, 22.0))
+                        .collect()
                 })
         });
 
@@ -104,7 +113,11 @@ impl Accordion {
             }
 
             // Update spring target and simulate
-            let target = if open_indices.contains(&idx) { 1.0 } else { 0.0 };
+            let target = if open_indices.contains(&idx) {
+                1.0
+            } else {
+                0.0
+            };
             springs[idx].set_target(target);
             springs[idx].update(dt);
 
@@ -119,28 +132,34 @@ impl Accordion {
             let should_show = anim_value > 0.001 || is_animating;
             if should_show && anim_value > 0.0 {
                 let content_id = self.id.with(("content_height", idx));
-                let stored_height: f32 = ui.ctx().data_mut(|d| d.get_temp(content_id).unwrap_or(50.0));
+                let stored_height: f32 = ui
+                    .ctx()
+                    .data_mut(|d| d.get_temp(content_id).unwrap_or(50.0));
 
                 let animated_height = (stored_height + CONTENT_PADDING_BOTTOM) * anim_value;
 
-                let response = egui::Frame::new()
-                    .show(ui, |ui| {
-                        ui.set_max_height(animated_height);
-                        ui.set_clip_rect(ui.max_rect());
+                let response = egui::Frame::new().show(ui, |ui| {
+                    ui.set_max_height(animated_height);
+                    ui.set_clip_rect(ui.max_rect());
 
-                        content_fn(ui, idx);
-                        ui.add_space(CONTENT_PADDING_BOTTOM);
+                    content_fn(ui, idx);
+                    ui.add_space(CONTENT_PADDING_BOTTOM);
 
-                        ui.min_rect().height()
-                    });
+                    ui.min_rect().height()
+                });
 
                 let actual_height = response.inner / anim_value.max(0.01);
-                ui.ctx().data_mut(|d| d.insert_temp(content_id, actual_height));
+                ui.ctx()
+                    .data_mut(|d| d.insert_temp(content_id, actual_height));
             }
 
             // Bottom border
             let rect = ui.available_rect_before_wrap();
-            ui.painter().hline(rect.x_range(), rect.top(), egui::Stroke::new(1.0, theme.border()));
+            ui.painter().hline(
+                rect.x_range(),
+                rect.top(),
+                egui::Stroke::new(1.0, theme.border()),
+            );
             ui.allocate_space(Vec2::new(0.0, 1.0));
         }
 
@@ -177,7 +196,8 @@ impl Accordion {
 
         if ui.is_rect_visible(rect) {
             let text_pos = Pos2::new(rect.left(), rect.center().y - text_height / 2.0);
-            ui.painter().galley(text_pos, text_galley.clone(), theme.foreground());
+            ui.painter()
+                .galley(text_pos, text_galley.clone(), theme.foreground());
 
             // Underline on hover
             if response.hovered() {
@@ -189,7 +209,12 @@ impl Accordion {
             }
 
             // Chevron (rotates 180deg based on spring value)
-            self.draw_chevron(ui, Pos2::new(rect.right() - CHEVRON_SIZE / 2.0, rect.center().y), anim_value, theme);
+            self.draw_chevron(
+                ui,
+                Pos2::new(rect.right() - CHEVRON_SIZE / 2.0, rect.center().y),
+                anim_value,
+                theme,
+            );
         }
 
         response.clicked()
@@ -208,7 +233,13 @@ impl Accordion {
         let (cos, sin) = (rotation.cos(), rotation.sin());
         let rotate = |v: Vec2| center + Vec2::new(v.x * cos - v.y * sin, v.x * sin + v.y * cos);
 
-        ui.painter().line_segment([rotate(points[0]), rotate(points[1])], egui::Stroke::new(1.5, theme.muted_foreground()));
-        ui.painter().line_segment([rotate(points[1]), rotate(points[2])], egui::Stroke::new(1.5, theme.muted_foreground()));
+        ui.painter().line_segment(
+            [rotate(points[0]), rotate(points[1])],
+            egui::Stroke::new(1.5, theme.muted_foreground()),
+        );
+        ui.painter().line_segment(
+            [rotate(points[1]), rotate(points[2])],
+            egui::Stroke::new(1.5, theme.muted_foreground()),
+        );
     }
 }

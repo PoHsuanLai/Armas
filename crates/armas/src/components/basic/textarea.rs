@@ -161,20 +161,23 @@ impl Textarea {
 
                         // Character count on the right
                         if let Some(max) = self.max_chars {
-                            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                let count_color = if text.len() > max {
-                                    theme.destructive()
-                                } else if text.len() as f32 / max as f32 > 0.9 {
-                                    theme.chart_3()
-                                } else {
-                                    theme.muted_foreground()
-                                };
-                                ui.label(
-                                    egui::RichText::new(format!("{}/{}", text.len(), max))
-                                        .size(12.0)
-                                        .color(count_color),
-                                );
-                            });
+                            ui.with_layout(
+                                egui::Layout::right_to_left(egui::Align::Center),
+                                |ui| {
+                                    let count_color = if text.len() > max {
+                                        theme.destructive()
+                                    } else if text.len() as f32 / max as f32 > 0.9 {
+                                        theme.chart_3()
+                                    } else {
+                                        theme.muted_foreground()
+                                    };
+                                    ui.label(
+                                        egui::RichText::new(format!("{}/{}", text.len(), max))
+                                            .size(12.0)
+                                            .color(count_color),
+                                    );
+                                },
+                            );
                         }
                     });
                 }
@@ -226,10 +229,9 @@ impl Textarea {
                     ui.style_mut().visuals.widgets.hovered.bg_stroke = Stroke::NONE;
                     ui.style_mut().visuals.widgets.active.bg_stroke = Stroke::NONE;
                     ui.style_mut().visuals.override_text_color = Some(text_color);
-                    ui.style_mut().text_styles.insert(
-                        egui::TextStyle::Body,
-                        egui::FontId::proportional(FONT_SIZE),
-                    );
+                    ui.style_mut()
+                        .text_styles
+                        .insert(egui::TextStyle::Body, egui::FontId::proportional(FONT_SIZE));
 
                     let mut text_edit = TextEdit::multiline(text)
                         .hint_text(&self.placeholder)

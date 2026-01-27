@@ -142,52 +142,52 @@ impl Theme {
     pub fn dark() -> Self {
         Self {
             colors: ColorPalette {
-                background: [9, 9, 11],           // zinc-950
-                foreground: [250, 250, 250],     // zinc-50
+                background: [9, 9, 11],      // zinc-950
+                foreground: [250, 250, 250], // zinc-50
 
-                card: [9, 9, 11],                // zinc-950
+                card: [9, 9, 11],                 // zinc-950
                 card_foreground: [250, 250, 250], // zinc-50
 
-                popover: [9, 9, 11],             // zinc-950
+                popover: [9, 9, 11],                 // zinc-950
                 popover_foreground: [250, 250, 250], // zinc-50
 
-                primary: [250, 250, 250],        // zinc-50
+                primary: [250, 250, 250],         // zinc-50
                 primary_foreground: [24, 24, 27], // zinc-900
 
-                secondary: [39, 39, 42],         // zinc-800
+                secondary: [39, 39, 42],               // zinc-800
                 secondary_foreground: [250, 250, 250], // zinc-50
 
-                muted: [39, 39, 42],             // zinc-800
+                muted: [39, 39, 42],               // zinc-800
                 muted_foreground: [161, 161, 170], // zinc-400
 
-                accent: [39, 39, 42],            // zinc-800
+                accent: [39, 39, 42],               // zinc-800
                 accent_foreground: [250, 250, 250], // zinc-50
 
-                destructive: [127, 29, 29],      // red-900
+                destructive: [127, 29, 29],              // red-900
                 destructive_foreground: [250, 250, 250], // zinc-50
 
-                border: [39, 39, 42],            // zinc-800
-                input: [39, 39, 42],             // zinc-800
-                ring: [212, 212, 216],           // zinc-300
+                border: [39, 39, 42],  // zinc-800
+                input: [39, 39, 42],   // zinc-800
+                ring: [212, 212, 216], // zinc-300
 
-                chart_1: [59, 130, 246],         // blue-500
-                chart_2: [34, 197, 94],          // green-500
-                chart_3: [234, 179, 8],          // yellow-500
-                chart_4: [168, 85, 247],         // purple-500
-                chart_5: [249, 115, 22],         // orange-500
+                chart_1: [59, 130, 246], // blue-500
+                chart_2: [34, 197, 94],  // green-500
+                chart_3: [234, 179, 8],  // yellow-500
+                chart_4: [168, 85, 247], // purple-500
+                chart_5: [249, 115, 22], // orange-500
 
-                hover: [39, 39, 42],             // zinc-800
-                focus: [250, 250, 250],          // zinc-50
+                hover: [39, 39, 42],    // zinc-800
+                focus: [250, 250, 250], // zinc-50
 
                 // Sidebar (slightly lighter than background for distinction)
-                sidebar: [9, 9, 11],              // zinc-950 (same as bg)
-                sidebar_foreground: [250, 250, 250], // zinc-50
-                sidebar_primary: [250, 250, 250], // zinc-50
+                sidebar: [9, 9, 11],                      // zinc-950 (same as bg)
+                sidebar_foreground: [250, 250, 250],      // zinc-50
+                sidebar_primary: [250, 250, 250],         // zinc-50
                 sidebar_primary_foreground: [24, 24, 27], // zinc-900
-                sidebar_accent: [39, 39, 42],     // zinc-800
+                sidebar_accent: [39, 39, 42],             // zinc-800
                 sidebar_accent_foreground: [250, 250, 250], // zinc-50
-                sidebar_border: [39, 39, 42],     // zinc-800
-                sidebar_ring: [212, 212, 216],    // zinc-300
+                sidebar_border: [39, 39, 42],             // zinc-800
+                sidebar_ring: [212, 212, 216],            // zinc-300
             },
             spacing: Spacing {
                 xxs: 2.0,
@@ -210,52 +210,52 @@ impl Theme {
     pub fn light() -> Self {
         Self {
             colors: ColorPalette {
-                background: [255, 255, 255],     // white
-                foreground: [9, 9, 11],          // zinc-950
+                background: [255, 255, 255], // white
+                foreground: [9, 9, 11],      // zinc-950
 
-                card: [255, 255, 255],           // white
-                card_foreground: [9, 9, 11],     // zinc-950
+                card: [255, 255, 255],       // white
+                card_foreground: [9, 9, 11], // zinc-950
 
-                popover: [255, 255, 255],        // white
-                popover_foreground: [9, 9, 11],  // zinc-950
+                popover: [255, 255, 255],       // white
+                popover_foreground: [9, 9, 11], // zinc-950
 
-                primary: [24, 24, 27],           // zinc-900
+                primary: [24, 24, 27],               // zinc-900
                 primary_foreground: [250, 250, 250], // zinc-50
 
-                secondary: [244, 244, 245],      // zinc-100
+                secondary: [244, 244, 245],         // zinc-100
                 secondary_foreground: [24, 24, 27], // zinc-900
 
-                muted: [244, 244, 245],          // zinc-100
+                muted: [244, 244, 245],            // zinc-100
                 muted_foreground: [113, 113, 122], // zinc-500
 
                 accent: [244, 244, 245],         // zinc-100
                 accent_foreground: [24, 24, 27], // zinc-900
 
-                destructive: [239, 68, 68],      // red-500
+                destructive: [239, 68, 68],              // red-500
                 destructive_foreground: [250, 250, 250], // zinc-50
 
-                border: [228, 228, 231],         // zinc-200
-                input: [228, 228, 231],          // zinc-200
-                ring: [24, 24, 27],              // zinc-900
+                border: [228, 228, 231], // zinc-200
+                input: [228, 228, 231],  // zinc-200
+                ring: [24, 24, 27],      // zinc-900
 
-                chart_1: [59, 130, 246],         // blue-500
-                chart_2: [34, 197, 94],          // green-500
-                chart_3: [234, 179, 8],          // yellow-500
-                chart_4: [168, 85, 247],         // purple-500
-                chart_5: [249, 115, 22],         // orange-500
+                chart_1: [59, 130, 246], // blue-500
+                chart_2: [34, 197, 94],  // green-500
+                chart_3: [234, 179, 8],  // yellow-500
+                chart_4: [168, 85, 247], // purple-500
+                chart_5: [249, 115, 22], // orange-500
 
-                hover: [244, 244, 245],          // zinc-100
-                focus: [24, 24, 27],             // zinc-900
+                hover: [244, 244, 245], // zinc-100
+                focus: [24, 24, 27],    // zinc-900
 
                 // Sidebar (slightly darker than background for distinction)
-                sidebar: [250, 250, 250],         // zinc-50
-                sidebar_foreground: [9, 9, 11],   // zinc-950
-                sidebar_primary: [24, 24, 27],    // zinc-900
+                sidebar: [250, 250, 250],                    // zinc-50
+                sidebar_foreground: [9, 9, 11],              // zinc-950
+                sidebar_primary: [24, 24, 27],               // zinc-900
                 sidebar_primary_foreground: [250, 250, 250], // zinc-50
-                sidebar_accent: [244, 244, 245],  // zinc-100
-                sidebar_accent_foreground: [24, 24, 27], // zinc-900
-                sidebar_border: [228, 228, 231],  // zinc-200
-                sidebar_ring: [24, 24, 27],       // zinc-900
+                sidebar_accent: [244, 244, 245],             // zinc-100
+                sidebar_accent_foreground: [24, 24, 27],     // zinc-900
+                sidebar_border: [228, 228, 231],             // zinc-200
+                sidebar_ring: [24, 24, 27],                  // zinc-900
             },
             spacing: Spacing {
                 xxs: 2.0,

@@ -72,7 +72,7 @@ impl Playhead {
             height: 400.0,
             color: None,
             line_width: 2.0,
-            show_handle: false,  // Just a line, no triangle
+            show_handle: false, // Just a line, no triangle
             handle_size: 6.0,
             show_glow: true,
             glow_intensity: 0.3,
@@ -213,8 +213,7 @@ impl Playhead {
 
             // Create interactive handle
             let handle_id = ui.id().with("playhead_handle");
-            let handle_response =
-                ui.interact(interact_rect, handle_id, Sense::click_and_drag());
+            let handle_response = ui.interact(interact_rect, handle_id, Sense::click_and_drag());
 
             // Handle color based on interaction
             let handle_color = if handle_response.hovered() || handle_response.dragged() {
@@ -257,13 +256,7 @@ impl Playhead {
             );
 
             // Main handle shape
-            self.draw_rounded_triangle(
-                ui,
-                handle_top,
-                handle_width,
-                handle_height,
-                handle_color,
-            );
+            self.draw_rounded_triangle(ui, handle_top, handle_width, handle_height, handle_color);
 
             // Handle border
             self.draw_rounded_triangle_outline(

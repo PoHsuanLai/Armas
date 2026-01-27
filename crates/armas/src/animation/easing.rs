@@ -45,7 +45,7 @@ pub enum EasingFunction {
         /// Second control point X
         x2: f32,
         /// Second control point Y
-        y2: f32
+        y2: f32,
     },
 }
 

@@ -194,9 +194,7 @@ fn test_input_custom_width() {
     let mut text = String::new();
 
     let mut harness = Harness::new_ui(|ui| {
-        Input::new("Wide input")
-            .width(400.0)
-            .show(ui, &mut text);
+        Input::new("Wide input").width(400.0).show(ui, &mut text);
     });
 
     harness.run();
@@ -211,7 +209,9 @@ fn test_multiple_inputs() {
 
     let mut harness = Harness::new_ui(|ui| {
         ui.vertical(|ui| {
-            Input::new("Username").label("Username").show(ui, &mut username);
+            Input::new("Username")
+                .label("Username")
+                .show(ui, &mut username);
             Input::new("Email").label("Email").show(ui, &mut email);
             Input::new("Password")
                 .label("Password")

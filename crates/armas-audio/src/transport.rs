@@ -3,11 +3,11 @@
 //! Professional DAW transport bar with playback controls, time display,
 //! tempo, and loop/metronome controls.
 
+use crate::icons::TransportIcon;
 use armas::components::basic::input::{Input, InputVariant};
 use armas::components::button::{ButtonVariant, IconButton};
 use armas::components::cards::{Card, CardVariant};
 use armas::theme::Theme;
-use crate::icons::TransportIcon;
 use egui::{Align, Color32, Response, Ui};
 
 /// Transport button visibility configuration

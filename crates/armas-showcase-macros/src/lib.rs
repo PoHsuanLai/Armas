@@ -4,8 +4,8 @@
 //! at compile time and generates Rust code that renders both markdown content
 //! and live component demos.
 
-mod parser;
 mod codegen;
+mod parser;
 
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, LitStr};

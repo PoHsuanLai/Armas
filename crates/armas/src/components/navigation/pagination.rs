@@ -98,67 +98,71 @@ impl Pagination {
         // Calculate visible pages
         let pages = calculate_visible_pages(current_page, total_pages, self.sibling_count);
 
-        let response = ui.horizontal(|ui| {
-            ui.spacing_mut().item_spacing.x = BUTTON_GAP;
+        let response = ui
+            .horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = BUTTON_GAP;
 
-            // Previous button - custom drawn with icon + text
-            if self.show_prev_next {
-                let can_go_prev = current_page > 1;
-                let prev_clicked = draw_nav_button(ui, &theme, "Previous", true, can_go_prev);
-                if prev_clicked {
-                    current_page -= 1;
-                }
-            }
-
-            // Page number buttons
-            for page in pages.iter() {
-                if let Some(page_num) = page {
-                    let is_current = *page_num == current_page;
-                    let variant = if is_current {
-                        ButtonVariant::Outlined
-                    } else {
-                        ButtonVariant::Ghost
-                    };
-
-                    let btn = Button::new(page_num.to_string())
-                        .variant(variant)
-                        .min_width(BUTTON_SIZE)
-                        .show(ui, &theme);
-
-                    if btn.clicked() && !is_current {
-                        current_page = *page_num;
+                // Previous button - custom drawn with icon + text
+                if self.show_prev_next {
+                    let can_go_prev = current_page > 1;
+                    let prev_clicked = draw_nav_button(ui, theme, "Previous", true, can_go_prev);
+                    if prev_clicked {
+                        current_page -= 1;
                     }
-                } else {
-                    // Ellipsis - shadcn uses MoreHorizontal icon (three dots)
-                    let (rect, _) =
-                        ui.allocate_exact_size(vec2(BUTTON_SIZE, BUTTON_SIZE), Sense::hover());
+                }
 
-                    if ui.is_rect_visible(rect) {
-                        // Draw three horizontal dots (MoreHorizontal icon)
-                        let dot_radius = 2.0;
-                        let dot_spacing = 4.0;
-                        let center = rect.center();
-                        let color = theme.muted_foreground();
+                // Page number buttons
+                for page in pages.iter() {
+                    if let Some(page_num) = page {
+                        let is_current = *page_num == current_page;
+                        let variant = if is_current {
+                            ButtonVariant::Outlined
+                        } else {
+                            ButtonVariant::Ghost
+                        };
 
-                        for i in -1..=1 {
-                            let x = center.x + (i as f32 * dot_spacing);
-                            ui.painter()
-                                .circle_filled(egui::pos2(x, center.y), dot_radius, color);
+                        let btn = Button::new(page_num.to_string())
+                            .variant(variant)
+                            .min_width(BUTTON_SIZE)
+                            .show(ui, theme);
+
+                        if btn.clicked() && !is_current {
+                            current_page = *page_num;
+                        }
+                    } else {
+                        // Ellipsis - shadcn uses MoreHorizontal icon (three dots)
+                        let (rect, _) =
+                            ui.allocate_exact_size(vec2(BUTTON_SIZE, BUTTON_SIZE), Sense::hover());
+
+                        if ui.is_rect_visible(rect) {
+                            // Draw three horizontal dots (MoreHorizontal icon)
+                            let dot_radius = 2.0;
+                            let dot_spacing = 4.0;
+                            let center = rect.center();
+                            let color = theme.muted_foreground();
+
+                            for i in -1..=1 {
+                                let x = center.x + (i as f32 * dot_spacing);
+                                ui.painter().circle_filled(
+                                    egui::pos2(x, center.y),
+                                    dot_radius,
+                                    color,
+                                );
+                            }
                         }
                     }
                 }
-            }
 
-            // Next button - custom drawn with text + icon
-            if self.show_prev_next {
-                let can_go_next = current_page < total_pages;
-                let next_clicked = draw_nav_button(ui, &theme, "Next", false, can_go_next);
-                if next_clicked {
-                    current_page += 1;
+                // Next button - custom drawn with text + icon
+                if self.show_prev_next {
+                    let can_go_next = current_page < total_pages;
+                    let next_clicked = draw_nav_button(ui, theme, "Next", false, can_go_next);
+                    if next_clicked {
+                        current_page += 1;
+                    }
                 }
-            }
-        })
-        .response;
+            })
+            .response;
 
         // Save state to memory if ID is set
         if let Some(id) = self.id {

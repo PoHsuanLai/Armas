@@ -9,7 +9,9 @@
 //! - State persistence
 
 use crate::Theme;
-use egui::{vec2, Color32, CornerRadius, Key, Painter, Rect, Response, Sense, Stroke, TextEdit, Ui};
+use egui::{
+    vec2, Color32, CornerRadius, Key, Painter, Rect, Response, Sense, Stroke, TextEdit, Ui,
+};
 
 // ============================================================================
 // Constants
@@ -115,7 +117,9 @@ impl Select {
 
     /// Build a Select using a closure-based API (prefer using `Select::new()`)
     pub fn build(builder: impl FnOnce(&mut SelectBuilder)) -> Self {
-        let mut select_builder = SelectBuilder { options: Vec::new() };
+        let mut select_builder = SelectBuilder {
+            options: Vec::new(),
+        };
         builder(&mut select_builder);
         Self::new(select_builder.options)
     }
@@ -187,15 +191,15 @@ impl Select {
         ui.vertical(|ui| {
             ui.spacing_mut().item_spacing.y = theme.spacing.xs;
 
-            self.show_label(ui, &theme);
-            let (button_rect, response) = self.show_trigger(ui, &theme, width);
+            self.show_label(ui, theme);
+            let (button_rect, response) = self.show_trigger(ui, theme, width);
 
             if response.clicked() {
                 self.toggle_dropdown();
             }
 
             if self.is_open {
-                let dropdown_response = self.show_dropdown(ui, &theme, button_rect, width);
+                let dropdown_response = self.show_dropdown(ui, theme, button_rect, width);
                 if let Some(value) = dropdown_response.selected_value {
                     self.selected_value = Some(value.clone());
                     new_value = Some(value);
@@ -295,8 +299,17 @@ impl Select {
         painter.rect_filled(rect, corner_radius, bg_color);
 
         // Border
-        let border_color = if is_focused { theme.ring() } else { theme.input() };
-        painter.rect_stroke(rect, corner_radius, Stroke::new(1.0, border_color), egui::StrokeKind::Inside);
+        let border_color = if is_focused {
+            theme.ring()
+        } else {
+            theme.input()
+        };
+        painter.rect_stroke(
+            rect,
+            corner_radius,
+            Stroke::new(1.0, border_color),
+            egui::StrokeKind::Inside,
+        );
 
         // Focus ring
         if is_focused {
@@ -363,7 +376,13 @@ impl Select {
     // Dropdown
     // ========================================================================
 
-    fn show_dropdown(&mut self, ui: &mut Ui, theme: &Theme, button_rect: Rect, width: f32) -> DropdownResponse {
+    fn show_dropdown(
+        &mut self,
+        ui: &mut Ui,
+        theme: &Theme,
+        button_rect: Rect,
+        width: f32,
+    ) -> DropdownResponse {
         let mut selected_value = None;
         let mut should_close = false;
 
@@ -396,9 +415,13 @@ impl Select {
             });
 
         should_close |= self.handle_keyboard_input(ui, &mut selected_value);
-        should_close |= self.should_close_on_click_outside(ui, &area_response.response, button_rect);
+        should_close |=
+            self.should_close_on_click_outside(ui, &area_response.response, button_rect);
 
-        DropdownResponse { selected_value, should_close }
+        DropdownResponse {
+            selected_value,
+            should_close,
+        }
     }
 
     fn show_search_box(&mut self, ui: &mut Ui, width: f32) -> bool {
@@ -426,7 +449,13 @@ impl Select {
         ui.add_space(4.0);
     }
 
-    fn show_options_list(&mut self, ui: &mut Ui, theme: &Theme, width: f32, selected_value: &mut Option<String>) {
+    fn show_options_list(
+        &mut self,
+        ui: &mut Ui,
+        theme: &Theme,
+        width: f32,
+        selected_value: &mut Option<String>,
+    ) {
         egui::ScrollArea::vertical()
             .max_height(self.max_height)
             .show(ui, |ui| {
@@ -445,10 +474,9 @@ impl Select {
 
                     if option.disabled {
                         self.show_disabled_option(ui, &option, theme, width);
-                    } else {
-                        if let Some(value) = self.show_option(ui, &option, option_idx, theme, width) {
-                            *selected_value = Some(value);
-                        }
+                    } else if let Some(value) = self.show_option(ui, &option, option_idx, theme, width)
+                    {
+                        *selected_value = Some(value);
                     }
                 }
             });
@@ -493,9 +521,17 @@ impl Select {
         theme: &Theme,
         width: f32,
     ) -> Option<String> {
-        let is_selected = self.selected_value.as_ref().map(|v| v == &option.value).unwrap_or(false);
+        let is_selected = self
+            .selected_value
+            .as_ref()
+            .map(|v| v == &option.value)
+            .unwrap_or(false);
         let is_highlighted = self.highlighted_index == Some(option_idx);
-        let height = if option.description.is_some() { ITEM_HEIGHT_WITH_DESC } else { ITEM_HEIGHT };
+        let height = if option.description.is_some() {
+            ITEM_HEIGHT_WITH_DESC
+        } else {
+            ITEM_HEIGHT
+        };
 
         let (rect, response) = ui.allocate_exact_size(vec2(width - 16.0, height), Sense::click());
 
@@ -507,11 +543,16 @@ impl Select {
 
         // Background
         if is_active {
-            ui.painter().rect_filled(rect, CornerRadius::same(CORNER_RADIUS_SM), theme.accent());
+            ui.painter()
+                .rect_filled(rect, CornerRadius::same(CORNER_RADIUS_SM), theme.accent());
         }
 
         // Content
-        let text_color = if is_active { theme.accent_foreground() } else { theme.popover_foreground() };
+        let text_color = if is_active {
+            theme.accent_foreground()
+        } else {
+            theme.popover_foreground()
+        };
         self.paint_option_content(ui.painter(), rect, option, text_color, is_selected, theme);
 
         // Update highlight on hover
@@ -553,8 +594,20 @@ impl Select {
         // Label and description
         if let Some(description) = &option.description {
             let label_pos = content_rect.left_top() + vec2(label_x, 6.0);
-            painter.text(label_pos, egui::Align2::LEFT_TOP, &option.label, egui::FontId::proportional(14.0), text_color);
-            painter.text(label_pos + vec2(0.0, 18.0), egui::Align2::LEFT_TOP, description, egui::FontId::proportional(12.0), theme.muted_foreground());
+            painter.text(
+                label_pos,
+                egui::Align2::LEFT_TOP,
+                &option.label,
+                egui::FontId::proportional(14.0),
+                text_color,
+            );
+            painter.text(
+                label_pos + vec2(0.0, 18.0),
+                egui::Align2::LEFT_TOP,
+                description,
+                egui::FontId::proportional(12.0),
+                theme.muted_foreground(),
+            );
         } else {
             painter.text(
                 content_rect.left_center() + vec2(label_x, 0.0),
@@ -617,11 +670,17 @@ impl Select {
             return;
         };
 
-        let new_pos = (pos as i32 + delta).clamp(0, self.filtered_indices.len() as i32 - 1) as usize;
+        let new_pos =
+            (pos as i32 + delta).clamp(0, self.filtered_indices.len() as i32 - 1) as usize;
         self.highlighted_index = Some(self.filtered_indices[new_pos]);
     }
 
-    fn should_close_on_click_outside(&self, ui: &Ui, area_response: &Response, button_rect: Rect) -> bool {
+    fn should_close_on_click_outside(
+        &self,
+        ui: &Ui,
+        area_response: &Response,
+        button_rect: Rect,
+    ) -> bool {
         let clicked = ui.input(|i| i.pointer.any_click());
         let pointer_pos = ui.input(|i| i.pointer.interact_pos()).unwrap_or_default();
 
@@ -644,7 +703,11 @@ impl Select {
                 .filter(|(_, opt)| {
                     opt.label.to_lowercase().contains(&search_lower)
                         || opt.value.to_lowercase().contains(&search_lower)
-                        || opt.description.as_ref().map(|d| d.to_lowercase().contains(&search_lower)).unwrap_or(false)
+                        || opt
+                            .description
+                            .as_ref()
+                            .map(|d| d.to_lowercase().contains(&search_lower))
+                            .unwrap_or(false)
                 })
                 .map(|(idx, _)| idx)
                 .collect();
@@ -696,7 +759,10 @@ impl SelectBuilder {
     pub fn option(&mut self, value: &str, label: &str) -> SelectOptionBuilder<'_> {
         self.options.push(SelectOption::new(value, label));
         let idx = self.options.len() - 1;
-        SelectOptionBuilder { options: &mut self.options, option_index: idx }
+        SelectOptionBuilder {
+            options: &mut self.options,
+            option_index: idx,
+        }
     }
 }
 
@@ -750,7 +816,10 @@ mod tests {
         assert_eq!(option.value, "value1");
         assert_eq!(option.label, "Label 1");
         assert_eq!(option.icon, Some("x".to_string()));
-        assert_eq!(option.description, Some("This is a description".to_string()));
+        assert_eq!(
+            option.description,
+            Some("This is a description".to_string())
+        );
         assert!(!option.disabled);
     }
 

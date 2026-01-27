@@ -10,9 +10,7 @@ fn test_sheet_renders_open() {
     let theme = Theme::dark();
 
     let mut harness = Harness::new(|ctx| {
-        let mut sheet = Sheet::new("test_sheet")
-            .title("Test Sheet")
-            .open(true);
+        let mut sheet = Sheet::new("test_sheet").title("Test Sheet").open(true);
 
         sheet.show(ctx, &theme, |ui| {
             ui.label("Sheet content");
@@ -28,9 +26,7 @@ fn test_sheet_closed() {
     let theme = Theme::dark();
 
     let mut harness = Harness::new(|ctx| {
-        let mut sheet = Sheet::new("test_sheet")
-            .title("Test Sheet")
-            .open(false);
+        let mut sheet = Sheet::new("test_sheet").title("Test Sheet").open(false);
 
         sheet.show(ctx, &theme, |ui| {
             ui.label("Sheet content");
@@ -282,8 +278,12 @@ fn test_sheet_navigation_content() {
                 ui.heading("Menu");
                 ui.separator();
                 Button::new("Home").variant(ButtonVariant::Ghost).show(ui);
-                Button::new("Settings").variant(ButtonVariant::Ghost).show(ui);
-                Button::new("Profile").variant(ButtonVariant::Ghost).show(ui);
+                Button::new("Settings")
+                    .variant(ButtonVariant::Ghost)
+                    .show(ui);
+                Button::new("Profile")
+                    .variant(ButtonVariant::Ghost)
+                    .show(ui);
                 ui.separator();
                 Button::new("Logout").variant(ButtonVariant::Ghost).show(ui);
             });

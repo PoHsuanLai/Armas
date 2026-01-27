@@ -71,7 +71,6 @@ impl TextRevealCard {
 
     /// Show the text reveal card
     pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
-
         // Use theme colors if not explicitly set
         let background_color = if self.background_color == Color32::PLACEHOLDER {
             theme.card()
@@ -103,9 +102,9 @@ impl TextRevealCard {
         // Note: Using mutable reference to self is incompatible with consuming self
         // We need to track animation state in egui memory instead
         let card_id = ui.id().with("text_reveal_card");
-        let animation_data: (f32, f32, bool) = ui.ctx().data_mut(|d| {
-            d.get_temp(card_id).unwrap_or((0.0, 0.0, false))
-        });
+        let animation_data: (f32, f32, bool) = ui
+            .ctx()
+            .data_mut(|d| d.get_temp(card_id).unwrap_or((0.0, 0.0, false)));
 
         let (mut mouse_x, mut reveal_anim_value, mut is_hovered) = animation_data;
 

@@ -257,7 +257,6 @@ impl AudioMeter {
 
     /// Show the meter and return the response
     pub fn show(mut self, ui: &mut Ui, theme: &armas::Theme) -> MeterResponse {
-
         // Width only controls the meter tube, scale is additional space
         let scale_width = if self.scale_position != ScalePosition::None {
             14.0 // Minimal scale width - just enough for text

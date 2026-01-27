@@ -48,6 +48,7 @@ pub struct Spotlight {
 
 impl Spotlight {
     /// Create a new spotlight with theme-based defaults
+    #[must_use] 
     pub fn new(theme: &Theme) -> Self {
         let primary = theme.primary();
         Self {
@@ -63,37 +64,43 @@ impl Spotlight {
     }
 
     /// Set the spotlight radius
-    pub fn radius(mut self, radius: f32) -> Self {
+    #[must_use] 
+    pub const fn radius(mut self, radius: f32) -> Self {
         self.radius = radius;
         self
     }
 
     /// Set the spotlight color
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = color;
         self
     }
 
     /// Set the smoothing factor (0.0 = instant, 1.0 = very smooth)
-    pub fn smoothing(mut self, smoothing: f32) -> Self {
+    #[must_use] 
+    pub const fn smoothing(mut self, smoothing: f32) -> Self {
         self.smoothing = smoothing.clamp(0.0, 1.0);
         self
     }
 
     /// Set the spotlight intensity
-    pub fn intensity(mut self, intensity: f32) -> Self {
+    #[must_use] 
+    pub const fn intensity(mut self, intensity: f32) -> Self {
         self.intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
     /// Set the number of gradient steps
+    #[must_use] 
     pub fn gradient_steps(mut self, steps: usize) -> Self {
         self.gradient_steps = steps.max(5);
         self
     }
 
     /// Set whether to show spotlight only on hover
-    pub fn only_on_hover(mut self, only_on_hover: bool) -> Self {
+    #[must_use] 
+    pub const fn only_on_hover(mut self, only_on_hover: bool) -> Self {
         self.only_on_hover = only_on_hover;
         self
     }
@@ -140,8 +147,8 @@ impl Spotlight {
             let lerp_factor = 1.0 - self.smoothing.powf(dt * 60.0); // Normalize to 60fps
 
             self.current_pos = Pos2::new(
-                self.current_pos.x + (target.x - self.current_pos.x) * lerp_factor,
-                self.current_pos.y + (target.y - self.current_pos.y) * lerp_factor,
+                (target.x - self.current_pos.x).mul_add(lerp_factor, self.current_pos.x),
+                (target.y - self.current_pos.y).mul_add(lerp_factor, self.current_pos.y),
             );
         } else {
             // Initialize position to center on first frame
@@ -169,7 +176,7 @@ impl Spotlight {
         let center = self.current_pos;
 
         // Calculate effective alpha based on intensity
-        let base_alpha = (self.color.a() as f32 * self.intensity) as u8;
+        let base_alpha = (f32::from(self.color.a()) * self.intensity) as u8;
 
         // Draw concentric circles with decreasing opacity for smooth gradient
         for i in 0..self.gradient_steps {
@@ -177,8 +184,8 @@ impl Spotlight {
             let radius = self.radius * (1.0 - progress);
 
             // Easing function for more natural falloff (quadratic ease-out)
-            let alpha_multiplier = 1.0 - progress * progress;
-            let alpha = (base_alpha as f32 * alpha_multiplier) as u8;
+            let alpha_multiplier = progress.mul_add(-progress, 1.0);
+            let alpha = (f32::from(base_alpha) * alpha_multiplier) as u8;
 
             let circle_color = Color32::from_rgba_unmultiplied(
                 self.color.r(),
@@ -206,9 +213,9 @@ impl Spotlight {
                 let radius = self.radius * (1.0 - progress);
 
                 // Quadratic ease-out for alpha
-                let alpha_multiplier = 1.0 - progress * progress;
-                let base_alpha = (self.color.a() as f32 * self.intensity) as u8;
-                let alpha = (base_alpha as f32 * alpha_multiplier) as u8;
+                let alpha_multiplier = progress.mul_add(-progress, 1.0);
+                let base_alpha = (f32::from(self.color.a()) * self.intensity) as u8;
+                let alpha = (f32::from(base_alpha) * alpha_multiplier) as u8;
 
                 let circle_color = Color32::from_rgba_unmultiplied(
                     self.color.r(),
@@ -232,13 +239,15 @@ pub struct MultiSpotlight {
 
 impl MultiSpotlight {
     /// Create a new multi-spotlight effect
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             spotlights: Vec::new(),
         }
     }
 
     /// Add a spotlight with a specific color
+    #[must_use] 
     pub fn add_spotlight(mut self, spotlight: Spotlight) -> Self {
         self.spotlights.push((spotlight, Theme::dark()));
         self

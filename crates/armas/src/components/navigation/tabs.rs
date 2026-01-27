@@ -83,12 +83,9 @@ impl Tabs {
 
     /// Show the tabs and return the response
     pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> TabsResponse {
-
         if self.labels.is_empty() {
-            let (_, empty_response) = ui.allocate_exact_size(
-                egui::Vec2::new(0.0, LIST_HEIGHT),
-                egui::Sense::hover(),
-            );
+            let (_, empty_response) =
+                ui.allocate_exact_size(egui::Vec2::new(0.0, LIST_HEIGHT), egui::Sense::hover());
             return TabsResponse {
                 response: empty_response,
                 selected: None,
@@ -135,13 +132,13 @@ impl Tabs {
             })
             .collect();
 
-        let total_width: f32 = tab_widths.iter().sum::<f32>() + TRIGGER_GAP * (self.labels.len().saturating_sub(1)) as f32 + LIST_PADDING * 2.0;
+        let total_width: f32 = tab_widths.iter().sum::<f32>()
+            + TRIGGER_GAP * (self.labels.len().saturating_sub(1)) as f32
+            + LIST_PADDING * 2.0;
 
         // Allocate space for the TabsList container
-        let (list_rect, list_response) = ui.allocate_exact_size(
-            Vec2::new(total_width, LIST_HEIGHT),
-            egui::Sense::hover(),
-        );
+        let (list_rect, list_response) =
+            ui.allocate_exact_size(Vec2::new(total_width, LIST_HEIGHT), egui::Sense::hover());
 
         // Draw TabsList background (bg-muted rounded-lg)
         ui.painter()
@@ -168,7 +165,8 @@ impl Tabs {
             let ceil_idx = (self.indicator_pos.ceil() as usize).min(tab_widths.len() - 1);
             let t = self.indicator_pos.fract();
 
-            let start_x = x_positions[floor_idx] + (x_positions[ceil_idx] - x_positions[floor_idx]) * t;
+            let start_x =
+                x_positions[floor_idx] + (x_positions[ceil_idx] - x_positions[floor_idx]) * t;
             let width = tab_widths[floor_idx] + (tab_widths[ceil_idx] - tab_widths[floor_idx]) * t;
 
             let active_rect = egui::Rect::from_min_size(

@@ -41,7 +41,7 @@
 #[cfg(feature = "build")]
 pub mod build;
 
-use egui::{Color32, Mesh, Painter, Pos2, Rect, Response, Sense, Ui, Vec2, epaint::Vertex};
+use egui::{epaint::Vertex, Color32, Mesh, Painter, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Pre-tessellated icon data
 ///
@@ -70,8 +70,8 @@ pub fn render_icon(painter: &Painter, rect: Rect, icon_data: &IconData, color: C
     let scale_y = rect.height() / icon_data.viewbox_height;
     let scale = scale_x.min(scale_y);
 
-    let offset_x = rect.left() + (rect.width() - icon_data.viewbox_width * scale) / 2.0;
-    let offset_y = rect.top() + (rect.height() - icon_data.viewbox_height * scale) / 2.0;
+    let offset_x = rect.left() + icon_data.viewbox_width.mul_add(-scale, rect.width()) / 2.0;
+    let offset_y = rect.top() + icon_data.viewbox_height.mul_add(-scale, rect.height()) / 2.0;
 
     let mut mesh = Mesh::default();
 
@@ -119,7 +119,8 @@ pub struct Icon<'a> {
 
 impl<'a> Icon<'a> {
     /// Create a new icon widget
-    pub fn new(icon_data: &'a IconData) -> Self {
+    #[must_use] 
+    pub const fn new(icon_data: &'a IconData) -> Self {
         Self {
             icon_data,
             size: 24.0,
@@ -128,13 +129,15 @@ impl<'a> Icon<'a> {
     }
 
     /// Set the icon size (width and height will be equal)
-    pub fn size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set the icon color
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = color;
         self
     }
@@ -146,8 +149,7 @@ impl<'a> Icon<'a> {
         if ui.is_rect_visible(rect) {
             if self.icon_data.vertices.is_empty() {
                 // Fallback: draw a placeholder if icon data is empty
-                ui.painter()
-                    .rect_filled(rect, 2.0, Color32::from_gray(100));
+                ui.painter().rect_filled(rect, 2.0, Color32::from_gray(100));
             } else {
                 render_icon(ui.painter(), rect, self.icon_data, self.color);
             }

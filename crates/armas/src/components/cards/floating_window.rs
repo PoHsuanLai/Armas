@@ -215,7 +215,14 @@ impl FloatingWindow {
             // Apply custom styling based on style variant
             match style {
                 FloatingWindowStyle::Glass => {
-                    Self::apply_glass_style_static(ui, theme, opacity, glow_intensity, corner_radius, inner_margin);
+                    Self::apply_glass_style_static(
+                        ui,
+                        theme,
+                        opacity,
+                        glow_intensity,
+                        corner_radius,
+                        inner_margin,
+                    );
                 }
                 FloatingWindowStyle::Surface => {
                     Self::apply_surface_style_static(ui, theme, corner_radius, inner_margin);
@@ -271,8 +278,7 @@ impl FloatingWindow {
             )
         };
 
-        let corner_rad = corner_radius
-            .unwrap_or(theme.spacing.corner_radius as f32) as u8;
+        let corner_rad = corner_radius.unwrap_or(theme.spacing.corner_radius as f32) as u8;
 
         let inner_margin_val = inner_margin.unwrap_or(theme.spacing.md);
 
@@ -289,15 +295,10 @@ impl FloatingWindow {
 
         // Draw shimmer on top
         let rect = ui.painter().clip_rect();
-        let shimmer_rect = egui::Rect::from_min_size(
-            rect.min,
-            egui::vec2(rect.width(), theme.spacing.xs / 2.0),
-        );
-        ui.painter().rect_filled(
-            shimmer_rect,
-            CornerRadius::same(corner_rad),
-            theme.border(),
-        );
+        let shimmer_rect =
+            egui::Rect::from_min_size(rect.min, egui::vec2(rect.width(), theme.spacing.xs / 2.0));
+        ui.painter()
+            .rect_filled(shimmer_rect, CornerRadius::same(corner_rad), theme.border());
 
         // Draw glow border
         if glow_intensity > 0.0 {
@@ -317,8 +318,7 @@ impl FloatingWindow {
         corner_radius: Option<f32>,
         inner_margin: Option<f32>,
     ) {
-        let corner_rad = corner_radius
-            .unwrap_or(theme.spacing.corner_radius as f32) as u8;
+        let corner_rad = corner_radius.unwrap_or(theme.spacing.corner_radius as f32) as u8;
 
         let inner_margin_val = inner_margin.unwrap_or(theme.spacing.md);
 
@@ -336,8 +336,7 @@ impl FloatingWindow {
         corner_radius: Option<f32>,
         inner_margin: Option<f32>,
     ) {
-        let corner_rad = corner_radius
-            .unwrap_or(theme.spacing.corner_radius as f32) as u8;
+        let corner_rad = corner_radius.unwrap_or(theme.spacing.corner_radius as f32) as u8;
 
         let inner_margin_val = inner_margin.unwrap_or(theme.spacing.md);
 
@@ -349,11 +348,8 @@ impl FloatingWindow {
         let shadow_offset = Vec2::new(0.0, 4.0);
         let shadow_rect = rect.translate(shadow_offset);
 
-        ui.painter().rect_filled(
-            shadow_rect,
-            CornerRadius::same(corner_rad),
-            shadow_color,
-        );
+        ui.painter()
+            .rect_filled(shadow_rect, CornerRadius::same(corner_rad), shadow_color);
 
         let _frame = egui::Frame::new()
             .fill(theme.card())
@@ -381,7 +377,7 @@ impl FloatingWindow {
             ui.label(
                 egui::RichText::new(title)
                     .size(12.0)
-                    .color(theme.foreground())
+                    .color(theme.foreground()),
             );
 
             // Fill remaining space

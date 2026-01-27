@@ -3,8 +3,8 @@
 //! Complete scrollable timeline view combining ruler, playhead, track headers, and tracks.
 
 use crate::{
-    TimelineRegion, TimelineMarker, RegionVariant, MarkerVariant,
-    Playhead, Region, SnapGrid, TimeRuler, TimelineTrack, TrackControls, TrackHeader,
+    MarkerVariant, Playhead, Region, RegionVariant, SnapGrid, TimeRuler, TimelineMarker,
+    TimelineRegion, TimelineTrack, TrackControls, TrackHeader,
 };
 use armas::theme::Theme;
 use egui::{pos2, vec2, Color32, Rect, Response, Sense, Ui, Vec2};
@@ -43,7 +43,10 @@ impl MarkerData {
     pub fn time_signature(position: f32, numerator: u32, denominator: u32) -> Self {
         Self {
             position,
-            variant: MarkerVariant::TimeSignature { numerator, denominator },
+            variant: MarkerVariant::TimeSignature {
+                numerator,
+                denominator,
+            },
             color: None,
         }
     }
@@ -54,7 +57,6 @@ impl MarkerData {
         self
     }
 }
-
 
 /// Data for a loop region
 #[derive(Debug, Clone)]
@@ -100,7 +102,10 @@ pub struct PunchRegionData {
 impl PunchRegionData {
     /// Create a new punch region
     pub fn new(punch_in: f32, punch_out: f32) -> Self {
-        Self { punch_in, punch_out }
+        Self {
+            punch_in,
+            punch_out,
+        }
     }
 }
 
@@ -663,8 +668,7 @@ impl<'a> Timeline<'a> {
 
     /// Calculate layout dimensions based on available space and content
     fn calculate_layout(&self, ui: &Ui, track_count: usize) -> TimelineLayout {
-        let content_width =
-            self.measures as f32 * self.beats_per_measure as f32 * self.beat_width;
+        let content_width = self.measures as f32 * self.beats_per_measure as f32 * self.beat_width;
         let content_height = track_count as f32 * self.track_height;
 
         let available_rect = ui.available_rect_before_wrap();
@@ -712,7 +716,13 @@ impl<'a> Timeline<'a> {
     }
 
     /// Render the time ruler at the top
-    fn render_ruler(&self, ui: &mut Ui, layout: &TimelineLayout, scroll_offset: Vec2, theme: &Theme) {
+    fn render_ruler(
+        &self,
+        ui: &mut Ui,
+        layout: &TimelineLayout,
+        scroll_offset: Vec2,
+        theme: &Theme,
+    ) {
         ui.horizontal(|ui| {
             // Top-left corner
             ui.allocate_exact_size(
@@ -933,7 +943,13 @@ impl<'a> Timeline<'a> {
     }
 
     /// Render empty state message when no tracks exist
-    fn render_empty_state(&self, ui: &Ui, tracks_rect: Rect, layout: &TimelineLayout, theme: &Theme) {
+    fn render_empty_state(
+        &self,
+        ui: &Ui,
+        tracks_rect: Rect,
+        layout: &TimelineLayout,
+        theme: &Theme,
+    ) {
         if let Some(msg) = &self.empty_message {
             let empty_rect = Rect::from_min_size(
                 tracks_rect.min,
@@ -1116,13 +1132,14 @@ impl<'a> Timeline<'a> {
                     MarkerVariant::Cue(_) => (0.0, 0.33),
                 };
 
-                let mut marker = TimelineMarker::new(&mut marker_data.position, &mut marker_data.variant)
-                    .beat_width(self.beat_width)
-                    .measures(self.measures)
-                    .beats_per_measure(self.beats_per_measure)
-                    .height(self.ruler_height)
-                    .vertical_range(vertical_range.0, vertical_range.1)
-                    .id(self.id.unwrap_or_else(|| ui.id()).with("marker").with(i));
+                let mut marker =
+                    TimelineMarker::new(&mut marker_data.position, &mut marker_data.variant)
+                        .beat_width(self.beat_width)
+                        .measures(self.measures)
+                        .beats_per_measure(self.beats_per_measure)
+                        .height(self.ruler_height)
+                        .vertical_range(vertical_range.0, vertical_range.1)
+                        .id(self.id.unwrap_or_else(|| ui.id()).with("marker").with(i));
 
                 if let Some(color) = marker_data.color {
                     marker = marker.color(color);
@@ -1134,12 +1151,7 @@ impl<'a> Timeline<'a> {
     }
 
     /// Render snap grid overlay
-    fn render_snap_grid_overlay(
-        &self,
-        ui: &mut Ui,
-        layout: &TimelineLayout,
-        scroll_offset: Vec2,
-    ) {
+    fn render_snap_grid_overlay(&self, ui: &mut Ui, layout: &TimelineLayout, scroll_offset: Vec2) {
         if !self.show_snap_grid || layout.timeline_height <= 0.0 {
             return;
         }
@@ -1198,10 +1210,7 @@ impl<'a> Timeline<'a> {
             vec2(layout.content_width, layout.content_height),
         );
 
-        let z_order_id = self
-            .id
-            .unwrap_or_else(|| ui.id())
-            .with("marker_z_order");
+        let z_order_id = self.id.unwrap_or_else(|| ui.id()).with("marker_z_order");
         let mut top_marker: u8 = ui.ctx().data_mut(|d| d.get_temp(z_order_id).unwrap_or(2));
 
         let render_order: [u8; 3] = match top_marker {
@@ -1253,18 +1262,16 @@ impl<'a> Timeline<'a> {
                         );
                         selection_ui.set_clip_rect(tracks_rect);
 
-                        let selection_response = TimelineRegion::new(
-                            &mut selection_data.start,
-                            &mut selection_data.end,
-                        )
-                        .variant(RegionVariant::Selection)
-                        .beat_width(self.beat_width)
-                        .measures(self.measures)
-                        .beats_per_measure(self.beats_per_measure)
-                        .height(layout.content_height)
-                        .vertical_range(0.33, 0.67)
-                        .id(self.id.unwrap_or_else(|| ui.id()).with("selection_range"))
-                        .show(&mut selection_ui, theme);
+                        let selection_response =
+                            TimelineRegion::new(&mut selection_data.start, &mut selection_data.end)
+                                .variant(RegionVariant::Selection)
+                                .beat_width(self.beat_width)
+                                .measures(self.measures)
+                                .beats_per_measure(self.beats_per_measure)
+                                .height(layout.content_height)
+                                .vertical_range(0.33, 0.67)
+                                .id(self.id.unwrap_or_else(|| ui.id()).with("selection_range"))
+                                .show(&mut selection_ui, theme);
 
                         if selection_response.region_clicked
                             || selection_response.start_changed
@@ -1307,8 +1314,7 @@ impl<'a> Timeline<'a> {
             }
         }
 
-        ui.ctx()
-            .data_mut(|d| d.insert_temp(z_order_id, top_marker));
+        ui.ctx().data_mut(|d| d.insert_temp(z_order_id, top_marker));
     }
 
     /// Render the playhead
@@ -1519,8 +1525,15 @@ impl<'a> Timeline<'a> {
                 // Row 2: Headers + Tracks
                 ui.horizontal(|ui| {
                     // Left: Track headers
-                    let headers_rect =
-                        self.render_headers(ui, tracks, &flat_list, &layout, scroll_offset, &mut interactions, theme);
+                    let headers_rect = self.render_headers(
+                        ui,
+                        tracks,
+                        &flat_list,
+                        &layout,
+                        scroll_offset,
+                        &mut interactions,
+                        theme,
+                    );
 
                     // Draw selection borders on selected headers
                     self.render_header_selection_borders(
@@ -1534,8 +1547,15 @@ impl<'a> Timeline<'a> {
                     );
 
                     // Right: Track content
-                    let tracks_rect =
-                        self.render_tracks(ui, tracks, &flat_list, &layout, scroll_offset, &mut interactions, theme);
+                    let tracks_rect = self.render_tracks(
+                        ui,
+                        tracks,
+                        &flat_list,
+                        &layout,
+                        scroll_offset,
+                        &mut interactions,
+                        theme,
+                    );
 
                     // Empty state message when no tracks
                     if flat_list.is_empty() {

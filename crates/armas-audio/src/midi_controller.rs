@@ -5,8 +5,7 @@
 
 use crate::{
     MidiPad, MidiPadResponse, ModWheel, PadColorScheme, PadConfig, PadState, PadVariant, Piano,
-    PianoOrientation, PianoResponse, StepSequencer, WheelType, WheelVariant,
-    XYPad, XYPadVariant,
+    PianoOrientation, PianoResponse, StepSequencer, WheelType, WheelVariant, XYPad, XYPadVariant,
 };
 use armas::components::cards::{Card, CardVariant};
 use egui::{Response, Ui};
@@ -220,7 +219,6 @@ impl<'a> MidiController<'a> {
 
     /// Show the MIDI controller
     pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> MidiControllerResponse {
-
         let mut piano_response = None;
         let mut drum_pad_response = None;
         let mut mod_wheel_changed = false;

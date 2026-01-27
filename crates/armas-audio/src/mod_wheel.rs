@@ -183,7 +183,6 @@ impl<'a> ModWheel<'a> {
 
     /// Show the mod wheel
     pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> Response {
-
         // Load previous state if ID is set
         if let Some(id) = self.id {
             let state_id = id.with("mod_wheel_state");
@@ -204,10 +203,7 @@ impl<'a> ModWheel<'a> {
         let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
 
         // Get or create drag state
-        let drag_id = self
-            .id
-            .unwrap_or_else(|| ui.id())
-            .with("mod_wheel_drag");
+        let drag_id = self.id.unwrap_or_else(|| ui.id()).with("mod_wheel_drag");
         let mut drag_state: ModWheelDragState = ui.ctx().data_mut(|d| {
             d.get_temp(drag_id).unwrap_or_else(|| ModWheelDragState {
                 drag: VelocityDrag::new(
@@ -226,11 +222,13 @@ impl<'a> ModWheel<'a> {
 
         // Handle drag interaction
         if response.drag_started() {
-            let use_velocity = self.velocity_mode
-                && ui.input(|i| i.modifiers.command || i.modifiers.ctrl);
-            drag_state
-                .drag
-                .begin(*self.value as f64, response.interact_pointer_pos().map_or(0.0, |p| p.y) as f64, use_velocity);
+            let use_velocity =
+                self.velocity_mode && ui.input(|i| i.modifiers.command || i.modifiers.ctrl);
+            drag_state.drag.begin(
+                *self.value as f64,
+                response.interact_pointer_pos().map_or(0.0, |p| p.y) as f64,
+                use_velocity,
+            );
         }
 
         if response.dragged() {
@@ -238,12 +236,14 @@ impl<'a> ModWheel<'a> {
                 if drag_state.drag.is_velocity_mode() {
                     // Velocity mode: value changes based on mouse speed
                     let value_range = (max_val - min_val) as f64;
-                    let delta =
-                        drag_state
-                            .drag
-                            .update_tracked(pos.y as f64, value_range, self.height as f64);
+                    let delta = drag_state.drag.update_tracked(
+                        pos.y as f64,
+                        value_range,
+                        self.height as f64,
+                    );
                     // Invert delta since moving up should increase value
-                    *self.value = (*self.value as f64 - delta).clamp(min_val as f64, max_val as f64) as f32;
+                    *self.value =
+                        (*self.value as f64 - delta).clamp(min_val as f64, max_val as f64) as f32;
                 } else {
                     // Absolute mode: Y position to value (inverted: top = max, bottom = min)
                     let normalized = 1.0 - ((pos.y - rect.min.y) / rect.height()).clamp(0.0, 1.0);
@@ -442,7 +442,10 @@ impl<'a> ModWheel<'a> {
 
         // Dark line for groove
         painter.line_segment(
-            [Pos2::new(groove_x - 0.5, groove_top), Pos2::new(groove_x - 0.5, groove_bottom)],
+            [
+                Pos2::new(groove_x - 0.5, groove_top),
+                Pos2::new(groove_x - 0.5, groove_bottom),
+            ],
             egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(0, 0, 0, 100)),
         );
 

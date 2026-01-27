@@ -4,17 +4,13 @@ pub mod url {
 
     /// Get current hash from URL (e.g., "#/basic/button" -> "/basic/button")
     pub fn get_hash() -> Option<String> {
-        window()?
-            .location()
-            .hash()
-            .ok()
-            .and_then(|hash| {
-                if hash.starts_with('#') {
-                    Some(hash[1..].to_string())
-                } else {
-                    Some(hash)
-                }
-            })
+        window()?.location().hash().ok().and_then(|hash| {
+            if hash.starts_with('#') {
+                Some(hash[1..].to_string())
+            } else {
+                Some(hash)
+            }
+        })
     }
 
     /// Set URL hash without triggering page reload

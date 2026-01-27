@@ -52,7 +52,10 @@ pub struct CommandItemBuilder<'a> {
 impl<'a> CommandItemBuilder<'a> {
     /// Set command icon
     pub fn icon(self, icon: impl Into<String>) -> Self {
-        if let Some(CommandItem::Action { icon: ref mut i, .. }) = self.items.get_mut(self.index) {
+        if let Some(CommandItem::Action {
+            icon: ref mut i, ..
+        }) = self.items.get_mut(self.index)
+        {
             *i = Some(icon.into());
         }
         self
@@ -60,8 +63,10 @@ impl<'a> CommandItemBuilder<'a> {
 
     /// Set keyboard shortcut display (use format like "⌘+K" or "Ctrl+Shift+P")
     pub fn shortcut(self, shortcut: impl Into<String>) -> Self {
-        if let Some(CommandItem::Action { shortcut: ref mut s, .. }) =
-            self.items.get_mut(self.index)
+        if let Some(CommandItem::Action {
+            shortcut: ref mut s,
+            ..
+        }) = self.items.get_mut(self.index)
         {
             *s = Some(shortcut.into());
         }
@@ -390,8 +395,7 @@ impl Command {
                         self.draw_separator(ui, theme, PANEL_WIDTH);
 
                         // List
-                        if let Some((exec, sel)) =
-                            self.draw_list(ui, theme, filtered, should_close)
+                        if let Some((exec, sel)) = self.draw_list(ui, theme, filtered, should_close)
                         {
                             executed = exec;
                             self.selected = sel;
@@ -569,8 +573,7 @@ impl Command {
 
         // Background
         if is_selected || hovered {
-            ui.painter()
-                .rect_filled(rect, ITEM_RADIUS, theme.accent());
+            ui.painter().rect_filled(rect, ITEM_RADIUS, theme.accent());
         }
 
         // Text color based on state
@@ -618,7 +621,7 @@ impl Command {
             );
             ui.scope_builder(egui::UiBuilder::new().max_rect(kbd_rect), |ui| {
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    Kbd::new(shortcut_text).show(ui, &theme);
+                    Kbd::new(shortcut_text).show(ui, theme);
                 });
             });
         }

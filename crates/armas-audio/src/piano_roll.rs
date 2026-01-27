@@ -505,7 +505,14 @@ impl PianoRoll {
 
             // Draw hover preview if editable
             let note_interactions = if self.editable {
-                self.handle_interactions_scrolled(ui, theme, content_rect, viewport_rect, &response, scroll_state.offset)
+                self.handle_interactions_scrolled(
+                    ui,
+                    theme,
+                    content_rect,
+                    viewport_rect,
+                    &response,
+                    scroll_state.offset,
+                )
             } else {
                 None
             };
@@ -636,7 +643,11 @@ impl PianoRoll {
             };
 
             let alpha_val = 255.0 * 0.2 * opacity_multiplier;
-            let alpha = if alpha_val > 255.0 { 255 } else { alpha_val as u8 };
+            let alpha = if alpha_val > 255.0 {
+                255
+            } else {
+                alpha_val as u8
+            };
             let line_color = Color32::from_rgba_unmultiplied(
                 base_line_color.r(),
                 base_line_color.g(),
@@ -709,7 +720,10 @@ impl PianoRoll {
         let width = note.duration * self.beat_width;
         let height = self.white_key_width;
 
-        Some(Rect::from_min_size(Pos2::new(x, y), Vec2::new(width, height)))
+        Some(Rect::from_min_size(
+            Pos2::new(x, y),
+            Vec2::new(width, height),
+        ))
     }
 
     /// Handle interactions with scroll offset support
@@ -736,7 +750,8 @@ impl PianoRoll {
         if response.clicked() {
             if let Some(pos) = response.interact_pointer_pos() {
                 let content_pos = to_content_pos(pos);
-                if let Some(clicked_idx) = self.find_note_at_content_pos(content_pos, content_rect) {
+                if let Some(clicked_idx) = self.find_note_at_content_pos(content_pos, content_rect)
+                {
                     interactions.removed_indices.push(clicked_idx);
                 }
             }
@@ -746,7 +761,10 @@ impl PianoRoll {
         if response.dragged() {
             if let Some(pos) = response.interact_pointer_pos() {
                 let content_pos = to_content_pos(pos);
-                if self.find_note_at_content_pos(content_pos, content_rect).is_none() {
+                if self
+                    .find_note_at_content_pos(content_pos, content_rect)
+                    .is_none()
+                {
                     if let Some(new_note) = self.content_pos_to_note(content_pos, content_rect) {
                         let note_exists = self.notes.iter().any(|n| {
                             n.note == new_note.note
@@ -765,7 +783,10 @@ impl PianoRoll {
         if response.drag_started() {
             if let Some(pos) = response.interact_pointer_pos() {
                 let content_pos = to_content_pos(pos);
-                if self.find_note_at_content_pos(content_pos, content_rect).is_none() {
+                if self
+                    .find_note_at_content_pos(content_pos, content_rect)
+                    .is_none()
+                {
                     if let Some(new_note) = self.content_pos_to_note(content_pos, content_rect) {
                         interactions.added_note = Some(new_note);
                     }
@@ -777,8 +798,13 @@ impl PianoRoll {
         if let Some(hover_pos) = response.hover_pos() {
             let content_pos = to_content_pos(hover_pos);
             if let Some(preview_note) = self.content_pos_to_note(content_pos, content_rect) {
-                if self.find_note_at_content_pos(content_pos, content_rect).is_none() {
-                    if let Some(note_rect) = self.get_note_rect_in_content(&preview_note, content_rect) {
+                if self
+                    .find_note_at_content_pos(content_pos, content_rect)
+                    .is_none()
+                {
+                    if let Some(note_rect) =
+                        self.get_note_rect_in_content(&preview_note, content_rect)
+                    {
                         let painter = ui.painter().with_clip_rect(viewport_rect);
                         let primary = theme.primary();
                         let ghost_color = Color32::from_rgba_unmultiplied(
@@ -831,7 +857,11 @@ impl PianoRoll {
             return None;
         }
 
-        Some(Note::new(note_num, snapped_beat, self.default_note_duration))
+        Some(Note::new(
+            note_num,
+            snapped_beat,
+            self.default_note_duration,
+        ))
     }
 
     /// Convert MIDI note to row index

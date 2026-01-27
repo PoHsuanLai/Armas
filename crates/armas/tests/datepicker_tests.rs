@@ -1,7 +1,7 @@
 //! Tests for DatePicker component using egui_kittest
 
-use armas::prelude::*;
 use armas::components::basic::{Date, DatePicker};
+use armas::prelude::*;
 use egui_kittest::Harness;
 
 /// Test Date creation with valid values
@@ -34,10 +34,10 @@ fn test_date_creation_invalid_day() {
 /// Test Date leap year detection
 #[test]
 fn test_date_leap_year() {
-    assert!(Date::is_leap_year(2024));  // Divisible by 4
+    assert!(Date::is_leap_year(2024)); // Divisible by 4
     assert!(!Date::is_leap_year(2023)); // Not divisible by 4
     assert!(!Date::is_leap_year(1900)); // Divisible by 100 but not 400
-    assert!(Date::is_leap_year(2000));  // Divisible by 400
+    assert!(Date::is_leap_year(2000)); // Divisible by 400
 }
 
 /// Test Date days in month
@@ -154,8 +154,7 @@ fn test_datepicker_with_label() {
 
     let mut harness = Harness::new(|ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
-            let mut picker = DatePicker::new("labeled_picker")
-                .label("Birth Date");
+            let mut picker = DatePicker::new("labeled_picker").label("Birth Date");
             picker.show(ctx, &theme, ui, &mut selected_date);
         });
     });
@@ -171,8 +170,7 @@ fn test_datepicker_with_placeholder() {
 
     let mut harness = Harness::new(|ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
-            let mut picker = DatePicker::new("placeholder_picker")
-                .placeholder("Choose a date...");
+            let mut picker = DatePicker::new("placeholder_picker").placeholder("Choose a date...");
             picker.show(ctx, &theme, ui, &mut selected_date);
         });
     });
@@ -224,14 +222,12 @@ fn test_multiple_datepickers() {
     let mut harness = Harness::new(|ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical(|ui| {
-                let mut start_picker = DatePicker::new("start_picker")
-                    .label("Start Date");
+                let mut start_picker = DatePicker::new("start_picker").label("Start Date");
                 start_picker.show(ctx, &theme, ui, &mut start_date);
 
                 ui.add_space(8.0);
 
-                let mut end_picker = DatePicker::new("end_picker")
-                    .label("End Date");
+                let mut end_picker = DatePicker::new("end_picker").label("End Date");
                 end_picker.show(ctx, &theme, ui, &mut end_date);
             });
         });

@@ -96,10 +96,8 @@ impl Progress {
             let fill_width = rect.width() * progress_fraction;
 
             if fill_width > 0.0 {
-                let fill_rect = egui::Rect::from_min_size(
-                    rect.min,
-                    Vec2::new(fill_width, self.height),
-                );
+                let fill_rect =
+                    egui::Rect::from_min_size(rect.min, Vec2::new(fill_width, self.height));
 
                 ui.painter().rect_filled(fill_rect, corner_radius, primary);
             }
@@ -199,12 +197,8 @@ impl CircularProgressBar {
             let primary = theme.primary();
 
             // Background track: primary at 20% opacity
-            let track_color = Color32::from_rgba_unmultiplied(
-                primary.r(),
-                primary.g(),
-                primary.b(),
-                51,
-            );
+            let track_color =
+                Color32::from_rgba_unmultiplied(primary.r(), primary.g(), primary.b(), 51);
 
             ui.painter().circle_stroke(
                 center,
@@ -352,12 +346,8 @@ impl RingProgress {
             let primary = theme.primary();
 
             // Background track: primary at 20% opacity
-            let track_color = Color32::from_rgba_unmultiplied(
-                primary.r(),
-                primary.g(),
-                primary.b(),
-                51,
-            );
+            let track_color =
+                Color32::from_rgba_unmultiplied(primary.r(), primary.g(), primary.b(), 51);
 
             self.draw_ring(
                 ui,

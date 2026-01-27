@@ -75,23 +75,11 @@ impl<'a> ComponentsListPage<'a> {
                     let is_flat = subsections.len() == 1 && !subsections[0].1.is_empty();
 
                     if is_flat {
-                        self.render_section(
-                            ui,
-                            parent,
-                            &subsections[0].1,
-                            cols,
-                            &mut response,
-                        );
+                        self.render_section(ui, parent, &subsections[0].1, cols, &mut response);
                     } else {
                         for (section_name, pages) in subsections.iter() {
                             if !pages.is_empty() {
-                                self.render_section(
-                                    ui,
-                                    section_name,
-                                    pages,
-                                    cols,
-                                    &mut response,
-                                );
+                                self.render_section(ui, section_name, pages, cols, &mut response);
                             }
                         }
                     }
@@ -156,16 +144,12 @@ impl<'a> ComponentsListPage<'a> {
                     );
 
                     // Component name
-                    let text_pos =
-                        egui::pos2(rect.left() + CARD_PADDING, rect.center().y - 7.0);
+                    let text_pos = egui::pos2(rect.left() + CARD_PADDING, rect.center().y - 7.0);
                     ui.painter().text(
                         text_pos,
                         egui::Align2::LEFT_CENTER,
                         *name,
-                        egui::FontId::new(
-                            14.0,
-                            egui::FontFamily::Name("InterMedium".into()),
-                        ),
+                        egui::FontId::new(14.0, egui::FontFamily::Name("InterMedium".into())),
                         self.theme.foreground(),
                     );
 

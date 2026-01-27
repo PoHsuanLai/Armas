@@ -128,11 +128,7 @@ impl<'a> Slot<'a> {
             };
             (effect_color, border, theme.foreground())
         } else {
-            (
-                theme.card(),
-                theme.border(),
-                theme.muted_foreground(),
-            )
+            (theme.card(), theme.border(), theme.muted_foreground())
         };
 
         // Hover effect - brighten box, border, and text (especially for empty slots with "+")
