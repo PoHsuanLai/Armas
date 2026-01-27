@@ -7,10 +7,13 @@ use fuzzy_matcher::FuzzyMatcher;
 
 use crate::showcase_gen;
 
+/// A page entry with name and render function
+type PageEntry = (&'static str, fn(&mut egui::Ui));
+
 pub struct SiteSidebar<'a> {
     theme: &'a Theme,
     search_text: &'a mut String,
-    pages: &'a [(&'static str, fn(&mut egui::Ui))],
+    pages: &'a [PageEntry],
 }
 
 pub struct SiteSidebarResponse {
@@ -18,11 +21,7 @@ pub struct SiteSidebarResponse {
 }
 
 impl<'a> SiteSidebar<'a> {
-    pub fn new(
-        theme: &'a Theme,
-        search_text: &'a mut String,
-        pages: &'a [(&'static str, fn(&mut egui::Ui))],
-    ) -> Self {
+    pub fn new(theme: &'a Theme, search_text: &'a mut String, pages: &'a [PageEntry]) -> Self {
         Self {
             theme,
             search_text,

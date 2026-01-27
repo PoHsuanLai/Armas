@@ -17,6 +17,7 @@ pub struct StepSequencerResponse {
 
 impl StepSequencerResponse {
     /// Check if any steps were modified this frame
+    #[must_use]
     pub fn changed(&self) -> bool {
         self.changed
     }
@@ -92,18 +93,21 @@ impl<'a> StepSequencer<'a> {
     }
 
     /// Set number of steps to display
+    #[must_use]
     pub fn steps(mut self, num_steps: usize) -> Self {
         self.num_steps = num_steps.max(1);
         self
     }
 
     /// Set current playback step (for visual feedback)
+    #[must_use]
     pub fn current_step(mut self, step: Option<usize>) -> Self {
         self.current_step = step;
         self
     }
 
     /// Set step size
+    #[must_use]
     pub fn step_size(mut self, width: f32, height: f32) -> Self {
         self.step_width = width.max(20.0);
         self.step_height = height.max(20.0);
@@ -111,54 +115,63 @@ impl<'a> StepSequencer<'a> {
     }
 
     /// Set gap between steps
+    #[must_use]
     pub fn gap(mut self, gap: f32) -> Self {
         self.gap = gap.max(0.0);
         self
     }
 
     /// Set accent color for active steps
+    #[must_use]
     pub fn accent_color(mut self, color: Color32) -> Self {
         self.accent_color = Some(color);
         self
     }
 
     /// Show step numbers
+    #[must_use]
     pub fn show_step_numbers(mut self, show: bool) -> Self {
         self.show_step_numbers = show;
         self
     }
 
     /// Set glow intensity
+    #[must_use]
     pub fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
     /// Set color for active (ON) steps
+    #[must_use]
     pub fn step_on_color(mut self, color: Color32) -> Self {
         self.step_on_color = Some(color);
         self
     }
 
     /// Set color for inactive (OFF) steps
+    #[must_use]
     pub fn step_off_color(mut self, color: Color32) -> Self {
         self.step_off_color = Some(color);
         self
     }
 
     /// Set color for the current playback step
+    #[must_use]
     pub fn current_step_color(mut self, color: Color32) -> Self {
         self.current_step_color = Some(color);
         self
     }
 
     /// Set velocity data for each step (for visualization)
+    #[must_use]
     pub fn velocities(mut self, velocities: &'a Vec<f32>) -> Self {
         self.velocities = Some(velocities);
         self
     }
 
     /// Show measure accents every N steps (e.g., 4 for quarter notes)
+    #[must_use]
     pub fn measure_accent(mut self, every_n_steps: usize) -> Self {
         self.measure_accent = Some(every_n_steps.max(1));
         self
@@ -201,7 +214,7 @@ impl<'a> StepSequencer<'a> {
 
                 self.draw_step(
                     ui.painter(),
-                    &theme,
+                    theme,
                     step_rect,
                     is_active,
                     is_current,
@@ -238,12 +251,10 @@ impl<'a> StepSequencer<'a> {
             } else {
                 accent
             }
+        } else if is_hovered {
+            theme.muted().gamma_multiply(1.2)
         } else {
-            if is_hovered {
-                theme.muted().gamma_multiply(1.2)
-            } else {
-                theme.muted()
-            }
+            theme.muted()
         };
 
         // Professional sophisticated styling (glassmorphic with subtle depth)

@@ -6,7 +6,7 @@ use crate::ext::ArmasContextExt;
 use egui::{Pos2, Response, Sense, Ui, Vec2};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 // ============================================================================
 // Constants
@@ -72,6 +72,32 @@ pub struct TreeViewResponse {
     pub selected: Option<PathBuf>,
     /// Branch expanded/collapsed this frame
     pub toggled: Option<PathBuf>,
+}
+
+// ============================================================================
+// Parameter Structs
+// ============================================================================
+
+/// Parameters for show_level function
+struct ShowLevelParams<'a> {
+    parent: Option<&'a PathBuf>,
+    width: f32,
+    depth: usize,
+    levels_last: &'a mut Vec<bool>,
+    selected: &'a mut Option<PathBuf>,
+    toggled: &'a mut Option<PathBuf>,
+}
+
+/// Parameters for show_item function
+struct ShowItemParams<'a> {
+    item: &'a TreeItem,
+    width: f32,
+    depth: usize,
+    is_last: bool,
+    levels_last: &'a [bool],
+    selected: &'a mut Option<PathBuf>,
+    toggled: &'a mut Option<PathBuf>,
+    theme: &'a crate::Theme,
 }
 
 // ============================================================================
@@ -165,12 +191,12 @@ impl TreeView {
     }
 
     /// Check if branch is expanded
-    pub fn is_expanded(&self, path: &PathBuf) -> bool {
+    pub fn is_expanded(&self, path: &Path) -> bool {
         self.expanded.contains(&path.to_string_lossy().to_string())
     }
 
     /// Toggle branch expanded state
-    fn toggle(&mut self, path: &PathBuf) {
+    fn toggle(&mut self, path: &Path) {
         let key = path.to_string_lossy().to_string();
         if !self.expanded.remove(&key) {
             self.expanded.insert(key);
@@ -202,15 +228,15 @@ impl TreeView {
                 .show(ui, |ui| {
                     ui.add_space(theme.spacing.xs);
                     let mut levels_last = Vec::new();
-                    self.show_level(
-                        ui,
-                        None,
+                    let params = ShowLevelParams {
+                        parent: None,
                         width,
-                        0,
-                        &mut levels_last,
-                        &mut selected_this_frame,
-                        &mut toggled_this_frame,
-                    );
+                        depth: 0,
+                        levels_last: &mut levels_last,
+                        selected: &mut selected_this_frame,
+                        toggled: &mut toggled_this_frame,
+                    };
+                    self.show_level(ui, params);
                 });
         });
 
@@ -221,69 +247,49 @@ impl TreeView {
         }
     }
 
-    fn show_level(
-        &mut self,
-        ui: &mut Ui,
-        parent: Option<&PathBuf>,
-        width: f32,
-        depth: usize,
-        levels_last: &mut Vec<bool>,
-        selected: &mut Option<PathBuf>,
-        toggled: &mut Option<PathBuf>,
-    ) {
+    fn show_level(&mut self, ui: &mut Ui, params: ShowLevelParams) {
         let theme = ui.ctx().armas_theme();
-        let items = self.get_children(parent);
+        let items = self.get_children(params.parent);
         let count = items.len();
 
         for (i, item) in items.into_iter().enumerate() {
             let is_expanded = item.is_directory && self.is_expanded(&item.path);
             let is_last = i == count - 1;
 
-            self.show_item(
-                ui,
-                &item,
-                width,
-                depth,
+            let show_item_params = ShowItemParams {
+                item: &item,
+                width: params.width,
+                depth: params.depth,
                 is_last,
-                levels_last,
-                selected,
-                toggled,
-                &theme,
-            );
+                levels_last: params.levels_last,
+                selected: params.selected,
+                toggled: params.toggled,
+                theme: &theme,
+            };
+            self.show_item(ui, show_item_params);
             ui.add_space(ITEM_GAP);
 
             if is_expanded {
                 let path = item.path.clone();
-                levels_last.push(is_last);
-                self.show_level(
-                    ui,
-                    Some(&path),
-                    width,
-                    depth + 1,
-                    levels_last,
-                    selected,
-                    toggled,
-                );
-                levels_last.pop();
+                params.levels_last.push(is_last);
+                let nested_params = ShowLevelParams {
+                    parent: Some(&path),
+                    width: params.width,
+                    depth: params.depth + 1,
+                    levels_last: params.levels_last,
+                    selected: params.selected,
+                    toggled: params.toggled,
+                };
+                self.show_level(ui, nested_params);
+                params.levels_last.pop();
             }
         }
     }
 
-    fn show_item(
-        &mut self,
-        ui: &mut Ui,
-        item: &TreeItem,
-        width: f32,
-        depth: usize,
-        is_last: bool,
-        levels_last: &[bool],
-        selected: &mut Option<PathBuf>,
-        toggled: &mut Option<PathBuf>,
-        theme: &crate::Theme,
-    ) {
-        let is_selected = self.selected.as_ref() == Some(&item.path);
-        let indent = depth as f32 * INDENT_WIDTH;
-        let show_lines = self.show_lines && depth > 0;
+    fn show_item(&mut self, ui: &mut Ui, params: ShowItemParams) {
+        let is_selected = self.selected.as_ref() == Some(&params.item.path);
+        let indent = params.depth as f32 * INDENT_WIDTH;
+        let show_lines = self.show_lines && params.depth > 0;
 
         ui.horizontal(|ui| {
             // Tree lines prefix
@@ -292,15 +298,16 @@ impl TreeView {
                 let (prefix_rect, _) =
                     ui.allocate_exact_size(Vec2::new(prefix_width, ITEM_HEIGHT), Sense::hover());
 
-                let line_color = theme.border();
+                let line_color = params.theme.border();
 
                 // Draw vertical lines for each ancestor level
-                for level in 0..depth {
+                for level in 0..params.depth {
                     let level_x =
                         prefix_rect.left() + (level as f32 * INDENT_WIDTH) + INDENT_WIDTH / 2.0;
 
                     // Check if ancestor at this level was the last item
-                    let ancestor_is_last = level < levels_last.len() && levels_last[level];
+                    let ancestor_is_last =
+                        level < params.levels_last.len() && params.levels_last[level];
 
                     if !ancestor_is_last {
                         // Draw continuing vertical line
@@ -324,7 +331,7 @@ impl TreeView {
                         Pos2::new(line_x, prefix_rect.top()),
                         Pos2::new(
                             line_x,
-                            if is_last {
+                            if params.is_last {
                                 center_y
                             } else {
                                 prefix_rect.bottom()
@@ -346,7 +353,7 @@ impl TreeView {
                 ui.add_space(indent);
             }
 
-            let item_width = (width - indent - ITEM_PADDING_X).max(40.0);
+            let item_width = (params.width - indent - ITEM_PADDING_X).max(40.0);
             let (rect, response) =
                 ui.allocate_exact_size(Vec2::new(item_width, ITEM_HEIGHT), Sense::click());
             let hovered = response.hovered();
@@ -354,27 +361,27 @@ impl TreeView {
             // Background
             if is_selected || hovered {
                 let color = if is_selected {
-                    theme.accent()
+                    params.theme.accent()
                 } else {
-                    theme.accent().gamma_multiply(0.3)
+                    params.theme.accent().gamma_multiply(0.3)
                 };
                 ui.painter().rect_filled(rect, CORNER_RADIUS, color);
             }
 
             // Text color
             let text_color = if is_selected {
-                theme.accent_foreground()
+                params.theme.accent_foreground()
             } else {
-                theme.foreground()
+                params.theme.foreground()
             };
 
             let x = rect.left() + ITEM_PADDING_X;
 
             // Name (with folder indicator if directory)
-            let display_name = if item.is_directory {
-                format!("{}/", item.name)
+            let display_name = if params.item.is_directory {
+                format!("{}/", params.item.name)
             } else {
-                item.name.clone()
+                params.item.name.clone()
             };
 
             ui.painter().text(
@@ -387,12 +394,12 @@ impl TreeView {
 
             // Handle click
             if response.clicked() {
-                if item.is_directory {
-                    self.toggle(&item.path);
-                    *toggled = Some(item.path.clone());
+                if params.item.is_directory {
+                    self.toggle(&params.item.path);
+                    *params.toggled = Some(params.item.path.clone());
                 } else {
-                    self.selected = Some(item.path.clone());
-                    *selected = Some(item.path.clone());
+                    self.selected = Some(params.item.path.clone());
+                    *params.selected = Some(params.item.path.clone());
                 }
             }
         });

@@ -22,7 +22,7 @@ pub enum PlayheadHandleShape {
 /// Playhead indicator for DAW timeline
 ///
 /// Shows the current playback position as a vertical line with a draggable handle.
-/// Synchronized with the timeline's beat_width for accurate positioning.
+/// Synchronized with the timeline's `beat_width` for accurate positioning.
 ///
 /// # Example
 ///
@@ -41,7 +41,7 @@ pub enum PlayheadHandleShape {
 pub struct Playhead {
     /// Unique ID for this playhead (required for multiple playheads)
     id: Option<egui::Id>,
-    /// Width per beat in pixels (must match TimeRuler)
+    /// Width per beat in pixels (must match `TimeRuler`)
     beat_width: f32,
     /// Height of the playhead line
     height: f32,
@@ -65,6 +65,7 @@ pub struct Playhead {
 
 impl Playhead {
     /// Create a new playhead indicator with default settings
+    #[must_use]
     pub fn new() -> Self {
         Self {
             id: None,
@@ -81,13 +82,15 @@ impl Playhead {
         }
     }
 
-    /// Set width per beat in pixels (must match TimeRuler)
+    /// Set width per beat in pixels (must match `TimeRuler`)
+    #[must_use]
     pub fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width;
         self
     }
 
     /// Set height of the playhead indicator
+    #[must_use]
     pub fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
@@ -100,49 +103,57 @@ impl Playhead {
     }
 
     /// Set custom playhead color
+    #[must_use]
     pub fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set line width
+    #[must_use]
     pub fn line_width(mut self, width: f32) -> Self {
         self.line_width = width;
         self
     }
 
     /// Set whether to show draggable handle
+    #[must_use]
     pub fn show_handle(mut self, show: bool) -> Self {
         self.show_handle = show;
         self
     }
 
     /// Set handle size (radius)
+    #[must_use]
     pub fn handle_size(mut self, size: f32) -> Self {
         self.handle_size = size;
         self
     }
 
     /// Set whether to show glow effect
+    #[must_use]
     pub fn show_glow(mut self, show: bool) -> Self {
         self.show_glow = show;
         self
     }
 
     /// Set glow intensity (0.0-1.0)
+    #[must_use]
     pub fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
     /// Set handle shape variant
+    #[must_use]
     pub fn handle_shape(mut self, shape: PlayheadHandleShape) -> Self {
         self.handle_shape = shape;
         self
     }
 
     /// Enable snap-to-grid with specified beat division
-    /// E.g., snap_to_beat(0.25) snaps to 16th notes
+    /// E.g., `snap_to_beat(0.25)` snaps to 16th notes
+    #[must_use]
     pub fn snap_to_beat(mut self, beat_division: f32) -> Self {
         self.snap_to_beat = Some(beat_division.max(0.001));
         self

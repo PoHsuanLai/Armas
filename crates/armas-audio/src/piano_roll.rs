@@ -52,6 +52,7 @@ pub struct Note {
 
 impl Note {
     /// Create a new note
+    #[must_use]
     pub fn new(note: u8, start_beat: f32, duration: f32) -> Self {
         Self {
             note,
@@ -62,6 +63,7 @@ impl Note {
     }
 
     /// Create a new note with velocity
+    #[must_use]
     pub fn with_velocity(note: u8, start_beat: f32, duration: f32, velocity: f32) -> Self {
         Self {
             note,
@@ -139,6 +141,7 @@ pub struct PianoRoll {
 
 impl PianoRoll {
     /// Create a new piano roll
+    #[must_use]
     pub fn new() -> Self {
         Self {
             start_note: 60, // C4
@@ -169,108 +172,126 @@ impl PianoRoll {
     }
 
     /// Set the starting MIDI note
+    #[must_use]
     pub fn start_note(mut self, note: u8) -> Self {
         self.start_note = note;
         self
     }
 
     /// Set number of octaves
+    #[must_use]
     pub fn octaves(mut self, octaves: u8) -> Self {
         self.octaves = octaves;
         self
     }
 
     /// Set width of white keys
+    #[must_use]
     pub fn white_key_width(mut self, width: f32) -> Self {
         self.white_key_width = width;
         self
     }
 
     /// Set height of white keys
+    #[must_use]
     pub fn white_key_height(mut self, height: f32) -> Self {
         self.white_key_height = height;
         self
     }
 
     /// Set number of measures
+    #[must_use]
     pub fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set grid division
+    #[must_use]
     pub fn division(mut self, division: GridDivision) -> Self {
         self.division = division;
         self
     }
 
     /// Set width per beat
+    #[must_use]
     pub fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width;
         self
     }
 
     /// Set default note duration when placing
+    #[must_use]
     pub fn default_note_duration(mut self, duration: f32) -> Self {
         self.default_note_duration = duration;
         self
     }
 
     /// Set notes to display
+    #[must_use]
     pub fn notes(mut self, notes: Vec<Note>) -> Self {
         self.notes = notes;
         self
     }
 
     /// Set whether to show grid
+    #[must_use]
     pub fn show_grid(mut self, show: bool) -> Self {
         self.show_grid = show;
         self
     }
 
     /// Set whether to show piano
+    #[must_use]
     pub fn show_piano(mut self, show: bool) -> Self {
         self.show_piano = show;
         self
     }
 
     /// Set note opacity
+    #[must_use]
     pub fn note_opacity(mut self, opacity: f32) -> Self {
         self.note_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Set whether notes are editable
+    #[must_use]
     pub fn editable(mut self, editable: bool) -> Self {
         self.editable = editable;
         self
     }
 
     /// Set black key color
+    #[must_use]
     pub fn black_key_color(mut self, color: Color32) -> Self {
         self.black_key_color = Some(color);
         self
     }
 
     /// Set note block color
+    #[must_use]
     pub fn note_color(mut self, color: Color32) -> Self {
         self.note_color = Some(color);
         self
     }
 
     /// Set selected note color
+    #[must_use]
     pub fn selected_note_color(mut self, color: Color32) -> Self {
         self.selected_note_color = Some(color);
         self
     }
 
     /// Set grid line style for customizing line appearance
+    #[must_use]
     pub fn grid_style(mut self, style: GridLineStyle) -> Self {
         self.grid_style = Some(style);
         self
     }
 
     /// Enable snap-to-grid for note placement and resizing
+    #[must_use]
     pub fn snap_to_grid(mut self, enabled: bool) -> Self {
         self.snap_to_grid = enabled;
         self
@@ -286,6 +307,7 @@ impl PianoRoll {
     ///
     /// When enabled, the piano roll content can be scrolled within
     /// the specified viewport dimensions.
+    #[must_use]
     pub fn scrollable(mut self, width: f32, height: f32) -> Self {
         self.scrollable = true;
         self.viewport_width = Some(width);
@@ -299,6 +321,7 @@ impl PianoRoll {
     /// the mouse/trackpad, gradually slowing down with inertia.
     ///
     /// Default is enabled (when scrollable).
+    #[must_use]
     pub fn momentum_scrolling(mut self, enabled: bool) -> Self {
         self.momentum_scrolling = enabled;
         self
@@ -308,6 +331,7 @@ impl PianoRoll {
     ///
     /// Higher values cause the scroll to stop faster.
     /// Default is 5.0.
+    #[must_use]
     pub fn momentum_damping(mut self, damping: f64) -> Self {
         self.momentum_damping = damping.max(1.0);
         self
@@ -505,14 +529,14 @@ impl PianoRoll {
 
             // Draw hover preview if editable
             let note_interactions = if self.editable {
-                self.handle_interactions_scrolled(
+                Some(self.handle_interactions_scrolled(
                     ui,
                     theme,
                     content_rect,
                     viewport_rect,
                     &response,
                     scroll_state.offset,
-                )
+                ))
             } else {
                 None
             };
@@ -735,7 +759,7 @@ impl PianoRoll {
         viewport_rect: Rect,
         response: &Response,
         scroll_offset: Vec2,
-    ) -> Option<NoteInteractions> {
+    ) -> NoteInteractions {
         let mut interactions = NoteInteractions::default();
 
         // Convert screen position to content position
@@ -825,7 +849,7 @@ impl PianoRoll {
             }
         }
 
-        Some(interactions)
+        interactions
     }
 
     /// Find note at content position

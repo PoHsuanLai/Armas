@@ -7,7 +7,7 @@ use armas::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 
 /// Time division for vertical grid lines
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GridDivision {
     /// Whole notes (4 beats)
     Whole,
@@ -23,13 +23,14 @@ pub enum GridDivision {
 
 impl GridDivision {
     /// Get the beat fraction for this division
+    #[must_use]
     pub fn beat_fraction(&self) -> f32 {
         match self {
-            GridDivision::Whole => 4.0,
-            GridDivision::Half => 2.0,
-            GridDivision::Quarter => 1.0,
-            GridDivision::Eighth => 0.5,
-            GridDivision::Sixteenth => 0.25,
+            Self::Whole => 4.0,
+            Self::Half => 2.0,
+            Self::Quarter => 1.0,
+            Self::Eighth => 0.5,
+            Self::Sixteenth => 0.25,
         }
     }
 }
@@ -62,6 +63,7 @@ pub struct PianoRollGrid {
 
 impl PianoRollGrid {
     /// Create a new piano roll grid
+    #[must_use]
     pub fn new() -> Self {
         Self {
             start_note: 60, // C4
@@ -79,66 +81,77 @@ impl PianoRollGrid {
     }
 
     /// Set the starting MIDI note (should match piano)
+    #[must_use]
     pub fn start_note(mut self, note: u8) -> Self {
         self.start_note = note;
         self
     }
 
     /// Set number of octaves (should match piano)
+    #[must_use]
     pub fn octaves(mut self, octaves: u8) -> Self {
         self.octaves = octaves;
         self
     }
 
     /// Set width of white keys (should match piano)
+    #[must_use]
     pub fn white_key_width(mut self, width: f32) -> Self {
         self.white_key_width = width;
         self
     }
 
     /// Set height of white keys (should match piano)
+    #[must_use]
     pub fn white_key_height(mut self, height: f32) -> Self {
         self.white_key_height = height;
         self
     }
 
     /// Set black key height ratio (should match piano)
+    #[must_use]
     pub fn black_key_height_ratio(mut self, ratio: f32) -> Self {
         self.black_key_height_ratio = ratio;
         self
     }
 
     /// Set number of measures to display
+    #[must_use]
     pub fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set grid division
+    #[must_use]
     pub fn division(mut self, division: GridDivision) -> Self {
         self.division = division;
         self
     }
 
     /// Set width per beat in pixels
+    #[must_use]
     pub fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width;
         self
     }
 
     /// Set whether to show measure numbers
+    #[must_use]
     pub fn show_measure_numbers(mut self, show: bool) -> Self {
         self.show_measure_numbers = show;
         self
     }
 
     /// Set grid line opacity (0.0-1.0)
+    #[must_use]
     pub fn line_opacity(mut self, opacity: f32) -> Self {
         self.line_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Set whether to emphasize beat lines
+    #[must_use]
     pub fn emphasize_beats(mut self, emphasize: bool) -> Self {
         self.emphasize_beats = emphasize;
         self

@@ -50,6 +50,7 @@ pub struct SnapGrid {
 
 impl SnapGrid {
     /// Create a new snap grid
+    #[must_use]
     pub fn new() -> Self {
         Self {
             beat_width: 60.0,
@@ -69,18 +70,21 @@ impl SnapGrid {
     }
 
     /// Set pixels per beat
+    #[must_use]
     pub fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width.max(1.0);
         self
     }
 
     /// Set number of measures
+    #[must_use]
     pub fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set beats per measure
+    #[must_use]
     pub fn beats_per_measure(mut self, beats: u32) -> Self {
         self.beats_per_measure = beats;
         self
@@ -88,60 +92,70 @@ impl SnapGrid {
 
     /// Set subdivision (lines per beat)
     /// E.g., 4 = 16th notes, 2 = 8th notes
+    #[must_use]
     pub fn subdivision(mut self, subdivision: u32) -> Self {
         self.subdivision = subdivision.max(1);
         self
     }
 
     /// Show or hide beat lines
+    #[must_use]
     pub fn show_beats(mut self, show: bool) -> Self {
         self.show_beats = show;
         self
     }
 
     /// Show or hide measure lines (downbeats)
+    #[must_use]
     pub fn show_measures(mut self, show: bool) -> Self {
         self.show_measures = show;
         self
     }
 
     /// Show or hide subdivision lines
+    #[must_use]
     pub fn show_subdivisions(mut self, show: bool) -> Self {
         self.show_subdivisions = show;
         self
     }
 
     /// Set custom color for beat lines
+    #[must_use]
     pub fn beat_color(mut self, color: Color32) -> Self {
         self.beat_color = Some(color);
         self
     }
 
     /// Set custom color for measure lines
+    #[must_use]
     pub fn measure_color(mut self, color: Color32) -> Self {
         self.measure_color = Some(color);
         self
     }
 
     /// Set custom color for subdivision lines
+    #[must_use]
     pub fn subdivision_color(mut self, color: Color32) -> Self {
         self.subdivision_color = Some(color);
         self
     }
 
     /// Set opacity for beat lines (0.0 to 1.0)
+    #[must_use]
     pub fn beat_opacity(mut self, opacity: f32) -> Self {
         self.beat_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Set opacity for measure lines (0.0 to 1.0)
+    #[must_use]
     pub fn measure_opacity(mut self, opacity: f32) -> Self {
         self.measure_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Set opacity for subdivision lines (0.0 to 1.0)
+    #[must_use]
     pub fn subdivision_opacity(mut self, opacity: f32) -> Self {
         self.subdivision_opacity = opacity.clamp(0.0, 1.0);
         self
@@ -226,8 +240,8 @@ impl SnapGrid {
     /// Show the snap grid as an overlay (no space allocation)
     ///
     /// Use this when rendering the grid in a separate layer over other content.
-    /// The parent should set up max_rect with scroll offset and clip_rect for visible area.
-    /// Grid lines are calculated from max_rect.min.x and clipped to clip_rect.
+    /// The parent should set up `max_rect` with scroll offset and `clip_rect` for visible area.
+    /// Grid lines are calculated from `max_rect.min.x` and clipped to `clip_rect`.
     pub fn show_overlay(self, ui: &mut Ui) -> SnapGridResponse {
         let theme = ui.ctx().armas_theme();
 

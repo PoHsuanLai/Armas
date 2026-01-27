@@ -55,35 +55,35 @@ impl Typewriter {
     }
 
     /// Set typing speed (characters per second)
-    #[must_use] 
+    #[must_use]
     pub const fn speed(mut self, speed: f32) -> Self {
         self.speed = speed.max(0.1);
         self
     }
 
     /// Enable/disable cursor
-    #[must_use] 
+    #[must_use]
     pub const fn cursor(mut self, enabled: bool) -> Self {
         self.cursor_enabled = enabled;
         self
     }
 
     /// Set cursor blink speed (blinks per second)
-    #[must_use] 
+    #[must_use]
     pub const fn cursor_blink_speed(mut self, speed: f32) -> Self {
         self.cursor_blink_speed = speed.max(0.1);
         self
     }
 
     /// Enable looping
-    #[must_use] 
+    #[must_use]
     pub const fn loop_mode(mut self, enabled: bool) -> Self {
         self.loop_mode = enabled;
         self
     }
 
     /// Set delay before looping (seconds)
-    #[must_use] 
+    #[must_use]
     pub const fn loop_delay(mut self, delay: f32) -> Self {
         self.delay_before_loop = delay.max(0.0);
         self
@@ -209,21 +209,21 @@ impl WordTypewriter {
     }
 
     /// Set typing speed (words per second)
-    #[must_use] 
+    #[must_use]
     pub const fn speed(mut self, speed: f32) -> Self {
         self.speed = speed.max(0.1);
         self
     }
 
     /// Enable looping
-    #[must_use] 
+    #[must_use]
     pub const fn loop_mode(mut self, enabled: bool) -> Self {
         self.loop_mode = enabled;
         self
     }
 
     /// Set delay before looping (seconds)
-    #[must_use] 
+    #[must_use]
     pub const fn loop_delay(mut self, delay: f32) -> Self {
         self.delay_before_loop = delay.max(0.0);
         self

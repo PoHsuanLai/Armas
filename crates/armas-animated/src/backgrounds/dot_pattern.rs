@@ -32,7 +32,7 @@ impl Default for DotPattern {
 
 impl DotPattern {
     /// Create a new dot pattern with default settings
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             spacing: 20.0,
@@ -46,49 +46,49 @@ impl DotPattern {
     }
 
     /// Set the width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set the height
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.height = Some(height);
         self
     }
 
     /// Set dot spacing
-    #[must_use] 
+    #[must_use]
     pub const fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing.max(1.0);
         self
     }
 
     /// Set dot radius
-    #[must_use] 
+    #[must_use]
     pub const fn dot_radius(mut self, radius: f32) -> Self {
         self.dot_radius = radius.max(0.5);
         self
     }
 
     /// Set dot color
-    #[must_use] 
+    #[must_use]
     pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Enable fade effect at edges (0.0 to 1.0)
-    #[must_use] 
+    #[must_use]
     pub const fn fade(mut self, fade: f32) -> Self {
         self.fade_distance = fade.clamp(0.0, 1.0);
         self
     }
 
     /// Enable glow effect
-    #[must_use] 
+    #[must_use]
     pub const fn glow(mut self, enabled: bool) -> Self {
         self.glow = enabled;
         self

@@ -411,7 +411,7 @@ impl DatePicker {
                                         egui::RichText::new(format!(
                                             "{} {}",
                                             Date::new(viewing_year, viewing_month, 1)
-                                                .unwrap()
+                                                .expect("First day of month should always be valid")
                                                 .month_name(),
                                             viewing_year
                                         ))
@@ -471,7 +471,8 @@ impl DatePicker {
                         });
 
                         // Calendar grid
-                        let first_day = Date::new(viewing_year, viewing_month, 1).unwrap();
+                        let first_day = Date::new(viewing_year, viewing_month, 1)
+                            .expect("First day of month should always be valid");
                         let first_weekday = first_day.day_of_week();
                         let days_in_month = Date::days_in_month(viewing_year, viewing_month);
 
@@ -514,7 +515,8 @@ impl DatePicker {
                                             (day, false, next_year, next_month_num)
                                         };
 
-                                    let date = Date::new(actual_year, actual_month, day).unwrap();
+                                    let date = Date::new(actual_year, actual_month, day)
+                                        .expect("Calendar day should be valid");
                                     let is_today = date == today;
                                     let is_selected = *selected_date == Some(date);
 

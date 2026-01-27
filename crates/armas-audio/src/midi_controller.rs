@@ -62,7 +62,7 @@ pub struct MidiControllerState {
     pub xy_y: f32,
     /// Active piano keys (note -> velocity)
     pub active_notes: HashMap<u8, u8>,
-    /// Drum pad states (note -> PadState)
+    /// Drum pad states (note -> `PadState`)
     pub drum_pads: HashMap<u8, PadState>,
     /// Step sequencer pattern
     pub sequencer_steps: Vec<bool>,
@@ -156,6 +156,7 @@ impl<'a> MidiController<'a> {
     }
 
     /// Set controller layout
+    #[must_use]
     pub fn layout(mut self, layout: ControllerLayout) -> Self {
         self.layout = layout;
         // Adjust sections based on layout
@@ -180,12 +181,14 @@ impl<'a> MidiController<'a> {
     }
 
     /// Set visible sections
+    #[must_use]
     pub fn sections(mut self, sections: ControllerSections) -> Self {
         self.sections = sections;
         self
     }
 
     /// Set piano configuration
+    #[must_use]
     pub fn piano(mut self, octaves: u8, start_octave: i32) -> Self {
         self.piano_octaves = octaves;
         self.piano_start_octave = start_octave;
@@ -193,6 +196,7 @@ impl<'a> MidiController<'a> {
     }
 
     /// Set drum pad grid size
+    #[must_use]
     pub fn drum_pads(mut self, rows: usize, cols: usize) -> Self {
         self.drum_pad_rows = rows;
         self.drum_pad_cols = cols;
@@ -200,18 +204,21 @@ impl<'a> MidiController<'a> {
     }
 
     /// Set sequencer step count
+    #[must_use]
     pub fn sequencer_steps(mut self, steps: usize) -> Self {
         self.sequencer_steps = steps;
         self
     }
 
     /// Set visual variant for wheels
+    #[must_use]
     pub fn wheel_variant(mut self, variant: WheelVariant) -> Self {
         self.wheel_variant = variant;
         self
     }
 
     /// Set visual variant for pads
+    #[must_use]
     pub fn pad_variant(mut self, variant: PadVariant) -> Self {
         self.pad_variant = variant;
         self
@@ -228,7 +235,7 @@ impl<'a> MidiController<'a> {
 
         let card_response = Card::new()
             .variant(CardVariant::Filled)
-            .show(ui, &theme, |ui| {
+            .show(ui, theme, |ui| {
                 // Top controls section (wheels, XY pad, drum pads)
                 if self.sections.show_wheels
                     || self.sections.show_xy_pad
@@ -252,7 +259,7 @@ impl<'a> MidiController<'a> {
                                         .label("Mod")
                                         .height(180.0)
                                         .id("midi_controller_mod_wheel")
-                                        .show(ui, &theme);
+                                        .show(ui, theme);
                                     mod_wheel_changed = mod_response.changed();
 
                                     let pitch_response = ModWheel::new(&mut self.state.pitch_wheel)
@@ -261,7 +268,7 @@ impl<'a> MidiController<'a> {
                                         .label("Pitch")
                                         .height(180.0)
                                         .id("midi_controller_pitch_wheel")
-                                        .show(ui, &theme);
+                                        .show(ui, theme);
                                     pitch_wheel_changed = pitch_response.changed();
                                 });
                             });
@@ -280,7 +287,7 @@ impl<'a> MidiController<'a> {
                                         .x_label("X")
                                         .y_label("Y")
                                         .id("midi_controller_xy_pad")
-                                        .show(ui, &theme);
+                                        .show(ui, theme);
                                 xy_pad_changed = xy_response.changed;
                             });
                         }
@@ -354,7 +361,7 @@ impl<'a> MidiController<'a> {
                             .step_size(theme.spacing.xl, theme.spacing.xl)
                             .gap(theme.spacing.xs) // Tighter gap
                             .show_step_numbers(true)
-                            .show(ui, &theme);
+                            .show(ui, theme);
 
                         sequencer_changed = seq_response.changed;
                     });
@@ -379,7 +386,7 @@ impl<'a> MidiController<'a> {
                             .white_key_height(100.0) // Slightly shorter
                             .orientation(PianoOrientation::Horizontal)
                             .pressed_keys(pressed_keys)
-                            .show(ui, &theme);
+                            .show(ui, theme);
 
                         // Update active notes state
                         for note in &piano_response_inner.clicked_keys {

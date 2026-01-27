@@ -29,7 +29,7 @@ pub enum WheelVariant {
     Elevated,
 }
 
-/// Internal drag state for ModWheel
+/// Internal drag state for `ModWheel`
 #[derive(Clone)]
 struct ModWheelDragState {
     drag: VelocityDrag,
@@ -104,6 +104,7 @@ impl<'a> ModWheel<'a> {
     }
 
     /// Set wheel type
+    #[must_use]
     pub fn wheel_type(mut self, wheel_type: WheelType) -> Self {
         self.wheel_type = wheel_type;
         // Show center line by default for pitch bend
@@ -114,18 +115,21 @@ impl<'a> ModWheel<'a> {
     }
 
     /// Set visual variant
+    #[must_use]
     pub fn variant(mut self, variant: WheelVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set width
+    #[must_use]
     pub fn width(mut self, width: f32) -> Self {
         self.width = width.max(20.0);
         self
     }
 
     /// Set height
+    #[must_use]
     pub fn height(mut self, height: f32) -> Self {
         self.height = height.max(100.0);
         self
@@ -138,18 +142,21 @@ impl<'a> ModWheel<'a> {
     }
 
     /// Show numeric value
+    #[must_use]
     pub fn show_value(mut self, show: bool) -> Self {
         self.show_value = show;
         self
     }
 
     /// Show center line (for pitch bend)
+    #[must_use]
     pub fn show_center_line(mut self, show: bool) -> Self {
         self.show_center_line = show;
         self
     }
 
     /// Set glow intensity
+    #[must_use]
     pub fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
@@ -159,6 +166,7 @@ impl<'a> ModWheel<'a> {
     ///
     /// When enabled, holding Ctrl/Cmd while dragging provides fine control
     /// where faster mouse movement creates larger value changes.
+    #[must_use]
     pub fn velocity_mode(mut self, enabled: bool) -> Self {
         self.velocity_mode = enabled;
         self
@@ -168,6 +176,7 @@ impl<'a> ModWheel<'a> {
     ///
     /// Higher values make the wheel more responsive to mouse speed.
     /// Default is 1.0.
+    #[must_use]
     pub fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
         self.velocity_sensitivity = sensitivity.max(0.1);
         self
@@ -176,6 +185,7 @@ impl<'a> ModWheel<'a> {
     /// Set default value for double-click reset
     ///
     /// When set, double-clicking the wheel resets it to this value.
+    #[must_use]
     pub fn default_value(mut self, value: f32) -> Self {
         self.default_value = Some(value);
         self
@@ -273,13 +283,13 @@ impl<'a> ModWheel<'a> {
             // Draw based on variant
             match self.variant {
                 WheelVariant::Filled => {
-                    self.draw_filled(painter, &theme, rect, corner_radius);
+                    self.draw_filled(painter, theme, rect, corner_radius);
                 }
                 WheelVariant::Outlined => {
-                    self.draw_outlined(painter, &theme, rect, corner_radius);
+                    self.draw_outlined(painter, theme, rect, corner_radius);
                 }
                 WheelVariant::Elevated => {
-                    self.draw_elevated(painter, &theme, rect, corner_radius);
+                    self.draw_elevated(painter, theme, rect, corner_radius);
                 }
             }
 
@@ -306,7 +316,7 @@ impl<'a> ModWheel<'a> {
             // Draw realistic wheel handle
             self.draw_wheel_handle(
                 painter,
-                &theme,
+                theme,
                 handle_rect,
                 response.dragged() || response.is_pointer_button_down_on(),
             );

@@ -328,7 +328,7 @@ impl<'a> Card<'a> {
 
         CardResponse {
             response,
-            inner: content_result.unwrap(),
+            inner: content_result.expect("content should be set during frame render"),
         }
     }
 }

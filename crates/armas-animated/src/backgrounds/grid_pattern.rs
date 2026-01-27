@@ -37,7 +37,7 @@ impl Default for GridPattern {
 
 impl GridPattern {
     /// Create a new grid pattern with default settings
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             spacing: 50.0,
@@ -53,35 +53,35 @@ impl GridPattern {
     }
 
     /// Set the width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set the height
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.height = Some(height);
         self
     }
 
     /// Set the grid spacing
-    #[must_use] 
+    #[must_use]
     pub const fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
         self
     }
 
     /// Set the grid line color
-    #[must_use] 
+    #[must_use]
     pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Enable dots at intersections
-    #[must_use] 
+    #[must_use]
     pub const fn dots(mut self, color: Color32, radius: f32) -> Self {
         self.dot_color = Some(color);
         self.dot_radius = radius;
@@ -89,21 +89,21 @@ impl GridPattern {
     }
 
     /// Set fade distance (0.0 to 1.0)
-    #[must_use] 
+    #[must_use]
     pub const fn fade(mut self, fade: f32) -> Self {
         self.fade_distance = fade.clamp(0.0, 1.0);
         self
     }
 
     /// Enable perspective effect (3D-like grid)
-    #[must_use] 
+    #[must_use]
     pub const fn perspective(mut self, enabled: bool) -> Self {
         self.perspective = enabled;
         self
     }
 
     /// Set line thickness
-    #[must_use] 
+    #[must_use]
     pub const fn thickness(mut self, thickness: f32) -> Self {
         self.thickness = thickness;
         self

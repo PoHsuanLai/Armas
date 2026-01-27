@@ -43,6 +43,15 @@ enum CommandItem {
     Separator,
 }
 
+/// Parameters for drawing a command palette item
+struct ItemDrawParams<'a> {
+    id: &'a str,
+    label: &'a str,
+    icon: Option<&'a str>,
+    shortcut: Option<&'a str>,
+    is_selected: bool,
+}
+
 /// Builder for configuring individual commands
 pub struct CommandItemBuilder<'a> {
     items: &'a mut Vec<CommandItem>,
@@ -487,11 +496,13 @@ impl Command {
                                         let result = self.draw_item(
                                             ui,
                                             theme,
-                                            id,
-                                            label,
-                                            icon.as_deref(),
-                                            shortcut.as_deref(),
-                                            is_selected,
+                                            ItemDrawParams {
+                                                id,
+                                                label,
+                                                icon: icon.as_deref(),
+                                                shortcut: shortcut.as_deref(),
+                                                is_selected,
+                                            },
                                         );
 
                                         if let Some(clicked_id) = result.0 {
@@ -558,12 +569,13 @@ impl Command {
         &self,
         ui: &mut Ui,
         theme: &Theme,
-        id: &str,
-        label: &str,
-        icon: Option<&str>,
-        shortcut: Option<&str>,
-        is_selected: bool,
+        params: ItemDrawParams,
     ) -> (Option<String>, bool) {
+        let id = params.id;
+        let label = params.label;
+        let icon = params.icon;
+        let shortcut = params.shortcut;
+        let is_selected = params.is_selected;
         let available_width = ui.available_width() - LIST_PADDING;
         let (rect, response) =
             ui.allocate_exact_size(vec2(available_width, ITEM_HEIGHT), Sense::click());

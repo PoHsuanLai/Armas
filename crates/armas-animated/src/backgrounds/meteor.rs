@@ -118,7 +118,7 @@ pub struct MeteorShower {
 
 impl MeteorShower {
     /// Create a new meteor shower with theme-based defaults
-    #[must_use] 
+    #[must_use]
     pub fn new(width: f32, height: f32, theme: &Theme) -> Self {
         Self {
             id: egui::Id::new("meteor_default"),
@@ -141,28 +141,28 @@ impl MeteorShower {
     }
 
     /// Set the spawn rate (meteors per second)
-    #[must_use] 
+    #[must_use]
     pub fn spawn_rate(mut self, rate: f32) -> Self {
         self.spawn_rate = 1.0 / rate;
         self
     }
 
     /// Set the angle in radians (0 = right, PI/2 = down)
-    #[must_use] 
+    #[must_use]
     pub const fn angle(mut self, angle: f32) -> Self {
         self.angle = angle;
         self
     }
 
     /// Set the meteor color
-    #[must_use] 
+    #[must_use]
     pub const fn color(mut self, color: Color32) -> Self {
         self.color = color;
         self
     }
 
     /// Set speed range
-    #[must_use] 
+    #[must_use]
     pub const fn speed_range(mut self, min: f32, max: f32) -> Self {
         self.speed_min = min;
         self.speed_max = max;

@@ -37,7 +37,7 @@ pub struct FlipWords {
 
 impl FlipWords {
     /// Create a new flip words component
-    #[must_use] 
+    #[must_use]
     pub fn new(words: Vec<impl Into<String>>) -> Self {
         // Note: color will be set from theme in show() if not overridden
         Self {
@@ -52,35 +52,35 @@ impl FlipWords {
     }
 
     /// Set the duration each word is displayed (in seconds)
-    #[must_use] 
+    #[must_use]
     pub const fn duration(mut self, seconds: f32) -> Self {
         self.duration = seconds.max(0.5);
         self
     }
 
     /// Set the flip style
-    #[must_use] 
+    #[must_use]
     pub const fn style(mut self, style: FlipStyle) -> Self {
         self.style = style;
         self
     }
 
     /// Set font size
-    #[must_use] 
+    #[must_use]
     pub const fn font_size(mut self, size: f32) -> Self {
         self.font_size = size;
         self
     }
 
     /// Set text color
-    #[must_use] 
+    #[must_use]
     pub const fn color(mut self, color: Color32) -> Self {
         self.color = color;
         self
     }
 
     /// Set highlight color for the active word
-    #[must_use] 
+    #[must_use]
     pub const fn highlight(mut self, color: Color32) -> Self {
         self.highlight_color = Some(color);
         self

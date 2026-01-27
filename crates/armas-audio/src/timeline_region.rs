@@ -19,29 +19,30 @@ pub enum RegionVariant {
 
 impl RegionVariant {
     /// Get default color for the variant
+    #[must_use]
     pub fn default_color(&self, theme: &Theme) -> Color32 {
         match self {
-            RegionVariant::Selection => Color32::from_rgb(150, 150, 150), // Neutral gray
-            RegionVariant::Loop => theme.secondary(),
-            RegionVariant::Punch => Color32::from_rgb(220, 50, 50), // Recording red
+            Self::Selection => Color32::from_rgb(150, 150, 150), // Neutral gray
+            Self::Loop => theme.secondary(),
+            Self::Punch => Color32::from_rgb(220, 50, 50), // Recording red
         }
     }
 
     /// Get default height for the variant
+    #[must_use]
     pub fn default_height(&self) -> f32 {
         match self {
-            RegionVariant::Selection => 60.0,
-            RegionVariant::Loop => 50.0,
-            RegionVariant::Punch => 70.0,
+            Self::Selection => 60.0,
+            Self::Loop => 50.0,
+            Self::Punch => 70.0,
         }
     }
 
     /// Get region opacity
+    #[must_use]
     pub fn region_opacity(&self) -> u8 {
         match self {
-            RegionVariant::Selection => 80,
-            RegionVariant::Loop => 80,
-            RegionVariant::Punch => 80,
+            Self::Selection | Self::Loop | Self::Punch => 80,
         }
     }
 }
@@ -136,6 +137,7 @@ impl<'a> TimelineRegion<'a> {
     }
 
     /// Set the region variant
+    #[must_use]
     pub fn variant(mut self, variant: RegionVariant) -> Self {
         self.variant = variant;
         self
@@ -148,72 +150,84 @@ impl<'a> TimelineRegion<'a> {
     }
 
     /// Set pixels per beat (must match Timeline)
+    #[must_use]
     pub fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width.max(1.0);
         self
     }
 
     /// Set number of measures
+    #[must_use]
     pub fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set beats per measure
+    #[must_use]
     pub fn beats_per_measure(mut self, beats: u32) -> Self {
         self.beats_per_measure = beats;
         self
     }
 
     /// Set height of the marker component
+    #[must_use]
     pub fn height(mut self, height: f32) -> Self {
         self.height = Some(height.max(20.0));
         self
     }
 
     /// Enable or disable the region
+    #[must_use]
     pub fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
     /// Enable snap to grid
+    #[must_use]
     pub fn snap_to_grid(mut self, snap: bool) -> Self {
         self.snap_to_grid = snap;
         self
     }
 
     /// Set grid division for snapping (e.g., 1.0 = whole beats, 0.25 = 16th notes)
+    #[must_use]
     pub fn grid_division(mut self, division: f32) -> Self {
         self.grid_division = division.max(0.0625);
         self
     }
 
     /// Set custom color for the region
+    #[must_use]
     pub fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set handle width
+    #[must_use]
     pub fn handle_width(mut self, width: f32) -> Self {
         self.handle_width = width.max(4.0);
         self
     }
 
     /// Show or hide time labels on handles
+    #[must_use]
     pub fn show_labels(mut self, show: bool) -> Self {
         self.show_labels = show;
         self
     }
 
     /// Set clip rect for rendering
+    #[must_use]
     pub fn clip_rect(mut self, clip_rect: Rect) -> Self {
         self.clip_rect = Some(clip_rect);
         self
     }
 
     /// Set vertical range as percentages (0.0 to 1.0)
+    #[must_use]
     pub fn vertical_range(mut self, top_percent: f32, bottom_percent: f32) -> Self {
         self.vertical_range = (top_percent.clamp(0.0, 1.0), bottom_percent.clamp(0.0, 1.0));
         self
@@ -245,7 +259,7 @@ impl<'a> TimelineRegion<'a> {
         if ui.is_rect_visible(rect) {
             let region_color = self
                 .color
-                .unwrap_or_else(|| self.variant.default_color(&theme));
+                .unwrap_or_else(|| self.variant.default_color(theme));
             let painter = self.get_painter(ui);
             let (start_x, end_x) = self.calculate_handle_positions(&rect, timeline_width);
 
@@ -255,7 +269,7 @@ impl<'a> TimelineRegion<'a> {
             interaction.start_changed = self.draw_and_interact_handle(
                 ui,
                 &painter,
-                &theme,
+                theme,
                 &rect,
                 actual_height,
                 start_x,
@@ -266,7 +280,7 @@ impl<'a> TimelineRegion<'a> {
             interaction.end_changed = self.draw_and_interact_handle(
                 ui,
                 &painter,
-                &theme,
+                theme,
                 &rect,
                 actual_height,
                 end_x,
@@ -274,7 +288,7 @@ impl<'a> TimelineRegion<'a> {
                 false,
             );
 
-            self.draw_labels(&painter, &theme, &rect, start_x, end_x);
+            self.draw_labels(&painter, theme, &rect, start_x, end_x);
         }
 
         self.save_state(ui);

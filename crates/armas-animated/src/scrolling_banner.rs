@@ -63,7 +63,7 @@ impl Default for ScrollingBanner {
 
 impl ScrollingBanner {
     /// Create a new scrolling banner with default settings
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             speed: 50.0,
@@ -77,42 +77,42 @@ impl ScrollingBanner {
     }
 
     /// Set the scroll speed in pixels per second
-    #[must_use] 
+    #[must_use]
     pub const fn speed(mut self, speed: f32) -> Self {
         self.speed = speed;
         self
     }
 
     /// Set the scroll direction
-    #[must_use] 
+    #[must_use]
     pub const fn direction(mut self, direction: ScrollDirection) -> Self {
         self.direction = direction;
         self
     }
 
     /// Set the gap between repeated content
-    #[must_use] 
+    #[must_use]
     pub const fn gap(mut self, gap: f32) -> Self {
         self.gap = gap;
         self
     }
 
     /// Enable or disable pause on hover
-    #[must_use] 
+    #[must_use]
     pub const fn pause_on_hover(mut self, pause: bool) -> Self {
         self.pause_on_hover = pause;
         self
     }
 
     /// Enable or disable fade effect at edges
-    #[must_use] 
+    #[must_use]
     pub const fn show_fade(mut self, show: bool) -> Self {
         self.show_fade = show;
         self
     }
 
     /// Set the fade width
-    #[must_use] 
+    #[must_use]
     pub const fn fade_width(mut self, width: f32) -> Self {
         self.fade_width = width;
         self

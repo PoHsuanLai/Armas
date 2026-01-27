@@ -114,6 +114,7 @@ pub struct AudioMeter {
 
 impl AudioMeter {
     /// Create a new audio meter with default green-to-red gradient
+    #[must_use]
     pub fn new(level: f32) -> Self {
         let clamped_level = level.clamp(0.0, 1.0);
         Self {
@@ -138,30 +139,35 @@ impl AudioMeter {
     }
 
     /// Set meter width
+    #[must_use]
     pub fn width(mut self, width: f32) -> Self {
         self.width = width.max(10.0);
         self
     }
 
     /// Set meter height
+    #[must_use]
     pub fn height(mut self, height: f32) -> Self {
         self.height = height.max(20.0);
         self
     }
 
     /// Set visual style
+    #[must_use]
     pub fn style(mut self, style: MeterStyle) -> Self {
         self.style = style;
         self
     }
 
     /// Use a custom gradient for the meter
+    #[must_use]
     pub fn gradient(mut self, gradient: Gradient) -> Self {
         self.gradient = Some(gradient);
         self
     }
 
     /// Set color range (will be interpolated smoothly)
+    #[must_use]
     pub fn color_range(mut self, min: Color32, max: Color32) -> Self {
         self.min_color = min;
         self.max_color = max;
@@ -170,6 +176,7 @@ impl AudioMeter {
     }
 
     /// Preset: Traditional VU meter colors (green -> yellow -> red)
+    #[must_use]
     pub fn vu_colors(mut self, theme: &armas::Theme) -> Self {
         self.gradient = Some(Gradient::new(vec![
             ColorStop::new(0.0, theme.chart_2()),
@@ -180,6 +187,7 @@ impl AudioMeter {
     }
 
     /// Preset: Monochrome with opacity gradient
+    #[must_use]
     pub fn monochrome(mut self, color: Color32) -> Self {
         self.min_color = with_alpha(color, 50);
         self.max_color = color;
@@ -188,48 +196,56 @@ impl AudioMeter {
     }
 
     /// Set peak hold indicator color
+    #[must_use]
     pub fn peak_color(mut self, color: Color32) -> Self {
         self.peak_color = Some(color);
         self
     }
 
     /// Set scale position
+    #[must_use]
     pub fn scale_position(mut self, position: ScalePosition) -> Self {
         self.scale_position = position;
         self
     }
 
     /// Show scale on the right (convenience method)
+    #[must_use]
     pub fn show_scale(mut self) -> Self {
         self.scale_position = ScalePosition::Right;
         self
     }
 
     /// Show scale on the left
+    #[must_use]
     pub fn scale_left(mut self) -> Self {
         self.scale_position = ScalePosition::Left;
         self
     }
 
     /// Show scale on the right
+    #[must_use]
     pub fn scale_right(mut self) -> Self {
         self.scale_position = ScalePosition::Right;
         self
     }
 
     /// Set corner radius for background
+    #[must_use]
     pub fn corner_radius(mut self, radius: f32) -> Self {
         self.corner_radius = radius.max(0.0);
         self
     }
 
     /// Set background opacity (0.0 to 1.0)
+    #[must_use]
     pub fn background_opacity(mut self, opacity: f32) -> Self {
         self.background_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Enable/disable glassmorphic background
+    #[must_use]
     pub fn glassmorphic(mut self, enabled: bool) -> Self {
         self.glassmorphic = enabled;
         self
@@ -237,6 +253,7 @@ impl AudioMeter {
 
     /// Set animation speed (stiffness parameter, higher = faster response)
     /// Default is 250.0, try 150.0 for slower, 400.0 for very fast
+    #[must_use]
     pub fn animation_speed(mut self, stiffness: f32) -> Self {
         self.animation_stiffness = stiffness.max(10.0);
         self
@@ -244,6 +261,7 @@ impl AudioMeter {
 
     /// Set animation damping (higher = less oscillation/bounce)
     /// Default is 18.0, try 12.0 for more responsive, 25.0 for smoother
+    #[must_use]
     pub fn animation_damping(mut self, damping: f32) -> Self {
         self.animation_damping = damping.max(1.0);
         self
@@ -258,10 +276,10 @@ impl AudioMeter {
     /// Show the meter and return the response
     pub fn show(mut self, ui: &mut Ui, theme: &armas::Theme) -> MeterResponse {
         // Width only controls the meter tube, scale is additional space
-        let scale_width = if self.scale_position != ScalePosition::None {
-            14.0 // Minimal scale width - just enough for text
-        } else {
+        let scale_width = if self.scale_position == ScalePosition::None {
             0.0
+        } else {
+            14.0 // Minimal scale width - just enough for text
         };
 
         // Total allocation = meter width + scale width
@@ -534,8 +552,8 @@ impl AudioMeter {
     }
 
     /// Draw dB scale markings
-    /// full_rect: the entire allocated space including scale area
-    /// meter_rect: just the meter bar area (for positioning scale relative to meter)
+    /// `full_rect`: the entire allocated space including scale area
+    /// `meter_rect`: just the meter bar area (for positioning scale relative to meter)
     fn draw_scale(&self, ui: &mut Ui, full_rect: Rect, meter_rect: Rect, theme: &armas::Theme) {
         let painter = ui.painter();
         let text_color = theme.muted_foreground();

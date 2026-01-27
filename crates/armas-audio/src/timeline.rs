@@ -9,6 +9,9 @@ use crate::{
 use armas::theme::Theme;
 use egui::{pos2, vec2, Color32, Rect, Response, Sense, Ui, Vec2};
 
+// Track ID calculation constants
+const TRACK_ID_MULTIPLIER: usize = 1000; // Space between parent and child track IDs
+
 /// Data for a timeline marker
 #[derive(Debug, Clone)]
 pub struct MarkerData {
@@ -31,6 +34,7 @@ impl MarkerData {
     }
 
     /// Create a tempo marker
+    #[must_use]
     pub fn tempo(position: f32, bpm: f32) -> Self {
         Self {
             position,
@@ -40,6 +44,7 @@ impl MarkerData {
     }
 
     /// Create a time signature marker
+    #[must_use]
     pub fn time_signature(position: f32, numerator: u32, denominator: u32) -> Self {
         Self {
             position,
@@ -52,6 +57,7 @@ impl MarkerData {
     }
 
     /// Set custom color
+    #[must_use]
     pub fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
@@ -69,6 +75,7 @@ pub struct LoopRegionData {
 
 impl LoopRegionData {
     /// Create a new loop region
+    #[must_use]
     pub fn new(start: f32, end: f32) -> Self {
         Self { start, end }
     }
@@ -85,6 +92,7 @@ pub struct SelectionRangeData {
 
 impl SelectionRangeData {
     /// Create a new selection range
+    #[must_use]
     pub fn new(start: f32, end: f32) -> Self {
         Self { start, end }
     }
@@ -101,6 +109,7 @@ pub struct PunchRegionData {
 
 impl PunchRegionData {
     /// Create a new punch region
+    #[must_use]
     pub fn new(punch_in: f32, punch_out: f32) -> Self {
         Self {
             punch_in,
@@ -122,7 +131,7 @@ pub struct Track {
     pub regions: Vec<Region>,
     /// Is this a folder track?
     pub is_folder: bool,
-    /// Is this folder collapsed? (only applies if is_folder is true)
+    /// Is this folder collapsed? (only applies if `is_folder` is true)
     pub collapsed: bool,
     /// Child tracks (for folder tracks)
     pub children: Vec<Track>,
@@ -160,36 +169,42 @@ impl Track {
     }
 
     /// Add a region to the track
+    #[must_use]
     pub fn region(mut self, region: Region) -> Self {
         self.regions.push(region);
         self
     }
 
     /// Add multiple regions to the track
+    #[must_use]
     pub fn regions(mut self, regions: Vec<Region>) -> Self {
         self.regions = regions;
         self
     }
 
     /// Add a child track (for folder tracks)
-    pub fn child(mut self, child: Track) -> Self {
+    #[must_use]
+    pub fn child(mut self, child: Self) -> Self {
         self.children.push(child);
         self
     }
 
     /// Add multiple child tracks (for folder tracks)
-    pub fn children(mut self, children: Vec<Track>) -> Self {
+    #[must_use]
+    pub fn children(mut self, children: Vec<Self>) -> Self {
         self.children = children;
         self
     }
 
     /// Set collapsed state
+    #[must_use]
     pub fn collapsed(mut self, collapsed: bool) -> Self {
         self.collapsed = collapsed;
         self
     }
 
     /// Set selected state
+    #[must_use]
     pub fn selected(mut self, selected: bool) -> Self {
         self.selected = selected;
         self
@@ -203,17 +218,17 @@ pub struct TimelineResponse {
     pub response: Response,
     /// Track index that was clicked (if any)
     pub track_clicked: Option<usize>,
-    /// Track mute button clicked (track_idx)
+    /// Track mute button clicked (`track_idx`)
     pub track_mute_clicked: Option<usize>,
-    /// Track solo button clicked (track_idx)
+    /// Track solo button clicked (`track_idx`)
     pub track_solo_clicked: Option<usize>,
-    /// Track record arm button clicked (track_idx)
+    /// Track record arm button clicked (`track_idx`)
     pub track_arm_clicked: Option<usize>,
-    /// Track collapse/expand button clicked (track_idx)
+    /// Track collapse/expand button clicked (`track_idx`)
     pub track_collapse_clicked: Option<usize>,
-    /// Region that was clicked (track_idx, region_idx)
+    /// Region that was clicked (`track_idx`, `region_idx`)
     pub region_clicked: Option<(usize, usize)>,
-    /// Empty area clicked (track_idx, beat_position)
+    /// Empty area clicked (`track_idx`, `beat_position`)
     pub empty_clicked: Option<(usize, f32)>,
     /// Playhead was moved
     pub playhead_moved: bool,
@@ -286,9 +301,9 @@ pub struct Timeline<'a> {
     show_snap_grid: bool,
     /// Snap grid subdivision
     snap_grid_subdivision: u32,
-    /// Minimum zoom level (beat_width multiplier)
+    /// Minimum zoom level (`beat_width` multiplier)
     min_zoom: f32,
-    /// Maximum zoom level (beat_width multiplier)
+    /// Maximum zoom level (`beat_width` multiplier)
     max_zoom: f32,
     /// Auto-follow playhead during playback
     auto_follow_playhead: bool,
@@ -362,6 +377,7 @@ struct ScrollMomentumState {
 
 impl<'a> Timeline<'a> {
     /// Create a new timeline
+    #[must_use]
     pub fn new() -> Self {
         Self {
             id: None,
@@ -420,7 +436,7 @@ impl<'a> Timeline<'a> {
                 Self::build_flat_track_list(
                     &track.children,
                     path,
-                    track_idx * 1000 + 1,
+                    track_idx * TRACK_ID_MULTIPLIER + 1,
                     indent_level + 1,
                     Some(current_color),
                     out,
@@ -461,48 +477,56 @@ impl<'a> Timeline<'a> {
     }
 
     /// Set track header width
+    #[must_use]
     pub fn track_header_width(mut self, width: f32) -> Self {
         self.track_header_width = width;
         self
     }
 
     /// Set track height
+    #[must_use]
     pub fn track_height(mut self, height: f32) -> Self {
         self.track_height = height;
         self
     }
 
     /// Set pixels per beat (zoom level)
+    #[must_use]
     pub fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width;
         self
     }
 
     /// Set number of measures
+    #[must_use]
     pub fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set beats per measure
+    #[must_use]
     pub fn beats_per_measure(mut self, beats: u32) -> Self {
         self.beats_per_measure = beats;
         self
     }
 
     /// Set ruler height
+    #[must_use]
     pub fn ruler_height(mut self, height: f32) -> Self {
         self.ruler_height = height;
         self
     }
 
     /// Set whether to show playhead
+    #[must_use]
     pub fn show_playhead(mut self, show: bool) -> Self {
         self.show_playhead = show;
         self
     }
 
     /// Set playhead color
+    #[must_use]
     pub fn playhead_color(mut self, color: Color32) -> Self {
         self.playhead_color = Some(color);
         self
@@ -534,12 +558,14 @@ impl<'a> Timeline<'a> {
     }
 
     /// Show snap grid
+    #[must_use]
     pub fn show_snap_grid(mut self, show: bool) -> Self {
         self.show_snap_grid = show;
         self
     }
 
     /// Set snap grid subdivision (lines per beat)
+    #[must_use]
     pub fn snap_grid_subdivision(mut self, subdivision: u32) -> Self {
         self.snap_grid_subdivision = subdivision;
         self
@@ -553,14 +579,15 @@ impl<'a> Timeline<'a> {
     /// - Auto-scrolling to keep important content visible
     ///
     /// The timeline will smoothly scroll to center the specified beat position.
+    #[must_use]
     pub fn scroll_to_beat(mut self, beat: f32) -> Self {
         self.scroll_to_beat = Some(beat);
         self
     }
 
-    /// Set minimum zoom level (beat_width multiplier)
+    /// Set minimum zoom level (`beat_width` multiplier)
     ///
-    /// Default is 0.5x (50% of normal beat_width).
+    /// Default is 0.5x (50% of normal `beat_width`).
     /// This prevents zooming out too far.
     ///
     /// # Example
@@ -569,15 +596,17 @@ impl<'a> Timeline<'a> {
     ///     .min_zoom(0.25)  // Allow zooming to 1/4 size
     ///     .max_zoom(3.0)   // Allow zooming to 3x size
     /// ```
+    #[must_use]
     pub fn min_zoom(mut self, min: f32) -> Self {
         self.min_zoom = min.max(0.1);
         self
     }
 
-    /// Set maximum zoom level (beat_width multiplier)
+    /// Set maximum zoom level (`beat_width` multiplier)
     ///
-    /// Default is 2.0x (200% of normal beat_width).
+    /// Default is 2.0x (200% of normal `beat_width`).
     /// This prevents zooming in too far.
+    #[must_use]
     pub fn max_zoom(mut self, max: f32) -> Self {
         self.max_zoom = max.min(10.0);
         self
@@ -589,6 +618,7 @@ impl<'a> Timeline<'a> {
     /// visible within the specified margin during playback.
     ///
     /// Default is disabled. Use with `.auto_follow_margin()` to control behavior.
+    #[must_use]
     pub fn auto_follow_playhead(mut self, follow: bool) -> Self {
         self.auto_follow_playhead = follow;
         self
@@ -601,6 +631,7 @@ impl<'a> Timeline<'a> {
     /// - 0.25: Playhead at 25% from left (default)
     /// - 0.5: Playhead in center
     /// - 1.0: Playhead at right edge
+    #[must_use]
     pub fn auto_follow_margin(mut self, margin: f32) -> Self {
         self.auto_follow_margin = margin.clamp(0.0, 1.0);
         self
@@ -613,6 +644,7 @@ impl<'a> Timeline<'a> {
     /// Smaller values = lower CPU cost but may see content pop in.
     ///
     /// Default is 2.0 beats.
+    #[must_use]
     pub fn visible_render_margin(mut self, beats: f32) -> Self {
         self.visible_render_margin = beats.max(0.0);
         self
@@ -639,6 +671,7 @@ impl<'a> Timeline<'a> {
     /// mouse/trackpad, gradually slowing down with inertia.
     ///
     /// Default is enabled.
+    #[must_use]
     pub fn momentum_scrolling(mut self, enabled: bool) -> Self {
         self.momentum_scrolling = enabled;
         self
@@ -650,6 +683,7 @@ impl<'a> Timeline<'a> {
     /// - 3.0: Smooth, long glide
     /// - 5.0: Balanced (default)
     /// - 8.0: Quick stop
+    #[must_use]
     pub fn momentum_damping(mut self, damping: f64) -> Self {
         self.momentum_damping = damping.max(1.0);
         self
@@ -689,7 +723,7 @@ impl<'a> Timeline<'a> {
         }
     }
 
-    /// Apply scroll_to_beat and auto_follow_playhead adjustments
+    /// Apply `scroll_to_beat` and `auto_follow_playhead` adjustments
     fn apply_scroll_adjustments(
         &self,
         scroll_offset: &mut Vec2,
@@ -1368,7 +1402,7 @@ impl<'a> Timeline<'a> {
         playhead_response.changed()
     }
 
-    /// Build the final TimelineResponse
+    /// Build the final `TimelineResponse`
     fn build_response(
         response: Response,
         interactions: TimelineInteractions,
@@ -1593,7 +1627,7 @@ impl<'a> Timeline<'a> {
     }
 }
 
-impl<'a> Default for Timeline<'a> {
+impl Default for Timeline<'_> {
     fn default() -> Self {
         Self::new()
     }

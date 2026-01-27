@@ -474,7 +474,8 @@ impl Select {
 
                     if option.disabled {
                         self.show_disabled_option(ui, &option, theme, width);
-                    } else if let Some(value) = self.show_option(ui, &option, option_idx, theme, width)
+                    } else if let Some(value) =
+                        self.show_option(ui, &option, option_idx, theme, width)
                     {
                         *selected_value = Some(value);
                     }

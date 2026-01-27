@@ -22,6 +22,17 @@ struct ThreeValueSliderDragState {
     drag_start_value: f32,
 }
 
+/// Parameters for drawing thumbs
+struct ThumbDrawParams<'a> {
+    painter: &'a egui::Painter,
+    response: &'a Response,
+    track_rect: &'a Rect,
+    thumb_radius: f32,
+    drag_state: &'a ThreeValueSliderDragState,
+    hovered_thumb: Option<DragTarget>,
+    theme: &'a crate::Theme,
+}
+
 /// Style for the center (value) thumb
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub enum ValueThumbStyle {
@@ -487,16 +498,16 @@ impl ThreeValueSlider {
         );
 
         // Draw value thumb (center)
-        self.draw_value_thumb(
+        let params = ThumbDrawParams {
             painter,
             response,
             track_rect,
             thumb_radius,
-            value_x,
             drag_state,
             hovered_thumb,
             theme,
-        );
+        };
+        self.draw_value_thumb(&params, value_x);
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -550,48 +561,43 @@ impl ThreeValueSlider {
         }
     }
 
-    fn draw_value_thumb(
-        &self,
-        painter: &egui::Painter,
-        response: &Response,
-        track_rect: &Rect,
-        thumb_radius: f32,
-        value_x: f32,
-        drag_state: &ThreeValueSliderDragState,
-        hovered_thumb: Option<DragTarget>,
-        theme: &crate::Theme,
-    ) {
-        let value_center = pos2(value_x, track_rect.center().y);
-        let is_value_active = response.dragged() && drag_state.target == DragTarget::Value;
-        let is_value_hovered = hovered_thumb == Some(DragTarget::Value);
+    fn draw_value_thumb(&self, params: &ThumbDrawParams, value_x: f32) {
+        let value_center = pos2(value_x, params.track_rect.center().y);
+        let is_value_active =
+            params.response.dragged() && params.drag_state.target == DragTarget::Value;
+        let is_value_hovered = params.hovered_thumb == Some(DragTarget::Value);
         let value_color = if is_value_active {
-            theme.primary()
+            params.theme.primary()
         } else {
-            theme.foreground()
+            params.theme.foreground()
         };
 
         // Hover ring effect for value thumb (only when this thumb is hovered)
         if is_value_active || is_value_hovered {
-            let ring_color = theme.ring().gamma_multiply(0.5);
-            painter.circle_filled(value_center, thumb_radius + 4.0, ring_color);
+            let ring_color = params.theme.ring().gamma_multiply(0.5);
+            params
+                .painter
+                .circle_filled(value_center, params.thumb_radius + 4.0, ring_color);
         }
 
         match self.value_thumb_style {
             ValueThumbStyle::Circle => {
-                painter.circle_filled(
+                params.painter.circle_filled(
                     value_center + vec2(0.0, 1.0),
-                    thumb_radius,
+                    params.thumb_radius,
                     Color32::from_black_alpha(40),
                 );
-                painter.circle_filled(value_center, thumb_radius, value_color);
-                painter.circle_stroke(
+                params
+                    .painter
+                    .circle_filled(value_center, params.thumb_radius, value_color);
+                params.painter.circle_stroke(
                     value_center,
-                    thumb_radius,
-                    Stroke::new(1.0, theme.primary()),
+                    params.thumb_radius,
+                    Stroke::new(1.0, params.theme.primary()),
                 );
             }
             ValueThumbStyle::Diamond => {
-                let size = thumb_radius * 0.9;
+                let size = params.thumb_radius * 0.9;
                 let points = vec![
                     pos2(value_center.x, value_center.y - size),
                     pos2(value_center.x + size, value_center.y),
@@ -600,20 +606,20 @@ impl ThreeValueSlider {
                 ];
                 // Shadow
                 let shadow_points: Vec<_> = points.iter().map(|p| *p + vec2(0.0, 1.0)).collect();
-                painter.add(egui::Shape::convex_polygon(
+                params.painter.add(egui::Shape::convex_polygon(
                     shadow_points,
                     Color32::from_black_alpha(40),
                     Stroke::NONE,
                 ));
-                painter.add(egui::Shape::convex_polygon(
+                params.painter.add(egui::Shape::convex_polygon(
                     points,
                     value_color,
-                    Stroke::new(1.5, theme.card()),
+                    Stroke::new(1.5, params.theme.card()),
                 ));
             }
             ValueThumbStyle::Line => {
                 let line_height = self.height * 0.8;
-                painter.line_segment(
+                params.painter.line_segment(
                     [
                         pos2(value_center.x, value_center.y - line_height / 2.0),
                         pos2(value_center.x, value_center.y + line_height / 2.0),

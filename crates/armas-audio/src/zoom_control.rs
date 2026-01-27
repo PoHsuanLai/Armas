@@ -81,42 +81,49 @@ impl<'a> ZoomControl<'a> {
     }
 
     /// Set minimum zoom level
+    #[must_use]
     pub fn min_zoom(mut self, min: f32) -> Self {
         self.min_zoom = min.max(0.01);
         self
     }
 
     /// Set maximum zoom level
+    #[must_use]
     pub fn max_zoom(mut self, max: f32) -> Self {
         self.max_zoom = max;
         self
     }
 
     /// Show or hide the slider
+    #[must_use]
     pub fn show_slider(mut self, show: bool) -> Self {
         self.show_slider = show;
         self
     }
 
     /// Show or hide +/- buttons
+    #[must_use]
     pub fn show_buttons(mut self, show: bool) -> Self {
         self.show_buttons = show;
         self
     }
 
     /// Show or hide zoom level label
+    #[must_use]
     pub fn show_label(mut self, show: bool) -> Self {
         self.show_label = show;
         self
     }
 
     /// Set zoom step for buttons
+    #[must_use]
     pub fn button_step(mut self, step: f32) -> Self {
         self.button_step = step.max(0.01);
         self
     }
 
     /// Set slider width in pixels
+    #[must_use]
     pub fn slider_width(mut self, width: f32) -> Self {
         self.slider_width = width.max(50.0);
         self
@@ -151,18 +158,16 @@ impl<'a> ZoomControl<'a> {
                     }
 
                     // Zoom out button
-                    if self.show_buttons {
-                        if Button::new("−")
+                    if self.show_buttons
+                        && Button::new("−")
                             .variant(ButtonVariant::Secondary)
                             .min_width(28.0)
-                            .show(ui, &theme)
+                            .show(ui, theme)
                             .clicked()
-                        {
-                            *self.zoom_level =
-                                (*self.zoom_level - self.button_step).max(self.min_zoom);
-                            zoomed_out = true;
-                            changed = true;
-                        }
+                    {
+                        *self.zoom_level = (*self.zoom_level - self.button_step).max(self.min_zoom);
+                        zoomed_out = true;
+                        changed = true;
                     }
 
                     // Slider
@@ -179,18 +184,16 @@ impl<'a> ZoomControl<'a> {
                     }
 
                     // Zoom in button
-                    if self.show_buttons {
-                        if Button::new("+")
+                    if self.show_buttons
+                        && Button::new("+")
                             .variant(ButtonVariant::Secondary)
                             .min_width(28.0)
-                            .show(ui, &theme)
+                            .show(ui, theme)
                             .clicked()
-                        {
-                            *self.zoom_level =
-                                (*self.zoom_level + self.button_step).min(self.max_zoom);
-                            zoomed_in = true;
-                            changed = true;
-                        }
+                    {
+                        *self.zoom_level = (*self.zoom_level + self.button_step).min(self.max_zoom);
+                        zoomed_in = true;
+                        changed = true;
                     }
 
                     // Zoom level display
@@ -202,7 +205,7 @@ impl<'a> ZoomControl<'a> {
                     if Button::new("1:1")
                         .variant(ButtonVariant::Ghost)
                         .min_width(36.0)
-                        .show(ui, &theme)
+                        .show(ui, theme)
                         .clicked()
                     {
                         *self.zoom_level = 1.0;
@@ -214,7 +217,7 @@ impl<'a> ZoomControl<'a> {
                     if Button::new("Fit")
                         .variant(ButtonVariant::Ghost)
                         .min_width(36.0)
-                        .show(ui, &theme)
+                        .show(ui, theme)
                         .clicked()
                     {
                         *self.zoom_level = 1.0; // Placeholder - would calculate based on content

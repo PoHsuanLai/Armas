@@ -51,28 +51,28 @@ impl GradientText {
     }
 
     /// Enable gradient animation
-    #[must_use] 
+    #[must_use]
     pub const fn animated(mut self, enabled: bool) -> Self {
         self.animated = enabled;
         self
     }
 
     /// Set animation speed
-    #[must_use] 
+    #[must_use]
     pub const fn animation_speed(mut self, speed: f32) -> Self {
         self.animation_speed = speed;
         self
     }
 
     /// Set whether to apply gradient per character or smoothly
-    #[must_use] 
+    #[must_use]
     pub const fn per_character(mut self, enabled: bool) -> Self {
         self.per_character = enabled;
         self
     }
 
     /// Set custom font
-    #[must_use] 
+    #[must_use]
     pub fn font(mut self, font_id: FontId) -> Self {
         self.font_id = Some(font_id);
         self

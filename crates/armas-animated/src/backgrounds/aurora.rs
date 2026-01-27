@@ -103,7 +103,7 @@ pub struct AuroraBackground {
 
 impl AuroraBackground {
     /// Create a new aurora background with default settings
-    #[must_use] 
+    #[must_use]
     pub fn new(width: f32, height: f32) -> Self {
         Self {
             id: egui::Id::new("aurora_default"),
@@ -122,7 +122,7 @@ impl AuroraBackground {
     }
 
     /// Create aurora with cyberpunk color scheme
-    #[must_use] 
+    #[must_use]
     pub fn cyberpunk(width: f32, height: f32) -> Self {
         let mut aurora = Self::new(width, height);
 
@@ -162,7 +162,7 @@ impl AuroraBackground {
     }
 
     /// Create aurora with aurora borealis color scheme
-    #[must_use] 
+    #[must_use]
     pub fn borealis(width: f32, height: f32) -> Self {
         let mut aurora = Self::new(width, height);
 
@@ -202,7 +202,7 @@ impl AuroraBackground {
     }
 
     /// Create aurora with warm sunset colors
-    #[must_use] 
+    #[must_use]
     pub fn sunset(width: f32, height: f32) -> Self {
         let mut aurora = Self::new(width, height);
 
@@ -242,21 +242,21 @@ impl AuroraBackground {
     }
 
     /// Set the speed multiplier for all blobs
-    #[must_use] 
+    #[must_use]
     pub const fn speed(mut self, speed: f32) -> Self {
         self.speed_multiplier = speed;
         self
     }
 
     /// Set a time offset to desynchronize from other aurora instances
-    #[must_use] 
+    #[must_use]
     pub const fn time_offset(mut self, offset: f32) -> Self {
         self.time_offset = offset;
         self
     }
 
     /// Add a custom blob
-    #[must_use] 
+    #[must_use]
     pub fn add_blob(mut self, pos: Pos2, radius: f32, colors: Vec<Color32>) -> Self {
         self.blobs.push(AuroraBlob::new(pos, radius, colors));
         self

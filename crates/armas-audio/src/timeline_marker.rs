@@ -24,38 +24,41 @@ pub enum MarkerVariant {
 
 impl MarkerVariant {
     /// Get default color for the variant
+    #[must_use]
     pub fn default_color(&self, theme: &Theme) -> Color32 {
         match self {
-            MarkerVariant::Cue(_) => theme.primary(),
-            MarkerVariant::Tempo(_) => Color32::from_rgb(50, 200, 150), // Teal
-            MarkerVariant::TimeSignature { .. } => Color32::from_rgb(180, 100, 220), // Purple
+            Self::Cue(_) => theme.primary(),
+            Self::Tempo(_) => Color32::from_rgb(50, 200, 150), // Teal
+            Self::TimeSignature { .. } => Color32::from_rgb(180, 100, 220), // Purple
         }
     }
 
     /// Get badge text to display
+    #[must_use]
     pub fn badge_text(&self) -> String {
         match self {
-            MarkerVariant::Cue(label) => label.clone(),
-            MarkerVariant::Tempo(bpm) => format!("{:.0} BPM", bpm),
-            MarkerVariant::TimeSignature {
+            Self::Cue(label) => label.clone(),
+            Self::Tempo(bpm) => format!("{bpm:.0} BPM"),
+            Self::TimeSignature {
                 numerator,
                 denominator,
             } => {
-                format!("{}/{}", numerator, denominator)
+                format!("{numerator}/{denominator}")
             }
         }
     }
 
     /// Get tooltip text
+    #[must_use]
     pub fn tooltip_text(&self, position: f32) -> String {
         match self {
-            MarkerVariant::Cue(label) => format!("{} at {:.1} beats", label, position),
-            MarkerVariant::Tempo(bpm) => format!("{:.0} BPM at {:.1} beats", bpm, position),
-            MarkerVariant::TimeSignature {
+            Self::Cue(label) => format!("{label} at {position:.1} beats"),
+            Self::Tempo(bpm) => format!("{bpm:.0} BPM at {position:.1} beats"),
+            Self::TimeSignature {
                 numerator,
                 denominator,
             } => {
-                format!("{}/{} at {:.1} beats", numerator, denominator, position)
+                format!("{numerator}/{denominator} at {position:.1} beats")
             }
         }
     }
@@ -143,72 +146,84 @@ impl<'a> TimelineMarker<'a> {
     }
 
     /// Set pixels per beat
+    #[must_use]
     pub fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width.max(1.0);
         self
     }
 
     /// Set number of measures
+    #[must_use]
     pub fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set beats per measure
+    #[must_use]
     pub fn beats_per_measure(mut self, beats: u32) -> Self {
         self.beats_per_measure = beats;
         self
     }
 
     /// Set height
+    #[must_use]
     pub fn height(mut self, height: f32) -> Self {
         self.height = height.max(20.0);
         self
     }
 
     /// Enable or disable
+    #[must_use]
     pub fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
     /// Set draggable
+    #[must_use]
     pub fn draggable(mut self, draggable: bool) -> Self {
         self.draggable = draggable;
         self
     }
 
     /// Enable snap to grid
+    #[must_use]
     pub fn snap_to_grid(mut self, snap: bool) -> Self {
         self.snap_to_grid = snap;
         self
     }
 
     /// Set grid division for snapping
+    #[must_use]
     pub fn grid_division(mut self, division: f32) -> Self {
         self.grid_division = division.max(0.0625);
         self
     }
 
     /// Set custom color
+    #[must_use]
     pub fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Show or hide vertical line
+    #[must_use]
     pub fn show_line(mut self, show: bool) -> Self {
         self.show_line = show;
         self
     }
 
     /// Show or hide tooltip
+    #[must_use]
     pub fn show_tooltip(mut self, show: bool) -> Self {
         self.show_tooltip = show;
         self
     }
 
     /// Set vertical range as percentages
+    #[must_use]
     pub fn vertical_range(mut self, top_percent: f32, bottom_percent: f32) -> Self {
         self.vertical_range = (top_percent.clamp(0.0, 1.0), bottom_percent.clamp(0.0, 1.0));
         self
@@ -228,16 +243,9 @@ impl<'a> TimelineMarker<'a> {
         let (rect, actual_height) = self.calculate_rect(ui, timeline_width);
         let marker_color = self
             .color
-            .unwrap_or_else(|| self.variant.default_color(&theme));
+            .unwrap_or_else(|| self.variant.default_color(theme));
 
-        let mut interaction = MarkerInteraction {
-            position_changed: false,
-            variant_changed: false,
-            clicked: false,
-            hovered: false,
-        };
-
-        if ui.is_rect_visible(rect) {
+        let interaction = if ui.is_rect_visible(rect) {
             let x_pos = self.calculate_x_position(&rect, timeline_width);
             let painter = ui.painter().clone();
 
@@ -245,9 +253,15 @@ impl<'a> TimelineMarker<'a> {
                 self.draw_vertical_line(&painter, x_pos, &rect, actual_height, marker_color);
             }
 
-            interaction =
-                self.draw_and_interact_badge(ui, &painter, &theme, x_pos, &rect, marker_color);
-        }
+            self.draw_and_interact_badge(ui, &painter, theme, x_pos, &rect, marker_color)
+        } else {
+            MarkerInteraction {
+                position_changed: false,
+                variant_changed: false,
+                clicked: false,
+                hovered: false,
+            }
+        };
 
         self.save_state(ui);
 
@@ -338,8 +352,7 @@ impl<'a> TimelineMarker<'a> {
     ) -> MarkerInteraction {
         let badge_text = self.variant.badge_text();
         let font_id = egui::FontId::proportional(11.0);
-        let galley =
-            painter.layout_no_wrap(badge_text.clone(), font_id.clone(), theme.foreground());
+        let galley = painter.layout_no_wrap(badge_text, font_id, theme.foreground());
 
         let badge_width = galley.size().x + 12.0;
         let badge_height = 20.0;

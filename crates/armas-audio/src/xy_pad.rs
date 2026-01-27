@@ -34,6 +34,7 @@ pub struct XYPadResponse {
 
 impl XYPadResponse {
     /// Check if values changed this frame
+    #[must_use]
     pub fn changed(&self) -> bool {
         self.changed
     }
@@ -125,12 +126,14 @@ impl<'a> XYPad<'a> {
     }
 
     /// Set pad size (width and height)
+    #[must_use]
     pub fn size(mut self, size: f32) -> Self {
         self.size = size.max(100.0);
         self
     }
 
     /// Set visual variant
+    #[must_use]
     pub fn variant(mut self, variant: XYPadVariant) -> Self {
         self.variant = variant;
         self
@@ -149,54 +152,63 @@ impl<'a> XYPad<'a> {
     }
 
     /// Show crosshair lines
+    #[must_use]
     pub fn show_crosshair(mut self, show: bool) -> Self {
         self.show_crosshair = show;
         self
     }
 
     /// Show numeric values
+    #[must_use]
     pub fn show_values(mut self, show: bool) -> Self {
         self.show_values = show;
         self
     }
 
     /// Set handle size
+    #[must_use]
     pub fn handle_size(mut self, size: f32) -> Self {
         self.handle_size = size.max(8.0);
         self
     }
 
     /// Set glow intensity
+    #[must_use]
     pub fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
     /// Enable velocity mode (Ctrl/Cmd for fine control). Default: true
+    #[must_use]
     pub fn velocity_mode(mut self, enabled: bool) -> Self {
         self.velocity_mode = enabled;
         self
     }
 
     /// Set sensitivity for velocity mode. Default: 1.0
+    #[must_use]
     pub fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
         self.velocity_sensitivity = sensitivity.max(0.1);
         self
     }
 
     /// Set default X value for double-click reset
+    #[must_use]
     pub fn default_x(mut self, value: f32) -> Self {
         self.default_x = Some(value.clamp(0.0, 1.0));
         self
     }
 
     /// Set default Y value for double-click reset
+    #[must_use]
     pub fn default_y(mut self, value: f32) -> Self {
         self.default_y = Some(value.clamp(0.0, 1.0));
         self
     }
 
     /// Set default values for both axes (convenience method)
+    #[must_use]
     pub fn default_values(mut self, x: f32, y: f32) -> Self {
         self.default_x = Some(x.clamp(0.0, 1.0));
         self.default_y = Some(y.clamp(0.0, 1.0));

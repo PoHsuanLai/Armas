@@ -80,14 +80,14 @@ pub enum SheetSize {
 }
 
 impl SheetSize {
-    fn to_pixels(&self) -> f32 {
+    fn to_pixels(self) -> f32 {
         match self {
             SheetSize::Small => SHEET_WIDTH_SM,
             SheetSize::Medium => SHEET_WIDTH_MD,
             SheetSize::Large => SHEET_WIDTH_LG,
             SheetSize::XLarge => SHEET_WIDTH_XL,
             SheetSize::Full => 0.0, // Calculated at runtime
-            SheetSize::Custom(px) => *px,
+            SheetSize::Custom(px) => px,
         }
     }
 }

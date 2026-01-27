@@ -132,13 +132,12 @@ struct Toast {
     dismissible: bool,
 }
 
+use std::sync::atomic::{AtomicU64, Ordering};
+
 impl Toast {
     fn new(message: impl Into<String>, variant: ToastVariant, current_time: f64) -> Self {
-        static mut NEXT_ID: u64 = 0;
-        let id = unsafe {
-            NEXT_ID += 1;
-            NEXT_ID
-        };
+        static NEXT_ID: AtomicU64 = AtomicU64::new(0);
+        let id = NEXT_ID.fetch_add(1, Ordering::Relaxed) + 1;
 
         Self {
             id,

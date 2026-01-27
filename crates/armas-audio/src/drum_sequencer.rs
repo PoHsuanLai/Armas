@@ -65,7 +65,7 @@ impl Default for DrumStep {
 /// Drum sequencer row configuration
 #[derive(Debug, Clone)]
 pub struct DrumRow {
-    /// Display name (e.g., "Kick", "Snare", "HiHat")
+    /// Display name (e.g., "Kick", "Snare", "`HiHat`")
     pub name: String,
     /// Row color for visual identification
     pub color: Color32,
@@ -93,6 +93,7 @@ impl DrumRow {
     }
 
     /// Set the row color
+    #[must_use]
     pub fn with_color(mut self, color: Color32) -> Self {
         self.color = color;
         self
@@ -104,9 +105,9 @@ impl DrumRow {
 pub struct DrumSequencerResponse {
     /// Overall UI response
     pub response: Response,
-    /// Map of (row_index, step_index) -> true if clicked
+    /// Map of (`row_index`, `step_index`) -> true if clicked
     pub step_toggled: HashMap<(usize, usize), bool>,
-    /// Current playback step (from current_step parameter)
+    /// Current playback step (from `current_step` parameter)
     pub current_step: Option<usize>,
     /// Whether any step data changed
     pub changed: bool,
@@ -193,18 +194,21 @@ impl<'a> DrumSequencer<'a> {
     }
 
     /// Set number of steps per row
+    #[must_use]
     pub fn steps(mut self, num_steps: usize) -> Self {
         self.num_steps = num_steps.max(1);
         self
     }
 
     /// Set current playback step (for visual feedback)
+    #[must_use]
     pub fn current_step(mut self, step: Option<usize>) -> Self {
         self.current_step = step;
         self
     }
 
     /// Set step size (width and height)
+    #[must_use]
     pub fn step_size(mut self, width: f32, height: f32) -> Self {
         self.step_width = width.max(20.0);
         self.step_height = height.max(20.0);
@@ -212,42 +216,49 @@ impl<'a> DrumSequencer<'a> {
     }
 
     /// Set row label width
+    #[must_use]
     pub fn row_label_width(mut self, width: f32) -> Self {
         self.row_label_width = width.max(40.0);
         self
     }
 
     /// Set row height
+    #[must_use]
     pub fn row_height(mut self, height: f32) -> Self {
         self.row_height = height.max(30.0);
         self
     }
 
     /// Set gap between steps and rows
+    #[must_use]
     pub fn gap(mut self, gap: f32) -> Self {
         self.gap = gap.max(0.0);
         self
     }
 
     /// Set glow intensity (0.0-1.0)
+    #[must_use]
     pub fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
     /// Set visual variant
+    #[must_use]
     pub fn variant(mut self, variant: DrumSequencerVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set color scheme
+    #[must_use]
     pub fn color_scheme(mut self, scheme: DrumSequencerColorScheme) -> Self {
         self.color_scheme = scheme;
         self
     }
 
     /// Show velocity as brightness
+    #[must_use]
     pub fn show_velocity(mut self, show: bool) -> Self {
         self.show_velocity = show;
         self
@@ -256,6 +267,7 @@ impl<'a> DrumSequencer<'a> {
     /// Enable scrollable viewport with specified dimensions
     ///
     /// When content exceeds viewport size, scrolling is enabled.
+    #[must_use]
     pub fn scrollable(mut self, width: f32, height: f32) -> Self {
         self.scrollable = true;
         self.viewport_width = Some(width);
@@ -266,6 +278,7 @@ impl<'a> DrumSequencer<'a> {
     /// Enable or disable momentum scrolling (default: true)
     ///
     /// When enabled, scrolling continues with inertia after mouse release.
+    #[must_use]
     pub fn momentum_scrolling(mut self, enabled: bool) -> Self {
         self.momentum_scrolling = enabled;
         self
@@ -274,9 +287,292 @@ impl<'a> DrumSequencer<'a> {
     /// Set momentum damping factor (default: 5.0)
     ///
     /// Higher values = faster velocity decay. Range: 1.0 to 20.0
+    #[must_use]
     pub fn momentum_damping(mut self, damping: f64) -> Self {
         self.momentum_damping = damping.clamp(1.0, 20.0);
         self
+    }
+
+    /// Calculate viewport and content dimensions
+    fn calculate_dimensions(
+        rows: &[DrumRow],
+        row_label_width: f32,
+        row_height: f32,
+        step_width: f32,
+        gap: f32,
+        num_steps: usize,
+        viewport_width: Option<f32>,
+        viewport_height: Option<f32>,
+    ) -> (f32, f32, f32, f32) {
+        let num_visible_rows = rows.iter().filter(|r| r.visible).count();
+        let content_width =
+            row_label_width + num_steps as f32 * step_width + (num_steps - 1) as f32 * gap;
+        let content_height =
+            num_visible_rows as f32 * row_height + (num_visible_rows - 1) as f32 * gap;
+
+        let actual_width = viewport_width.unwrap_or(content_width).min(content_width);
+        let actual_height = viewport_height
+            .unwrap_or(content_height)
+            .min(content_height);
+
+        (content_width, content_height, actual_width, actual_height)
+    }
+
+    /// Restore state from persistent storage
+    fn restore_state(ui: &mut Ui, id: egui::Id, rows: &mut Vec<DrumRow>) {
+        let state_id = id.with("drum_sequencer_state");
+        if let Some(stored_state) = ui
+            .ctx()
+            .data(|d| d.get_temp::<Vec<Vec<DrumStep>>>(state_id))
+        {
+            // Restore stored state to rows
+            for (row_idx, stored_steps) in stored_state.iter().enumerate() {
+                if row_idx < rows.len() && row_idx < stored_steps.len() {
+                    // Copy step data from stored state
+                    for (step_idx, stored_step) in stored_steps.iter().enumerate() {
+                        if step_idx < rows[row_idx].steps.len() {
+                            rows[row_idx].steps[step_idx] = *stored_step;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Save state to persistent storage
+    fn save_state(ui: &mut Ui, id: egui::Id, rows: &[DrumRow]) {
+        let state_id = id.with("drum_sequencer_state");
+        let state: Vec<Vec<DrumStep>> = rows.iter().map(|r| r.steps.clone()).collect();
+        ui.ctx().data_mut(|d| {
+            d.insert_temp(state_id, state);
+        });
+    }
+
+    /// Render grid of step buttons for a single row
+    #[allow(clippy::too_many_arguments)]
+    fn render_grid(
+        ui: &mut Ui,
+        painter: &egui::Painter,
+        theme: &Theme,
+        rect: Rect,
+        row: &mut DrumRow,
+        row_y: f32,
+        scroll_offset: Vec2,
+        row_label_width: f32,
+        step_width: f32,
+        row_height: f32,
+        gap: f32,
+        num_steps: usize,
+        is_dragging: bool,
+        mouse_pos: Option<Pos2>,
+        glow_intensity: f32,
+        variant: DrumSequencerVariant,
+        show_velocity: bool,
+        scrollable: bool,
+        step_toggled: &mut HashMap<(usize, usize), bool>,
+        row_idx: usize,
+    ) -> bool {
+        let mut changed = false;
+
+        for step_idx in 0..num_steps {
+            let step_x = rect.min.x
+                + scroll_offset.x
+                + row_label_width
+                + step_idx as f32 * (step_width + gap);
+
+            // Skip steps outside viewport
+            if scrollable && (step_x + step_width < rect.min.x || step_x > rect.max.x) {
+                continue;
+            }
+
+            let step_rect =
+                Rect::from_min_size(Pos2::new(step_x, row_y), Vec2::new(step_width, row_height));
+
+            let (step_response, step_changed) = Self::handle_step_interaction(
+                ui,
+                step_rect,
+                rect,
+                row,
+                step_idx,
+                is_dragging,
+                mouse_pos,
+            );
+
+            if step_changed {
+                step_toggled.insert((row_idx, step_idx), row.steps[step_idx].active);
+                changed = true;
+            }
+
+            let is_active = row.steps[step_idx].active;
+            let is_hovered = step_response.hovered();
+            let velocity = row.steps[step_idx].velocity;
+
+            Self::draw_step_static(
+                painter,
+                theme,
+                step_rect,
+                row.color,
+                is_active,
+                is_hovered,
+                velocity,
+                glow_intensity,
+                variant,
+                show_velocity,
+            );
+        }
+
+        changed
+    }
+
+    /// Render row header with instrument name
+    fn render_header(
+        painter: &egui::Painter,
+        theme: &Theme,
+        rect_min_x: f32,
+        row_y: f32,
+        scroll_offset: Vec2,
+        row_label_width: f32,
+        row_height: f32,
+        row: &DrumRow,
+    ) {
+        let label_rect = Rect::from_min_size(
+            Pos2::new(rect_min_x + scroll_offset.x, row_y),
+            Vec2::new(row_label_width, row_height),
+        );
+
+        Self::draw_row_label_static(painter, theme, label_rect, row);
+    }
+
+    /// Handle step interaction (clicks and drags)
+    fn handle_step_interaction(
+        ui: &mut Ui,
+        step_rect: Rect,
+        viewport_rect: Rect,
+        row: &mut DrumRow,
+        step_idx: usize,
+        is_dragging: bool,
+        mouse_pos: Option<Pos2>,
+    ) -> (Response, bool) {
+        // Only allocate for interaction if step is visible
+        let step_response = if step_rect.intersects(viewport_rect) {
+            ui.allocate_rect(step_rect.intersect(viewport_rect), Sense::click())
+        } else {
+            return (ui.allocate_rect(Rect::NOTHING, Sense::hover()), false);
+        };
+
+        // Handle click
+        let mut changed = if step_response.clicked() {
+            row.steps[step_idx].active = !row.steps[step_idx].active;
+            if !row.steps[step_idx].active {
+                row.steps[step_idx].velocity = 1.0;
+            }
+            true
+        } else {
+            false
+        };
+
+        // Handle drag - light up steps being dragged over
+        if is_dragging {
+            if let Some(mouse) = mouse_pos {
+                if step_rect.contains(mouse) {
+                    // Turn on the step if dragging over it
+                    if !row.steps[step_idx].active {
+                        row.steps[step_idx].active = true;
+                        changed = true;
+                    }
+                }
+            }
+        }
+
+        (step_response, changed)
+    }
+
+    /// Handle momentum-based scrolling physics
+    fn handle_momentum_scrolling(
+        ui: &mut Ui,
+        response: &Response,
+        id: Option<egui::Id>,
+        scrollable: bool,
+        momentum_scrolling: bool,
+        momentum_damping: f64,
+        content_width: f32,
+        content_height: f32,
+        actual_width: f32,
+        actual_height: f32,
+    ) -> Vec2 {
+        if !scrollable {
+            return Vec2::ZERO;
+        }
+
+        let scroll_state_id = id.unwrap_or(response.id).with("drum_seq_scroll");
+        let mut scroll_state: DrumSequencerScrollState = ui
+            .ctx()
+            .data(|d| d.get_temp(scroll_state_id).unwrap_or_default());
+
+        let current_time = ui.ctx().input(|i| i.time);
+        let dt = if scroll_state.last_frame_time > 0.0 {
+            (current_time - scroll_state.last_frame_time) as f32
+        } else {
+            0.016 // ~60fps default
+        };
+        scroll_state.last_frame_time = current_time;
+
+        // Handle scroll wheel input
+        if response.hovered() {
+            let scroll_delta = ui.ctx().input(|i| i.raw_scroll_delta);
+            if scroll_delta.length() > 0.0 {
+                if momentum_scrolling {
+                    // Add to velocity for momentum
+                    scroll_state.velocity += scroll_delta * 3.0;
+                    scroll_state.is_animating = true;
+                } else {
+                    // Direct scroll without momentum
+                    scroll_state.offset += scroll_delta;
+                }
+            }
+        }
+
+        // Handle middle-mouse drag for panning
+        let is_panning = ui.ctx().input(|i| i.pointer.middle_down()) && response.hovered();
+        if is_panning {
+            let drag_delta = response.drag_delta();
+            if momentum_scrolling {
+                scroll_state.velocity =
+                    Vec2::new(drag_delta.x / dt.max(0.001), drag_delta.y / dt.max(0.001)) * 0.3;
+                scroll_state.is_animating = true;
+            }
+            scroll_state.offset += drag_delta;
+        }
+
+        // Apply momentum physics
+        if momentum_scrolling && scroll_state.is_animating {
+            // Apply velocity to offset
+            scroll_state.offset += scroll_state.velocity * dt;
+
+            // Apply damping (exponential decay)
+            let damping_factor = (-momentum_damping * dt as f64).exp() as f32;
+            scroll_state.velocity *= damping_factor;
+
+            // Stop animation when velocity is negligible
+            if scroll_state.velocity.length() < 1.0 {
+                scroll_state.velocity = Vec2::ZERO;
+                scroll_state.is_animating = false;
+            } else {
+                ui.ctx().request_repaint();
+            }
+        }
+
+        // Clamp scroll offset to valid range
+        let max_scroll_x = (content_width - actual_width).max(0.0);
+        let max_scroll_y = (content_height - actual_height).max(0.0);
+        scroll_state.offset.x = scroll_state.offset.x.clamp(-max_scroll_x, 0.0);
+        scroll_state.offset.y = scroll_state.offset.y.clamp(-max_scroll_y, 0.0);
+
+        // Save scroll state
+        ui.ctx()
+            .data_mut(|d| d.insert_temp(scroll_state_id, scroll_state.clone()));
+
+        scroll_state.offset
     }
 
     /// Show the drum sequencer
@@ -286,23 +582,7 @@ impl<'a> DrumSequencer<'a> {
 
         // Restore state from memory if ID is set
         if let Some(id) = self.id {
-            let state_id = id.with("drum_sequencer_state");
-            if let Some(stored_state) = ui
-                .ctx()
-                .data(|d| d.get_temp::<Vec<Vec<DrumStep>>>(state_id))
-            {
-                // Restore stored state to rows
-                for (row_idx, stored_steps) in stored_state.iter().enumerate() {
-                    if row_idx < self.rows.len() && row_idx < stored_steps.len() {
-                        // Copy step data from stored state
-                        for (step_idx, stored_step) in stored_steps.iter().enumerate() {
-                            if step_idx < self.rows[row_idx].steps.len() {
-                                self.rows[row_idx].steps[step_idx] = *stored_step;
-                            }
-                        }
-                    }
-                }
-            }
+            Self::restore_state(ui, id, self.rows);
         }
 
         // Cache rendering parameters before borrowing
@@ -328,96 +608,35 @@ impl<'a> DrumSequencer<'a> {
             row.steps.resize(num_steps, DrumStep::default());
         }
 
-        // Calculate total content size
-        let num_visible_rows = self.rows.iter().filter(|r| r.visible).count();
-        let content_width =
-            row_label_width + num_steps as f32 * step_width + (num_steps - 1) as f32 * gap;
-        let content_height =
-            num_visible_rows as f32 * row_height + (num_visible_rows - 1) as f32 * gap;
-
-        // Determine actual size (viewport or content)
-        let actual_width = viewport_width.unwrap_or(content_width).min(content_width);
-        let actual_height = viewport_height
-            .unwrap_or(content_height)
-            .min(content_height);
+        // Calculate dimensions
+        let (content_width, content_height, actual_width, actual_height) =
+            Self::calculate_dimensions(
+                self.rows,
+                row_label_width,
+                row_height,
+                step_width,
+                gap,
+                num_steps,
+                viewport_width,
+                viewport_height,
+            );
         let desired_size = Vec2::new(actual_width, actual_height);
 
         let (rect, response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
 
         // Handle scrolling with momentum
-        let scroll_offset = if scrollable {
-            let scroll_state_id = id.unwrap_or(response.id).with("drum_seq_scroll");
-            let mut scroll_state: DrumSequencerScrollState = ui
-                .ctx()
-                .data(|d| d.get_temp(scroll_state_id).unwrap_or_default());
-
-            let current_time = ui.ctx().input(|i| i.time);
-            let dt = if scroll_state.last_frame_time > 0.0 {
-                (current_time - scroll_state.last_frame_time) as f32
-            } else {
-                0.016 // ~60fps default
-            };
-            scroll_state.last_frame_time = current_time;
-
-            // Handle scroll wheel input
-            if response.hovered() {
-                let scroll_delta = ui.ctx().input(|i| i.raw_scroll_delta);
-                if scroll_delta.length() > 0.0 {
-                    if momentum_scrolling {
-                        // Add to velocity for momentum
-                        scroll_state.velocity += scroll_delta * 3.0;
-                        scroll_state.is_animating = true;
-                    } else {
-                        // Direct scroll without momentum
-                        scroll_state.offset += scroll_delta;
-                    }
-                }
-            }
-
-            // Handle middle-mouse drag for panning
-            let is_panning = ui.ctx().input(|i| i.pointer.middle_down()) && response.hovered();
-            if is_panning {
-                let drag_delta = response.drag_delta();
-                if momentum_scrolling {
-                    scroll_state.velocity =
-                        Vec2::new(drag_delta.x / dt.max(0.001), drag_delta.y / dt.max(0.001)) * 0.3;
-                    scroll_state.is_animating = true;
-                }
-                scroll_state.offset += drag_delta;
-            }
-
-            // Apply momentum physics
-            if momentum_scrolling && scroll_state.is_animating {
-                // Apply velocity to offset
-                scroll_state.offset += scroll_state.velocity * dt;
-
-                // Apply damping (exponential decay)
-                let damping_factor = (-momentum_damping * dt as f64).exp() as f32;
-                scroll_state.velocity *= damping_factor;
-
-                // Stop animation when velocity is negligible
-                if scroll_state.velocity.length() < 1.0 {
-                    scroll_state.velocity = Vec2::ZERO;
-                    scroll_state.is_animating = false;
-                } else {
-                    ui.ctx().request_repaint();
-                }
-            }
-
-            // Clamp scroll offset to valid range
-            let max_scroll_x = (content_width - actual_width).max(0.0);
-            let max_scroll_y = (content_height - actual_height).max(0.0);
-            scroll_state.offset.x = scroll_state.offset.x.clamp(-max_scroll_x, 0.0);
-            scroll_state.offset.y = scroll_state.offset.y.clamp(-max_scroll_y, 0.0);
-
-            // Save scroll state
-            ui.ctx()
-                .data_mut(|d| d.insert_temp(scroll_state_id, scroll_state.clone()));
-
-            scroll_state.offset
-        } else {
-            Vec2::ZERO
-        };
+        let scroll_offset = Self::handle_momentum_scrolling(
+            ui,
+            &response,
+            id,
+            scrollable,
+            momentum_scrolling,
+            momentum_damping,
+            content_width,
+            content_height,
+            actual_width,
+            actual_height,
+        );
 
         // Track drag state - check if primary button is pressed and we're over the sequencer
         let is_dragging = ui.ctx().input(|i| i.pointer.primary_down()) && response.hovered();
@@ -444,78 +663,44 @@ impl<'a> DrumSequencer<'a> {
                     continue;
                 }
 
-                // Draw row label/controls
-                let label_rect = Rect::from_min_size(
-                    Pos2::new(rect.min.x + scroll_offset.x, row_y),
-                    Vec2::new(row_label_width, row_height),
+                // Draw row header
+                Self::render_header(
+                    &painter,
+                    theme,
+                    rect.min.x,
+                    row_y,
+                    scroll_offset,
+                    row_label_width,
+                    row_height,
+                    row,
                 );
 
-                Self::draw_row_label_static(&painter, theme, label_rect, row);
+                // Draw step grid for this row
+                let row_changed = Self::render_grid(
+                    ui,
+                    &painter,
+                    theme,
+                    rect,
+                    row,
+                    row_y,
+                    scroll_offset,
+                    row_label_width,
+                    step_width,
+                    row_height,
+                    gap,
+                    num_steps,
+                    is_dragging,
+                    mouse_pos,
+                    glow_intensity,
+                    variant,
+                    show_velocity,
+                    scrollable,
+                    &mut step_toggled,
+                    row_idx,
+                );
 
-                // Draw steps for this row
-                for step_idx in 0..num_steps {
-                    let step_x = rect.min.x
-                        + scroll_offset.x
-                        + row_label_width
-                        + step_idx as f32 * (step_width + gap);
-
-                    // Skip steps outside viewport
-                    if scrollable && (step_x + step_width < rect.min.x || step_x > rect.max.x) {
-                        continue;
-                    }
-
-                    let step_rect = Rect::from_min_size(
-                        Pos2::new(step_x, row_y),
-                        Vec2::new(step_width, row_height),
-                    );
-
-                    // Only allocate for interaction if step is visible
-                    let step_response = if step_rect.intersects(rect) {
-                        ui.allocate_rect(step_rect.intersect(rect), Sense::click())
-                    } else {
-                        continue;
-                    };
-
-                    // Handle click
-                    if step_response.clicked() {
-                        row.steps[step_idx].active = !row.steps[step_idx].active;
-                        if !row.steps[step_idx].active {
-                            row.steps[step_idx].velocity = 1.0;
-                        }
-                        step_toggled.insert((row_idx, step_idx), row.steps[step_idx].active);
-                        changed = true;
-                    }
-
-                    // Handle drag - light up steps being dragged over
-                    if is_dragging {
-                        if let Some(mouse) = mouse_pos {
-                            if step_rect.contains(mouse) {
-                                // Turn on the step if dragging over it
-                                if !row.steps[step_idx].active {
-                                    row.steps[step_idx].active = true;
-                                    step_toggled.insert((row_idx, step_idx), true);
-                                    changed = true;
-                                }
-                            }
-                        }
-                    }
-
-                    let is_active = row.steps[step_idx].active;
-                    let is_hovered = step_response.hovered();
-                    let velocity = row.steps[step_idx].velocity;
-
-                    Self::draw_step_static(
-                        &painter,
-                        theme,
-                        step_rect,
-                        row.color,
-                        is_active,
-                        is_hovered,
-                        velocity,
-                        glow_intensity,
-                        variant,
-                        show_velocity,
-                    );
+                if row_changed {
+                    changed = true;
                 }
 
                 row_y += row_height + gap;
@@ -528,11 +713,7 @@ impl<'a> DrumSequencer<'a> {
 
         // Save state to memory if ID is set
         if let Some(id) = id {
-            let state_id = id.with("drum_sequencer_state");
-            let state: Vec<Vec<DrumStep>> = self.rows.iter().map(|r| r.steps.clone()).collect();
-            ui.ctx().data_mut(|d| {
-                d.insert_temp(state_id, state);
-            });
+            Self::save_state(ui, id, self.rows);
         }
 
         DrumSequencerResponse {
@@ -667,8 +848,6 @@ impl<'a> DrumSequencer<'a> {
 
         let border_color = if is_active {
             theme.primary()
-        } else if is_hovered {
-            theme.border()
         } else {
             theme.border()
         };
@@ -714,13 +893,7 @@ impl<'a> DrumSequencer<'a> {
 
         painter.rect_filled(rect, corner_radius, bg_color);
 
-        let border_color = if is_active {
-            row_color
-        } else if is_hovered {
-            theme.border()
-        } else {
-            theme.border()
-        };
+        let border_color = if is_active { row_color } else { theme.border() };
         let border_width = if is_active { 2.0 } else { 1.5 };
 
         painter.rect_stroke(

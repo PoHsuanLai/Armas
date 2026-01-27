@@ -89,6 +89,7 @@ pub struct TrackHeader {
 
 impl TrackHeader {
     /// Create a new track header
+    #[must_use]
     pub fn new() -> Self {
         Self {
             id: None,
@@ -112,60 +113,70 @@ impl TrackHeader {
     }
 
     /// Set the header width
+    #[must_use]
     pub fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
     }
 
     /// Set the header height
+    #[must_use]
     pub fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Set the track color
+    #[must_use]
     pub fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set the card background color
+    #[must_use]
     pub fn card_color(mut self, color: Color32) -> Self {
         self.card_color = Some(color);
         self
     }
 
     /// Set the parent track color (for nested folder gradient interpolation)
+    #[must_use]
     pub fn parent_color(mut self, color: Color32) -> Self {
         self.parent_color = Some(color);
         self
     }
 
     /// Set whether the name is editable
+    #[must_use]
     pub fn editable(mut self, editable: bool) -> Self {
         self.editable = editable;
         self
     }
 
     /// Set whether to show control buttons
+    #[must_use]
     pub fn show_controls(mut self, show: bool) -> Self {
         self.show_controls = show;
         self
     }
 
     /// Set compact mode (smaller controls)
+    #[must_use]
     pub fn compact(mut self, compact: bool) -> Self {
         self.compact = compact;
         self
     }
 
     /// Set whether this is a folder track
+    #[must_use]
     pub fn is_folder(mut self, is_folder: bool) -> Self {
         self.is_folder = is_folder;
         self
     }
 
     /// Set indentation level for nested tracks
+    #[must_use]
     pub fn indent_level(mut self, level: usize) -> Self {
         self.indent_level = level;
         self
@@ -373,7 +384,7 @@ impl TrackHeader {
                                 if Button::new("M")
                                     .variant(mute_variant)
                                     .min_width(button_size)
-                                    .show(ui, &theme)
+                                    .show(ui, theme)
                                     .clicked()
                                 {
                                     controls.muted = !controls.muted;
@@ -390,7 +401,7 @@ impl TrackHeader {
                                 if Button::new("S")
                                     .variant(solo_variant)
                                     .min_width(button_size)
-                                    .show(ui, &theme)
+                                    .show(ui, theme)
                                     .clicked()
                                 {
                                     controls.soloed = !controls.soloed;
@@ -407,7 +418,7 @@ impl TrackHeader {
                                 if Button::new("R")
                                     .variant(arm_variant)
                                     .min_width(button_size)
-                                    .show(ui, &theme)
+                                    .show(ui, theme)
                                     .clicked()
                                 {
                                     controls.armed = !controls.armed;

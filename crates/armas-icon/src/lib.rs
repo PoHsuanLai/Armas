@@ -119,7 +119,7 @@ pub struct Icon<'a> {
 
 impl<'a> Icon<'a> {
     /// Create a new icon widget
-    #[must_use] 
+    #[must_use]
     pub const fn new(icon_data: &'a IconData) -> Self {
         Self {
             icon_data,
@@ -129,14 +129,14 @@ impl<'a> Icon<'a> {
     }
 
     /// Set the icon size (width and height will be equal)
-    #[must_use] 
+    #[must_use]
     pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set the icon color
-    #[must_use] 
+    #[must_use]
     pub const fn color(mut self, color: Color32) -> Self {
         self.color = color;
         self

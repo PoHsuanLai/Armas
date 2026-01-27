@@ -20,7 +20,7 @@ pub struct RetroGrid {
 
 impl RetroGrid {
     /// Create a new retro grid
-    #[must_use] 
+    #[must_use]
     pub fn new(width: f32, height: f32) -> Self {
         Self {
             width,
@@ -36,42 +36,42 @@ impl RetroGrid {
     }
 
     /// Set grid line color
-    #[must_use] 
+    #[must_use]
     pub const fn grid_color(mut self, color: Color32) -> Self {
         self.grid_color = color;
         self
     }
 
     /// Set horizon glow color
-    #[must_use] 
+    #[must_use]
     pub const fn horizon_color(mut self, color: Color32) -> Self {
         self.horizon_color = color;
         self
     }
 
     /// Set cell size
-    #[must_use] 
+    #[must_use]
     pub const fn cell_size(mut self, size: f32) -> Self {
         self.cell_size = size.max(10.0);
         self
     }
 
     /// Set perspective depth (0.0 to 1.0)
-    #[must_use] 
+    #[must_use]
     pub const fn perspective_depth(mut self, depth: f32) -> Self {
         self.perspective_depth = depth.clamp(0.0, 1.0);
         self
     }
 
     /// Enable/disable animation
-    #[must_use] 
+    #[must_use]
     pub const fn animate(mut self, enabled: bool) -> Self {
         self.animate = enabled;
         self
     }
 
     /// Set animation speed
-    #[must_use] 
+    #[must_use]
     pub const fn animation_speed(mut self, speed: f32) -> Self {
         self.animation_speed = speed;
         self
@@ -131,7 +131,8 @@ impl RetroGrid {
                 t
             };
 
-            let y = (rect.bottom() - horizon_y).mul_add(animated_t.powf(1.0 - self.perspective_depth), horizon_y);
+            let y = (rect.bottom() - horizon_y)
+                .mul_add(animated_t.powf(1.0 - self.perspective_depth), horizon_y);
 
             let thickness = 1.0 + animated_t * 2.0;
 

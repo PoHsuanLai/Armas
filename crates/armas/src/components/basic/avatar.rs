@@ -8,8 +8,7 @@ use egui::{vec2, Response, Sense, Ui};
 const DEFAULT_SIZE: f32 = 32.0; // size-8 (2rem)
 
 /// Avatar size presets
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum AvatarSize {
     /// Extra small (24px)
     XSmall,
@@ -27,18 +26,17 @@ pub enum AvatarSize {
 }
 
 impl AvatarSize {
-    fn to_pixels(&self) -> f32 {
+    fn to_pixels(self) -> f32 {
         match self {
             AvatarSize::XSmall => 24.0,
             AvatarSize::Small => 32.0,
             AvatarSize::Medium => 40.0,
             AvatarSize::Large => 48.0,
             AvatarSize::XLarge => 64.0,
-            AvatarSize::Custom(size) => *size,
+            AvatarSize::Custom(size) => size,
         }
     }
 }
-
 
 /// Avatar shape
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]

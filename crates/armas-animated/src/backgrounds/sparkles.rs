@@ -127,7 +127,7 @@ pub struct Sparkles {
 impl Sparkles {
     /// Create a new sparkles effect
     /// Colors will be set from theme context if not customized via `.colors()`
-    #[must_use] 
+    #[must_use]
     pub fn new(width: f32, height: f32) -> Self {
         Self {
             id: egui::Id::new("sparkles_default"),
@@ -153,14 +153,14 @@ impl Sparkles {
     }
 
     /// Set number of sparkle particles
-    #[must_use] 
+    #[must_use]
     pub fn particle_count(mut self, count: usize) -> Self {
         self.particle_count = count.max(5);
         self
     }
 
     /// Set sparkle colors
-    #[must_use] 
+    #[must_use]
     pub fn colors(mut self, colors: Vec<Color32>) -> Self {
         if !colors.is_empty() {
             self.colors = colors;
@@ -169,7 +169,7 @@ impl Sparkles {
     }
 
     /// Set size range for sparkles
-    #[must_use] 
+    #[must_use]
     pub const fn size_range(mut self, min: f32, max: f32) -> Self {
         self.min_size = min.max(1.0);
         self.max_size = max.max(min);

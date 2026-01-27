@@ -31,6 +31,7 @@ pub enum TransportIcon {
 
 impl TransportIcon {
     /// Get the icon data for this transport icon
+    #[must_use]
     pub fn data(self) -> &'static IconData {
         match self {
             Self::Play => &PLAY,
@@ -44,7 +45,8 @@ impl TransportIcon {
         }
     }
 
-    /// Create an Icon widget from this TransportIcon
+    /// Create an Icon widget from this `TransportIcon`
+    #[must_use]
     pub fn icon(self) -> armas_icon::Icon<'static> {
         armas_icon::Icon::new(self.data())
     }

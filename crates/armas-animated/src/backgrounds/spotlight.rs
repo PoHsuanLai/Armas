@@ -48,7 +48,7 @@ pub struct Spotlight {
 
 impl Spotlight {
     /// Create a new spotlight with theme-based defaults
-    #[must_use] 
+    #[must_use]
     pub fn new(theme: &Theme) -> Self {
         let primary = theme.primary();
         Self {
@@ -64,42 +64,42 @@ impl Spotlight {
     }
 
     /// Set the spotlight radius
-    #[must_use] 
+    #[must_use]
     pub const fn radius(mut self, radius: f32) -> Self {
         self.radius = radius;
         self
     }
 
     /// Set the spotlight color
-    #[must_use] 
+    #[must_use]
     pub const fn color(mut self, color: Color32) -> Self {
         self.color = color;
         self
     }
 
     /// Set the smoothing factor (0.0 = instant, 1.0 = very smooth)
-    #[must_use] 
+    #[must_use]
     pub const fn smoothing(mut self, smoothing: f32) -> Self {
         self.smoothing = smoothing.clamp(0.0, 1.0);
         self
     }
 
     /// Set the spotlight intensity
-    #[must_use] 
+    #[must_use]
     pub const fn intensity(mut self, intensity: f32) -> Self {
         self.intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
     /// Set the number of gradient steps
-    #[must_use] 
+    #[must_use]
     pub fn gradient_steps(mut self, steps: usize) -> Self {
         self.gradient_steps = steps.max(5);
         self
     }
 
     /// Set whether to show spotlight only on hover
-    #[must_use] 
+    #[must_use]
     pub const fn only_on_hover(mut self, only_on_hover: bool) -> Self {
         self.only_on_hover = only_on_hover;
         self
@@ -239,7 +239,7 @@ pub struct MultiSpotlight {
 
 impl MultiSpotlight {
     /// Create a new multi-spotlight effect
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             spotlights: Vec::new(),
@@ -247,7 +247,7 @@ impl MultiSpotlight {
     }
 
     /// Add a spotlight with a specific color
-    #[must_use] 
+    #[must_use]
     pub fn add_spotlight(mut self, spotlight: Spotlight) -> Self {
         self.spotlights.push((spotlight, Theme::dark()));
         self

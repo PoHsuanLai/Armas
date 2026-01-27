@@ -141,11 +141,8 @@ impl TestimonialCard {
         let desired_width = self.width.unwrap_or(available.x);
 
         // Allocate space - larger default height for more breathing room
-        let (rect, response) = if self.height.is_some() {
-            ui.allocate_exact_size(
-                Vec2::new(desired_width, self.height.unwrap()),
-                egui::Sense::hover(),
-            )
+        let (rect, response) = if let Some(height) = self.height {
+            ui.allocate_exact_size(Vec2::new(desired_width, height), egui::Sense::hover())
         } else {
             ui.allocate_at_least(Vec2::new(desired_width, 180.0), egui::Sense::hover())
         };

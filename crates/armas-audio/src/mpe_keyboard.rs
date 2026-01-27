@@ -46,6 +46,7 @@ pub struct MPENote {
 
 impl MPENote {
     /// Create a new MPE note with default expression values
+    #[must_use]
     pub fn new(note: u8) -> Self {
         Self {
             note,
@@ -57,6 +58,7 @@ impl MPENote {
     }
 
     /// Create with specific velocity
+    #[must_use]
     pub fn with_velocity(note: u8, velocity: f32) -> Self {
         Self {
             note,
@@ -68,18 +70,21 @@ impl MPENote {
     }
 
     /// Set pressure (aftertouch)
+    #[must_use]
     pub fn pressure(mut self, pressure: f32) -> Self {
         self.pressure = pressure.clamp(0.0, 1.0);
         self
     }
 
     /// Set pitch bend in semitones
+    #[must_use]
     pub fn pitch_bend(mut self, semitones: f32) -> Self {
         self.pitch_bend = semitones;
         self
     }
 
     /// Set slide position (0.0-1.0)
+    #[must_use]
     pub fn slide(mut self, slide: f32) -> Self {
         self.slide = slide.clamp(0.0, 1.0);
         self
@@ -103,11 +108,13 @@ pub struct MPEKey {
 
 impl MPEKey {
     /// Create a new piano key identifier
+    #[must_use]
     pub fn new(note: u8, is_black: bool) -> Self {
         Self { note, is_black }
     }
 
     /// Get the note name (e.g., "C4", "A#3")
+    #[must_use]
     pub fn note_name(&self) -> String {
         const NOTE_NAMES: [&str; 12] = [
             "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
@@ -118,6 +125,7 @@ impl MPEKey {
     }
 
     /// Check if a MIDI note number is a black key
+    #[must_use]
     pub fn is_black_key(note: u8) -> bool {
         matches!(note % 12, 1 | 3 | 6 | 8 | 10)
     }
@@ -201,6 +209,7 @@ pub struct MPEKeyboard {
 
 impl MPEKeyboard {
     /// Create a new MPE keyboard
+    #[must_use]
     pub fn new() -> Self {
         Self {
             start_note: 60,
@@ -229,60 +238,70 @@ impl MPEKeyboard {
 
     // Builder methods
     /// Set the starting MIDI note number (default: 60, middle C)
+    #[must_use]
     pub fn start_note(mut self, note: u8) -> Self {
         self.start_note = note;
         self
     }
 
     /// Set the number of octaves to display (default: 2)
+    #[must_use]
     pub fn octaves(mut self, octaves: u8) -> Self {
         self.octaves = octaves;
         self
     }
 
     /// Set the width of white keys in pixels (default: 40.0)
+    #[must_use]
     pub fn white_key_width(mut self, width: f32) -> Self {
         self.white_key_width = width;
         self
     }
 
     /// Set the height of white keys in pixels (default: 120.0)
+    #[must_use]
     pub fn white_key_height(mut self, height: f32) -> Self {
         self.white_key_height = height;
         self
     }
 
     /// Set opacity for white keys (0.0-1.0, default: 0.7)
+    #[must_use]
     pub fn white_key_opacity(mut self, opacity: f32) -> Self {
         self.white_key_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Set opacity for black keys (0.0-1.0, default: 0.85)
+    #[must_use]
     pub fn black_key_opacity(mut self, opacity: f32) -> Self {
         self.black_key_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Show or hide note labels on the keys (default: true)
+    #[must_use]
     pub fn show_labels(mut self, show: bool) -> Self {
         self.show_labels = show;
         self
     }
 
     /// Set the keyboard orientation (default: Horizontal)
+    #[must_use]
     pub fn orientation(mut self, orientation: MPEOrientation) -> Self {
         self.orientation = orientation;
         self
     }
 
     /// Set active MPE notes with their expression data
+    #[must_use]
     pub fn active_notes(mut self, notes: HashMap<u8, MPENote>) -> Self {
         self.active_notes = notes;
         self
     }
 
     /// Add a single active MPE note
+    #[must_use]
     pub fn with_note(mut self, note: MPENote) -> Self {
         self.active_notes.insert(note.note, note);
         self
@@ -295,6 +314,7 @@ impl MPEKeyboard {
     }
 
     /// Enable scrollable viewport with specified size in pixels
+    #[must_use]
     pub fn scrollable(mut self, viewport_size: f32) -> Self {
         self.scrollable = true;
         self.viewport_size = Some(viewport_size);
@@ -302,30 +322,35 @@ impl MPEKeyboard {
     }
 
     /// Enable or disable momentum scrolling (default: true)
+    #[must_use]
     pub fn momentum_scrolling(mut self, enabled: bool) -> Self {
         self.momentum_scrolling = enabled;
         self
     }
 
     /// Set momentum damping factor (1.0-20.0, higher = more damping, default: 5.0)
+    #[must_use]
     pub fn momentum_damping(mut self, damping: f64) -> Self {
         self.momentum_damping = damping.clamp(1.0, 20.0);
         self
     }
 
     /// Set pitch bend range in semitones for visualization scaling
+    #[must_use]
     pub fn pitch_bend_range(mut self, semitones: f32) -> Self {
         self.pitch_bend_range = semitones.max(1.0);
         self
     }
 
     /// Set custom fill color for velocity circles
+    #[must_use]
     pub fn circle_fill_color(mut self, color: Color32) -> Self {
         self.circle_fill_color = Some(color);
         self
     }
 
     /// Set custom outline color for pressure circles
+    #[must_use]
     pub fn circle_outline_color(mut self, color: Color32) -> Self {
         self.circle_outline_color = Some(color);
         self
@@ -774,7 +799,11 @@ impl MPEKeyboard {
         } else {
             let key_y =
                 rect.max.y - scroll_offset - (white_key_index + 1) as f32 * self.white_key_width;
-            let key_x = if facing_left { rect.min.x } else { rect.min.x };
+            let key_x = if facing_left {
+                rect.max.x - self.white_key_height
+            } else {
+                rect.min.x
+            };
             Rect::from_min_size(
                 Pos2::new(key_x, key_y),
                 Vec2::new(self.white_key_height, self.white_key_width),
@@ -1001,11 +1030,13 @@ pub struct MPEKeyboardResponse {
 
 impl MPEKeyboardResponse {
     /// Check if any keys were clicked this frame
+    #[must_use]
     pub fn has_clicks(&self) -> bool {
         !self.clicked_keys.is_empty()
     }
 
     /// Check if any keys were released this frame
+    #[must_use]
     pub fn has_releases(&self) -> bool {
         !self.released_keys.is_empty()
     }

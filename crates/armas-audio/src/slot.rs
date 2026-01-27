@@ -55,7 +55,7 @@ pub struct Slot<'a> {
     pub height: f32,
 }
 
-impl<'a> Default for Slot<'a> {
+impl Default for Slot<'_> {
     fn default() -> Self {
         Self::new()
     }
@@ -63,6 +63,7 @@ impl<'a> Default for Slot<'a> {
 
 impl<'a> Slot<'a> {
     /// Create a new empty slot with default dimensions (140x28)
+    #[must_use]
     pub fn new() -> Self {
         Self {
             name: None,
@@ -74,6 +75,7 @@ impl<'a> Slot<'a> {
     }
 
     /// Set custom width and height
+    #[must_use]
     pub fn size(mut self, width: f32, height: f32) -> Self {
         self.width = width;
         self.height = height;
@@ -81,30 +83,35 @@ impl<'a> Slot<'a> {
     }
 
     /// Set width
+    #[must_use]
     pub fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
     }
 
     /// Set height
+    #[must_use]
     pub fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Set the plugin/effect name
+    #[must_use]
     pub fn effect(mut self, name: &'a str) -> Self {
         self.name = Some(name);
         self
     }
 
     /// Set whether the effect is bypassed
+    #[must_use]
     pub fn bypassed(mut self, bypassed: bool) -> Self {
         self.bypassed = bypassed;
         self
     }
 
     /// Set the activity level (0.0 to 1.0)
+    #[must_use]
     pub fn level(mut self, level: f32) -> Self {
         self.level = level.clamp(0.0, 1.0);
         self
@@ -120,7 +127,7 @@ impl<'a> Slot<'a> {
 
         // Determine colors
         let (mut box_color, mut border_color, mut text_color) = if let Some(name) = self.name {
-            let effect_color = get_effect_color(name, &theme);
+            let effect_color = get_effect_color(name, theme);
             let border = if self.bypassed {
                 theme.muted_foreground()
             } else {
@@ -136,10 +143,10 @@ impl<'a> Slot<'a> {
             box_color = box_color.gamma_multiply(1.2);
             // For empty slots, use theme primary for border glow
             // For filled slots, brighten the existing border color
-            if !filled {
-                border_color = theme.primary();
-            } else {
+            if filled {
                 border_color = border_color.gamma_multiply(1.4);
+            } else {
+                border_color = theme.primary();
             }
             text_color = text_color.gamma_multiply(1.5); // Make text (including "+") brighter
         }
@@ -157,16 +164,16 @@ impl<'a> Slot<'a> {
         );
 
         // Text label
-        let label = self
-            .name
-            .map(|n| {
+        let label = self.name.map_or_else(
+            || "+".to_string(),
+            |n| {
                 if n.len() > 7 {
                     format!("{}…", &n[..6])
                 } else {
                     n.to_string()
                 }
-            })
-            .unwrap_or_else(|| "+".to_string());
+            },
+        );
 
         ui.painter().text(
             rect.left_center() + egui::vec2(theme.spacing.sm, 0.0),

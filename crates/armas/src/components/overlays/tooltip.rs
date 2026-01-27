@@ -93,7 +93,7 @@ impl Tooltip {
         }
 
         // Check if delay has elapsed
-        let hover_start = self.hover_start.unwrap();
+        let hover_start = self.hover_start.expect("hover_start should be set when hovered");
         let elapsed = hover_start.elapsed().as_millis() as u64;
         if elapsed < self.delay_ms {
             ui.ctx().request_repaint();

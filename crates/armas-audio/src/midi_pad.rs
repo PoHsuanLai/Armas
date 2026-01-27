@@ -24,7 +24,7 @@ pub enum PadColorScheme {
     Semantic,
     /// Use single primary color for all pads
     Monochrome,
-    /// Use custom colors (set via pad_colors)
+    /// Use custom colors (set via `pad_colors`)
     Custom,
 }
 
@@ -41,6 +41,7 @@ pub struct PadConfig {
 
 impl PadConfig {
     /// Create a new pad configuration
+    #[must_use]
     pub fn new(note: u8) -> Self {
         Self {
             note,
@@ -56,6 +57,7 @@ impl PadConfig {
     }
 
     /// Set custom color
+    #[must_use]
     pub fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
@@ -73,6 +75,7 @@ pub struct PadState {
 
 impl PadState {
     /// Create a new pad state
+    #[must_use]
     pub fn new(note: u8, velocity: u8) -> Self {
         Self {
             note,
@@ -81,6 +84,7 @@ impl PadState {
     }
 
     /// Check if pad is pressed (velocity > 0)
+    #[must_use]
     pub fn is_pressed(&self) -> bool {
         self.velocity > 0
     }
@@ -152,6 +156,7 @@ pub struct MidiPad {
 
 impl MidiPad {
     /// Create a new MIDI pad grid with default 4x4 layout
+    #[must_use]
     pub fn new() -> Self {
         Self {
             rows: 4,
@@ -168,6 +173,7 @@ impl MidiPad {
     }
 
     /// Set grid dimensions (rows x cols)
+    #[must_use]
     pub fn grid(mut self, rows: usize, cols: usize) -> Self {
         self.rows = rows.max(1);
         self.cols = cols.max(1);
@@ -175,48 +181,56 @@ impl MidiPad {
     }
 
     /// Set pad configurations
+    #[must_use]
     pub fn pads(mut self, pads: Vec<PadConfig>) -> Self {
         self.pads = pads;
         self
     }
 
     /// Set pad states (which pads are pressed and their velocities)
+    #[must_use]
     pub fn pad_states(mut self, states: std::collections::HashMap<u8, PadState>) -> Self {
         self.pad_states = states;
         self
     }
 
     /// Set visual variant
+    #[must_use]
     pub fn variant(mut self, variant: PadVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set color scheme
+    #[must_use]
     pub fn color_scheme(mut self, scheme: PadColorScheme) -> Self {
         self.color_scheme = scheme;
         self
     }
 
     /// Set pad size (both width and height)
+    #[must_use]
     pub fn pad_size(mut self, size: f32) -> Self {
         self.pad_size = size.max(20.0);
         self
     }
 
     /// Set gap between pads
+    #[must_use]
     pub fn gap(mut self, gap: f32) -> Self {
         self.gap = gap.max(0.0);
         self
     }
 
     /// Set glow intensity (0.0-1.0)
+    #[must_use]
     pub fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
     /// Show velocity as brightness
+    #[must_use]
     pub fn show_velocity(mut self, show: bool) -> Self {
         self.show_velocity = show;
         self
@@ -254,8 +268,7 @@ impl MidiPad {
                     let velocity = self
                         .pad_states
                         .get(&pad_config.note)
-                        .map(|s| s.velocity)
-                        .unwrap_or(0);
+                        .map_or(0, |s| s.velocity);
 
                     // Calculate pad rect
                     let pad_x = rect.min.x + col as f32 * (self.pad_size + self.gap);
@@ -265,7 +278,7 @@ impl MidiPad {
 
                     // Draw the pad and handle interaction
                     let pad_response =
-                        self.draw_pad(ui, &theme, pad_rect, &pad_config, pad_index, velocity);
+                        self.draw_pad(ui, theme, pad_rect, &pad_config, pad_index, velocity);
 
                     // Handle pad interaction
                     if pad_response.clicked() {
@@ -410,8 +423,6 @@ impl MidiPad {
         // Draw border
         let border_color = if is_pressed {
             theme.primary()
-        } else if is_hovered {
-            theme.border()
         } else {
             theme.border()
         };
@@ -457,8 +468,6 @@ impl MidiPad {
         // Draw border (thicker for this variant)
         let border_color = if is_pressed {
             base_color
-        } else if is_hovered {
-            theme.border()
         } else {
             theme.border()
         };
@@ -607,16 +616,19 @@ pub struct MidiPadResponse {
 
 impl MidiPadResponse {
     /// Check if any pad was pressed
+    #[must_use]
     pub fn has_press(&self) -> bool {
         self.pressed.is_some()
     }
 
     /// Check if any pad was released
+    #[must_use]
     pub fn has_release(&self) -> bool {
         self.released.is_some()
     }
 
     /// Check if any pads are being held
+    #[must_use]
     pub fn has_held(&self) -> bool {
         !self.held.is_empty()
     }

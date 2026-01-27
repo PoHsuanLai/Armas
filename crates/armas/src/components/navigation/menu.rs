@@ -57,6 +57,14 @@ impl SubmenuState {
     }
 }
 
+/// Context for rendering menu items (groups common parameters)
+struct MenuRenderContext<'a> {
+    ui: &'a mut Ui,
+    theme: &'a crate::Theme,
+    menu_id: Id,
+    menu_width: f32,
+}
+
 // ============================================================================
 // Constants (matching shadcn Tailwind values)
 // ============================================================================
@@ -406,11 +414,14 @@ impl Menu {
         let popover_response = self.popover.show(ctx, &theme, anchor_rect, |ui| {
             ui.spacing_mut().item_spacing = vec2(0.0, 1.0);
 
-            render_items(
+            let mut ctx = MenuRenderContext {
                 ui,
-                &theme,
+                theme: &theme,
                 menu_id,
                 menu_width,
+            };
+            render_items(
+                &mut ctx,
                 &items,
                 &mut selected_index,
                 &mut submenu_state,
@@ -506,10 +517,7 @@ impl Menu {
 // ============================================================================
 
 fn render_items(
-    ui: &mut Ui,
-    theme: &crate::Theme,
-    menu_id: Id,
-    menu_width: f32,
+    ctx: &mut MenuRenderContext,
     items: &[MenuItemData],
     selected_index: &mut Option<usize>,
     submenu_state: &mut SubmenuState,
@@ -518,12 +526,12 @@ fn render_items(
     for (idx, item) in items.iter().enumerate() {
         match &item.kind {
             MenuItemKind::Separator => {
-                render_separator(ui, theme);
+                render_separator(ctx.ui, ctx.theme);
             }
             MenuItemKind::Item { destructive } => {
                 let (result, _) = render_item_with_hover(
-                    ui,
-                    theme,
+                    ctx.ui,
+                    ctx.theme,
                     idx,
                     item,
                     *destructive,
@@ -536,8 +544,8 @@ fn render_items(
             }
             MenuItemKind::Checkbox { checked } => {
                 let (result, _) = render_item_with_hover(
-                    ui,
-                    theme,
+                    ctx.ui,
+                    ctx.theme,
                     idx,
                     item,
                     false,
@@ -555,8 +563,8 @@ fn render_items(
                 selected,
             } => {
                 let (result, _) = render_item_with_hover(
-                    ui,
-                    theme,
+                    ctx.ui,
+                    ctx.theme,
                     idx,
                     item,
                     false,
@@ -569,18 +577,20 @@ fn render_items(
                 }
             }
             MenuItemKind::Submenu { items: sub_items } => {
-                render_submenu(
-                    ui,
-                    theme,
-                    menu_id,
-                    menu_width,
+                let submenu_params = SubmenuParams {
                     idx,
                     item,
                     sub_items,
+                };
+                let render_params = RenderSubmenuParams {
+                    menu_id: ctx.menu_id,
+                    menu_width: ctx.menu_width,
+                    submenu_params,
                     selected_index,
                     submenu_state,
                     response,
-                );
+                };
+                render_submenu(ctx.ui, ctx.theme, render_params);
             }
         }
     }
@@ -638,16 +648,15 @@ fn render_item_with_hover(
     );
 
     // Render content
-    render_item_content(
-        ui,
-        theme,
+    let params = ItemContentParams {
         rect,
         item,
         destructive,
-        is_selected || item_response.hovered(),
+        highlighted: is_selected || item_response.hovered(),
         has_indicator,
         variant,
-    );
+    };
+    render_item_content(ui, theme, params);
 
     let clicked = if item_response.clicked() && !item.disabled {
         Some(idx)
@@ -682,38 +691,49 @@ fn render_item_background(
     }
 }
 
-fn render_item_content(
-    ui: &mut Ui,
-    theme: &crate::Theme,
+/// Parameters for rendering item content
+struct ItemContentParams<'a> {
     rect: Rect,
-    item: &MenuItemData,
+    item: &'a MenuItemData,
     destructive: bool,
     highlighted: bool,
     has_indicator: bool,
     variant: ItemVariant,
-) {
-    let (text_color, icon_color) = get_item_colors(theme, destructive, highlighted, item.disabled);
+}
 
-    let mut x = rect.left();
+fn render_item_content(ui: &mut Ui, theme: &crate::Theme, params: ItemContentParams) {
+    let (text_color, icon_color) = get_item_colors(
+        theme,
+        params.destructive,
+        params.highlighted,
+        params.item.disabled,
+    );
+
+    let mut x = params.rect.left();
 
     // Left padding
-    x += if has_indicator || item.inset {
+    x += if params.has_indicator || params.item.inset {
         ITEM_INSET_LEFT
     } else {
         ITEM_PADDING_X
     };
 
     // Checkbox/Radio indicator
-    if let Some(checked) = variant.is_checked() {
+    if let Some(checked) = params.variant.is_checked() {
         if checked {
-            render_indicator(ui, theme, rect, matches!(variant, ItemVariant::Checkbox(_)));
+            render_indicator(
+                ui,
+                theme,
+                params.rect,
+                matches!(params.variant, ItemVariant::Checkbox(_)),
+            );
         }
     }
 
     // Icon
-    if let Some(icon) = &item.icon {
+    if let Some(icon) = &params.item.icon {
         ui.painter().text(
-            egui::pos2(x, rect.center().y),
+            egui::pos2(x, params.rect.center().y),
             egui::Align2::LEFT_CENTER,
             icon,
             egui::FontId::proportional(ITEM_ICON_SIZE),
@@ -724,18 +744,18 @@ fn render_item_content(
 
     // Label
     ui.painter().text(
-        egui::pos2(x, rect.center().y),
+        egui::pos2(x, params.rect.center().y),
         egui::Align2::LEFT_CENTER,
-        &item.label,
+        &params.item.label,
         egui::FontId::proportional(ITEM_TEXT_SIZE),
         text_color,
     );
 
     // Shortcut (right-aligned)
-    if let Some(shortcut) = &item.shortcut {
+    if let Some(shortcut) = &params.item.shortcut {
         let shortcut_rect = Rect::from_min_max(
-            egui::pos2(rect.right() - 80.0, rect.top()),
-            egui::pos2(rect.right() - ITEM_PADDING_X, rect.bottom()),
+            egui::pos2(params.rect.right() - 80.0, params.rect.top()),
+            egui::pos2(params.rect.right() - ITEM_PADDING_X, params.rect.bottom()),
         );
         ui.scope_builder(egui::UiBuilder::new().max_rect(shortcut_rect), |ui| {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -764,24 +784,30 @@ fn render_indicator(ui: &mut Ui, theme: &crate::Theme, rect: Rect, is_checkbox: 
     }
 }
 
-fn render_submenu(
-    ui: &mut Ui,
-    theme: &crate::Theme,
+/// Parameters for rendering a submenu
+struct SubmenuParams<'a> {
+    idx: usize,
+    item: &'a MenuItemData,
+    sub_items: &'a [MenuItemData],
+}
+
+/// Parameters for render_submenu function
+struct RenderSubmenuParams<'a> {
     menu_id: Id,
     menu_width: f32,
-    idx: usize,
-    item: &MenuItemData,
-    sub_items: &[MenuItemData],
-    selected_index: &mut Option<usize>,
-    submenu_state: &mut SubmenuState,
-    response: &mut MenuResponse,
-) {
-    let is_selected = *selected_index == Some(idx);
-    let is_submenu_open = submenu_state.is_open(idx);
+    submenu_params: SubmenuParams<'a>,
+    selected_index: &'a mut Option<usize>,
+    submenu_state: &'a mut SubmenuState,
+    response: &'a mut MenuResponse,
+}
+
+fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams) {
+    let is_selected = *params.selected_index == Some(params.submenu_params.idx);
+    let is_submenu_open = params.submenu_state.is_open(params.submenu_params.idx);
 
     let (rect, item_response) = ui.allocate_exact_size(
         vec2(ui.available_width(), ITEM_HEIGHT),
-        if item.disabled {
+        if params.submenu_params.item.disabled {
             Sense::hover()
         } else {
             Sense::click()
@@ -789,22 +815,34 @@ fn render_submenu(
     );
 
     // Open submenu when hovering the trigger
-    if item_response.hovered() && !item.disabled {
-        *selected_index = Some(idx);
-        submenu_state.open_submenu(idx);
+    if item_response.hovered() && !params.submenu_params.item.disabled {
+        *params.selected_index = Some(params.submenu_params.idx);
+        params.submenu_state.open_submenu(params.submenu_params.idx);
     }
 
     // Render background
     let highlighted = is_selected || item_response.hovered() || is_submenu_open;
-    render_item_background(ui, theme, rect, highlighted, false, item.disabled);
+    render_item_background(
+        ui,
+        theme,
+        rect,
+        highlighted,
+        false,
+        params.submenu_params.item.disabled,
+    );
 
     // Render content (label + chevron)
-    let (text_color, icon_color) = get_item_colors(theme, false, highlighted, item.disabled);
+    let (text_color, icon_color) = get_item_colors(
+        theme,
+        false,
+        highlighted,
+        params.submenu_params.item.disabled,
+    );
 
     let mut x = rect.left() + ITEM_PADDING_X;
 
     // Icon
-    if let Some(icon) = &item.icon {
+    if let Some(icon) = &params.submenu_params.item.icon {
         ui.painter().text(
             egui::pos2(x, rect.center().y),
             egui::Align2::LEFT_CENTER,
@@ -819,7 +857,7 @@ fn render_submenu(
     ui.painter().text(
         egui::pos2(x, rect.center().y),
         egui::Align2::LEFT_CENTER,
-        &item.label,
+        &params.submenu_params.item.label,
         egui::FontId::proportional(ITEM_TEXT_SIZE),
         text_color,
     );
@@ -846,37 +884,38 @@ fn render_submenu(
         vec2(0.0, rect.height()),
     );
 
-    let submenu_id = menu_id.with(("submenu", idx));
-    let submenu_should_be_open = submenu_state.is_open(idx) && !item.disabled;
+    let submenu_id = params.menu_id.with(("submenu", params.submenu_params.idx));
+    let submenu_should_be_open = params.submenu_state.is_open(params.submenu_params.idx)
+        && !params.submenu_params.item.disabled;
 
     let mut submenu = Menu::new(submenu_id)
         .position(PopoverPosition::Right)
-        .width(menu_width)
+        .width(params.menu_width)
         .open(submenu_should_be_open);
 
     let sub_response = submenu.show(ui.ctx(), submenu_anchor, |builder| {
-        for sub_item in sub_items {
-            add_item_to_builder(builder, sub_item, menu_id, menu_width);
+        for sub_item in params.submenu_params.sub_items {
+            add_item_to_builder(builder, sub_item, params.menu_id, params.menu_width);
         }
     });
 
     // Propagate submenu responses
     if sub_response.selected.is_some() {
-        response.selected = sub_response.selected;
+        params.response.selected = sub_response.selected;
     }
     if sub_response.checkbox_toggled.is_some() {
-        response.checkbox_toggled = sub_response.checkbox_toggled;
+        params.response.checkbox_toggled = sub_response.checkbox_toggled;
     }
     if sub_response.radio_selected.is_some() {
-        response.radio_selected = sub_response.radio_selected;
+        params.response.radio_selected = sub_response.radio_selected;
     }
 }
 
 fn add_item_to_builder(
     builder: &mut MenuBuilder,
     item: &MenuItemData,
-    menu_id: Id,
-    menu_width: f32,
+    _menu_id: Id,
+    _menu_width: f32,
 ) {
     match &item.kind {
         MenuItemKind::Separator => builder.separator(),
@@ -924,7 +963,7 @@ fn add_item_to_builder(
             let items_clone = items.clone();
             let mut b = builder.submenu(&item.label, |sub| {
                 for sub_item in &items_clone {
-                    add_item_to_builder(sub, sub_item, menu_id, menu_width);
+                    add_item_to_builder(sub, sub_item, _menu_id, _menu_width);
                 }
             });
             if let Some(icon) = &item.icon {

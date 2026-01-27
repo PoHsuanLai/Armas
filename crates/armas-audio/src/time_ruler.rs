@@ -1,12 +1,12 @@
 //! Time Ruler Component
 //!
 //! Horizontal ruler showing measures, beats, and subdivisions for DAW timeline.
-//! Designed to align perfectly with PianoRollGrid's vertical grid lines.
+//! Designed to align perfectly with `PianoRollGrid`'s vertical grid lines.
 
 use armas::theme::Theme;
 use egui::{Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 
-/// Re-export GridDivision from piano_roll_grid for time subdivisions
+/// Re-export `GridDivision` from `piano_roll_grid` for time subdivisions
 pub use super::piano_roll_grid::GridDivision;
 
 /// Response from the time ruler
@@ -17,7 +17,7 @@ pub struct TimeRulerResponse {
 }
 
 /// Time display mode for the ruler
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TimeDisplayMode {
     /// Display as bars:beats (e.g., "1.1", "1.2", "2.1")
     BarsBeatsSixteenths,
@@ -27,7 +27,7 @@ pub enum TimeDisplayMode {
 
 /// Horizontal time ruler for DAW timeline
 ///
-/// Shows measures, beats, and subdivisions with precise alignment to PianoRollGrid.
+/// Shows measures, beats, and subdivisions with precise alignment to `PianoRollGrid`.
 /// Uses the same measurement system to ensure perfect synchronization.
 ///
 /// # Example
@@ -62,7 +62,7 @@ pub struct TimeRuler {
     time_mode: TimeDisplayMode,
     /// Tempo (BPM) for minutes:seconds mode
     tempo: f32,
-    /// Optional ID for ScrollArea (to avoid conflicts when multiple rulers exist)
+    /// Optional ID for `ScrollArea` (to avoid conflicts when multiple rulers exist)
     id: Option<egui::Id>,
 }
 
@@ -74,6 +74,7 @@ impl Default for TimeRuler {
 
 impl TimeRuler {
     /// Create a new time ruler with default settings
+    #[must_use]
     pub fn new() -> Self {
         Self {
             measures: 8,
@@ -89,61 +90,70 @@ impl TimeRuler {
         }
     }
 
-    /// Set custom ID for the ScrollArea (prevents conflicts when multiple rulers exist)
+    /// Set custom ID for the `ScrollArea` (prevents conflicts when multiple rulers exist)
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
     }
 
     /// Set number of measures to display
+    #[must_use]
     pub fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set width per beat in pixels (zoom level)
+    #[must_use]
     pub fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width;
         self
     }
 
     /// Set beats per measure (time signature numerator)
+    #[must_use]
     pub fn beats_per_measure(mut self, beats: u32) -> Self {
         self.beats_per_measure = beats;
         self
     }
 
     /// Set grid division for subdivisions
+    #[must_use]
     pub fn division(mut self, division: GridDivision) -> Self {
         self.division = division;
         self
     }
 
     /// Set ruler height
+    #[must_use]
     pub fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Set whether to show beat numbers
+    #[must_use]
     pub fn show_beat_numbers(mut self, show: bool) -> Self {
         self.show_beat_numbers = show;
         self
     }
 
     /// Set whether to show subdivision tick marks
+    #[must_use]
     pub fn show_subdivisions(mut self, show: bool) -> Self {
         self.show_subdivisions = show;
         self
     }
 
     /// Set time display mode
+    #[must_use]
     pub fn time_mode(mut self, mode: TimeDisplayMode) -> Self {
         self.time_mode = mode;
         self
     }
 
     /// Set tempo (BPM) for minutes:seconds display
+    #[must_use]
     pub fn tempo(mut self, tempo: f32) -> Self {
         self.tempo = tempo;
         self
@@ -159,7 +169,7 @@ impl TimeRuler {
         }
     }
 
-    /// Show the time ruler without ScrollArea wrapper
+    /// Show the time ruler without `ScrollArea` wrapper
     pub fn show_no_scroll(self, ui: &mut Ui, theme: &Theme) -> TimeRulerResponse {
         TimeRulerResponse {
             response: self.show_inner(ui, theme),
@@ -249,7 +259,7 @@ impl TimeRuler {
         response
     }
 
-    /// Draw vertical grid lines matching PianoRollGrid
+    /// Draw vertical grid lines matching `PianoRollGrid`
     fn draw_grid_lines(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
         let divisions_per_beat = 1.0 / self.division.beat_fraction();
         let total_beats = self.measures as f32 * self.beats_per_measure as f32;
@@ -313,7 +323,7 @@ impl TimeRuler {
                     let seconds = (total_beats / self.tempo) * 60.0;
                     let minutes = (seconds / 60.0) as u32;
                     let secs = (seconds % 60.0) as u32;
-                    format!("{}:{:02}", minutes, secs)
+                    format!("{minutes}:{secs:02}")
                 }
             };
 
@@ -346,7 +356,7 @@ impl TimeRuler {
             painter.text(
                 label_pos,
                 egui::Align2::LEFT_TOP,
-                format!("{}", beat_in_measure),
+                format!("{beat_in_measure}"),
                 egui::FontId::proportional(9.0),
                 theme.muted_foreground(),
             );

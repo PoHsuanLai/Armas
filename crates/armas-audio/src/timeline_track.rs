@@ -29,11 +29,13 @@ pub struct MidiData {
 
 impl MidiData {
     /// Create empty MIDI data (will show simulated pattern)
+    #[must_use]
     pub fn empty() -> Self {
         Self { notes: Vec::new() }
     }
 
     /// Create MIDI data from notes
+    #[must_use]
     pub fn from_notes(notes: Vec<MidiNote>) -> Self {
         Self { notes }
     }
@@ -65,6 +67,7 @@ pub struct AutomationData {
 
 impl AutomationData {
     /// Create empty automation data (will show simulated curve)
+    #[must_use]
     pub fn empty() -> Self {
         Self { points: Vec::new() }
     }
@@ -74,6 +77,7 @@ impl AutomationData {
     /// For display on timeline, pass pre-interpolated points.
     /// If integrating with `audio-automation`, sample the envelope
     /// at regular intervals and pass the results here.
+    #[must_use]
     pub fn from_points(points: Vec<AutomationPoint>) -> Self {
         Self { points }
     }
@@ -118,13 +122,14 @@ impl Default for FadeCurve {
 impl FadeCurve {
     /// Apply the fade curve to a normalized position (0.0 to 1.0)
     /// Returns gain value (0.0 to 1.0)
+    #[must_use]
     pub fn apply(&self, t: f32) -> f32 {
         let t = t.clamp(0.0, 1.0);
         match self {
-            FadeCurve::Linear => t,
-            FadeCurve::Exponential => t * t,
-            FadeCurve::Logarithmic => t.sqrt(),
-            FadeCurve::SCurve => {
+            Self::Linear => t,
+            Self::Exponential => t * t,
+            Self::Logarithmic => t.sqrt(),
+            Self::SCurve => {
                 // Smoothstep function
                 t * t * (3.0 - 2.0 * t)
             }
@@ -158,6 +163,7 @@ impl Default for FadeSettings {
 
 impl FadeSettings {
     /// Create new fade settings with specified durations
+    #[must_use]
     pub fn new(fade_in: f32, fade_out: f32) -> Self {
         Self {
             fade_in,
@@ -167,12 +173,14 @@ impl FadeSettings {
     }
 
     /// Set fade in curve type
+    #[must_use]
     pub fn fade_in_curve(mut self, curve: FadeCurve) -> Self {
         self.fade_in_curve = curve;
         self
     }
 
     /// Set fade out curve type
+    #[must_use]
     pub fn fade_out_curve(mut self, curve: FadeCurve) -> Self {
         self.fade_out_curve = curve;
         self
@@ -209,46 +217,53 @@ impl Default for PlaybackSettings {
 
 impl PlaybackSettings {
     /// Create new playback settings with specified gain
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Set clip gain (linear, 1.0 = 0dB)
+    #[must_use]
     pub fn gain(mut self, gain: f32) -> Self {
         self.gain = gain.max(0.0);
         self
     }
 
     /// Set time stretch ratio
+    #[must_use]
     pub fn time_stretch(mut self, ratio: f32) -> Self {
         self.time_stretch = ratio.clamp(0.25, 4.0);
         self
     }
 
     /// Set pitch shift in semitones
+    #[must_use]
     pub fn pitch_shift(mut self, semitones: i32) -> Self {
         self.pitch_shift = semitones.clamp(-24, 24);
         self
     }
 
     /// Set reversed playback
+    #[must_use]
     pub fn reversed(mut self, reversed: bool) -> Self {
         self.reversed = reversed;
         self
     }
 
     /// Set source offset
+    #[must_use]
     pub fn source_offset(mut self, offset: f32) -> Self {
         self.source_offset = offset.max(0.0);
         self
     }
 
     /// Convert gain to decibels
+    #[must_use]
     pub fn gain_db(&self) -> f32 {
         if self.gain > 0.0 {
             20.0 * self.gain.log10()
         } else {
-            -std::f32::INFINITY
+            -f32::INFINITY
         }
     }
 
@@ -368,54 +383,63 @@ impl Region {
     }
 
     /// Set region color
+    #[must_use]
     pub fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set selected state
+    #[must_use]
     pub fn selected(mut self, selected: bool) -> Self {
         self.selected = selected;
         self
     }
 
     /// Set muted state
+    #[must_use]
     pub fn muted(mut self, muted: bool) -> Self {
         self.muted = muted;
         self
     }
 
     /// Set fade settings
+    #[must_use]
     pub fn fades(mut self, fades: FadeSettings) -> Self {
         self.fades = fades;
         self
     }
 
     /// Set fade in duration
+    #[must_use]
     pub fn fade_in(mut self, duration: f32) -> Self {
         self.fades.fade_in = duration.max(0.0);
         self
     }
 
     /// Set fade out duration
+    #[must_use]
     pub fn fade_out(mut self, duration: f32) -> Self {
         self.fades.fade_out = duration.max(0.0);
         self
     }
 
     /// Set playback settings
+    #[must_use]
     pub fn playback(mut self, playback: PlaybackSettings) -> Self {
         self.playback = playback;
         self
     }
 
     /// Set clip gain (linear, 1.0 = 0dB)
+    #[must_use]
     pub fn gain(mut self, gain: f32) -> Self {
         self.playback.gain = gain.max(0.0);
         self
     }
 
     /// Set clip gain in decibels
+    #[must_use]
     pub fn gain_db(mut self, db: f32) -> Self {
         self.playback.set_gain_db(db);
         self
@@ -449,11 +473,11 @@ pub struct TimelineTrackResponse {
     pub region_clicked: Option<usize>,
     /// Empty area clicked (position in beats)
     pub empty_clicked: Option<f32>,
-    /// Region edge being dragged (region_idx, edge, new_position)
+    /// Region edge being dragged (`region_idx`, edge, `new_position`)
     pub region_edge_dragged: Option<(usize, RegionEdge, f32)>,
-    /// Fade handle being dragged (region_idx, handle, new_duration)
+    /// Fade handle being dragged (`region_idx`, handle, `new_duration`)
     pub fade_handle_dragged: Option<(usize, FadeHandle, f32)>,
-    /// Region body dragged (region_idx, new_start_position)
+    /// Region body dragged (`region_idx`, `new_start_position`)
     pub region_dragged: Option<(usize, f32)>,
     /// Region double-clicked for name editing
     pub region_double_clicked: Option<usize>,
@@ -488,7 +512,7 @@ pub struct TimelineTrack {
     height: f32,
     /// Height of regions within the track (None = track height - padding)
     region_height: Option<f32>,
-    /// Width per beat in pixels (must match TimeRuler)
+    /// Width per beat in pixels (must match `TimeRuler`)
     beat_width: f32,
     /// Number of measures to display
     measures: u32,
@@ -502,6 +526,7 @@ pub struct TimelineTrack {
 
 impl TimelineTrack {
     /// Create a new timeline track
+    #[must_use]
     pub fn new() -> Self {
         Self {
             id: None,
@@ -522,42 +547,49 @@ impl TimelineTrack {
     }
 
     /// Set track height
+    #[must_use]
     pub fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Set region height (None = auto-calculate with padding)
+    #[must_use]
     pub fn region_height(mut self, height: f32) -> Self {
         self.region_height = Some(height);
         self
     }
 
-    /// Set pixels per beat (must match TimeRuler)
+    /// Set pixels per beat (must match `TimeRuler`)
+    #[must_use]
     pub fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width;
         self
     }
 
     /// Set number of measures
+    #[must_use]
     pub fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set beats per measure
+    #[must_use]
     pub fn beats_per_measure(mut self, beats: u32) -> Self {
         self.beats_per_measure = beats;
         self
     }
 
     /// Set track color (used for regions if not specified)
+    #[must_use]
     pub fn track_color(mut self, color: Color32) -> Self {
         self.track_color = Some(color);
         self
     }
 
     /// Set background color
+    #[must_use]
     pub fn background_color(mut self, color: Color32) -> Self {
         self.background_color = Some(color);
         self
@@ -822,9 +854,9 @@ impl TimelineTrack {
         if (region.playback.gain - 1.0).abs() > 0.01 {
             let gain_db = region.playback.gain_db();
             let gain_text = if gain_db > 0.0 {
-                format!(" +{:.1}dB", gain_db)
+                format!(" +{gain_db:.1}dB")
             } else {
-                format!(" {:.1}dB", gain_db)
+                format!(" {gain_db:.1}dB")
             };
 
             let gain_pos = Pos2::new(name_pos.x + name_galley.rect.width() + 4.0, name_pos.y);
@@ -844,7 +876,7 @@ impl TimelineTrack {
                 RegionType::Audio => self.draw_waveform_peaks(painter, rect, region_color, &[]),
                 RegionType::Midi(data) => self.draw_midi_pattern(painter, rect, region_color, data),
                 RegionType::Automation(data) => {
-                    self.draw_automation_curve(painter, rect, region_color, data)
+                    self.draw_automation_curve(painter, rect, region_color, data);
                 }
             }
         }

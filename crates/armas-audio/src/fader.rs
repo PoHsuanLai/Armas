@@ -37,7 +37,7 @@ pub enum FaderScalePosition {
 }
 
 /// Fader response curve for different control types
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FaderCurve {
     /// Linear response (0.0 to 1.0 mapped directly)
     Linear,
@@ -106,6 +106,7 @@ pub struct Fader {
 
 impl Fader {
     /// Create a new minimal fader with default dimensions (track only)
+    #[must_use]
     pub fn new(value: f32) -> Self {
         Self {
             id: None,
@@ -129,6 +130,7 @@ impl Fader {
     }
 
     /// Set custom size
+    #[must_use]
     pub fn size(mut self, width: f32, height: f32) -> Self {
         self.width = width;
         self.height = height;
@@ -136,30 +138,35 @@ impl Fader {
     }
 
     /// Show scale on the right (convenience method)
+    #[must_use]
     pub fn show_scale(mut self) -> Self {
         self.scale_position = FaderScalePosition::Right;
         self
     }
 
     /// Show scale on the left
+    #[must_use]
     pub fn scale_left(mut self) -> Self {
         self.scale_position = FaderScalePosition::Left;
         self
     }
 
     /// Show scale on the right
+    #[must_use]
     pub fn scale_right(mut self) -> Self {
         self.scale_position = FaderScalePosition::Right;
         self
     }
 
     /// Set fader response curve for different control types
+    #[must_use]
     pub fn response_curve(mut self, curve: FaderCurve) -> Self {
         self.curve = curve;
         self
     }
 
     /// Set track/background color
+    #[must_use]
     pub fn track_color(mut self, color: Color32) -> Self {
         self.track_color = Some(color);
         self
@@ -167,12 +174,14 @@ impl Fader {
 
     /// Set value range for dB or other units (min, max)
     /// This affects the scale display but not the internal 0.0-1.0 value mapping
+    #[must_use]
     pub fn db_range(mut self, min: f32, max: f32) -> Self {
         self.value_range = (min.min(max), min.max(max));
         self
     }
 
     /// Set default value for double-click reset
+    #[must_use]
     pub fn default_value(mut self, value: f32) -> Self {
         self.default_value = Some(value);
         self
@@ -182,12 +191,14 @@ impl Fader {
     ///
     /// When enabled, holding Ctrl/Cmd while dragging uses velocity mode
     /// where faster mouse movement = larger value changes.
+    #[must_use]
     pub fn velocity_mode(mut self, enabled: bool) -> Self {
         self.velocity_mode = enabled;
         self
     }
 
     /// Set sensitivity for velocity-based drag mode
+    #[must_use]
     pub fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
         self.velocity_sensitivity = sensitivity;
         self
@@ -213,189 +224,44 @@ impl Fader {
         // Clamp value to valid range
         self.value = self.value.clamp(0.0, 1.0);
 
-        // Width controls the fader track, scale is additional space
-        let scale_width = if self.scale_position != FaderScalePosition::None {
-            10.0 // Minimal scale width - just enough for text
-        } else {
+        // Calculate layout dimensions
+        let scale_width = if self.scale_position == FaderScalePosition::None {
             0.0
+        } else {
+            10.0
         };
-
-        // Total allocation = fader width + scale width
         let total_width = self.width + scale_width;
         let desired_size = Vec2::new(total_width, self.height);
         let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
 
         // Calculate fader rect (the actual fader area, always self.width wide)
-        let fader_rect = if self.scale_position == FaderScalePosition::Left {
-            // Scale on left, fader on right
-            Rect::from_min_size(
-                Pos2::new(rect.min.x + scale_width, rect.min.y),
-                Vec2::new(self.width, rect.height()),
-            )
-        } else if self.scale_position == FaderScalePosition::Right {
-            // Scale on right, fader on left
-            Rect::from_min_size(rect.min, Vec2::new(self.width, rect.height()))
-        } else {
-            // No scale, fader uses full allocated width
-            rect
-        };
+        let fader_rect = self.calculate_fader_rect(rect, scale_width);
 
-        // Handle double-click to reset
-        if response.double_clicked() {
-            if let Some(default) = self.default_value {
-                if (self.value - default).abs() > 0.001 {
-                    self.value = default.clamp(0.0, 1.0);
-                    changed = true;
-                    response.mark_changed();
-                }
+        // Handle interactions
+        if self.handle_double_click(&response, &mut changed) {
+            response.mark_changed();
+        } else if response.drag_started() {
+            self.handle_drag_start(ui, &response, drag_state_id);
+        } else if response.dragged() {
+            if self.handle_dragging(ui, &response, drag_state_id, fader_rect, &mut changed) {
+                response.mark_changed();
             }
-        }
-        // Handle drag start
-        else if response.drag_started() {
-            let mut drag_state = FaderDragState {
-                drag: VelocityDrag::new(
-                    VelocityDragConfig::new().sensitivity(self.velocity_sensitivity),
-                ),
-                drag_start_value: self.value,
-            };
-
-            if let Some(pos) = response.interact_pointer_pos() {
-                let use_velocity =
-                    self.velocity_mode && ui.input(|i| i.modifiers.command || i.modifiers.ctrl);
-                drag_state
-                    .drag
-                    .begin(self.value as f64, pos.y as f64, use_velocity);
-            }
-
-            ui.ctx()
-                .data_mut(|d| d.insert_temp(drag_state_id, drag_state));
-        }
-        // Handle dragging
-        else if response.dragged() {
-            if let Some(pos) = response.interact_pointer_pos() {
-                let mut drag_state: FaderDragState = ui
-                    .ctx()
-                    .data_mut(|d| d.get_temp(drag_state_id).unwrap_or_default());
-
-                if drag_state.drag.mode() == DragMode::Velocity {
-                    // Velocity mode: faster movement = larger change
-                    let delta =
-                        drag_state
-                            .drag
-                            .update_tracked(pos.y as f64, 1.0, self.height as f64);
-                    // Invert because dragging up should increase value
-                    let new_value = drag_state.drag_start_value - delta as f32;
-                    if (new_value - self.value).abs() > 0.0001 {
-                        self.value = new_value.clamp(0.0, 1.0);
-                        changed = true;
-                        response.mark_changed();
-                    }
-                } else {
-                    // Absolute mode: position maps directly to value
-                    // Calculate scale for interaction bounds
-                    let scale_y = self.height / FADER_DEFAULT_HEIGHT;
-
-                    // Channel bounds (where the thumb actually moves) - now full height
-                    let channel_top = fader_rect.min.y;
-                    let channel_bottom = fader_rect.max.y;
-                    let channel_height = channel_bottom - channel_top;
-
-                    // Account for thumb height to keep it fully inside the channel
-                    let thumb_height = THUMB_HEIGHT * scale_y;
-                    let thumb_travel_range = channel_height - thumb_height;
-
-                    // Calculate value from Y position (inverted: top = 1.0, bottom = 0.0)
-                    let thumb_top_pos = (pos.y - channel_top).clamp(0.0, thumb_travel_range);
-                    let normalized = 1.0 - (thumb_top_pos / thumb_travel_range);
-                    self.value = normalized;
-                    changed = true;
-                    response.mark_changed();
-                }
-
-                ui.ctx()
-                    .data_mut(|d| d.insert_temp(drag_state_id, drag_state));
-            }
-        }
-        // Handle drag end
-        else if response.drag_stopped() {
-            ui.ctx().data_mut(|d| {
-                let mut drag_state: FaderDragState = d.get_temp(drag_state_id).unwrap_or_default();
-                drag_state.drag.end();
-                d.insert_temp(drag_state_id, drag_state);
-            });
+        } else if response.drag_stopped() {
+            self.handle_drag_end(ui, drag_state_id);
         }
 
+        // Render fader
         if ui.is_rect_visible(fader_rect) {
             let painter = ui.painter();
-
-            // Calculate scale factor based on default size
             let scale_x = self.width / FADER_DEFAULT_WIDTH;
             let scale_y = self.height / FADER_DEFAULT_HEIGHT;
-            let scale = scale_x.min(scale_y); // Use uniform scale to maintain proportions
+            let scale = scale_x.min(scale_y);
 
-            // Track plate dimensions
-            let track_rect = fader_rect;
+            self.render_track(painter, fader_rect, scale_x, scale_y, scale, theme);
+            self.render_thumb(painter, fader_rect, scale_x, scale_y, scale, theme);
 
-            // Draw the slider channel/crack (vertical dark gradient track)
-            // Channel fills the full height (no internal padding)
-            // Shift channel position based on scale side
-            let channel_width = CHANNEL_WIDTH * scale_x;
-            let channel_x = if self.scale_position == FaderScalePosition::Left {
-                // Pad left side when scale is on left
-                track_rect.min.x + 2.0 + (self.width - 2.0 - channel_width) / 2.0
-            } else if self.scale_position == FaderScalePosition::Right {
-                // Pad right side when scale is on right
-                track_rect.min.x + (self.width - 2.0 - channel_width) / 2.0
-            } else {
-                // Center when no scale
-                track_rect.min.x + (self.width - channel_width) / 2.0
-            };
-            let channel_y = track_rect.min.y;
-            let channel_height = self.height;
-
-            let channel_rect = Rect::from_min_size(
-                Pos2::new(channel_x, channel_y),
-                Vec2::new(channel_width, channel_height),
-            );
-
-            // Draw channel background
-            painter.rect_filled(
-                channel_rect,
-                CHANNEL_CORNER_RADIUS * scale,
-                theme.background(),
-            );
-
-            // Add border to channel
-            painter.rect_stroke(
-                channel_rect,
-                CHANNEL_CORNER_RADIUS * scale,
-                (1.0 * scale, theme.border()),
-                egui::StrokeKind::Middle,
-            );
-
-            // Draw fader thumb (scaled)
-            let thumb_height = THUMB_HEIGHT * scale_y;
-            let thumb_width = THUMB_WIDTH * scale_x;
-
-            // Calculate thumb travel range (keep thumb fully inside channel)
-            let thumb_travel_range = channel_height - thumb_height;
-            let thumb_y = channel_y + (1.0 - self.value) * thumb_travel_range;
-
-            // Center thumb horizontally in track
-            let thumb_x = track_rect.min.x + (self.width - thumb_width) / 2.0;
-
-            self.draw_fader_thumb(
-                painter,
-                Pos2::new(thumb_x, thumb_y),
-                thumb_width,
-                thumb_height,
-                scale,
-                &theme,
-            );
-
-            // Draw scale markings
             if self.scale_position != FaderScalePosition::None {
-                self.draw_scale(ui, fader_rect, rect, theme);
+                self.render_scale_marks(ui, fader_rect, rect, theme);
             }
         }
 
@@ -412,6 +278,209 @@ impl Fader {
             value: self.value,
             changed,
         }
+    }
+
+    /// Calculate fader rect based on scale position
+    fn calculate_fader_rect(&self, rect: Rect, scale_width: f32) -> Rect {
+        if self.scale_position == FaderScalePosition::Left {
+            // Scale on left, fader on right
+            Rect::from_min_size(
+                Pos2::new(rect.min.x + scale_width, rect.min.y),
+                Vec2::new(self.width, rect.height()),
+            )
+        } else if self.scale_position == FaderScalePosition::Right {
+            // Scale on right, fader on left
+            Rect::from_min_size(rect.min, Vec2::new(self.width, rect.height()))
+        } else {
+            // No scale, fader uses full allocated width
+            rect
+        }
+    }
+
+    /// Handle double-click to reset to default value
+    fn handle_double_click(&mut self, response: &Response, changed: &mut bool) -> bool {
+        if response.double_clicked() {
+            if let Some(default) = self.default_value {
+                if (self.value - default).abs() > 0.001 {
+                    self.value = default.clamp(0.0, 1.0);
+                    *changed = true;
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    /// Initialize drag state when drag starts
+    fn handle_drag_start(&self, ui: &mut Ui, response: &Response, drag_state_id: egui::Id) {
+        let mut drag_state = FaderDragState {
+            drag: VelocityDrag::new(
+                VelocityDragConfig::new().sensitivity(self.velocity_sensitivity),
+            ),
+            drag_start_value: self.value,
+        };
+
+        if let Some(pos) = response.interact_pointer_pos() {
+            let use_velocity =
+                self.velocity_mode && ui.input(|i| i.modifiers.command || i.modifiers.ctrl);
+            drag_state
+                .drag
+                .begin(self.value as f64, pos.y as f64, use_velocity);
+        }
+
+        ui.ctx()
+            .data_mut(|d| d.insert_temp(drag_state_id, drag_state));
+    }
+
+    /// Handle dragging with velocity or absolute mode
+    fn handle_dragging(
+        &mut self,
+        ui: &mut Ui,
+        response: &Response,
+        drag_state_id: egui::Id,
+        fader_rect: Rect,
+        changed: &mut bool,
+    ) -> bool {
+        if let Some(pos) = response.interact_pointer_pos() {
+            let mut drag_state: FaderDragState = ui
+                .ctx()
+                .data_mut(|d| d.get_temp(drag_state_id).unwrap_or_default());
+
+            let value_changed = if drag_state.drag.mode() == DragMode::Velocity {
+                // Velocity mode: faster movement = larger change
+                let delta = drag_state
+                    .drag
+                    .update_tracked(pos.y as f64, 1.0, self.height as f64);
+                // Invert because dragging up should increase value
+                let new_value = drag_state.drag_start_value - delta as f32;
+                if (new_value - self.value).abs() > 0.0001 {
+                    self.value = new_value.clamp(0.0, 1.0);
+                    *changed = true;
+                    true
+                } else {
+                    false
+                }
+            } else {
+                // Absolute mode: position maps directly to value
+                let scale_y = self.height / FADER_DEFAULT_HEIGHT;
+                let channel_top = fader_rect.min.y;
+                let channel_bottom = fader_rect.max.y;
+                let channel_height = channel_bottom - channel_top;
+                let thumb_height = THUMB_HEIGHT * scale_y;
+                let thumb_travel_range = channel_height - thumb_height;
+
+                // Calculate value from Y position (inverted: top = 1.0, bottom = 0.0)
+                let thumb_top_pos = (pos.y - channel_top).clamp(0.0, thumb_travel_range);
+                let normalized = 1.0 - (thumb_top_pos / thumb_travel_range);
+                self.value = normalized;
+                *changed = true;
+                true
+            };
+
+            ui.ctx()
+                .data_mut(|d| d.insert_temp(drag_state_id, drag_state));
+
+            return value_changed;
+        }
+        false
+    }
+
+    /// Cleanup drag state when drag ends
+    fn handle_drag_end(&self, ui: &mut Ui, drag_state_id: egui::Id) {
+        ui.ctx().data_mut(|d| {
+            let mut drag_state: FaderDragState = d.get_temp(drag_state_id).unwrap_or_default();
+            drag_state.drag.end();
+            d.insert_temp(drag_state_id, drag_state);
+        });
+    }
+
+    /// Render the fader track (channel background)
+    fn render_track(
+        &self,
+        painter: &egui::Painter,
+        fader_rect: Rect,
+        scale_x: f32,
+        _scale_y: f32,
+        scale: f32,
+        theme: &armas::Theme,
+    ) {
+        let track_rect = fader_rect;
+
+        // Calculate channel dimensions and position
+        let channel_width = CHANNEL_WIDTH * scale_x;
+        let channel_x = if self.scale_position == FaderScalePosition::Left {
+            track_rect.min.x + 2.0 + (self.width - 2.0 - channel_width) / 2.0
+        } else if self.scale_position == FaderScalePosition::Right {
+            track_rect.min.x + (self.width - 2.0 - channel_width) / 2.0
+        } else {
+            track_rect.min.x + (self.width - channel_width) / 2.0
+        };
+        let channel_y = track_rect.min.y;
+        let channel_height = self.height;
+
+        let channel_rect = Rect::from_min_size(
+            Pos2::new(channel_x, channel_y),
+            Vec2::new(channel_width, channel_height),
+        );
+
+        // Draw channel background
+        painter.rect_filled(
+            channel_rect,
+            CHANNEL_CORNER_RADIUS * scale,
+            theme.background(),
+        );
+
+        // Add border to channel
+        painter.rect_stroke(
+            channel_rect,
+            CHANNEL_CORNER_RADIUS * scale,
+            (1.0 * scale, theme.border()),
+            egui::StrokeKind::Middle,
+        );
+    }
+
+    /// Render the fader thumb at current position
+    fn render_thumb(
+        &self,
+        painter: &egui::Painter,
+        fader_rect: Rect,
+        scale_x: f32,
+        scale_y: f32,
+        scale: f32,
+        theme: &armas::Theme,
+    ) {
+        let thumb_height = THUMB_HEIGHT * scale_y;
+        let thumb_width = THUMB_WIDTH * scale_x;
+
+        // Calculate thumb position
+        let thumb_pos = self.calculate_thumb_position(fader_rect, thumb_height);
+
+        self.draw_fader_thumb(painter, thumb_pos, thumb_width, thumb_height, scale, theme);
+    }
+
+    /// Calculate thumb position from current value
+    fn calculate_thumb_position(&self, fader_rect: Rect, thumb_height: f32) -> Pos2 {
+        let channel_y = fader_rect.min.y;
+        let channel_height = self.height;
+        let thumb_travel_range = channel_height - thumb_height;
+        let thumb_y = channel_y + (1.0 - self.value) * thumb_travel_range;
+
+        // Center thumb horizontally in track
+        let thumb_width = THUMB_WIDTH * (self.width / FADER_DEFAULT_WIDTH);
+        let thumb_x = fader_rect.min.x + (self.width - thumb_width) / 2.0;
+
+        Pos2::new(thumb_x, thumb_y)
+    }
+
+    /// Render dB scale marks
+    fn render_scale_marks(
+        &self,
+        ui: &mut Ui,
+        fader_rect: Rect,
+        full_rect: Rect,
+        theme: &armas::Theme,
+    ) {
+        self.draw_scale(ui, fader_rect, full_rect, theme);
     }
 
     /// Draw dB scale markings for fader
@@ -637,6 +706,7 @@ pub struct FaderStrip {
 
 impl FaderStrip {
     /// Create a new fader strip with default dimensions (includes housing)
+    #[must_use]
     pub fn new(value: f32) -> Self {
         Self {
             width: STRIP_DEFAULT_WIDTH,
@@ -646,6 +716,7 @@ impl FaderStrip {
     }
 
     /// Set custom size
+    #[must_use]
     pub fn size(mut self, width: f32, height: f32) -> Self {
         self.width = width;
         self.height = height;
@@ -725,7 +796,7 @@ impl FaderStrip {
             // Show the inner fader
             let fader_response = Fader::new(self.value)
                 .size(fader_width, fader_height)
-                .show(&mut fader_ui, &theme);
+                .show(&mut fader_ui, theme);
 
             self.value = fader_response.value;
 

@@ -195,9 +195,7 @@ impl Textarea {
                 };
 
                 // Background color
-                let bg_color = if self.disabled {
-                    theme.muted()
-                } else if self.variant == InputVariant::Filled {
+                let bg_color = if self.disabled || self.variant == InputVariant::Filled {
                     theme.muted()
                 } else {
                     theme.background()

@@ -173,10 +173,8 @@ impl Radio {
         // Outer circle border (shadcn uses primary color when selected)
         let border_color = if self.disabled {
             theme.muted_foreground().gamma_multiply(0.5)
-        } else if selected {
-            theme.primary()
         } else {
-            theme.primary() // shadcn uses primary for unselected border too
+            theme.primary() // shadcn uses primary for both selected and unselected
         };
 
         painter.circle_stroke(center, radius, Stroke::new(BORDER_WIDTH, border_color));

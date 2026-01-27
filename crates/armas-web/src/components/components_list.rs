@@ -9,9 +9,12 @@ const CARD_GAP: f32 = 12.0;
 const CARD_PADDING: f32 = 16.0;
 const CARD_ROUNDING: f32 = 8.0;
 
+/// A page entry with name and render function
+type PageEntry = (&'static str, fn(&mut egui::Ui));
+
 pub struct ComponentsListPage<'a> {
     theme: &'a Theme,
-    pages: &'a [(&'static str, fn(&mut egui::Ui))],
+    pages: &'a [PageEntry],
 }
 
 pub struct ComponentsListResponse {
@@ -19,7 +22,7 @@ pub struct ComponentsListResponse {
 }
 
 impl<'a> ComponentsListPage<'a> {
-    pub fn new(theme: &'a Theme, pages: &'a [(&'static str, fn(&mut egui::Ui))]) -> Self {
+    pub fn new(theme: &'a Theme, pages: &'a [PageEntry]) -> Self {
         Self { theme, pages }
     }
 
@@ -96,7 +99,7 @@ impl<'a> ComponentsListPage<'a> {
         &self,
         ui: &mut egui::Ui,
         title: &str,
-        pages: &[(&'static str, fn(&mut egui::Ui))],
+        pages: &[PageEntry],
         cols: usize,
         response: &mut ComponentsListResponse,
     ) {
