@@ -4,24 +4,13 @@
 [![Documentation](https://docs.rs/armas-audio/badge.svg)](https://docs.rs/armas-audio)
 [![License](https://img.shields.io/crates/l/armas-audio.svg)](https://github.com/PoHsuanLai/Armas)
 
-Audio UI components for [egui](https://github.com/emilk/egui) - specialized widgets for audio production interfaces.
+Audio-specific UI components for [egui](https://github.com/emilk/egui).
 
 ## Overview
 
-`armas-audio` provides a comprehensive set of UI components specifically designed for DAW (Digital Audio Workstation) applications, music production tools, and audio software. Built on top of the Armas component library with glassmorphic styling and professional audio workflows in mind.
+UI components for building DAW (Digital Audio Workstation) interfaces, music production tools, and audio software. Includes MIDI controllers, mixer controls, timeline components, and sequencers. Built on the Armas component library.
 
-## Features
-
-- **🎹 MIDI Controllers** - Piano keyboards, MPE keyboards, drum pads, XY pads
-- **🎚️ Mix Controls** - Faders, knobs, meters, mixer strips
-- **📊 Timeline Components** - Piano roll, automation editor, waveform display
-- **🎵 Sequencers** - Drum sequencer, step sequencer
-- **🎛️ Professional Styling** - Glassmorphic design, smooth animations
-- **🎯 MPE Support** - Full MIDI Polyphonic Expression visualization
-
-## Quick Start
-
-Add this to your `Cargo.toml`:
+## Installation
 
 ```toml
 [dependencies]
@@ -30,7 +19,7 @@ armas = "0.1.0"
 egui = "0.33"
 ```
 
-### Examples
+## Examples
 
 **Fader:**
 ```rust
@@ -117,67 +106,22 @@ if response.stop_clicked {
 }
 ```
 
-## Available Components
+## Components
 
-### MIDI Input
-- **Piano** - Glassmorphic piano keyboard with multiple octaves
-- **MPEKeyboard** - MIDI Polyphonic Expression keyboard with per-note visualization
-- **XYPad** - 2D touch controller for parameter control
-- **ModWheel** - Modulation wheel controller
-- **MIDIPad** - Drum pad / MIDI trigger pad
-
-### Mix Controls
-- **Fader** - Vertical/horizontal fader with precise control
-- **Knob** - Rotary knob with velocity-based dragging
-- **AudioMeter** - Peak and RMS level meter with clip detection
-- **MixerStrip** - Complete channel strip (fader, pan, meters, controls)
-
-### Timeline & Sequencing
-- **Timeline** - Multi-track timeline with drag & drop
-- **TimelineTrack** - Individual track in a timeline
-- **TimelineMarker** - Cue points, tempo, time signature markers
-- **TimelineRegion** - Regions/clips on the timeline
-- **PianoRoll** - MIDI note editor
-- **PianoRollGrid** - Grid for piano roll
-- **WaveformDisplay** - Audio waveform visualization with markers
-- **Playhead** - Playback position indicator
-- **TimeRuler** - Time/measure ruler
-
-### Sequencers
-- **DrumSequencer** - Grid-based drum pattern sequencer
-- **StepSequencer** - Step sequencer for melodic patterns
-
-### Automation
-- **AutomationEditor** - Automation curve editor with multiple curve types
-- **AutomationCanvas** - Canvas for drawing automation
-- **PointHandle** - Draggable automation point with velocity mode
-
-### Utilities
-- **Transport** - Play/stop/record/loop transport controls
-- **ZoomControl** - Horizontal and vertical zoom controls
-- **SnapGrid** - Grid snapping configuration
-- **TrackHeader** - Track name and controls
-
-## Styling
-
-All components follow a consistent design language:
-- **Glassmorphic** - Semi-transparent elements with blur
-- **Smooth Animations** - Easing and momentum scrolling
-- **Professional Look** - Inspired by modern DAWs
-- **Theme Integration** - Uses Armas theme system
+**MIDI Input**: Piano, MPEKeyboard, XYPad, ModWheel, MIDIPad
+**Mix Controls**: Fader, Knob, AudioMeter, MixerStrip
+**Timeline**: Timeline, TimelineTrack, TimelineMarker, TimelineRegion, PianoRoll, WaveformDisplay, Playhead, TimeRuler
+**Sequencers**: DrumSequencer, StepSequencer
+**Automation**: AutomationEditor, AutomationCanvas, PointHandle
+**Utilities**: Transport, ZoomControl, SnapGrid, TrackHeader
 
 ## MPE Support
 
-Full support for MIDI Polyphonic Expression with visual feedback:
-- Per-note velocity (inner circle size)
-- Per-note pressure (outer circle size)
-- Per-note pitch bend (circle X position)
-- Per-note slide (circle Y position)
+MPEKeyboard supports MIDI Polyphonic Expression with visual feedback for per-note velocity, pressure, pitch bend, and slide.
 
 ## Documentation
 
-- [Full API Documentation](https://docs.rs/armas-audio)
-- [Main Armas Library](https://crates.io/crates/armas)
+API documentation: [docs.rs/armas-audio](https://docs.rs/armas-audio)
 
 ## License
 

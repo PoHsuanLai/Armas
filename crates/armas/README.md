@@ -4,22 +4,15 @@
 [![Documentation](https://docs.rs/armas/badge.svg)](https://docs.rs/armas)
 [![License](https://img.shields.io/crates/l/armas.svg)](https://github.com/PoHsuanLai/Armas)
 
-A comprehensive component library for [egui](https://github.com/emilk/egui) with Material Design inspired theming and reusable UI components.
+UI component library for [egui](https://github.com/emilk/egui) following shadcn/ui design patterns.
 
 ## Overview
 
-Armas provides a rich set of UI components following shadcn/ui design patterns, built on top of egui. It includes a powerful theming system with serializable color palettes and spacing configurations, plus over 50 pre-built components for building modern applications.
+Armas is a collection of 50+ reusable UI components for egui. It includes a theme system with serializable color palettes and spacing, along with components like buttons, inputs, dialogs, menus, cards, and layouts.
 
-## Features
+The design is inspired by shadcn/ui's approach to component libraries - focused on composability and consistency rather than heavy abstraction.
 
-- **🎨 Powerful Theme System** - Serializable themes with color palettes and spacing
-- **🧩 50+ Components** - Buttons, inputs, dialogs, menus, cards, layouts, and more
-- **🎯 shadcn/ui Inspired** - Clean, modern design patterns
-- **📦 Zero Runtime Dependencies** - Pure Rust, compiles to WASM
-- **⚡ Animation System** - Easing functions, interpolation, momentum scrolling
-- **🎭 Variants & Sizes** - Flexible component styling with builder patterns
-
-## Quick Start
+## Installation
 
 Add this to your `Cargo.toml`:
 
@@ -29,7 +22,7 @@ armas = "0.1.0"
 egui = "0.33"
 ```
 
-### Basic Example
+## Example
 
 ```rust
 use armas::prelude::*;
@@ -62,43 +55,20 @@ fn ui(ctx: &Context) {
 }
 ```
 
-## Component Categories
+## Components
 
-### Basic Components
-- **Button** - Multiple variants (default, outline, ghost, etc.)
-- **Input** - Text input with validation
-- **Select** - Dropdown selection
-- **Toggle** - Switch/checkbox
-- **Slider** - Range sliders
-- **Progress** - Progress bars and loading indicators
-- **Badge** - Labels and tags
-- **Alert** - Notification messages
+Includes the following component categories:
 
-### Layout Components
-- **Card** - Container with header/footer
-- **Separator** - Dividers
-- **Accordion** - Collapsible sections
-- **Tabs** - Tabbed navigation
-- **BentoGrid** - Responsive grid layout
-- **Sidebar** - Side navigation panels
-- **Table** - Data tables
+**Basic**: Button, Input, Select, Toggle, Slider, Progress, Badge, Alert
+**Layout**: Card, Separator, Accordion, Tabs, BentoGrid, Sidebar, Table
+**Navigation**: Menu, Breadcrumbs, Pagination, TreeView, CommandPalette
+**Overlay**: Dialog, Sheet, Drawer, Tooltip
 
-### Navigation
-- **Menu** - Dropdown menus
-- **Breadcrumbs** - Navigation trails
-- **Pagination** - Page navigation
-- **TreeView** - Hierarchical navigation
-- **CommandPalette** - Quick command access
+Most components support variants (default, outline, ghost, destructive) and sizes (sm, default, lg) through builder methods.
 
-### Overlay Components
-- **Dialog** - Modal dialogs
-- **Sheet** - Slide-out panels
-- **Drawer** - Side drawers
-- **Tooltip** - Hover information
+## Theming
 
-## Theme System
-
-Armas includes a comprehensive theming system:
+The theme system stores color palettes and spacing values in serializable structs. Themes can be loaded from JSON or constructed programmatically:
 
 ```rust
 use armas::theme::{Theme, ThemeColors};
@@ -116,9 +86,7 @@ ctx.set_armas_theme(theme);
 
 ## Documentation
 
-- [Full Documentation](https://docs.rs/armas)
-- [Component Gallery](https://armas-ui.vercel.app) (coming soon)
-- [Examples](https://github.com/PoHsuanLai/Armas/tree/master/examples)
+Full API documentation is available at [docs.rs/armas](https://docs.rs/armas)
 
 ## Related Crates
 

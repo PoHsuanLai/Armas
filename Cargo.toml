@@ -27,11 +27,6 @@ serde_json = "1.0"
 pedantic = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
 
-# These are intentionally not enforced - too noisy for UI code
-# must_use_candidate = "warn"
-# missing_errors_doc = "warn"
-# missing_panics_doc = "warn"
-
 # Allow patterns common in UI/egui code
 module_name_repetitions = "allow"
 similar_names = "allow"

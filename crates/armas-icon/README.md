@@ -4,22 +4,13 @@
 [![Documentation](https://docs.rs/armas-icon/badge.svg)](https://docs.rs/armas-icon)
 [![License](https://img.shields.io/crates/l/armas-icon.svg)](https://github.com/PoHsuanLai/Armas)
 
-Generic SVG-based icon system for [egui](https://github.com/emilk/egui).
+SVG icon rendering system for [egui](https://github.com/emilk/egui).
 
 ## Overview
 
-`armas-icon` provides a lightweight icon rendering system that converts SVG paths into tessellated geometry at compile time for efficient runtime rendering. This is a foundational library used by other Armas crates but can be used standalone for custom icon needs.
+Converts SVG paths into tessellated geometry at compile time for efficient runtime rendering. Used internally by other Armas crates but can be used standalone for custom icon needs.
 
-## Features
-
-- **Compile-time SVG processing** - Icons are parsed and tessellated during build
-- **Efficient rendering** - Pre-tessellated geometry for fast GPU rendering
-- **Flexible sizing** - Scale icons to any size at runtime
-- **Color customization** - Apply any color to icons dynamically
-
-## Usage
-
-Add this to your `Cargo.toml`:
+## Installation
 
 ```toml
 [dependencies]
@@ -27,9 +18,9 @@ armas-icon = "0.1.0"
 egui = "0.33"
 ```
 
-## How It Works
+## How it works
 
-This crate provides the `IconData` type that stores pre-tessellated triangle data from SVG files. Icons are processed at compile time using `usvg` and `lyon` to convert SVG paths into efficient triangle meshes.
+Icons are parsed from SVG files at compile time using `usvg` and tessellated into triangle meshes with `lyon`. The resulting geometry is stored in `IconData` structs for runtime rendering.
 
 ## License
 
@@ -44,4 +35,3 @@ at your option.
 
 - [Repository](https://github.com/PoHsuanLai/Armas)
 - [Documentation](https://docs.rs/armas-icon)
-- [Main Armas Library](https://crates.io/crates/armas)

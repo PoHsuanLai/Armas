@@ -4,23 +4,13 @@
 [![Documentation](https://docs.rs/armas-animated/badge.svg)](https://docs.rs/armas-animated)
 [![License](https://img.shields.io/crates/l/armas-animated.svg)](https://github.com/PoHsuanLai/Armas)
 
-Animated text and visual effect components for [egui](https://github.com/emilk/egui).
+Animated text and background effects for [egui](https://github.com/emilk/egui).
 
 ## Overview
 
-`armas-animated` provides a collection of animated UI components and decorative backgrounds for egui applications. Perfect for creating engaging landing pages, dashboards, and interactive interfaces.
+Collection of animated text components (typewriter, flip words, scramble) and background effects (aurora, meteor shower, sparkles, spotlight) for egui applications.
 
-## Features
-
-- **Text Animations** - Typewriter, flip words, scramble, scrolling banner
-- **Background Effects** - Aurora, meteor shower, sparkles, spotlight
-- **Decorative Patterns** - Dot grid, retro grid, gradient overlays
-- **Smooth Animations** - Built-in easing and timing controls
-- **Customizable** - Full control over colors, speeds, and behaviors
-
-## Quick Start
-
-Add this to your `Cargo.toml`:
+## Installation
 
 ```toml
 [dependencies]
@@ -29,7 +19,7 @@ armas = "0.1.0"
 egui = "0.33"
 ```
 
-### Examples
+## Examples
 
 **Typewriter Effect:**
 ```rust
@@ -79,43 +69,18 @@ let mut meteor = MeteorShower::new()
 meteor.show(ui, rect, &theme);
 ```
 
-## Available Components
+## Components
 
-### Text Animations
-- **Typewriter** - Classic typewriter text reveal
-- **WordTypewriter** - Word-by-word typewriter effect
-- **FlipWords** - Animated word cycling with flip transitions
-- **ScrambleText** - Text scramble/decode animation
-- **ScrollingBanner** - Infinite scrolling text banner
+**Text Animations**: Typewriter, WordTypewriter, FlipWords, ScrambleText, ScrollingBanner
+**Background Effects**: AuroraBackground, MeteorShower, Sparkles, Spotlight
+**Decorative Patterns**: DotPattern, GridPattern, RetroGrid
+**Visual Effects**: GradientText, MovingBorder, GlowingBorder
 
-### Background Effects
-- **AuroraBackground** - Animated aurora borealis effect
-- **MeteorShower** - Falling meteor animation
-- **Sparkles** - Animated sparkle particles
-- **Spotlight** - Mouse-tracking spotlight effect
-
-### Decorative Patterns
-- **DotPattern** - Static dot grid pattern
-- **GridPattern** - Static grid pattern
-- **RetroGrid** - Retro-style perspective grid
-
-### Visual Effects
-- **GradientText** - Text with animated gradient colors
-- **MovingBorder** - Button with animated gradient border
-- **GlowingBorder** - Animated glowing border effect
-
-## Animation Control
-
-Most animated components support:
-- **Custom IDs** - For state persistence across frames
-- **Speed/Duration** - Control animation timing
-- **Loop Control** - Enable/disable looping
-- **Color Customization** - Set custom colors and gradients
+Most components support custom IDs for state persistence, speed/duration controls, and color customization.
 
 ## Documentation
 
-- [Full API Documentation](https://docs.rs/armas-animated)
-- [Main Armas Library](https://crates.io/crates/armas)
+API documentation: [docs.rs/armas-animated](https://docs.rs/armas-animated)
 
 ## License
 
