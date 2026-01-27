@@ -4,20 +4,11 @@
 //! - Timeline and track editors
 //! - MIDI controllers and piano roll
 //! - Meters, faders, and knobs
-//! - Automation editors
 //! - Transport controls
 
 #![warn(missing_docs)]
 
 pub mod icons;
-pub mod automation_canvas;
-pub mod automation_curve_selector;
-pub mod automation_editor;
-pub mod automation_point_handle;
-pub mod automation_value_display;
-pub mod waveform_display;
-pub mod waveform_thumbnail;
-pub mod waveform_generator;
 pub mod fader;
 pub mod knob;
 pub mod timeline_region;
@@ -83,15 +74,3 @@ pub use track_header::{TrackControls, TrackHeader, TrackHeaderResponse};
 pub use transport::{TransportControl, TransportResponse, TransportState};
 pub use icons::TransportIcon;
 pub use xy_pad::{XYPad, XYPadVariant};
-pub use automation_canvas::{AutomationCanvas, CanvasConfig, CanvasResponse};
-pub use automation_editor::{AutomationEditor, AutomationEditorResponse};
-pub use automation_point_handle::{PointHandle, PointHandleResponse};
-pub use automation_curve_selector::{CurveTypeSelector, CurveTypeSelectorResponse};
-pub use automation_value_display::ValueRangeDisplay;
-pub use waveform_display::{WaveformDisplay, WaveformConfig, WaveformResponse, MarkerType};
-pub use waveform_thumbnail::{AudioThumbnail, ThumbnailLevel};
-pub use waveform_generator::{
-    ThumbnailGenerator,
-    generate_thumbnail_f32_mono, generate_thumbnail_f32_stereo,
-    generate_thumbnail_i16_mono, generate_thumbnail_i16_stereo,
-};

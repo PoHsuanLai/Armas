@@ -3,11 +3,12 @@
 [![Crates.io](https://img.shields.io/crates/v/armas.svg)](https://crates.io/crates/armas)
 [![Docs.rs](https://docs.rs/armas/badge.svg)](https://docs.rs/armas)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![CI](https://github.com/PoHsuanLai/armas/actions/workflows/deploy.yml/badge.svg)](https://pohsuanlai.github.io/Armas/)
+[![CI](https://github.com/PoHsuanLai/Armas/actions/workflows/ci.yml/badge.svg)](https://github.com/PoHsuanLai/Armas/actions/workflows/ci.yml)
+[![Deploy](https://github.com/PoHsuanLai/Armas/actions/workflows/deploy.yml/badge.svg)](https://pohsuanlai.github.io/Armas/)
 
 Live Demo: [https://pohsuanlai.github.io/armas/](https://pohsuanlai.github.io/Armas/)
 
-A modern, theme-aware, component library for [egui](https://github.com/emilk/egui).
+Armas is a modern, theme-aware, component library for [egui](https://github.com/emilk/egui).
 
 Armas brings the polished aesthetics of modern web development (inspired by Shadcn, HeroUI, and Aceternity) to the Rust native ecosystem.
 

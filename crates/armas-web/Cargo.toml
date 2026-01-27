@@ -23,6 +23,9 @@ regex = "1.10"
 fuzzy-matcher = "0.3"
 image = { version = "0.24", default-features = false, features = ["png"] }
 
+[build-dependencies]
+armas-icon = { path = "../armas-icon", features = ["build"] }
+
 # For opening URLs on native platforms
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 open = "5.0"

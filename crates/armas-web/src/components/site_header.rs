@@ -14,6 +14,7 @@ pub struct SiteHeaderResponse {
     pub components_clicked: bool,
     pub github_clicked: bool,
     pub crates_io_clicked: bool,
+    pub docs_rs_clicked: bool,
     pub theme_toggle_clicked: bool,
     pub hamburger_clicked: bool,
 }
@@ -33,6 +34,7 @@ impl<'a> SiteHeader<'a> {
             components_clicked: false,
             github_clicked: false,
             crates_io_clicked: false,
+            docs_rs_clicked: false,
             theme_toggle_clicked: false,
             hamburger_clicked: false,
         };
@@ -42,7 +44,6 @@ impl<'a> SiteHeader<'a> {
             .inner_margin(egui::Margin::symmetric(24, 0))
             .show(ui, |ui| {
                 ui.set_height(48.0);
-                ui.set_width(width);
 
                 ui.horizontal_centered(|ui| {
                     ui.spacing_mut().item_spacing.x = 0.0;
@@ -88,53 +89,71 @@ impl<'a> SiteHeader<'a> {
                         }
                     }
 
-                    // Spacer
-                    let right_width = if is_mobile { 80.0 } else { 200.0 };
-                    ui.add_space(ui.available_width() - right_width);
+                    // Right-aligned items
+                    ui.with_layout(
+                        egui::Layout::right_to_left(egui::Align::Center),
+                        |ui| {
+                            ui.spacing_mut().item_spacing.x = 0.0;
 
-                    // Right side
-                    if is_mobile {
-                        if Button::new("☰")
-                            .variant(ButtonVariant::Ghost)
-                            .size(ButtonSize::Small)
-                            .show(ui, self.theme)
-                            .clicked()
-                        {
-                            response.hamburger_clicked = true;
-                        }
-                    } else {
-                        Self::render_separator(ui, self.theme);
+                            if is_mobile {
+                                if Button::new("☰")
+                                    .variant(ButtonVariant::Ghost)
+                                    .size(ButtonSize::Small)
+                                    .show(ui, self.theme)
+                                    .clicked()
+                                {
+                                    response.hamburger_clicked = true;
+                                }
+                            } else {
+                                // Note: right-to-left layout, so items appear in reverse order
+                                if Button::new("Docs.rs")
+                                    .variant(ButtonVariant::Ghost)
+                                    .size(ButtonSize::Small)
+                                    .show(ui, self.theme)
+                                    .clicked()
+                                {
+                                    response.docs_rs_clicked = true;
+                                }
 
-                        if Button::new("GitHub")
-                            .variant(ButtonVariant::Ghost)
-                            .size(ButtonSize::Small)
-                            .show(ui, self.theme)
-                            .clicked()
-                        {
-                            response.github_clicked = true;
-                        }
+                                if Button::new("Crates.io")
+                                    .variant(ButtonVariant::Ghost)
+                                    .size(ButtonSize::Small)
+                                    .show(ui, self.theme)
+                                    .clicked()
+                                {
+                                    response.crates_io_clicked = true;
+                                }
 
-                        if Button::new("Crates.io")
-                            .variant(ButtonVariant::Ghost)
-                            .size(ButtonSize::Small)
-                            .show(ui, self.theme)
-                            .clicked()
-                        {
-                            response.crates_io_clicked = true;
-                        }
+                                if Button::new("GitHub")
+                                    .variant(ButtonVariant::Ghost)
+                                    .size(ButtonSize::Small)
+                                    .show(ui, self.theme)
+                                    .clicked()
+                                {
+                                    response.github_clicked = true;
+                                }
 
-                        Self::render_separator(ui, self.theme);
+                                Self::render_separator(ui, self.theme);
 
-                        let icon = if self.is_dark { "☀" } else { "☾" };
-                        if Button::new(icon)
-                            .variant(ButtonVariant::Ghost)
-                            .size(ButtonSize::Small)
-                            .show(ui, self.theme)
-                            .clicked()
-                        {
-                            response.theme_toggle_clicked = true;
-                        }
-                    }
+                                let icon_data = if self.is_dark {
+                                    &crate::web_icons::LIGHT
+                                } else {
+                                    &crate::web_icons::DARK
+                                };
+                                if IconButton::new(icon_data)
+                                    .variant(ButtonVariant::Ghost)
+                                    .size(16.0)
+                                    .padding(4.0)
+                                    .show(ui, self.theme)
+                                    .clicked()
+                                {
+                                    response.theme_toggle_clicked = true;
+                                }
+
+                                Self::render_separator(ui, self.theme);
+                            }
+                        },
+                    );
                 });
             });
 

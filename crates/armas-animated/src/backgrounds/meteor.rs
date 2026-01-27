@@ -209,12 +209,23 @@ impl MeteorShower {
             .push(Meteor::new(start, end, speed, self.color, tail_length, 2.5));
     }
 
-    /// Show the meteor shower
+    /// Show the meteor shower, allocating layout space.
     pub fn show(self, ui: &mut Ui) -> Response {
         let (response, _painter) =
             ui.allocate_painter(Vec2::new(self.width, self.height), egui::Sense::hover());
 
-        let bounds = response.rect;
+        self.paint_impl(ui, response.rect);
+        response
+    }
+
+    /// Paint the meteor shower onto a rect without allocating layout space.
+    ///
+    /// Use this to render meteors as a background behind other content.
+    pub fn paint(self, ui: &mut Ui, rect: Rect) {
+        self.paint_impl(ui, rect);
+    }
+
+    fn paint_impl(self, ui: &mut Ui, bounds: Rect) {
         let time = ui.input(|i| i.time) as f32;
         let dt = ui.input(|i| i.stable_dt);
 
@@ -247,8 +258,6 @@ impl MeteorShower {
 
         // Request repaint for continuous animation
         ui.ctx().request_repaint();
-
-        response
     }
 }
 

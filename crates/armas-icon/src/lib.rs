@@ -38,6 +38,9 @@
 //! }
 //! ```
 
+#[cfg(feature = "build")]
+pub mod build;
+
 use egui::{Color32, Mesh, Painter, Pos2, Rect, Response, Sense, Ui, Vec2, epaint::Vertex};
 
 /// Pre-tessellated icon data

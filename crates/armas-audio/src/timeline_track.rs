@@ -6,8 +6,6 @@ use armas::components::cards::{Card, CardVariant};
 use armas::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, StrokeKind, Ui, Vec2};
 
-use crate::waveform_thumbnail::AudioThumbnail;
-
 /// MIDI note for MIDI regions
 #[derive(Debug, Clone, Copy)]
 pub struct MidiNote {
@@ -84,8 +82,8 @@ impl AutomationData {
 /// Region type with associated data
 #[derive(Debug, Clone)]
 pub enum RegionType {
-    /// Audio region with cached thumbnail (auto-LOD based on zoom)
-    Audio(AudioThumbnail),
+    /// Audio region (placeholder for waveform data)
+    Audio,
     /// MIDI region with optional MIDI notes
     Midi(MidiData),
     /// Automation region with optional automation points
@@ -94,7 +92,7 @@ pub enum RegionType {
 
 impl Default for RegionType {
     fn default() -> Self {
-        Self::Audio(AudioThumbnail::default())
+        Self::Audio
     }
 }
 
@@ -284,28 +282,13 @@ pub struct Region {
 }
 
 impl Region {
-    /// Create a new audio region (with empty/simulated waveform)
+    /// Create a new audio region
     pub fn new(name: impl Into<String>, start: f32, duration: f32) -> Self {
         Self {
             name: name.into(),
             start,
             duration,
-            region_type: RegionType::Audio(AudioThumbnail::default()),
-            color: None,
-            selected: false,
-            muted: false,
-            fades: FadeSettings::default(),
-            playback: PlaybackSettings::default(),
-        }
-    }
-
-    /// Create a new audio region with thumbnail
-    pub fn audio(name: impl Into<String>, start: f32, duration: f32, thumbnail: AudioThumbnail) -> Self {
-        Self {
-            name: name.into(),
-            start,
-            duration,
-            region_type: RegionType::Audio(thumbnail),
+            region_type: RegionType::Audio,
             color: None,
             selected: false,
             muted: false,
@@ -845,15 +828,8 @@ impl TimelineTrack {
         // Draw visualization based on region type
         if !region.muted {
             match &region.region_type {
-                RegionType::Audio(thumbnail) => {
-                    // Get peaks at appropriate resolution for current pixel width
-                    let pixel_width = rect.width() as usize;
-                    let peaks = thumbnail.get_peaks_for_width(
-                        pixel_width,
-                        0.0,
-                        thumbnail.duration_secs(),
-                    );
-                    self.draw_waveform_peaks(painter, rect, region_color, &peaks)
+                RegionType::Audio => {
+                    self.draw_waveform_peaks(painter, rect, region_color, &[])
                 }
                 RegionType::Midi(data) => self.draw_midi_pattern(painter, rect, region_color, data),
                 RegionType::Automation(data) => {

@@ -3,7 +3,7 @@
 //! Creates an infinite grid with optional perspective and fade effects
 
 use armas::ext::ArmasContextExt;
-use egui::{Color32, Pos2, Response, Stroke, Ui, Vec2};
+use egui::{Color32, Painter, Pos2, Rect, Response, Stroke, Ui, Vec2};
 
 /// Grid pattern background effect
 ///
@@ -100,16 +100,14 @@ impl GridPattern {
         self
     }
 
-    /// Show the grid pattern
+    /// Show the grid pattern, allocating layout space.
     pub fn show(&mut self, ui: &mut Ui) -> Response {
         let theme = ui.ctx().armas_theme();
-        // Apply theme defaults
         let outline = theme.border();
         let color = self.color.unwrap_or_else(|| {
             Color32::from_rgba_unmultiplied(outline.r(), outline.g(), outline.b(), 50)
         });
 
-        // Determine size
         let size = if self.width.is_some() || self.height.is_some() {
             Vec2::new(self.width.unwrap_or(400.0), self.height.unwrap_or(300.0))
         } else {
@@ -117,11 +115,24 @@ impl GridPattern {
         };
 
         let (response, painter) = ui.allocate_painter(size, egui::Sense::hover());
+        self.paint_at(&painter, response.rect, color);
+        response
+    }
 
-        let bounds = response.rect;
+    /// Paint the grid pattern onto a rect without allocating layout space.
+    ///
+    /// Use this to render the pattern as a background behind other content.
+    pub fn paint(&self, ui: &Ui, rect: Rect) {
+        let theme = ui.ctx().armas_theme();
+        let outline = theme.border();
+        let color = self.color.unwrap_or_else(|| {
+            Color32::from_rgba_unmultiplied(outline.r(), outline.g(), outline.b(), 50)
+        });
+        self.paint_at(ui.painter(), rect, color);
+    }
+
+    fn paint_at(&self, painter: &Painter, bounds: Rect, color: Color32) {
         let center = bounds.center();
-
-        // Calculate grid bounds
         let left = bounds.left();
         let right = bounds.right();
         let top = bounds.top();
@@ -144,7 +155,6 @@ impl GridPattern {
                 Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
 
             if self.perspective {
-                // Perspective effect: lines converge slightly at bottom
                 let convergence = 0.1;
                 let top_offset = (line_x - center.x) * convergence * 0.3;
                 let bottom_offset = (line_x - center.x) * convergence;
@@ -183,7 +193,6 @@ impl GridPattern {
                 Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
 
             if self.perspective {
-                // Perspective effect: horizontal lines get closer together at bottom
                 let scale = 0.5 + 0.5 * (line_y - top) / bounds.height();
                 let thickness = self.thickness * scale;
 
@@ -210,7 +219,6 @@ impl GridPattern {
                     let dot_x = left + x;
                     let dot_y = top + y;
 
-                    // Calculate fade for dot
                     let alpha = if self.fade_distance > 0.0 {
                         let distance_x = (dot_x - center.x).abs() / (bounds.width() / 2.0);
                         let distance_y = (dot_y - center.y).abs() / (bounds.height() / 2.0);
@@ -248,8 +256,6 @@ impl GridPattern {
                 x += self.spacing;
             }
         }
-
-        response
     }
 }
 

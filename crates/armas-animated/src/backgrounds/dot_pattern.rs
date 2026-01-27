@@ -3,7 +3,7 @@
 //! Creates a simple dot grid pattern background effect
 
 use armas::ext::ArmasContextExt;
-use egui::{Color32, Pos2, Response, Ui, Vec2};
+use egui::{Color32, Painter, Pos2, Rect, Response, Ui, Vec2};
 
 /// Dot pattern background effect
 ///
@@ -86,13 +86,11 @@ impl DotPattern {
         self
     }
 
-    /// Show the dot pattern
+    /// Show the dot pattern, allocating layout space.
     pub fn show(&mut self, ui: &mut Ui) -> Response {
         let theme = ui.ctx().armas_theme();
-        // Apply theme defaults - use outline color for subtle dot pattern
         let color = self.color.unwrap_or_else(|| theme.border());
 
-        // Determine size
         let size = if self.width.is_some() || self.height.is_some() {
             Vec2::new(self.width.unwrap_or(400.0), self.height.unwrap_or(300.0))
         } else {
@@ -100,22 +98,31 @@ impl DotPattern {
         };
 
         let (response, painter) = ui.allocate_painter(size, egui::Sense::hover());
+        self.paint_at(&painter, response.rect, color);
+        response
+    }
 
-        let bounds = response.rect;
+    /// Paint the dot pattern onto a rect without allocating layout space.
+    ///
+    /// Use this to render the pattern as a background behind other content.
+    pub fn paint(&self, ui: &Ui, rect: Rect) {
+        let theme = ui.ctx().armas_theme();
+        let color = self.color.unwrap_or_else(|| theme.border());
+        self.paint_at(ui.painter(), rect, color);
+    }
+
+    fn paint_at(&self, painter: &Painter, bounds: Rect, color: Color32) {
         let center = bounds.center();
 
-        // Calculate starting position to center the grid
         let start_x = bounds.left() + (bounds.width() % self.spacing) / 2.0;
         let start_y = bounds.top() + (bounds.height() % self.spacing) / 2.0;
 
-        // Draw dots
         let mut y = 0.0;
         while start_y + y <= bounds.bottom() {
             let mut x = 0.0;
             while start_x + x <= bounds.right() {
                 let dot_pos = Pos2::new(start_x + x, start_y + y);
 
-                // Calculate fade based on distance from center
                 let alpha = if self.fade_distance > 0.0 {
                     let distance_x = (dot_pos.x - center.x).abs() / (bounds.width() / 2.0);
                     let distance_y = (dot_pos.y - center.y).abs() / (bounds.height() / 2.0);
@@ -129,7 +136,6 @@ impl DotPattern {
                 let dot_color =
                     Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
 
-                // Draw glow if enabled
                 if self.glow && alpha > 0 {
                     let glow_color = Color32::from_rgba_unmultiplied(
                         color.r(),
@@ -140,15 +146,12 @@ impl DotPattern {
                     painter.circle_filled(dot_pos, self.dot_radius * 2.5, glow_color);
                 }
 
-                // Draw main dot
                 painter.circle_filled(dot_pos, self.dot_radius, dot_color);
 
                 x += self.spacing;
             }
             y += self.spacing;
         }
-
-        response
     }
 }
 

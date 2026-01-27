@@ -201,9 +201,23 @@ impl Sparkles {
         self.initialized = true;
     }
 
-    /// Show the sparkles effect
+    /// Show the sparkles effect, allocating layout space.
     pub fn show(mut self, ui: &mut Ui) -> Response {
-        // Get or initialize state from egui memory
+        let (response, _painter) =
+            ui.allocate_painter(Vec2::new(self.width, self.height), egui::Sense::hover());
+
+        self.paint_impl(ui, response.rect);
+        response
+    }
+
+    /// Paint sparkles onto a rect without allocating layout space.
+    ///
+    /// Use this to render sparkles as a background behind other content.
+    pub fn paint(mut self, ui: &mut Ui, rect: egui::Rect) {
+        self.paint_impl(ui, rect);
+    }
+
+    fn paint_impl(&mut self, ui: &mut Ui, rect: egui::Rect) {
         let mut state = ui.data_mut(|d| {
             d.get_temp::<SparklesState>(self.id)
                 .unwrap_or_else(|| SparklesState {
@@ -220,30 +234,21 @@ impl Sparkles {
 
         let dt = ui.input(|i| i.stable_dt);
 
-        // Update all sparkles
         for sparkle in &mut state.sparkles {
             sparkle.update(dt);
         }
 
-        let (response, painter) =
-            ui.allocate_painter(Vec2::new(self.width, self.height), egui::Sense::hover());
-
-        let rect = response.rect;
-
         if ui.is_rect_visible(rect) {
-            // Draw all sparkles
+            let painter = ui.painter();
             for sparkle in &state.sparkles {
                 let mut adjusted_sparkle = sparkle.clone();
-                adjusted_sparkle.position = rect.min + (sparkle.position.to_vec2());
-                adjusted_sparkle.draw(&painter);
+                adjusted_sparkle.position = rect.min + sparkle.position.to_vec2();
+                adjusted_sparkle.draw(painter);
             }
         }
 
-        // Store state back
         ui.data_mut(|d| d.insert_temp(self.id, state));
-
         ui.ctx().request_repaint();
-        response
     }
 
     /// Show sparkles overlaying content

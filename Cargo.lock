@@ -250,7 +250,6 @@ version = "0.1.0"
 dependencies = [
  "armas",
  "armas-icon",
- "audio-automation",
  "chrono",
  "egui 0.33.3",
  "egui-theme",
@@ -266,6 +265,8 @@ name = "armas-icon"
 version = "0.1.0"
 dependencies = [
  "egui 0.33.3",
+ "lyon_tessellation",
+ "usvg",
 ]
 
 [[package]]
@@ -286,6 +287,7 @@ dependencies = [
  "armas",
  "armas-animated",
  "armas-audio",
+ "armas-icon",
  "armas-showcase-macros",
  "console_error_panic_hook",
  "eframe",
@@ -520,14 +522,6 @@ dependencies = [
  "atspi-common",
  "serde",
  "zbus",
-]
-
-[[package]]
-name = "audio-automation"
-version = "0.1.0"
-source = "git+https://github.com/PoHsuanLai/audio-automation.git#08e6fc70ffaf8a39ec4d40d5eafcf1c82f16bde8"
-dependencies = [
- "serde",
 ]
 
 [[package]]

@@ -11,6 +11,7 @@ pub fn highlight_code(ui: &mut egui::Ui, code: &str, language: &str, theme: &The
 
 pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
     let mut job = LayoutJob::default();
+    job.wrap.max_width = f32::INFINITY;
 
     // Define color scheme with navy blue and dark red
     let keyword_color = egui::Color32::from_rgb(100, 149, 237); // Navy blue (cornflower blue) for keywords
@@ -183,6 +184,7 @@ pub fn highlight_rust_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
 
 pub fn highlight_toml_code(ui: &mut egui::Ui, code: &str, theme: &Theme) {
     let mut job = LayoutJob::default();
+    job.wrap.max_width = f32::INFINITY;
 
     // Define color scheme with navy blue and dark red
     let key_color = egui::Color32::from_rgb(100, 149, 237); // Navy blue for keys

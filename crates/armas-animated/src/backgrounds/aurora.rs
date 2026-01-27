@@ -256,12 +256,23 @@ impl AuroraBackground {
         self
     }
 
-    /// Show the aurora background
+    /// Show the aurora background, allocating layout space.
     pub fn show(self, ui: &mut Ui) -> Response {
         let (response, _painter) =
             ui.allocate_painter(Vec2::new(self.width, self.height), egui::Sense::hover());
 
-        let bounds = response.rect;
+        self.paint_impl(ui, response.rect);
+        response
+    }
+
+    /// Paint the aurora background onto a rect without allocating layout space.
+    ///
+    /// Use this to render the aurora as a background behind other content.
+    pub fn paint(self, ui: &mut Ui, rect: Rect) {
+        self.paint_impl(ui, rect);
+    }
+
+    fn paint_impl(self, ui: &mut Ui, bounds: Rect) {
         let base_time = ui.input(|i| i.time) as f32;
         let time = (base_time * self.speed_multiplier) + self.time_offset;
 
@@ -283,8 +294,6 @@ impl AuroraBackground {
 
         // Request repaint for continuous animation
         ui.ctx().request_repaint();
-
-        response
     }
 }
 

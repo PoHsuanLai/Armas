@@ -1,6 +1,7 @@
 //! Hero section component matching shadcn style
 
 use armas::*;
+use armas_animated::DotPattern;
 use eframe::egui;
 
 pub struct SiteHero<'a> {
@@ -26,6 +27,13 @@ impl<'a> SiteHero<'a> {
         let rect = ui.available_rect_before_wrap();
         let is_mobile = rect.width() < 768.0;
 
+        // Paint dot pattern as background (no layout space consumed)
+        DotPattern::new()
+            .spacing(24.0)
+            .dot_radius(1.0)
+            .fade(0.8)
+            .paint(ui, rect);
+
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.set_width(rect.width());
 
@@ -37,7 +45,10 @@ impl<'a> SiteHero<'a> {
             ui.vertical(|ui| {
                 ui.set_max_width(content_width);
 
-                let top_space = if is_mobile { 60.0 } else { 120.0 };
+                // Push content toward vertical center
+                let content_height = 200.0; // approximate: title + subtitle + buttons
+                let top_space = ((rect.height() - content_height) / 2.0)
+                    .max(if is_mobile { 60.0 } else { 120.0 });
                 ui.add_space(top_space);
 
                 // Title

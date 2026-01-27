@@ -9,8 +9,13 @@ description = "Generic SVG-based icon system for egui"
 keywords = ["egui", "icons", "svg", "ui"]
 categories = ["gui"]
 
+[features]
+build = ["dep:usvg", "dep:lyon_tessellation"]
+
 [dependencies]
 egui.workspace = true
+usvg = { version = "0.46", optional = true }
+lyon_tessellation = { version = "1.0", optional = true }
 
 [lints]
 workspace = true

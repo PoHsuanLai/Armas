@@ -5,6 +5,7 @@ mod markdown;
 mod showcase_gen;
 pub mod syntax;
 mod url_utils;
+pub mod web_icons;
 
 use armas::*;
 use components::{ComponentsListPage, SiteHeader, SiteHero, SiteSidebar};
@@ -282,6 +283,9 @@ impl ShowcaseApp {
         if response.crates_io_clicked {
             Self::open_url("https://crates.io/crates/armas");
         }
+        if response.docs_rs_clicked {
+            Self::open_url("https://docs.rs/armas");
+        }
         if response.theme_toggle_clicked {
             self.toggle_theme(ctx);
         }
@@ -334,12 +338,25 @@ impl ShowcaseApp {
 
     fn render_mobile_sidebar(&mut self, ui: &mut egui::Ui) {
         let rect = ui.available_rect_before_wrap();
+        let theme = self.theme.theme().clone();
         ui.painter()
-            .rect_filled(rect, 0.0, self.theme.theme().background());
+            .rect_filled(rect, 0.0, theme.background());
 
+        // Reserve bottom area for external links
+        let links_height = 48.0;
+        let sidebar_rect = egui::Rect::from_min_max(
+            rect.min,
+            egui::pos2(rect.max.x, rect.max.y - links_height),
+        );
+        let links_rect = egui::Rect::from_min_max(
+            egui::pos2(rect.min.x, rect.max.y - links_height),
+            rect.max,
+        );
+
+        // Sidebar navigation
         let response = ui
-            .scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
-                SiteSidebar::new(self.theme.theme(), &mut self.search_text, &self.pages).show(ui)
+            .scope_builder(egui::UiBuilder::new().max_rect(sidebar_rect), |ui| {
+                SiteSidebar::new(&theme, &mut self.search_text, &self.pages).show(ui)
             })
             .inner;
 
@@ -347,6 +364,49 @@ impl ShowcaseApp {
             self.sidebar_open = false;
             self.handle_sidebar_response(response);
         }
+
+        // External links at bottom
+        ui.scope_builder(egui::UiBuilder::new().max_rect(links_rect), |ui| {
+            // Top border
+            let line_rect = egui::Rect::from_min_size(
+                links_rect.min,
+                egui::vec2(links_rect.width(), 1.0),
+            );
+            ui.painter().rect_filled(line_rect, 0.0, theme.border());
+
+            ui.add_space(1.0);
+            egui::Frame::new()
+                .inner_margin(egui::Margin::symmetric(12, 0))
+                .show(ui, |ui| {
+                    ui.horizontal_centered(|ui| {
+                        ui.spacing_mut().item_spacing.x = 0.0;
+                        if Button::new("GitHub")
+                            .variant(ButtonVariant::Ghost)
+                            .size(ButtonSize::Small)
+                            .show(ui, &theme)
+                            .clicked()
+                        {
+                            Self::open_url("https://github.com/PoHsuanLai/Armas");
+                        }
+                        if Button::new("Crates.io")
+                            .variant(ButtonVariant::Ghost)
+                            .size(ButtonSize::Small)
+                            .show(ui, &theme)
+                            .clicked()
+                        {
+                            Self::open_url("https://crates.io/crates/armas");
+                        }
+                        if Button::new("Docs.rs")
+                            .variant(ButtonVariant::Ghost)
+                            .size(ButtonSize::Small)
+                            .show(ui, &theme)
+                            .clicked()
+                        {
+                            Self::open_url("https://docs.rs/armas");
+                        }
+                    });
+                });
+        });
     }
 
     fn render_desktop_docs(&mut self, ui: &mut egui::Ui, rect: egui::Rect) {

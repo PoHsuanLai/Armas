@@ -14,7 +14,7 @@ version = "0.1.0"
 edition = "2021"
 authors = ["PoHsuan Lai"]
 license = "MIT"
-repository = "https://github.com/PoHsuanLai/armas"
+repository = "https://github.com/PoHsuanLai/Armas"
 
 [workspace.dependencies]
 egui = "0.33"
@@ -32,17 +32,13 @@ missing_errors_doc = "warn"
 missing_panics_doc = "warn"
 doc_markdown = "warn"
 
-# Builder pattern conventions
-# Disallow 'with_' prefix in builder methods
-# Use simple names like .color(), .size(), not .with_color()
-module_name_repetitions = "allow"  # Allow Button::button() pattern
-similar_names = "allow"  # xs, sm, md, lg, xl are fine
+module_name_repetitions = "allow"
+similar_names = "allow"
 
-# Allow certain patterns common in egui
-cast_possible_truncation = "allow"  # egui uses many f32 <-> u8 conversions
-cast_sign_loss = "allow"  # Common in graphics code
-cast_precision_loss = "allow"  # f64 -> f32 is common
-float_cmp = "allow"  # egui compares floats frequently
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+cast_precision_loss = "allow"
+float_cmp = "allow"
 
 [profile.release]
 opt-level = 2
