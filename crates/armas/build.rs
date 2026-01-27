@@ -43,6 +43,7 @@ fn main() {
 
                 match parse_svg(&path) {
                     Ok((vertices, indices, width, height)) => {
+                        writeln!(output, "#[allow(missing_docs)]").unwrap();
                         writeln!(
                             output,
                             "pub static {}: IconData = IconData {{",

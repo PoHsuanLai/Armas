@@ -31,13 +31,23 @@
 //! # }
 //! ```
 
+#![warn(missing_docs)]
+
+/// Animation utilities and easing functions
 pub mod animation;
+/// Color manipulation utilities
 pub mod color;
+/// UI components
 pub mod components;
+/// Extension traits for egui types
 pub mod ext;
+/// Font utilities
 pub mod fonts;
+/// Icon rendering
 pub mod icon;
+/// Layout components
 pub mod layout;
+/// Theme system
 pub mod theme;
 
 // Prelude module for convenient imports

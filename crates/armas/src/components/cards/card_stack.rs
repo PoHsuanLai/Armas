@@ -7,10 +7,14 @@ use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// A single card in the stack
+/// A card in a card stack
 #[derive(Clone)]
 pub struct StackCard {
+    /// Card title
     pub title: String,
+    /// Card description
     pub description: String,
+    /// Card background color
     pub color: Color32,
 }
 
@@ -45,10 +49,13 @@ struct CardStackState {
 /// # }
 /// ```
 pub struct CardStack {
+    /// Width of each card
     rotation_interval: f32,
     transition_duration: f32,
     width: f32,
+    /// Height of each card
     height: f32,
+    /// Number of cards to stack
     auto_rotate: bool,
     id: egui::Id,
 }

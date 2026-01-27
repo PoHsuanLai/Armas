@@ -1,4 +1,6 @@
+/// Easing functions for smooth animations
 pub mod easing;
+/// Interpolation trait for animating values
 pub mod interpolate;
 pub mod momentum;
 pub mod staggered;

@@ -25,8 +25,11 @@ const INDENT_WIDTH: f32 = 16.0;
 /// A tree view item (file or folder)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TreeItem {
+    /// Item name
     pub name: String,
+    /// Item path
     pub path: PathBuf,
+    /// Whether this is a directory/folder
     pub is_directory: bool,
 }
 
@@ -63,6 +66,7 @@ impl TreeItem {
 /// Response from the tree view
 #[derive(Debug, Clone)]
 pub struct TreeViewResponse {
+    /// Base egui response
     pub response: Response,
     /// Item selected this frame
     pub selected: Option<PathBuf>,
@@ -117,6 +121,7 @@ pub struct TreeView {
 }
 
 impl TreeView {
+    /// Create a new tree view
     pub fn new() -> Self {
         Self {
             root_path: "/".to_string(),

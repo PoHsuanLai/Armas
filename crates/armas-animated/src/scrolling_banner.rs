@@ -1,3 +1,5 @@
+//! Infinite scrolling text banner component
+
 use armas::ext::ArmasContextExt;
 use armas::Theme;
 use egui::{Pos2, Rect, Response, Ui, Vec2};

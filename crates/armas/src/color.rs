@@ -7,13 +7,17 @@ use egui::{Color32, Mesh, Pos2, Rect, Vec2};
 use std::f32::consts::PI;
 
 /// Color stop for gradients (position 0.0-1.0, color)
+/// A color stop in a gradient, defining a color at a specific position
 #[derive(Clone, Debug)]
 pub struct ColorStop {
+    /// Position in the gradient (0.0 to 1.0)
     pub position: f32,
+    /// Color at this position
     pub color: Color32,
 }
 
 impl ColorStop {
+    /// Create a new color stop
     pub fn new(position: f32, color: Color32) -> Self {
         Self { position, color }
     }
@@ -250,9 +254,13 @@ pub fn blend(a: Color32, b: Color32, t: f32, mode: BlendMode) -> Color32 {
 /// Blend modes for color composition
 #[derive(Debug, Clone, Copy)]
 pub enum BlendMode {
+    /// Normal blend mode (no blending)
     Normal,
+    /// Multiply blend mode (darkens)
     Multiply,
+    /// Screen blend mode (lightens)
     Screen,
+    /// Overlay blend mode (combines multiply and screen)
     Overlay,
 }
 

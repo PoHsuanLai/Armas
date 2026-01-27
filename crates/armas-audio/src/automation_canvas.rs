@@ -247,8 +247,11 @@ impl<'a> AutomationCanvas<'a> {
 
 /// Response from canvas rendering
 pub struct CanvasResponse {
+    /// Base egui response
     pub response: Response,
+    /// Canvas rectangle bounds
     pub canvas_rect: Rect,
+    /// Canvas configuration
     pub config: CanvasConfig,
 }
 

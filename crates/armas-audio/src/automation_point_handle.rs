@@ -23,9 +23,13 @@ struct PointHandleDragState {
 /// Response from point handle interaction
 #[derive(Debug, Clone)]
 pub struct PointHandleResponse {
+    /// Base egui response
     pub response: Response,
+    /// Whether this handle is currently selected
     pub is_selected: bool,
+    /// Whether the mouse is hovering over this handle
     pub is_hovered: bool,
+    /// Drag delta if the handle was dragged this frame (normal or velocity mode)
     pub drag_delta: Option<Vec2>,
 }
 

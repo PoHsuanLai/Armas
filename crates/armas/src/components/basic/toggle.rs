@@ -29,8 +29,11 @@ pub enum ToggleVariant {
 /// Toggle size
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ToggleSize {
+    /// Small toggle
     Small,
+    /// Medium toggle (default)
     Medium,
+    /// Large toggle
     Large,
 }
 

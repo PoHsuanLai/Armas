@@ -37,7 +37,16 @@ pub enum EasingFunction {
     /// Bounce ease out
     BounceOut,
     /// Custom cubic bezier curve
-    Cubic { x1: f32, y1: f32, x2: f32, y2: f32 },
+    Cubic {
+        /// First control point X
+        x1: f32,
+        /// First control point Y
+        y1: f32,
+        /// Second control point X
+        x2: f32,
+        /// Second control point Y
+        y2: f32
+    },
 }
 
 impl EasingFunction {

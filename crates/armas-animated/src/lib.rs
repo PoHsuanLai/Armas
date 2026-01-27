@@ -13,6 +13,8 @@
 //! - [`AuroraBackground`] - Animated aurora borealis effect
 //! - [`MeteorShower`] - Falling meteor animation
 //! - [`Sparkles`] - Animated sparkle particles
+
+#![warn(missing_docs)]
 //! - [`Spotlight`] - Animated spotlight effect
 //! - [`DotPattern`] - Static dot grid pattern
 //! - [`GridPattern`] - Static grid pattern

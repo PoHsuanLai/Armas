@@ -50,19 +50,27 @@ impl Default for WaveformConfig {
 /// Interactive waveform marker (sample boundary or loop point)
 #[derive(Debug, Clone, Copy)]
 pub enum MarkerType {
+    /// Sample start marker
     SampleStart,
+    /// Sample end marker
     SampleEnd,
+    /// Loop start marker
     LoopStart,
+    /// Loop end marker
     LoopEnd,
 }
 
 /// Response from waveform display interaction
 #[derive(Debug, Clone)]
 pub struct WaveformResponse {
+    /// Base egui response
     pub response: Response,
-    pub marker_dragged: Option<(MarkerType, f64)>, // (marker type, new position in seconds)
-    pub region_selected: Option<(f64, f64)>,       // (start, end) time range
-    pub playhead_clicked: Option<f64>,             // clicked at time
+    /// Marker was dragged (marker type, new position in seconds)
+    pub marker_dragged: Option<(MarkerType, f64)>,
+    /// Region was selected (start, end time range)
+    pub region_selected: Option<(f64, f64)>,
+    /// Playhead was clicked at time position
+    pub playhead_clicked: Option<f64>,
 }
 
 /// Waveform display component - generic over sample data type

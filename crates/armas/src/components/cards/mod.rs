@@ -6,6 +6,7 @@ pub mod card;
 pub mod card_stack;
 pub mod floating_window;
 pub mod infinite_moving_cards;
+/// Testimonial cards and grids
 pub mod testimonial;
 pub mod text_reveal_card;
 pub mod tilt_card;

@@ -40,8 +40,11 @@ const DESCRIPTION_FONT_SIZE: f32 = 12.0; // text-xs
 /// Radio button size
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum RadioSize {
+    /// Small radio button
     Small,
+    /// Medium radio button (default)
     Medium,
+    /// Large radio button
     Large,
 }
 

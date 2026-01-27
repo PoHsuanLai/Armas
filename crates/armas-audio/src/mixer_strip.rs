@@ -117,6 +117,7 @@ pub struct MixerStripResponse {
     pub output_routing_clicked: bool,
 }
 
+/// Mixer channel strip with fader, pan, meters, and routing controls
 pub struct MixerStrip {
     /// Channel name
     name: String,

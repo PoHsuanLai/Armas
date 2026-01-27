@@ -7,6 +7,8 @@
 //! - Automation editors
 //! - Transport controls
 
+#![warn(missing_docs)]
+
 pub mod icons;
 pub mod automation_canvas;
 pub mod automation_curve_selector;

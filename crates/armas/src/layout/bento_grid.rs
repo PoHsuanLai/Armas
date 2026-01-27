@@ -54,6 +54,7 @@ impl Default for BentoGrid {
 }
 
 impl BentoGrid {
+    /// Create a new bento grid layout
     pub fn new() -> Self {
         Self {
             columns: 3,
@@ -64,31 +65,37 @@ impl BentoGrid {
         }
     }
 
+    /// Set the number of columns
     pub fn columns(mut self, columns: usize) -> Self {
         self.columns = columns.max(1);
         self
     }
 
+    /// Set the base cell size
     pub fn cell_size(mut self, size: f32) -> Self {
         self.cell_size = size.max(50.0);
         self
     }
 
+    /// Set the gap between cells
     pub fn gap(mut self, gap: f32) -> Self {
         self.gap = gap;
         self
     }
 
+    /// Set the corner radius for cells
     pub fn corner_radius(mut self, radius: f32) -> Self {
         self.corner_radius = radius;
         self
     }
 
+    /// Set the padding around the grid
     pub fn padding(mut self, padding: f32) -> Self {
         self.padding = padding;
         self
     }
 
+    /// Show the bento grid with the given content
     pub fn show<R>(self, ui: &mut Ui, content: impl FnOnce(&mut GridBuilder) -> R) -> R {
         let theme = ui.ctx().data(|d| {
             d.get_temp::<Theme>(egui::Id::new("armas_theme"))

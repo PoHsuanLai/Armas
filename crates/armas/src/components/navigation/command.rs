@@ -127,6 +127,7 @@ pub struct Command {
 }
 
 impl Command {
+    /// Create a new command palette
     pub fn new() -> Self {
         Self {
             id: None,
@@ -146,17 +147,20 @@ impl Command {
         self
     }
 
+    /// Set placeholder text for the search input
     pub fn placeholder(mut self, placeholder: impl Into<String>) -> Self {
         self.placeholder = placeholder.into();
         self
     }
 
+    /// Set the keyboard shortcut to trigger the command palette
     pub fn trigger(mut self, key: Key, modifiers: Modifiers) -> Self {
         self.trigger_key = key;
         self.trigger_modifiers = modifiers;
         self
     }
 
+    /// Show the command palette
     pub fn show<R>(
         &mut self,
         ui: &mut Ui,

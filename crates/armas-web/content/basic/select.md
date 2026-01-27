@@ -2,19 +2,7 @@
 
 Searchable dropdown menus with keyboard navigation.
 
-## Basic Usage (Closure-based API)
-
-```demo
-let mut select = Select::build(|s| {
-    s.option("1", "Option 1");
-    s.option("2", "Option 2");
-    s.option("3", "Option 3");
-})
-.id("select_1");
-select.show(ui, &theme);
-```
-
-## Basic Usage (Traditional API)
+## Basic Usage
 
 ```demo
 let options = vec![
@@ -23,8 +11,7 @@ let options = vec![
     SelectOption::new("3", "Option 3"),
 ];
 
-let mut select = Select::new(options)
-    .id("select_1b");
+let mut select = Select::new(options).id("select_1");
 select.show(ui, &theme);
 ```
 
@@ -74,21 +61,6 @@ let mut select = Select::new(options)
 select.show(ui, &theme);
 ```
 
-## Closure API with Icons and Descriptions
-
-```demo
-let mut select = Select::build(|s| {
-    s.option("apple", "Apple")
-        .description("Red and crispy");
-    s.option("banana", "Banana")
-        .description("Yellow and sweet");
-    s.option("cherry", "Cherry")
-        .description("Small and tart");
-})
-.id("select_closure")
-.label("Choose a Fruit");
-select.show(ui, &theme);
-```
 
 ## With Disabled Options
 

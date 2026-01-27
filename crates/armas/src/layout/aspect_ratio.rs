@@ -30,6 +30,7 @@ pub struct AspectRatio {
     content_mode: ContentMode,
 }
 
+/// How content should be sized within the aspect ratio container
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ContentMode {
     /// Content fills available space (may be cropped)

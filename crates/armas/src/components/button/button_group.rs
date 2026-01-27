@@ -13,15 +13,20 @@ const CORNER_RADIUS: f32 = 6.0;
 /// Visual variant for the button group
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub enum ButtonGroupVariant {
+    /// Outline style (default)
     #[default]
     Outline,
+    /// Ghost/minimal style
     Ghost,
 }
 
 /// Response from showing a button group
 pub struct ButtonGroupResponse {
+    /// Index of button that was clicked (if any)
     pub clicked: Option<usize>,
+    /// Currently selected button index
     pub selected: Option<usize>,
+    /// Whether the selection changed
     pub changed: bool,
 }
 
@@ -33,6 +38,7 @@ pub struct ButtonGroup {
 }
 
 impl ButtonGroup {
+    /// Create a new button group with the given labels
     pub fn new(labels: Vec<impl Into<String>>) -> Self {
         Self {
             labels: labels.into_iter().map(|l| l.into()).collect(),
@@ -41,16 +47,19 @@ impl ButtonGroup {
         }
     }
 
+    /// Set the initially selected button index
     pub fn selected(mut self, index: Option<usize>) -> Self {
         self.selected = index;
         self
     }
 
+    /// Set the visual variant of the button group
     pub fn variant(mut self, variant: ButtonGroupVariant) -> Self {
         self.variant = variant;
         self
     }
 
+    /// Show the button group
     pub fn show(self, ui: &mut Ui) -> ButtonGroupResponse {
         let theme = ui.ctx().armas_theme();
 

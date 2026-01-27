@@ -8,7 +8,9 @@ use egui::{Response, Ui, Vec2};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SeparatorOrientation {
     #[default]
+    /// Horizontal separator
     Horizontal,
+    /// Vertical separator
     Vertical,
 }
 

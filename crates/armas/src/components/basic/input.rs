@@ -160,6 +160,7 @@ impl Input {
         self
     }
 
+    /// Set text color (currently ignored - uses theme colors)
     pub fn text_color(self, _color: Color32) -> Self {
         // Ignored - use theme colors
         self

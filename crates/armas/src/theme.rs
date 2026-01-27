@@ -20,62 +20,84 @@ pub struct Theme {
 /// All colors stored as [R, G, B] for serializability
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ColorPalette {
-    // Background colors
+    /// Default background color
     pub background: [u8; 3],
+    /// Default foreground (text) color
     pub foreground: [u8; 3],
 
-    // Card colors (elevated surfaces)
+    /// Card background color for elevated surfaces
     pub card: [u8; 3],
+    /// Card foreground (text) color
     pub card_foreground: [u8; 3],
 
-    // Popover colors
+    /// Popover background color
     pub popover: [u8; 3],
+    /// Popover foreground (text) color
     pub popover_foreground: [u8; 3],
 
-    // Primary brand color
+    /// Primary brand color
     pub primary: [u8; 3],
+    /// Primary foreground (text) color
     pub primary_foreground: [u8; 3],
 
-    // Secondary color
+    /// Secondary color
     pub secondary: [u8; 3],
+    /// Secondary foreground (text) color
     pub secondary_foreground: [u8; 3],
 
-    // Muted/subtle color
+    /// Muted/subtle background color
     pub muted: [u8; 3],
+    /// Muted foreground (text) color
     pub muted_foreground: [u8; 3],
 
-    // Accent color
+    /// Accent color
     pub accent: [u8; 3],
+    /// Accent foreground (text) color
     pub accent_foreground: [u8; 3],
 
-    // Destructive/error color
+    /// Destructive/error color
     pub destructive: [u8; 3],
+    /// Destructive foreground (text) color
     pub destructive_foreground: [u8; 3],
 
-    // Border and input
+    /// Border color
     pub border: [u8; 3],
+    /// Input border color
     pub input: [u8; 3],
+    /// Focus ring color
     pub ring: [u8; 3],
 
-    // Chart colors (for data visualization)
+    /// Chart color 1 for data visualization
     pub chart_1: [u8; 3],
+    /// Chart color 2 for data visualization
     pub chart_2: [u8; 3],
+    /// Chart color 3 for data visualization
     pub chart_3: [u8; 3],
+    /// Chart color 4 for data visualization
     pub chart_4: [u8; 3],
+    /// Chart color 5 for data visualization
     pub chart_5: [u8; 3],
 
-    // Interactive states
+    /// Hover state color
     pub hover: [u8; 3],
+    /// Focus state color
     pub focus: [u8; 3],
 
-    // Sidebar colors (shadcn/ui sidebar)
+    /// Sidebar background color
     pub sidebar: [u8; 3],
+    /// Sidebar foreground (text) color
     pub sidebar_foreground: [u8; 3],
+    /// Sidebar primary color
     pub sidebar_primary: [u8; 3],
+    /// Sidebar primary foreground (text) color
     pub sidebar_primary_foreground: [u8; 3],
+    /// Sidebar accent color
     pub sidebar_accent: [u8; 3],
+    /// Sidebar accent foreground (text) color
     pub sidebar_accent_foreground: [u8; 3],
+    /// Sidebar border color
     pub sidebar_border: [u8; 3],
+    /// Sidebar focus ring color
     pub sidebar_ring: [u8; 3],
 }
 

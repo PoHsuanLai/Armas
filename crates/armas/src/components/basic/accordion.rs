@@ -31,7 +31,9 @@ const CHEVRON_SIZE: f32 = 16.0; // h-4 w-4
 
 /// Response from showing an accordion
 pub struct AccordionResponse {
+    /// Index of section that was clicked (if any)
     pub clicked: Option<usize>,
+    /// Indices of currently open sections
     pub open: Vec<usize>,
 }
 
@@ -43,6 +45,7 @@ pub struct Accordion {
 }
 
 impl Accordion {
+    /// Create a new accordion with the given ID and section titles
     pub fn new(id: impl Into<egui::Id>, titles: Vec<impl Into<String>>) -> Self {
         Self {
             id: id.into(),
@@ -51,11 +54,13 @@ impl Accordion {
         }
     }
 
+    /// Allow multiple sections to be open simultaneously
     pub fn allow_multiple(mut self, allow: bool) -> Self {
         self.allow_multiple = allow;
         self
     }
 
+    /// Show the accordion
     pub fn show(self, ui: &mut Ui, mut content_fn: impl FnMut(&mut Ui, usize)) -> AccordionResponse {
         let theme = ui.ctx().armas_theme();
         let dt = ui.input(|i| i.stable_dt);

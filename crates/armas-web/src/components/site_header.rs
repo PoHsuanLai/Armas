@@ -13,6 +13,7 @@ pub struct SiteHeaderResponse {
     pub docs_clicked: bool,
     pub components_clicked: bool,
     pub github_clicked: bool,
+    pub crates_io_clicked: bool,
     pub theme_toggle_clicked: bool,
     pub hamburger_clicked: bool,
 }
@@ -31,6 +32,7 @@ impl<'a> SiteHeader<'a> {
             docs_clicked: false,
             components_clicked: false,
             github_clicked: false,
+            crates_io_clicked: false,
             theme_toggle_clicked: false,
             hamburger_clicked: false,
         };
@@ -87,7 +89,7 @@ impl<'a> SiteHeader<'a> {
                     }
 
                     // Spacer
-                    let right_width = if is_mobile { 80.0 } else { 120.0 };
+                    let right_width = if is_mobile { 80.0 } else { 200.0 };
                     ui.add_space(ui.available_width() - right_width);
 
                     // Right side
@@ -110,6 +112,15 @@ impl<'a> SiteHeader<'a> {
                             .clicked()
                         {
                             response.github_clicked = true;
+                        }
+
+                        if Button::new("Crates.io")
+                            .variant(ButtonVariant::Ghost)
+                            .size(ButtonSize::Small)
+                            .show(ui, self.theme)
+                            .clicked()
+                        {
+                            response.crates_io_clicked = true;
                         }
 
                         Self::render_separator(ui, self.theme);

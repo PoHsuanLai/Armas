@@ -24,6 +24,7 @@ impl<'a> SiteHero<'a> {
         };
 
         let rect = ui.available_rect_before_wrap();
+        let is_mobile = rect.width() < 768.0;
 
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.set_width(rect.width());
@@ -36,12 +37,14 @@ impl<'a> SiteHero<'a> {
             ui.vertical(|ui| {
                 ui.set_max_width(content_width);
 
-                ui.add_space(120.0);
+                let top_space = if is_mobile { 60.0 } else { 120.0 };
+                ui.add_space(top_space);
 
                 // Title
+                let title_size = if is_mobile { 32.0 } else { 48.0 };
                 ui.label(
                     egui::RichText::new("Build your component library")
-                        .size(48.0)
+                        .size(title_size)
                         .family(egui::FontFamily::Name("InterBold".into()))
                         .color(self.theme.foreground()),
                 );
@@ -49,12 +52,13 @@ impl<'a> SiteHero<'a> {
                 ui.add_space(16.0);
 
                 // Subtitle
+                let subtitle_size = if is_mobile { 16.0 } else { 18.0 };
                 ui.label(
                     egui::RichText::new(
                         "Beautiful, accessible components for egui. \
                          Copy and paste into your apps. Open source.",
                     )
-                    .size(18.0)
+                    .size(subtitle_size)
                     .color(self.theme.muted_foreground()),
                 );
 
@@ -81,7 +85,8 @@ impl<'a> SiteHero<'a> {
                     }
                 });
 
-                ui.add_space(120.0);
+                let bottom_space = if is_mobile { 60.0 } else { 120.0 };
+                ui.add_space(bottom_space);
             });
         });
 

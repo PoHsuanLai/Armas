@@ -981,10 +981,15 @@ fn navigate_up(selected_index: &mut Option<usize>, items: &[MenuItemData]) {
 /// Pre-built menu item (alternative to builder pattern)
 #[derive(Clone)]
 pub struct MenuItem {
+    /// Menu item label
     pub label: String,
+    /// Optional icon
     pub icon: Option<String>,
+    /// Optional keyboard shortcut text
     pub shortcut: Option<String>,
+    /// Whether the item is disabled
     pub disabled: bool,
+    /// Whether the item is destructive (e.g., delete action)
     pub destructive: bool,
 }
 

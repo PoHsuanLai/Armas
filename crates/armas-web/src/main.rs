@@ -217,11 +217,16 @@ impl eframe::App for ShowcaseApp {
                 SiteHeader::new(self.theme.theme(), self.theme.is_dark()).show(ui);
             self.handle_header_response(ui.ctx(), header_response);
 
-            // Main content
-            match self.page_state {
-                PageState::Hero => self.render_hero(ui),
-                PageState::ComponentsList => self.render_components_list(ui),
-                PageState::DocsPage(_) => self.render_docs(ui),
+            // Main content — mobile sidebar overlay takes priority on any page
+            let is_mobile = ui.available_width() < layout::MOBILE_BREAKPOINT;
+            if is_mobile && self.sidebar_open {
+                self.render_mobile_sidebar(ui);
+            } else {
+                match self.page_state {
+                    PageState::Hero => self.render_hero(ui),
+                    PageState::ComponentsList => self.render_components_list(ui),
+                    PageState::DocsPage(_) => self.render_docs(ui),
+                }
             }
         });
 
@@ -274,14 +279,13 @@ impl ShowcaseApp {
         if response.github_clicked {
             Self::open_url("https://github.com/PoHsuanLai/Armas");
         }
+        if response.crates_io_clicked {
+            Self::open_url("https://crates.io/crates/armas");
+        }
         if response.theme_toggle_clicked {
             self.toggle_theme(ctx);
         }
         if response.hamburger_clicked {
-            // If on hero page, go to docs first
-            if matches!(self.page_state, PageState::Hero) {
-                self.navigate_to(PageState::ComponentsList);
-            }
             self.sidebar_open = !self.sidebar_open;
         }
     }
@@ -321,89 +325,94 @@ impl ShowcaseApp {
         let is_mobile = rect.width() < layout::MOBILE_BREAKPOINT;
 
         if is_mobile {
-            self.render_mobile_docs(ui, rect);
+            // Mobile sidebar overlay is handled at top level; just show content
+            self.render_content(ui);
         } else {
             self.render_desktop_docs(ui, rect);
         }
     }
 
-    fn render_mobile_docs(&mut self, ui: &mut egui::Ui, rect: egui::Rect) {
-        if self.sidebar_open {
-            ui.painter()
-                .rect_filled(rect, 0.0, self.theme.theme().background());
+    fn render_mobile_sidebar(&mut self, ui: &mut egui::Ui) {
+        let rect = ui.available_rect_before_wrap();
+        ui.painter()
+            .rect_filled(rect, 0.0, self.theme.theme().background());
 
-            let response = ui
-                .scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
-                    SiteSidebar::new(self.theme.theme(), &mut self.search_text, &self.pages)
-                        .show(ui)
-                })
-                .inner;
+        let response = ui
+            .scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
+                SiteSidebar::new(self.theme.theme(), &mut self.search_text, &self.pages).show(ui)
+            })
+            .inner;
 
-            if response.selected_page.is_some() {
-                self.sidebar_open = false;
-                self.handle_sidebar_response(response);
-            }
-        } else {
-            self.render_content(ui);
+        if response.selected_page.is_some() {
+            self.sidebar_open = false;
+            self.handle_sidebar_response(response);
         }
     }
 
     fn render_desktop_docs(&mut self, ui: &mut egui::Ui, rect: egui::Rect) {
-        let theme = self.theme.theme();
+        let border_color = self.theme.theme().border();
+        let mut sidebar_response = None;
 
-        // Sidebar area
-        let sidebar_rect = egui::Rect::from_min_size(
-            rect.min,
-            egui::vec2(layout::SIDEBAR_WIDTH, rect.height()),
-        );
+        ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
+            ui.set_clip_rect(rect);
+            ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = 0.0;
+                ui.set_height(rect.height());
 
-        // Draw sidebar border
-        ui.painter().line_segment(
-            [sidebar_rect.right_top(), sidebar_rect.right_bottom()],
-            egui::Stroke::new(1.0, theme.border()),
-        );
+                // Sidebar
+                let sr = ui.vertical(|ui| {
+                    ui.set_width(layout::SIDEBAR_WIDTH);
+                    ui.set_height(rect.height());
+                    SiteSidebar::new(self.theme.theme(), &mut self.search_text, &self.pages)
+                        .show(ui)
+                });
+                sidebar_response = Some(sr.inner);
 
-        // Render sidebar
-        let response = ui
-            .scope_builder(egui::UiBuilder::new().max_rect(sidebar_rect), |ui| {
-                SiteSidebar::new(self.theme.theme(), &mut self.search_text, &self.pages).show(ui)
-            })
-            .inner;
-        self.handle_sidebar_response(response);
+                // Border line
+                let line_rect = ui.allocate_space(egui::vec2(1.0, rect.height())).1;
+                ui.painter().rect_filled(line_rect, 0.0, border_color);
 
-        // Content area
-        let content_rect = egui::Rect::from_min_size(
-            egui::pos2(rect.min.x + layout::SIDEBAR_WIDTH, rect.min.y),
-            egui::vec2(rect.width() - layout::SIDEBAR_WIDTH, rect.height()),
-        );
-
-        ui.scope_builder(egui::UiBuilder::new().max_rect(content_rect), |ui| {
-            self.render_content(ui);
+                // Content takes remaining width
+                let remaining = ui.available_width();
+                ui.vertical(|ui| {
+                    ui.set_width(remaining);
+                    ui.set_height(rect.height());
+                    self.render_content(ui);
+                });
+            });
         });
+
+        if let Some(response) = sidebar_response {
+            self.handle_sidebar_response(response);
+        }
     }
 
     fn render_content(&mut self, ui: &mut egui::Ui) {
         let theme = self.theme.theme();
+        let full_width = ui.available_width();
 
         egui::Frame::new().fill(theme.background()).show(ui, |ui| {
+            ui.set_width(full_width);
             egui::ScrollArea::vertical().show(ui, |ui| {
-                let available = ui.available_width();
-                let content_width = available.min(layout::CONTENT_MAX_WIDTH);
-                let margin = (available - content_width) / 2.0;
+                ui.set_width(full_width);
 
-                ui.add_space(margin.max(24.0));
+                let content_width = full_width.min(layout::CONTENT_MAX_WIDTH);
+                let h_margin = ((full_width - content_width) / 2.0).max(24.0);
 
-                ui.vertical(|ui| {
-                    ui.set_max_width(content_width);
-                    ui.add_space(32.0);
+                ui.horizontal(|ui| {
+                    ui.add_space(h_margin);
+                    ui.vertical(|ui| {
+                        ui.set_max_width(content_width);
+                        ui.add_space(32.0);
 
-                    if let PageState::DocsPage(idx) = self.page_state {
-                        if let Some((_, show_fn)) = self.pages.get(idx) {
-                            show_fn(ui);
+                        if let PageState::DocsPage(idx) = self.page_state {
+                            if let Some((_, show_fn)) = self.pages.get(idx) {
+                                show_fn(ui);
+                            }
                         }
-                    }
 
-                    ui.add_space(64.0);
+                        ui.add_space(64.0);
+                    });
                 });
             });
         });

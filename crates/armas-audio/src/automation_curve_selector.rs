@@ -83,7 +83,10 @@ impl CurveTypeSelector {
 
 /// Response from curve type selector
 pub struct CurveTypeSelectorResponse {
+    /// Base egui response
     pub response: Response,
+    /// Currently selected curve type
     pub selected: CurveType,
+    /// Whether the selection changed this frame
     pub changed: bool,
 }

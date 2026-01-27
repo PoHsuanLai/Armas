@@ -30,14 +30,20 @@ const ICON_WIDTH: f32 = 24.0;
 /// A selectable option in a dropdown
 #[derive(Clone, Debug)]
 pub struct SelectOption {
+    /// Option value (internal identifier)
     pub value: String,
+    /// Option label (displayed text)
     pub label: String,
+    /// Optional icon identifier
     pub icon: Option<String>,
+    /// Optional description text
     pub description: Option<String>,
+    /// Whether this option is disabled
     pub disabled: bool,
 }
 
 impl SelectOption {
+    /// Create a new select option
     pub fn new(value: impl Into<String>, label: impl Into<String>) -> Self {
         Self {
             value: value.into(),
@@ -48,16 +54,19 @@ impl SelectOption {
         }
     }
 
+    /// Set an icon for this option
     pub fn icon(mut self, icon: impl Into<String>) -> Self {
         self.icon = Some(icon.into());
         self
     }
 
+    /// Set a description for this option
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
     }
 
+    /// Set whether this option is disabled
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -85,6 +94,7 @@ pub struct Select {
 }
 
 impl Select {
+    /// Create a new Select component with the given options
     pub fn new(options: Vec<SelectOption>) -> Self {
         let filtered_indices: Vec<usize> = (0..options.len()).collect();
         Self {
@@ -103,52 +113,61 @@ impl Select {
         }
     }
 
+    /// Build a Select using a closure-based API (prefer using `Select::new()`)
     pub fn build(builder: impl FnOnce(&mut SelectBuilder)) -> Self {
         let mut select_builder = SelectBuilder { options: Vec::new() };
         builder(&mut select_builder);
         Self::new(select_builder.options)
     }
 
-    // Builder methods
+    /// Set a unique identifier for this select component
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
     }
 
+    /// Set the initially selected value
     pub fn selected(mut self, value: impl Into<String>) -> Self {
         self.selected_value = Some(value.into());
         self
     }
 
+    /// Set a label for the select component
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
     }
 
+    /// Set placeholder text shown when no option is selected
     pub fn placeholder(mut self, placeholder: impl Into<String>) -> Self {
         self.placeholder = placeholder.into();
         self
     }
 
+    /// Set the width of the select component
     pub fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
+    /// Set the maximum height of the dropdown menu
     pub fn max_height(mut self, height: f32) -> Self {
         self.max_height = height;
         self
     }
 
+    /// Enable or disable search functionality
     pub fn searchable(mut self, searchable: bool) -> Self {
         self.searchable = searchable;
         self
     }
 
+    /// Get the currently selected value
     pub fn selected_value(&self) -> Option<&str> {
         self.selected_value.as_deref()
     }
 
+    /// Set the selected value programmatically
     pub fn set_selected(&mut self, value: Option<String>) {
         self.selected_value = value;
     }
@@ -157,6 +176,7 @@ impl Select {
     // Main show method
     // ========================================================================
 
+    /// Show the Select component
     pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> SelectResponse {
         let width = self.width.unwrap_or(200.0);
         let mut changed = false;
@@ -643,6 +663,7 @@ impl Select {
 // Response types
 // ============================================================================
 
+/// Response from showing a Select component
 pub struct SelectResponse {
     /// The egui Response for the trigger button
     pub response: Response,
@@ -654,20 +675,24 @@ pub struct SelectResponse {
     pub is_open: bool,
 }
 
+/// Internal response for dropdown interactions
 struct DropdownResponse {
     selected_value: Option<String>,
     should_close: bool,
 }
 
 // ============================================================================
-// Builder
+// Builder (internal helper)
 // ============================================================================
 
+/// Internal builder for Select options (prefer using `Select::new()` directly)
+#[doc(hidden)]
 pub struct SelectBuilder {
     options: Vec<SelectOption>,
 }
 
 impl SelectBuilder {
+    /// Add an option to the builder
     pub fn option(&mut self, value: &str, label: &str) -> SelectOptionBuilder<'_> {
         self.options.push(SelectOption::new(value, label));
         let idx = self.options.len() - 1;
@@ -675,12 +700,15 @@ impl SelectBuilder {
     }
 }
 
+/// Internal builder for configuring a SelectOption
+#[doc(hidden)]
 pub struct SelectOptionBuilder<'a> {
     options: &'a mut Vec<SelectOption>,
     option_index: usize,
 }
 
 impl<'a> SelectOptionBuilder<'a> {
+    /// Set an icon for this option
     pub fn icon(self, icon: &str) -> Self {
         if let Some(opt) = self.options.get_mut(self.option_index) {
             opt.icon = Some(icon.to_string());
@@ -688,6 +716,7 @@ impl<'a> SelectOptionBuilder<'a> {
         self
     }
 
+    /// Set a description for this option
     pub fn description(self, description: &str) -> Self {
         if let Some(opt) = self.options.get_mut(self.option_index) {
             opt.description = Some(description.to_string());
@@ -695,6 +724,7 @@ impl<'a> SelectOptionBuilder<'a> {
         self
     }
 
+    /// Set whether this option is disabled
     pub fn disabled(self, disabled: bool) -> Self {
         if let Some(opt) = self.options.get_mut(self.option_index) {
             opt.disabled = disabled;

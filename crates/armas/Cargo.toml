@@ -3,9 +3,9 @@ name = "armas"
 version = "0.1.0"
 edition = "2021"
 authors = ["PoHsuan Lai"]
-description = "ALIG - A component library for egui with Material Design inspired theming and reusable UI components."
+description = "Armas - A component library for egui with Material Design inspired theming and reusable UI components."
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/PoHsuanLai/armas"
+repository = "https://github.com/PoHsuanLai/Armas"
 keywords = ["egui", "ui", "theme", "components", "material-design"]
 categories = ["gui"]
 
@@ -15,7 +15,7 @@ egui-theme = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = { version = "0.4", features = ["clock", "wasmbind"] }
-armas-icon = { path = "../armas-icon" }
+armas-icon = { version = "0.1.0", path = "../armas-icon" }
 
 [dev-dependencies]
 eframe = "0.33"

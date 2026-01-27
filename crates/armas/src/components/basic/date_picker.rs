@@ -36,9 +36,12 @@ const CORNER_RADIUS: f32 = 6.0; // rounded-md
 /// A date value (year, month, day)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Date {
+    /// Year
     pub year: i32,
-    pub month: u32, // 1-12
-    pub day: u32,   // 1-31
+    /// Month (1-12)
+    pub month: u32,
+    /// Day of month (1-31)
+    pub day: u32,
 }
 
 impl Date {

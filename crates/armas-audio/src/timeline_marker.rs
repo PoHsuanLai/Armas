@@ -14,7 +14,12 @@ pub enum MarkerVariant {
     /// Tempo marker with BPM value
     Tempo(f32),
     /// Time signature marker
-    TimeSignature { numerator: u32, denominator: u32 },
+    TimeSignature {
+        /// Top number in time signature (beats per measure)
+        numerator: u32,
+        /// Bottom number in time signature (note value per beat)
+        denominator: u32,
+    },
 }
 
 impl MarkerVariant {

@@ -1,3 +1,5 @@
+//! Mouse-tracking spotlight effect component
+
 use armas::Theme;
 use egui::{Color32, Pos2, Rect, Response, Ui};
 
