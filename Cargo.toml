@@ -15,6 +15,7 @@ edition = "2021"
 authors = ["PoHsuan Lai"]
 license = "MIT"
 repository = "https://github.com/PoHsuanLai/Armas"
+documentation = "https://pohsuanlai.github.io/Armas"
 
 [workspace.dependencies]
 egui = "0.33"

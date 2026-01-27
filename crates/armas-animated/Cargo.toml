@@ -5,6 +5,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+documentation.workspace = true
 description = "Animated text and effect components for egui"
 keywords = ["egui", "animation", "effects", "ui"]
 categories = ["gui"]

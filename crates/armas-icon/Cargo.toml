@@ -5,6 +5,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+documentation.workspace = true
 description = "Generic SVG-based icon system for egui"
 keywords = ["egui", "icons", "svg", "ui"]
 categories = ["gui"]

@@ -5,6 +5,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+documentation.workspace = true
 description = "Audio UI components for egui - specialized widgets for audio production interfaces."
 keywords = ["egui", "ui", "audio", "daw", "components"]
 categories = ["gui", "multimedia::audio"]
