@@ -2,7 +2,7 @@
 ///
 /// These functions transform a linear time value (0.0 to 1.0) into an eased value
 /// that creates more natural-looking animations.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum EasingFunction {
     /// No easing, linear interpolation
     Linear,
@@ -11,6 +11,7 @@ pub enum EasingFunction {
     /// Decelerating to zero velocity
     EaseOut,
     /// Acceleration until halfway, then deceleration
+    #[default]
     EaseInOut,
     /// Quadratic ease in
     QuadIn,
@@ -73,12 +74,6 @@ impl EasingFunction {
             Self::BounceOut => bounce_out(t),
             Self::Cubic { x1, y1, x2, y2 } => cubic_bezier(t, *x1, *y1, *x2, *y2),
         }
-    }
-}
-
-impl Default for EasingFunction {
-    fn default() -> Self {
-        Self::EaseInOut
     }
 }
 
