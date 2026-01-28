@@ -168,15 +168,6 @@ impl Input {
 
     /// Show the input field
     pub fn show(self, ui: &mut Ui, text: &mut String, theme: &crate::Theme) -> InputResponse {
-        // Load state from memory if ID is set
-        if let Some(id) = self.id {
-            let state_id = id.with("input_state");
-            let stored_text: String = ui
-                .ctx()
-                .data_mut(|d| d.get_temp(state_id).unwrap_or_else(|| text.clone()));
-            *text = stored_text;
-        }
-
         let width = self.width.unwrap_or(200.0);
 
         let response = ui.vertical(|ui| {
@@ -211,14 +202,6 @@ impl Input {
 
             input_response
         });
-
-        // Save state to memory if ID is set
-        if let Some(id) = self.id {
-            let state_id = id.with("input_state");
-            ui.ctx().data_mut(|d| {
-                d.insert_temp(state_id, text.clone());
-            });
-        }
 
         let inner_response = response.inner;
         let changed = inner_response.changed();
@@ -371,6 +354,11 @@ impl Input {
 
             if self.password {
                 text_edit = text_edit.password(true);
+            }
+
+            // Apply ID to TextEdit if provided
+            if let Some(id) = self.id {
+                text_edit = text_edit.id(id);
             }
 
             return child_ui.add(text_edit);

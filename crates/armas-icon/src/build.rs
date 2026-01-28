@@ -12,7 +12,7 @@
 //! ```
 //!
 //! In `build.rs`:
-//! ```
+//! ```no_run
 //! use std::path::Path;
 //! use std::fs::File;
 //! use std::io::Write;
