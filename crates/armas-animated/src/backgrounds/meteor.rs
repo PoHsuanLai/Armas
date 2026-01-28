@@ -135,6 +135,7 @@ impl MeteorShower {
     }
 
     /// Set a unique ID for this meteor shower (required for state persistence)
+    #[must_use]
     pub fn id(mut self, id: impl std::hash::Hash) -> Self {
         self.id = egui::Id::new(id);
         self
@@ -237,7 +238,7 @@ impl MeteorShower {
         // Get or initialize state from egui memory
         let mut state = ui.data_mut(|d| {
             d.get_temp::<MeteorShowerState>(self.id)
-                .unwrap_or(MeteorShowerState {
+                .unwrap_or_else(|| MeteorShowerState {
                     meteors: self.meteors.clone(),
                     last_spawn_time: self.last_spawn_time,
                 })

@@ -1,6 +1,6 @@
 # Card
 
-Material Design 3 card component for displaying grouped content.
+Shadcn style card component for displaying grouped content.
 
 ```demo
 let theme = ui.ctx().armas_theme();

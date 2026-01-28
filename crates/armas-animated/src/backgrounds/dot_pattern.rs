@@ -125,11 +125,22 @@ impl DotPattern {
         let start_x = bounds.left() + (bounds.width() % self.spacing) / 2.0;
         let start_y = bounds.top() + (bounds.height() % self.spacing) / 2.0;
 
-        let mut y = 0.0;
-        while start_y + y <= bounds.bottom() {
-            let mut x = 0.0;
-            while start_x + x <= bounds.right() {
-                let dot_pos = Pos2::new(start_x + x, start_y + y);
+        let num_cols = ((bounds.width() / self.spacing).ceil() as usize).max(1);
+        let num_rows = ((bounds.height() / self.spacing).ceil() as usize).max(1);
+
+        for row in 0..num_rows {
+            let y = (row as f32).mul_add(self.spacing, start_y);
+            if y > bounds.bottom() {
+                break;
+            }
+
+            for col in 0..num_cols {
+                let x = (col as f32).mul_add(self.spacing, start_x);
+                if x > bounds.right() {
+                    break;
+                }
+
+                let dot_pos = Pos2::new(x, y);
 
                 let alpha = if self.fade_distance > 0.0 {
                     let distance_x = (dot_pos.x - center.x).abs() / (bounds.width() / 2.0);
@@ -155,10 +166,7 @@ impl DotPattern {
                 }
 
                 painter.circle_filled(dot_pos, self.dot_radius, dot_color);
-
-                x += self.spacing;
             }
-            y += self.spacing;
         }
     }
 }

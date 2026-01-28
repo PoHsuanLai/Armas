@@ -103,7 +103,7 @@ impl Sparkle {
 /// Persistent state for sparkles animation
 #[derive(Clone)]
 struct SparklesState {
-    sparkles: Vec<Sparkle>,
+    particles: Vec<Sparkle>,
     initialized: bool,
 }
 
@@ -120,7 +120,7 @@ pub struct Sparkles {
     max_size: f32,
 
     // Initial state (used for initialization)
-    sparkles: Vec<Sparkle>,
+    particles: Vec<Sparkle>,
     initialized: bool,
 }
 
@@ -141,12 +141,13 @@ impl Sparkles {
             ],
             min_size: 2.0,
             max_size: 4.0,
-            sparkles: Vec::new(),
+            particles:Vec::new(),
             initialized: false,
         }
     }
 
     /// Set a unique ID for this sparkles effect (required for state persistence)
+    #[must_use]
     pub fn id(mut self, id: impl std::hash::Hash) -> Self {
         self.id = egui::Id::new(id);
         self
@@ -177,12 +178,12 @@ impl Sparkles {
     }
 
     fn initialize_sparkles(&mut self) {
-        self.sparkles.clear();
+        self.particles.clear();
 
         // Use a simple pseudo-random approach
         let mut seed = 12345u32;
         let mut random = || {
-            seed = seed.wrapping_mul(1103515245).wrapping_add(12345);
+            seed = seed.wrapping_mul(1_103_515_245).wrapping_add(12345);
             (seed / 65536) % 32768
         };
 
@@ -194,7 +195,7 @@ impl Sparkles {
             let delay = (i as f32 / self.particle_count as f32) * 2.0;
             let color_index = random() as usize % self.colors.len();
 
-            self.sparkles.push(Sparkle::new(
+            self.particles.push(Sparkle::new(
                 Pos2::new(x, y),
                 size,
                 delay,
@@ -225,26 +226,26 @@ impl Sparkles {
         let mut state = ui.data_mut(|d| {
             d.get_temp::<SparklesState>(self.id)
                 .unwrap_or_else(|| SparklesState {
-                    sparkles: self.sparkles.clone(),
+                    particles:self.particles.clone(),
                     initialized: self.initialized,
                 })
         });
 
         if !state.initialized {
             self.initialize_sparkles();
-            state.sparkles = self.sparkles.clone();
+            state.particles.clone_from(&self.particles);
             state.initialized = true;
         }
 
         let dt = ui.input(|i| i.stable_dt);
 
-        for sparkle in &mut state.sparkles {
+        for sparkle in &mut state.particles {
             sparkle.update(dt);
         }
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
-            for sparkle in &state.sparkles {
+            for sparkle in &state.particles {
                 let mut adjusted_sparkle = sparkle.clone();
                 adjusted_sparkle.position = rect.min + sparkle.position.to_vec2();
                 adjusted_sparkle.draw(painter);
@@ -274,7 +275,7 @@ impl Sparkles {
         let mut state = ui.data_mut(|d| {
             d.get_temp::<SparklesState>(self.id)
                 .unwrap_or_else(|| SparklesState {
-                    sparkles: self.sparkles.clone(),
+                    particles:self.particles.clone(),
                     initialized: self.initialized,
                 })
         });
@@ -282,14 +283,14 @@ impl Sparkles {
         // Then overlay sparkles
         if !state.initialized {
             self.initialize_sparkles();
-            state.sparkles = self.sparkles.clone();
+            state.particles.clone_from(&self.particles);
             state.initialized = true;
         }
 
         let dt = ui.input(|i| i.stable_dt);
 
         // Update all sparkles
-        for sparkle in &mut state.sparkles {
+        for sparkle in &mut state.particles {
             sparkle.update(dt);
         }
 
@@ -297,7 +298,7 @@ impl Sparkles {
             let painter = ui.painter();
 
             // Draw all sparkles
-            for sparkle in &state.sparkles {
+            for sparkle in &state.particles {
                 let mut adjusted_sparkle = sparkle.clone();
                 adjusted_sparkle.position = rect.min + sparkle.position.to_vec2();
                 adjusted_sparkle.draw(painter);

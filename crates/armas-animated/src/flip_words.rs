@@ -208,7 +208,6 @@ impl FlipWords {
                     if flip_t > 0.0 {
                         if flip_t < 0.5 {
                             // Current word scales down horizontally
-                            let _scale_x = 1.0 - (flip_t * 2.0);
                             let alpha = (255.0 * (1.0 - flip_t * 2.0)) as u8;
                             let display_color = self.highlight_color.unwrap_or(text_color);
                             let faded_color = Color32::from_rgba_unmultiplied(

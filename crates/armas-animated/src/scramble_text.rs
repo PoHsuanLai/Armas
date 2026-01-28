@@ -59,6 +59,7 @@ impl ScrambleText {
     }
 
     /// Set unique ID for this scramble text (required for multiple instances)
+    #[must_use]
     pub fn id(mut self, id: impl std::hash::Hash) -> Self {
         self.id = Id::new(id);
         self
@@ -71,6 +72,7 @@ impl ScrambleText {
         self
     }
 
+    #[must_use]
     /// Set custom character set for scrambling
     pub fn charset(mut self, charset: impl Into<String>) -> Self {
         self.charset = charset.into().chars().collect();
@@ -142,7 +144,7 @@ impl ScrambleText {
             }
         } else if is_complete && !self.loop_mode {
             // Mark loop start time when complete (for delay)
-            if state.loop_start_time == state.start_time {
+            if (state.loop_start_time - state.start_time).abs() < f32::EPSILON {
                 state.loop_start_time = time;
             }
         }

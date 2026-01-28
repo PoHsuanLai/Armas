@@ -68,7 +68,7 @@ pub struct Playhead {
 impl Playhead {
     /// Create a new playhead indicator with default settings
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             id: None,
             beat_width: 60.0,
@@ -86,19 +86,20 @@ impl Playhead {
 
     /// Set width per beat in pixels (must match `TimeRuler`)
     #[must_use]
-    pub fn beat_width(mut self, width: f32) -> Self {
+    pub const fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width;
         self
     }
 
     /// Set height of the playhead indicator
     #[must_use]
-    pub fn height(mut self, height: f32) -> Self {
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Set custom ID (important when using multiple playheads)
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -106,49 +107,49 @@ impl Playhead {
 
     /// Set custom playhead color
     #[must_use]
-    pub fn color(mut self, color: Color32) -> Self {
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set line width
     #[must_use]
-    pub fn line_width(mut self, width: f32) -> Self {
+    pub const fn line_width(mut self, width: f32) -> Self {
         self.line_width = width;
         self
     }
 
     /// Set whether to show draggable handle
     #[must_use]
-    pub fn show_handle(mut self, show: bool) -> Self {
+    pub const fn show_handle(mut self, show: bool) -> Self {
         self.show_handle = show;
         self
     }
 
     /// Set handle size (radius)
     #[must_use]
-    pub fn handle_size(mut self, size: f32) -> Self {
+    pub const fn handle_size(mut self, size: f32) -> Self {
         self.handle_size = size;
         self
     }
 
     /// Set whether to show glow effect
     #[must_use]
-    pub fn show_glow(mut self, show: bool) -> Self {
+    pub const fn show_glow(mut self, show: bool) -> Self {
         self.show_glow = show;
         self
     }
 
     /// Set glow intensity (0.0-1.0)
     #[must_use]
-    pub fn glow_intensity(mut self, intensity: f32) -> Self {
+    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
     /// Set handle shape variant
     #[must_use]
-    pub fn handle_shape(mut self, shape: PlayheadHandleShape) -> Self {
+    pub const fn handle_shape(mut self, shape: PlayheadHandleShape) -> Self {
         self.handle_shape = shape;
         self
     }
@@ -156,7 +157,7 @@ impl Playhead {
     /// Enable snap-to-grid with specified beat division
     /// E.g., `snap_to_beat(0.25)` snaps to 16th notes
     #[must_use]
-    pub fn snap_to_beat(mut self, beat_division: f32) -> Self {
+    pub const fn snap_to_beat(mut self, beat_division: f32) -> Self {
         self.snap_to_beat = Some(beat_division.max(0.001));
         self
     }
@@ -175,7 +176,7 @@ impl Playhead {
         theme: &Theme,
     ) -> Response {
         // Calculate x position based on beat position
-        let x = timeline_rect.min.x + (*position * self.beat_width);
+        let x = (*position).mul_add(self.beat_width, timeline_rect.min.x);
 
         // Create interaction rect around the playhead
         let interact_width = self.handle_size * 4.0;
@@ -195,7 +196,7 @@ impl Playhead {
         if self.show_glow {
             let glow_alpha = (30.0 * self.glow_intensity) as u8; // Much more subtle (was 80)
             for i in 0..3 {
-                let glow_width = self.line_width + (3 - i) as f32 * 1.5;
+                let glow_width = self.line_width + f32::from(3 - i) * 1.5;
                 let alpha = glow_alpha.saturating_sub(i * 8);
                 ui.painter().line_segment(
                     [line_start, line_end],
@@ -239,7 +240,7 @@ impl Playhead {
             if self.show_glow {
                 let glow_alpha = (30.0 * self.glow_intensity) as u8;
                 for i in 0..3 {
-                    let glow_offset = (3 - i) as f32 * 1.5;
+                    let glow_offset = f32::from(3 - i) * 1.5;
                     let alpha = glow_alpha.saturating_sub(i * 8);
                     let glow_color = Color32::from_rgba_unmultiplied(
                         playhead_color.r(),
@@ -329,32 +330,28 @@ impl Playhead {
         for i in 0..=segments {
             let angle = std::f32::consts::PI * (i as f32 / segments as f32);
             let x = top.x + half_width * angle.cos();
-            let y = top.y + half_width * top_roundness * (1.0 - angle.sin());
+            let y = (half_width * top_roundness).mul_add(1.0 - angle.sin(), top.y);
             path.push(Pos2::new(x, y));
         }
 
         // Right side curve to point
-        let right_ctrl = Pos2::new(top.x + half_width * 0.3, top.y + height * 0.5);
+        let right_ctrl = Pos2::new(top.x + half_width * 0.3, height.mul_add(0.5, top.y));
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
-            let x = (1.0 - t).powi(2) * (top.x + half_width)
-                + 2.0 * (1.0 - t) * t * right_ctrl.x
+            let x = (1.0 - t).powi(2).mul_add(top.x + half_width, 2.0 * (1.0 - t) * t * right_ctrl.x)
                 + t.powi(2) * bottom.x;
-            let y = (1.0 - t).powi(2) * (top.y + half_width * top_roundness)
-                + 2.0 * (1.0 - t) * t * right_ctrl.y
+            let y = (1.0 - t).powi(2).mul_add(top.y + half_width * top_roundness, 2.0 * (1.0 - t) * t * right_ctrl.y)
                 + t.powi(2) * bottom.y;
             path.push(Pos2::new(x, y));
         }
 
         // Left side curve from point
-        let left_ctrl = Pos2::new(top.x - half_width * 0.3, top.y + height * 0.5);
+        let left_ctrl = Pos2::new(top.x - half_width * 0.3, height.mul_add(0.5, top.y));
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
-            let x = (1.0 - t).powi(2) * bottom.x
-                + 2.0 * (1.0 - t) * t * left_ctrl.x
+            let x = (1.0 - t).powi(2).mul_add(bottom.x, 2.0 * (1.0 - t) * t * left_ctrl.x)
                 + t.powi(2) * (top.x - half_width);
-            let y = (1.0 - t).powi(2) * bottom.y
-                + 2.0 * (1.0 - t) * t * left_ctrl.y
+            let y = (1.0 - t).powi(2).mul_add(bottom.y, 2.0 * (1.0 - t) * t * left_ctrl.y)
                 + t.powi(2) * (top.y + half_width * top_roundness);
             path.push(Pos2::new(x, y));
         }
@@ -385,32 +382,28 @@ impl Playhead {
         for i in 0..=segments {
             let angle = std::f32::consts::PI * (i as f32 / segments as f32);
             let x = top.x + half_width * angle.cos();
-            let y = top.y + half_width * top_roundness * (1.0 - angle.sin());
+            let y = (half_width * top_roundness).mul_add(1.0 - angle.sin(), top.y);
             path.push(Pos2::new(x, y));
         }
 
         // Right side curve
-        let right_ctrl = Pos2::new(top.x + half_width * 0.3, top.y + height * 0.5);
+        let right_ctrl = Pos2::new(top.x + half_width * 0.3, height.mul_add(0.5, top.y));
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
-            let x = (1.0 - t).powi(2) * (top.x + half_width)
-                + 2.0 * (1.0 - t) * t * right_ctrl.x
+            let x = (1.0 - t).powi(2).mul_add(top.x + half_width, 2.0 * (1.0 - t) * t * right_ctrl.x)
                 + t.powi(2) * bottom.x;
-            let y = (1.0 - t).powi(2) * (top.y + half_width * top_roundness)
-                + 2.0 * (1.0 - t) * t * right_ctrl.y
+            let y = (1.0 - t).powi(2).mul_add(top.y + half_width * top_roundness, 2.0 * (1.0 - t) * t * right_ctrl.y)
                 + t.powi(2) * bottom.y;
             path.push(Pos2::new(x, y));
         }
 
         // Left side curve
-        let left_ctrl = Pos2::new(top.x - half_width * 0.3, top.y + height * 0.5);
+        let left_ctrl = Pos2::new(top.x - half_width * 0.3, height.mul_add(0.5, top.y));
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
-            let x = (1.0 - t).powi(2) * bottom.x
-                + 2.0 * (1.0 - t) * t * left_ctrl.x
+            let x = (1.0 - t).powi(2).mul_add(bottom.x, 2.0 * (1.0 - t) * t * left_ctrl.x)
                 + t.powi(2) * (top.x - half_width);
-            let y = (1.0 - t).powi(2) * bottom.y
-                + 2.0 * (1.0 - t) * t * left_ctrl.y
+            let y = (1.0 - t).powi(2).mul_add(bottom.y, 2.0 * (1.0 - t) * t * left_ctrl.y)
                 + t.powi(2) * (top.y + half_width * top_roundness);
             path.push(Pos2::new(x, y));
         }

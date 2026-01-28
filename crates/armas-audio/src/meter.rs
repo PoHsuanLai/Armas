@@ -140,21 +140,21 @@ impl AudioMeter {
 
     /// Set meter width
     #[must_use]
-    pub fn width(mut self, width: f32) -> Self {
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = width.max(10.0);
         self
     }
 
     /// Set meter height
     #[must_use]
-    pub fn height(mut self, height: f32) -> Self {
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height.max(20.0);
         self
     }
 
     /// Set visual style
     #[must_use]
-    pub fn style(mut self, style: MeterStyle) -> Self {
+    pub const fn style(mut self, style: MeterStyle) -> Self {
         self.style = style;
         self
     }
@@ -197,56 +197,56 @@ impl AudioMeter {
 
     /// Set peak hold indicator color
     #[must_use]
-    pub fn peak_color(mut self, color: Color32) -> Self {
+    pub const fn peak_color(mut self, color: Color32) -> Self {
         self.peak_color = Some(color);
         self
     }
 
     /// Set scale position
     #[must_use]
-    pub fn scale_position(mut self, position: ScalePosition) -> Self {
+    pub const fn scale_position(mut self, position: ScalePosition) -> Self {
         self.scale_position = position;
         self
     }
 
     /// Show scale on the right (convenience method)
     #[must_use]
-    pub fn show_scale(mut self) -> Self {
+    pub const fn show_scale(mut self) -> Self {
         self.scale_position = ScalePosition::Right;
         self
     }
 
     /// Show scale on the left
     #[must_use]
-    pub fn scale_left(mut self) -> Self {
+    pub const fn scale_left(mut self) -> Self {
         self.scale_position = ScalePosition::Left;
         self
     }
 
     /// Show scale on the right
     #[must_use]
-    pub fn scale_right(mut self) -> Self {
+    pub const fn scale_right(mut self) -> Self {
         self.scale_position = ScalePosition::Right;
         self
     }
 
     /// Set corner radius for background
     #[must_use]
-    pub fn corner_radius(mut self, radius: f32) -> Self {
+    pub const fn corner_radius(mut self, radius: f32) -> Self {
         self.corner_radius = radius.max(0.0);
         self
     }
 
     /// Set background opacity (0.0 to 1.0)
     #[must_use]
-    pub fn background_opacity(mut self, opacity: f32) -> Self {
+    pub const fn background_opacity(mut self, opacity: f32) -> Self {
         self.background_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Enable/disable glassmorphic background
     #[must_use]
-    pub fn glassmorphic(mut self, enabled: bool) -> Self {
+    pub const fn glassmorphic(mut self, enabled: bool) -> Self {
         self.glassmorphic = enabled;
         self
     }
@@ -254,7 +254,7 @@ impl AudioMeter {
     /// Set animation speed (stiffness parameter, higher = faster response)
     /// Default is 250.0, try 150.0 for slower, 400.0 for very fast
     #[must_use]
-    pub fn animation_speed(mut self, stiffness: f32) -> Self {
+    pub const fn animation_speed(mut self, stiffness: f32) -> Self {
         self.animation_stiffness = stiffness.max(10.0);
         self
     }
@@ -262,7 +262,7 @@ impl AudioMeter {
     /// Set animation damping (higher = less oscillation/bounce)
     /// Default is 18.0, try 12.0 for more responsive, 25.0 for smoother
     #[must_use]
-    pub fn animation_damping(mut self, damping: f32) -> Self {
+    pub const fn animation_damping(mut self, damping: f32) -> Self {
         self.animation_damping = damping.max(1.0);
         self
     }
@@ -302,7 +302,7 @@ impl AudioMeter {
             if self.peak_hold_time > 1.5 {
                 let fade_progress = ((self.peak_hold_time - 1.5) / 1.0).min(1.0);
                 self.peak_hold =
-                    self.peak_hold * (1.0 - fade_progress) + current_level * fade_progress;
+                    self.peak_hold.mul_add(1.0 - fade_progress, current_level * fade_progress);
             }
         }
 
@@ -368,7 +368,7 @@ impl AudioMeter {
 
             // Draw peak hold indicator
             if self.peak_hold > 0.01 && self.peak_hold_time < 2.5 {
-                let peak_y = inner_meter_rect.max.y - (self.peak_hold * inner_meter_rect.height());
+                let peak_y = self.peak_hold.mul_add(-inner_meter_rect.height(), inner_meter_rect.max.y);
                 let peak_color = self.peak_color.unwrap_or_else(|| theme.primary());
 
                 // Fade out after hold period
@@ -382,7 +382,7 @@ impl AudioMeter {
                     peak_color.r(),
                     peak_color.g(),
                     peak_color.b(),
-                    (peak_color.a() as f32 * fade_alpha) as u8,
+                    (f32::from(peak_color.a()) * fade_alpha) as u8,
                 );
 
                 ui.painter().line_segment(
@@ -457,12 +457,12 @@ impl AudioMeter {
             let base_color = self.get_color_at_level(t);
 
             // Subtle brightness increase for the fill itself
-            let brightness = 1.0 + (level.powf(1.5) * 0.3);
+            let brightness = level.powf(1.5).mul_add(0.3, 1.0);
 
             let color = Color32::from_rgba_unmultiplied(
-                ((base_color.r() as f32 * brightness).min(255.0)) as u8,
-                ((base_color.g() as f32 * brightness).min(255.0)) as u8,
-                ((base_color.b() as f32 * brightness).min(255.0)) as u8,
+                ((f32::from(base_color.r()) * brightness).min(255.0)) as u8,
+                ((f32::from(base_color.g()) * brightness).min(255.0)) as u8,
+                ((f32::from(base_color.b()) * brightness).min(255.0)) as u8,
                 base_color.a(),
             );
 
@@ -495,7 +495,7 @@ impl AudioMeter {
 
         for i in 0..segment_count {
             let t = (i as f32 + 0.5) / segment_count as f32;
-            let segment_y = meter_rect.max.y - ((i + 1) as f32 * (segment_height + gap));
+            let segment_y = ((i + 1) as f32).mul_add(-(segment_height + gap), meter_rect.max.y);
 
             let segment_rect = Rect::from_min_size(
                 Pos2::new(meter_rect.min.x, segment_y),
@@ -503,10 +503,9 @@ impl AudioMeter {
             );
 
             let is_lit = i < lit_segments;
+            let base_color = self.get_color_at_level(t);
 
             if is_lit {
-                let base_color = self.get_color_at_level(t);
-
                 // Subtle outer glow for lit segments - consistent with fader and knob
                 for layer in 0..3 {
                     let expansion = (3 - layer) as f32 * 0.8;
@@ -524,18 +523,17 @@ impl AudioMeter {
                 }
 
                 // Subtle brightness increase for the segment itself
-                let brightness = 1.0 + (level.powf(1.5) * 0.3);
+                let brightness = level.powf(1.5).mul_add(0.3, 1.0);
                 let color = Color32::from_rgba_unmultiplied(
-                    ((base_color.r() as f32 * brightness).min(255.0)) as u8,
-                    ((base_color.g() as f32 * brightness).min(255.0)) as u8,
-                    ((base_color.b() as f32 * brightness).min(255.0)) as u8,
+                    ((f32::from(base_color.r()) * brightness).min(255.0)) as u8,
+                    ((f32::from(base_color.g()) * brightness).min(255.0)) as u8,
+                    ((f32::from(base_color.b()) * brightness).min(255.0)) as u8,
                     base_color.a(),
                 );
 
                 painter.rect_filled(segment_rect, corner_radius, color);
             } else {
                 // Dim unlit segments
-                let base_color = self.get_color_at_level(t);
                 let dim_color = with_alpha(base_color, 20);
                 painter.rect_filled(segment_rect, corner_radius, dim_color);
             }
@@ -544,11 +542,10 @@ impl AudioMeter {
 
     /// Get color at a specific level (0.0 to 1.0)
     fn get_color_at_level(&self, level: f32) -> Color32 {
-        if let Some(ref gradient) = self.gradient {
-            gradient.sample(level)
-        } else {
-            lerp_color(self.min_color, self.max_color, level)
-        }
+        self.gradient.as_ref().map_or_else(
+            || lerp_color(self.min_color, self.max_color, level),
+            |gradient| gradient.sample(level),
+        )
     }
 
     /// Draw dB scale markings
@@ -573,7 +570,7 @@ impl AudioMeter {
         let is_left = self.scale_position == ScalePosition::Left;
 
         for (level, label) in db_marks {
-            let y = meter_rect.max.y - (level * meter_rect.height());
+            let y = meter_rect.max.y - level * meter_rect.height();
 
             // Position text in the scale area (outside the meter)
             let (text_pos, text_align) = if is_left {

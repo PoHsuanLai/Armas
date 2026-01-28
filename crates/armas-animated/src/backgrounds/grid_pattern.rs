@@ -148,8 +148,14 @@ impl GridPattern {
         let bottom = bounds.bottom();
 
         // Draw vertical lines
-        let mut x = center.x % self.spacing;
-        while x < bounds.width() {
+        let start_x = center.x % self.spacing;
+        let num_vertical_lines = ((bounds.width() / self.spacing).ceil() as usize).max(1);
+
+        for i in 0..num_vertical_lines {
+            let x = (i as f32).mul_add(self.spacing, start_x);
+            if x >= bounds.width() {
+                break;
+            }
             let line_x = left + x;
 
             let alpha = if self.fade_distance > 0.0 {
@@ -181,13 +187,17 @@ impl GridPattern {
                     Stroke::new(self.thickness, line_color),
                 );
             }
-
-            x += self.spacing;
         }
 
         // Draw horizontal lines
-        let mut y = center.y % self.spacing;
-        while y < bounds.height() {
+        let start_y = center.y % self.spacing;
+        let num_horizontal_lines = ((bounds.height() / self.spacing).ceil() as usize).max(1);
+
+        for i in 0..num_horizontal_lines {
+            let y = (i as f32).mul_add(self.spacing, start_y);
+            if y >= bounds.height() {
+                break;
+            }
             let line_y = top + y;
 
             let alpha = if self.fade_distance > 0.0 {
@@ -215,16 +225,25 @@ impl GridPattern {
                     Stroke::new(self.thickness, line_color),
                 );
             }
-
-            y += self.spacing;
         }
 
         // Draw dots at intersections if enabled
         if let Some(dot_color) = self.dot_color {
-            let mut x = center.x % self.spacing;
-            while x < bounds.width() {
-                let mut y = center.y % self.spacing;
-                while y < bounds.height() {
+            let start_x = center.x % self.spacing;
+            let start_y = center.y % self.spacing;
+
+            for i in 0..num_vertical_lines {
+                let x = (i as f32).mul_add(self.spacing, start_x);
+                if x >= bounds.width() {
+                    break;
+                }
+
+                for j in 0..num_horizontal_lines {
+                    let y = (j as f32).mul_add(self.spacing, start_y);
+                    if y >= bounds.height() {
+                        break;
+                    }
+
                     let dot_x = left + x;
                     let dot_y = top + y;
 
@@ -259,10 +278,7 @@ impl GridPattern {
                             faded_dot_color,
                         );
                     }
-
-                    y += self.spacing;
                 }
-                x += self.spacing;
             }
         }
     }

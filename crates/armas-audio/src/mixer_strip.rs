@@ -64,7 +64,7 @@ pub struct Insert {
 impl Insert {
     /// Create an empty insert slot
     #[must_use]
-    pub fn empty() -> Self {
+    pub const fn empty() -> Self {
         Self {
             name: None,
             bypassed: false,
@@ -189,84 +189,84 @@ impl MixerStrip {
 
     /// Set strip width
     #[must_use]
-    pub fn width(mut self, width: f32) -> Self {
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = width.max(60.0);
         self
     }
 
     /// Set scale factor for zoom (1.0 = 100%, 0.8 = 80%, 1.2 = 120%)
     #[must_use]
-    pub fn scale(mut self, scale: f32) -> Self {
+    pub const fn scale(mut self, scale: f32) -> Self {
         self.scale = scale.clamp(0.5, 2.0); // Clamp between 50% and 200%
         self
     }
 
     /// Set fader level
     #[must_use]
-    pub fn fader_level(mut self, level: f32) -> Self {
+    pub const fn fader_level(mut self, level: f32) -> Self {
         self.fader_level = level.clamp(0.0, 1.0);
         self
     }
 
     /// Set pan value
     #[must_use]
-    pub fn pan(mut self, pan: f32) -> Self {
+    pub const fn pan(mut self, pan: f32) -> Self {
         self.pan = pan.clamp(-1.0, 1.0);
         self
     }
 
     /// Set meter level
     #[must_use]
-    pub fn meter_level(mut self, level: f32) -> Self {
+    pub const fn meter_level(mut self, level: f32) -> Self {
         self.meter_level = level.clamp(0.0, 1.0);
         self
     }
 
     /// Set card background color
     #[must_use]
-    pub fn card_color(mut self, color: Color32) -> Self {
+    pub const fn card_color(mut self, color: Color32) -> Self {
         self.card_color = Some(color);
         self
     }
 
     /// Set knob glow color (overrides `card_color` for knob)
     #[must_use]
-    pub fn knob_color(mut self, color: Color32) -> Self {
+    pub const fn knob_color(mut self, color: Color32) -> Self {
         self.knob_color = Some(color);
         self
     }
 
     /// Set meter color (overrides `card_color` for meter)
     #[must_use]
-    pub fn meter_color(mut self, color: Color32) -> Self {
+    pub const fn meter_color(mut self, color: Color32) -> Self {
         self.meter_color = Some(color);
         self
     }
 
     /// Set mute state
     #[must_use]
-    pub fn muted(mut self, muted: bool) -> Self {
+    pub const fn muted(mut self, muted: bool) -> Self {
         self.muted = muted;
         self
     }
 
     /// Set solo state
     #[must_use]
-    pub fn soloed(mut self, soloed: bool) -> Self {
+    pub const fn soloed(mut self, soloed: bool) -> Self {
         self.soloed = soloed;
         self
     }
 
     /// Set record arm state
     #[must_use]
-    pub fn record_armed(mut self, armed: bool) -> Self {
+    pub const fn record_armed(mut self, armed: bool) -> Self {
         self.record_armed = armed;
         self
     }
 
     /// Set input monitoring state
     #[must_use]
-    pub fn input_monitoring(mut self, monitoring: bool) -> Self {
+    pub const fn input_monitoring(mut self, monitoring: bool) -> Self {
         self.input_monitoring = monitoring;
         self
     }
@@ -309,43 +309,43 @@ impl MixerStrip {
 
     /// Get the fader level (0.0 to 1.0)
     #[must_use]
-    pub fn get_fader_level(&self) -> f32 {
+    pub const fn get_fader_level(&self) -> f32 {
         self.fader_level
     }
 
     /// Get the pan value (-1.0 to 1.0)
     #[must_use]
-    pub fn get_pan(&self) -> f32 {
+    pub const fn get_pan(&self) -> f32 {
         self.pan
     }
 
     /// Get mute state
     #[must_use]
-    pub fn is_muted(&self) -> bool {
+    pub const fn is_muted(&self) -> bool {
         self.muted
     }
 
     /// Get solo state
     #[must_use]
-    pub fn is_soloed(&self) -> bool {
+    pub const fn is_soloed(&self) -> bool {
         self.soloed
     }
 
     /// Get record arm state
     #[must_use]
-    pub fn is_record_armed(&self) -> bool {
+    pub const fn is_record_armed(&self) -> bool {
         self.record_armed
     }
 
     /// Get input monitoring state
     #[must_use]
-    pub fn is_input_monitoring(&self) -> bool {
+    pub const fn is_input_monitoring(&self) -> bool {
         self.input_monitoring
     }
 
     /// Get meter level
     #[must_use]
-    pub fn get_meter_level(&self) -> f32 {
+    pub const fn get_meter_level(&self) -> f32 {
         self.meter_level
     }
 
@@ -357,13 +357,13 @@ impl MixerStrip {
 
     /// Get input route
     #[must_use]
-    pub fn get_input_route(&self) -> &Route {
+    pub const fn get_input_route(&self) -> &Route {
         &self.input_route
     }
 
     /// Get output route
     #[must_use]
-    pub fn get_output_route(&self) -> &Route {
+    pub const fn get_output_route(&self) -> &Route {
         &self.output_route
     }
 
@@ -492,15 +492,16 @@ impl MixerStrip {
     fn render_inserts(&self, ui: &mut Ui, theme: &armas::Theme, scale: f32, scaled_width: f32) {
         let slot_height = 20.0 * scale;
         for insert in &self.inserts {
-            let slot_width = scaled_width - 24.0 * scale;
-            let slot = if let Some(ref name) = insert.name {
-                Slot::new()
-                    .effect(name)
-                    .width(slot_width)
-                    .height(slot_height)
-            } else {
-                Slot::new().width(slot_width).height(slot_height)
-            };
+            let slot_width = 24.0f32.mul_add(-scale, scaled_width);
+            let slot = insert.name.as_ref().map_or_else(
+                || Slot::new().width(slot_width).height(slot_height),
+                |name| {
+                    Slot::new()
+                        .effect(name)
+                        .width(slot_width)
+                        .height(slot_height)
+                },
+            );
 
             slot.show(ui, theme);
             ui.add_space(theme.spacing.xs * scale);
@@ -531,7 +532,7 @@ impl MixerStrip {
             .glow_color(glow_color);
 
         let knob_resp = knob.show(ui, &mut pan_knob_value, theme);
-        self.pan = (knob_resp.value * 2.0 - 1.0).clamp(-1.0, 1.0);
+        self.pan = knob_resp.value.mul_add(2.0, -1.0).clamp(-1.0, 1.0);
 
         // Save pan state
         ui.ctx().data_mut(|d| {
@@ -551,7 +552,7 @@ impl MixerStrip {
         scale: f32,
         scaled_width: f32,
     ) {
-        let button_width_grid = (scaled_width - 4.0 * scale - theme.spacing.xs * scale) / 2.0;
+        let button_width_grid = (4.0f32.mul_add(-scale, scaled_width) - theme.spacing.xs * scale) / 2.0;
 
         // First row: Mute and Solo
         ui.horizontal(|ui| {
@@ -806,7 +807,7 @@ impl MixerStrip {
         let meter_fader_height = 180.0 * scale;
         let meter_width = 12.0 * scale;
         let fader_width = 30.0 * scale;
-        let button_width_full = scaled_width - 4.0 * scale;
+        let button_width_full = 4.0f32.mul_add(-scale, scaled_width);
 
         let mut sends_clicked = false;
         let mut input_routing_clicked = false;

@@ -61,7 +61,7 @@ pub struct ZoomControlResponse {
 
 impl<'a> ZoomControl<'a> {
     /// Create a new zoom control
-    pub fn new(zoom_level: &'a mut f32) -> Self {
+    pub const fn new(zoom_level: &'a mut f32) -> Self {
         Self {
             zoom_level,
             min_zoom: 0.1,
@@ -76,6 +76,7 @@ impl<'a> ZoomControl<'a> {
     }
 
     /// Set ID for state persistence (useful when zoom control is recreated each frame)
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -83,49 +84,49 @@ impl<'a> ZoomControl<'a> {
 
     /// Set minimum zoom level
     #[must_use]
-    pub fn min_zoom(mut self, min: f32) -> Self {
+    pub const fn min_zoom(mut self, min: f32) -> Self {
         self.min_zoom = min.max(0.01);
         self
     }
 
     /// Set maximum zoom level
     #[must_use]
-    pub fn max_zoom(mut self, max: f32) -> Self {
+    pub const fn max_zoom(mut self, max: f32) -> Self {
         self.max_zoom = max;
         self
     }
 
     /// Show or hide the slider
     #[must_use]
-    pub fn show_slider(mut self, show: bool) -> Self {
+    pub const fn show_slider(mut self, show: bool) -> Self {
         self.show_slider = show;
         self
     }
 
     /// Show or hide +/- buttons
     #[must_use]
-    pub fn show_buttons(mut self, show: bool) -> Self {
+    pub const fn show_buttons(mut self, show: bool) -> Self {
         self.show_buttons = show;
         self
     }
 
     /// Show or hide zoom level label
     #[must_use]
-    pub fn show_label(mut self, show: bool) -> Self {
+    pub const fn show_label(mut self, show: bool) -> Self {
         self.show_label = show;
         self
     }
 
     /// Set zoom step for buttons
     #[must_use]
-    pub fn button_step(mut self, step: f32) -> Self {
+    pub const fn button_step(mut self, step: f32) -> Self {
         self.button_step = step.max(0.01);
         self
     }
 
     /// Set slider width in pixels
     #[must_use]
-    pub fn slider_width(mut self, width: f32) -> Self {
+    pub const fn slider_width(mut self, width: f32) -> Self {
         self.slider_width = width.max(50.0);
         self
     }
@@ -233,7 +234,7 @@ impl<'a> ZoomControl<'a> {
         *self.zoom_level = self.zoom_level.clamp(self.min_zoom, self.max_zoom);
 
         // Check if zoom actually changed
-        changed = changed || (old_zoom != *self.zoom_level);
+        changed = changed || (old_zoom - *self.zoom_level).abs() > f32::EPSILON;
 
         // Save state to memory if ID is set
         if let Some(id) = self.id {

@@ -121,7 +121,7 @@ pub struct TimelineMarkerResponse {
 
 impl<'a> TimelineMarker<'a> {
     /// Create a new timeline marker
-    pub fn new(position: &'a mut f32, variant: &'a mut MarkerVariant) -> Self {
+    pub const fn new(position: &'a mut f32, variant: &'a mut MarkerVariant) -> Self {
         Self {
             position,
             variant,
@@ -142,6 +142,7 @@ impl<'a> TimelineMarker<'a> {
     }
 
     /// Set unique ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -149,84 +150,84 @@ impl<'a> TimelineMarker<'a> {
 
     /// Set pixels per beat
     #[must_use]
-    pub fn beat_width(mut self, width: f32) -> Self {
+    pub const fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width.max(1.0);
         self
     }
 
     /// Set number of measures
     #[must_use]
-    pub fn measures(mut self, measures: u32) -> Self {
+    pub const fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set beats per measure
     #[must_use]
-    pub fn beats_per_measure(mut self, beats: u32) -> Self {
+    pub const fn beats_per_measure(mut self, beats: u32) -> Self {
         self.beats_per_measure = beats;
         self
     }
 
     /// Set height
     #[must_use]
-    pub fn height(mut self, height: f32) -> Self {
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height.max(20.0);
         self
     }
 
     /// Enable or disable
     #[must_use]
-    pub fn enabled(mut self, enabled: bool) -> Self {
+    pub const fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
     /// Set draggable
     #[must_use]
-    pub fn draggable(mut self, draggable: bool) -> Self {
+    pub const fn draggable(mut self, draggable: bool) -> Self {
         self.draggable = draggable;
         self
     }
 
     /// Enable snap to grid
     #[must_use]
-    pub fn snap_to_grid(mut self, snap: bool) -> Self {
+    pub const fn snap_to_grid(mut self, snap: bool) -> Self {
         self.snap_to_grid = snap;
         self
     }
 
     /// Set grid division for snapping
     #[must_use]
-    pub fn grid_division(mut self, division: f32) -> Self {
+    pub const fn grid_division(mut self, division: f32) -> Self {
         self.grid_division = division.max(0.0625);
         self
     }
 
     /// Set custom color
     #[must_use]
-    pub fn color(mut self, color: Color32) -> Self {
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Show or hide vertical line
     #[must_use]
-    pub fn show_line(mut self, show: bool) -> Self {
+    pub const fn show_line(mut self, show: bool) -> Self {
         self.show_line = show;
         self
     }
 
     /// Show or hide tooltip
     #[must_use]
-    pub fn show_tooltip(mut self, show: bool) -> Self {
+    pub const fn show_tooltip(mut self, show: bool) -> Self {
         self.show_tooltip = show;
         self
     }
 
     /// Set vertical range as percentages
     #[must_use]
-    pub fn vertical_range(mut self, top_percent: f32, bottom_percent: f32) -> Self {
+    pub const fn vertical_range(mut self, top_percent: f32, bottom_percent: f32) -> Self {
         self.vertical_range = (top_percent.clamp(0.0, 1.0), bottom_percent.clamp(0.0, 1.0));
         self
     }
@@ -401,13 +402,13 @@ impl<'a> TimelineMarker<'a> {
 
         painter.rect_filled(
             badge_rect,
-            theme.spacing.corner_radius_small as f32,
+            f32::from(theme.spacing.corner_radius_small),
             bg_color,
         );
 
         painter.rect_stroke(
             badge_rect,
-            theme.spacing.corner_radius_small as f32,
+            f32::from(theme.spacing.corner_radius_small),
             egui::Stroke::new(1.0, theme.foreground().gamma_multiply(0.5)),
             egui::StrokeKind::Outside,
         );

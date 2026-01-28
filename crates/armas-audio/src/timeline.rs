@@ -35,7 +35,7 @@ impl MarkerData {
 
     /// Create a tempo marker
     #[must_use]
-    pub fn tempo(position: f32, bpm: f32) -> Self {
+    pub const fn tempo(position: f32, bpm: f32) -> Self {
         Self {
             position,
             variant: MarkerVariant::Tempo(bpm),
@@ -45,7 +45,7 @@ impl MarkerData {
 
     /// Create a time signature marker
     #[must_use]
-    pub fn time_signature(position: f32, numerator: u32, denominator: u32) -> Self {
+    pub const fn time_signature(position: f32, numerator: u32, denominator: u32) -> Self {
         Self {
             position,
             variant: MarkerVariant::TimeSignature {
@@ -58,7 +58,7 @@ impl MarkerData {
 
     /// Set custom color
     #[must_use]
-    pub fn color(mut self, color: Color32) -> Self {
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
@@ -76,7 +76,7 @@ pub struct LoopRegionData {
 impl LoopRegionData {
     /// Create a new loop region
     #[must_use]
-    pub fn new(start: f32, end: f32) -> Self {
+    pub const fn new(start: f32, end: f32) -> Self {
         Self { start, end }
     }
 }
@@ -93,7 +93,7 @@ pub struct SelectionRangeData {
 impl SelectionRangeData {
     /// Create a new selection range
     #[must_use]
-    pub fn new(start: f32, end: f32) -> Self {
+    pub const fn new(start: f32, end: f32) -> Self {
         Self { start, end }
     }
 }
@@ -110,7 +110,7 @@ pub struct PunchRegionData {
 impl PunchRegionData {
     /// Create a new punch region
     #[must_use]
-    pub fn new(punch_in: f32, punch_out: f32) -> Self {
+    pub const fn new(punch_in: f32, punch_out: f32) -> Self {
         Self {
             punch_in,
             punch_out,
@@ -198,14 +198,14 @@ impl Track {
 
     /// Set collapsed state
     #[must_use]
-    pub fn collapsed(mut self, collapsed: bool) -> Self {
+    pub const fn collapsed(mut self, collapsed: bool) -> Self {
         self.collapsed = collapsed;
         self
     }
 
     /// Set selected state
     #[must_use]
-    pub fn selected(mut self, selected: bool) -> Self {
+    pub const fn selected(mut self, selected: bool) -> Self {
         self.selected = selected;
         self
     }
@@ -378,7 +378,7 @@ struct ScrollMomentumState {
 impl<'a> Timeline<'a> {
     /// Create a new timeline
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             id: None,
             track_header_width: 200.0,
@@ -411,7 +411,7 @@ impl<'a> Timeline<'a> {
     /// Path is indices at each level (e.g., [0, 2, 1] = root[0].children[2].children[1])
     fn build_flat_track_list(
         tracks: &[Track],
-        current_path: Vec<usize>,
+        current_path: &[usize],
         base_idx: usize,
         indent_level: usize,
         parent_color: Option<Color32>,
@@ -420,7 +420,7 @@ impl<'a> Timeline<'a> {
         for (i, track) in tracks.iter().enumerate() {
             let track_idx = base_idx + i;
             let current_color = track.color;
-            let mut path = current_path.clone();
+            let mut path = current_path.to_vec();
             path.push(i);
 
             // Add this track
@@ -435,7 +435,7 @@ impl<'a> Timeline<'a> {
             if track.is_folder && !track.collapsed {
                 Self::build_flat_track_list(
                     &track.children,
-                    path,
+                    &path,
                     track_idx * TRACK_ID_MULTIPLIER + 1,
                     indent_level + 1,
                     Some(current_color),
@@ -471,6 +471,7 @@ impl<'a> Timeline<'a> {
     }
 
     /// Set custom ID (important when using multiple timelines)
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -478,95 +479,98 @@ impl<'a> Timeline<'a> {
 
     /// Set track header width
     #[must_use]
-    pub fn track_header_width(mut self, width: f32) -> Self {
+    pub const fn track_header_width(mut self, width: f32) -> Self {
         self.track_header_width = width;
         self
     }
 
     /// Set track height
     #[must_use]
-    pub fn track_height(mut self, height: f32) -> Self {
+    pub const fn track_height(mut self, height: f32) -> Self {
         self.track_height = height;
         self
     }
 
     /// Set pixels per beat (zoom level)
     #[must_use]
-    pub fn beat_width(mut self, width: f32) -> Self {
+    pub const fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width;
         self
     }
 
     /// Set number of measures
     #[must_use]
-    pub fn measures(mut self, measures: u32) -> Self {
+    pub const fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set beats per measure
     #[must_use]
-    pub fn beats_per_measure(mut self, beats: u32) -> Self {
+    pub const fn beats_per_measure(mut self, beats: u32) -> Self {
         self.beats_per_measure = beats;
         self
     }
 
     /// Set ruler height
     #[must_use]
-    pub fn ruler_height(mut self, height: f32) -> Self {
+    pub const fn ruler_height(mut self, height: f32) -> Self {
         self.ruler_height = height;
         self
     }
 
     /// Set whether to show playhead
     #[must_use]
-    pub fn show_playhead(mut self, show: bool) -> Self {
+    pub const fn show_playhead(mut self, show: bool) -> Self {
         self.show_playhead = show;
         self
     }
 
     /// Set playhead color
     #[must_use]
-    pub fn playhead_color(mut self, color: Color32) -> Self {
+    pub const fn playhead_color(mut self, color: Color32) -> Self {
         self.playhead_color = Some(color);
         self
     }
 
-    /// Add cue point markers
     /// Set markers (cue points, tempo, time signature, etc.)
-    pub fn markers(mut self, markers: &'a mut Vec<MarkerData>) -> Self {
+    #[must_use]
+    pub const fn markers(mut self, markers: &'a mut Vec<MarkerData>) -> Self {
         self.markers = Some(markers);
         self
     }
 
     /// Set loop region
-    pub fn loop_region(mut self, loop_region: &'a mut LoopRegionData) -> Self {
+    #[must_use]
+    pub const fn loop_region(mut self, loop_region: &'a mut LoopRegionData) -> Self {
         self.loop_region = Some(loop_region);
         self
     }
 
     /// Set selection range
-    pub fn selection_range(mut self, selection_range: &'a mut SelectionRangeData) -> Self {
+    #[must_use]
+    pub const fn selection_range(mut self, selection_range: &'a mut SelectionRangeData) -> Self {
         self.selection_range = Some(selection_range);
         self
     }
 
     /// Set punch in/out region
-    pub fn punch_region(mut self, punch_region: &'a mut PunchRegionData) -> Self {
+    #[must_use]
+    pub const fn punch_region(mut self, punch_region: &'a mut PunchRegionData) -> Self {
         self.punch_region = Some(punch_region);
         self
     }
 
     /// Show snap grid
     #[must_use]
-    pub fn show_snap_grid(mut self, show: bool) -> Self {
+    pub const fn show_snap_grid(mut self, show: bool) -> Self {
         self.show_snap_grid = show;
         self
     }
 
     /// Set snap grid subdivision (lines per beat)
     #[must_use]
-    pub fn snap_grid_subdivision(mut self, subdivision: u32) -> Self {
+    pub const fn snap_grid_subdivision(mut self, subdivision: u32) -> Self {
         self.snap_grid_subdivision = subdivision;
         self
     }
@@ -580,7 +584,7 @@ impl<'a> Timeline<'a> {
     ///
     /// The timeline will smoothly scroll to center the specified beat position.
     #[must_use]
-    pub fn scroll_to_beat(mut self, beat: f32) -> Self {
+    pub const fn scroll_to_beat(mut self, beat: f32) -> Self {
         self.scroll_to_beat = Some(beat);
         self
     }
@@ -599,7 +603,7 @@ impl<'a> Timeline<'a> {
     /// # ;
     /// ```
     #[must_use]
-    pub fn min_zoom(mut self, min: f32) -> Self {
+    pub const fn min_zoom(mut self, min: f32) -> Self {
         self.min_zoom = min.max(0.1);
         self
     }
@@ -609,7 +613,7 @@ impl<'a> Timeline<'a> {
     /// Default is 2.0x (200% of normal `beat_width`).
     /// This prevents zooming in too far.
     #[must_use]
-    pub fn max_zoom(mut self, max: f32) -> Self {
+    pub const fn max_zoom(mut self, max: f32) -> Self {
         self.max_zoom = max.min(10.0);
         self
     }
@@ -621,7 +625,7 @@ impl<'a> Timeline<'a> {
     ///
     /// Default is disabled. Use with `.auto_follow_margin()` to control behavior.
     #[must_use]
-    pub fn auto_follow_playhead(mut self, follow: bool) -> Self {
+    pub const fn auto_follow_playhead(mut self, follow: bool) -> Self {
         self.auto_follow_playhead = follow;
         self
     }
@@ -634,7 +638,7 @@ impl<'a> Timeline<'a> {
     /// - 0.5: Playhead in center
     /// - 1.0: Playhead at right edge
     #[must_use]
-    pub fn auto_follow_margin(mut self, margin: f32) -> Self {
+    pub const fn auto_follow_margin(mut self, margin: f32) -> Self {
         self.auto_follow_margin = margin.clamp(0.0, 1.0);
         self
     }
@@ -647,7 +651,7 @@ impl<'a> Timeline<'a> {
     ///
     /// Default is 2.0 beats.
     #[must_use]
-    pub fn visible_render_margin(mut self, beats: f32) -> Self {
+    pub const fn visible_render_margin(mut self, beats: f32) -> Self {
         self.visible_render_margin = beats.max(0.0);
         self
     }
@@ -664,6 +668,7 @@ impl<'a> Timeline<'a> {
     ///     .empty_message("No tracks yet. Click '+' to add a track.")
     /// # ;
     /// ```
+    #[must_use]
     pub fn empty_message(mut self, message: impl Into<String>) -> Self {
         self.empty_message = Some(message.into());
         self
@@ -676,7 +681,7 @@ impl<'a> Timeline<'a> {
     ///
     /// Default is enabled.
     #[must_use]
-    pub fn momentum_scrolling(mut self, enabled: bool) -> Self {
+    pub const fn momentum_scrolling(mut self, enabled: bool) -> Self {
         self.momentum_scrolling = enabled;
         self
     }
@@ -688,7 +693,7 @@ impl<'a> Timeline<'a> {
     /// - 5.0: Balanced (default)
     /// - 8.0: Quick stop
     #[must_use]
-    pub fn momentum_damping(mut self, damping: f64) -> Self {
+    pub const fn momentum_damping(mut self, damping: f64) -> Self {
         self.momentum_damping = damping.max(1.0);
         self
     }
@@ -830,18 +835,18 @@ impl<'a> Timeline<'a> {
             for idx in first_visible..=last_visible {
                 if let Some(info) = flat_list.get(idx) {
                     if let Some(track) = Self::get_track_by_path_mut(tracks, &info.path) {
-                        let y_pos = idx as f32 * self.track_height - scroll_offset.y;
-                        let header_rect = Rect::from_min_size(
+                        let y_pos = (idx as f32).mul_add(self.track_height, -scroll_offset.y);
+                        let track_header_rect = Rect::from_min_size(
                             headers_rect.min + Vec2::new(0.0, y_pos),
                             Vec2::new(self.track_header_width, self.track_height),
                         );
 
-                        if header_rect.max.y > headers_rect.min.y
-                            && header_rect.min.y < headers_rect.max.y
+                        if track_header_rect.max.y > headers_rect.min.y
+                            && track_header_rect.min.y < headers_rect.max.y
                         {
                             let mut header_ui = ui.new_child(
                                 egui::UiBuilder::new()
-                                    .max_rect(header_rect)
+                                    .max_rect(track_header_rect)
                                     .layout(egui::Layout::top_down(egui::Align::Min)),
                             );
                             header_ui.set_clip_rect(headers_rect);
@@ -899,15 +904,15 @@ impl<'a> Timeline<'a> {
             if let Some(info) = flat_list.get(idx) {
                 if let Some(track) = Self::get_track_by_path(tracks, &info.path) {
                     if track.selected {
-                        let y_pos = idx as f32 * self.track_height - scroll_offset.y;
-                        let header_rect = Rect::from_min_size(
+                        let y_pos = (idx as f32).mul_add(self.track_height, -scroll_offset.y);
+                        let selected_header_rect = Rect::from_min_size(
                             headers_rect.min + Vec2::new(0.0, y_pos),
                             Vec2::new(self.track_header_width, self.track_height),
                         );
 
-                        if header_rect.intersects(headers_rect) {
+                        if selected_header_rect.intersects(headers_rect) {
                             painter.rect_stroke(
-                                header_rect,
+                                selected_header_rect,
                                 2.0,
                                 egui::Stroke::new(2.0, theme.primary()),
                                 egui::StrokeKind::Outside,
@@ -951,15 +956,15 @@ impl<'a> Timeline<'a> {
             for idx in first_visible..=last_visible {
                 if let Some(info) = flat_list.get(idx) {
                     if let Some(track) = Self::get_track_by_path_mut(tracks, &info.path) {
-                        let y_pos = idx as f32 * self.track_height - scroll_offset.y;
-                        let track_rect = Rect::from_min_size(
+                        let y_pos = (idx as f32).mul_add(self.track_height, -scroll_offset.y);
+                        let track_content_rect = Rect::from_min_size(
                             tracks_rect.min + Vec2::new(-scroll_offset.x, y_pos),
                             Vec2::new(layout.content_width, self.track_height),
                         );
 
                         let mut track_ui = ui.new_child(
                             egui::UiBuilder::new()
-                                .max_rect(track_rect)
+                                .max_rect(track_content_rect)
                                 .layout(egui::Layout::top_down(egui::Align::Min)),
                         );
                         track_ui.set_clip_rect(tracks_rect);
@@ -1015,8 +1020,7 @@ impl<'a> Timeline<'a> {
         let painter = ui.painter().with_clip_rect(tracks_rect);
         for measure in 0..self.measures {
             for beat in 0..self.beats_per_measure {
-                let x = tracks_rect.min.x - scroll_offset.x
-                    + (measure * self.beats_per_measure + beat) as f32 * self.beat_width;
+                let x = ((measure * self.beats_per_measure + beat) as f32).mul_add(self.beat_width, tracks_rect.min.x - scroll_offset.x);
                 if x >= tracks_rect.min.x && x <= tracks_rect.max.x {
                     let is_measure = beat == 0;
                     let color = if is_measure {
@@ -1407,7 +1411,8 @@ impl<'a> Timeline<'a> {
     }
 
     /// Build the final `TimelineResponse`
-    fn build_response(
+    #[allow(clippy::needless_pass_by_value)]
+    const fn build_response(
         response: Response,
         interactions: TimelineInteractions,
         playhead_position: f32,
@@ -1546,7 +1551,7 @@ impl<'a> Timeline<'a> {
 
         // Build flattened track list
         let mut flat_list = Vec::new();
-        Self::build_flat_track_list(tracks, Vec::new(), 0, 0, None, &mut flat_list);
+        Self::build_flat_track_list(tracks, &[], 0, 0, None, &mut flat_list);
 
         // Calculate layout dimensions
         let layout = self.calculate_layout(ui, flat_list.len());

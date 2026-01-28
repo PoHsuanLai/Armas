@@ -24,7 +24,7 @@ pub enum GridDivision {
 impl GridDivision {
     /// Get the beat fraction for this division
     #[must_use]
-    pub fn beat_fraction(&self) -> f32 {
+    pub const fn beat_fraction(&self) -> f32 {
         match self {
             Self::Whole => 4.0,
             Self::Half => 2.0,
@@ -64,7 +64,7 @@ pub struct PianoRollGrid {
 impl PianoRollGrid {
     /// Create a new piano roll grid
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             start_note: 60, // C4
             octaves: 2,
@@ -82,77 +82,77 @@ impl PianoRollGrid {
 
     /// Set the starting MIDI note (should match piano)
     #[must_use]
-    pub fn start_note(mut self, note: u8) -> Self {
+    pub const fn start_note(mut self, note: u8) -> Self {
         self.start_note = note;
         self
     }
 
     /// Set number of octaves (should match piano)
     #[must_use]
-    pub fn octaves(mut self, octaves: u8) -> Self {
+    pub const fn octaves(mut self, octaves: u8) -> Self {
         self.octaves = octaves;
         self
     }
 
     /// Set width of white keys (should match piano)
     #[must_use]
-    pub fn white_key_width(mut self, width: f32) -> Self {
+    pub const fn white_key_width(mut self, width: f32) -> Self {
         self.white_key_width = width;
         self
     }
 
     /// Set height of white keys (should match piano)
     #[must_use]
-    pub fn white_key_height(mut self, height: f32) -> Self {
+    pub const fn white_key_height(mut self, height: f32) -> Self {
         self.white_key_height = height;
         self
     }
 
     /// Set black key height ratio (should match piano)
     #[must_use]
-    pub fn black_key_height_ratio(mut self, ratio: f32) -> Self {
+    pub const fn black_key_height_ratio(mut self, ratio: f32) -> Self {
         self.black_key_height_ratio = ratio;
         self
     }
 
     /// Set number of measures to display
     #[must_use]
-    pub fn measures(mut self, measures: u32) -> Self {
+    pub const fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set grid division
     #[must_use]
-    pub fn division(mut self, division: GridDivision) -> Self {
+    pub const fn division(mut self, division: GridDivision) -> Self {
         self.division = division;
         self
     }
 
     /// Set width per beat in pixels
     #[must_use]
-    pub fn beat_width(mut self, width: f32) -> Self {
+    pub const fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width;
         self
     }
 
     /// Set whether to show measure numbers
     #[must_use]
-    pub fn show_measure_numbers(mut self, show: bool) -> Self {
+    pub const fn show_measure_numbers(mut self, show: bool) -> Self {
         self.show_measure_numbers = show;
         self
     }
 
     /// Set grid line opacity (0.0-1.0)
     #[must_use]
-    pub fn line_opacity(mut self, opacity: f32) -> Self {
+    pub const fn line_opacity(mut self, opacity: f32) -> Self {
         self.line_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Set whether to emphasize beat lines
     #[must_use]
-    pub fn emphasize_beats(mut self, emphasize: bool) -> Self {
+    pub const fn emphasize_beats(mut self, emphasize: bool) -> Self {
         self.emphasize_beats = emphasize;
         self
     }
@@ -201,7 +201,7 @@ impl PianoRollGrid {
 
         // Determine if theme is light or dark based on background brightness
         let bg = theme.background();
-        let is_light_theme = (bg.r() as u32 + bg.g() as u32 + bg.b() as u32) > 384; // > 128*3
+        let is_light_theme = (u32::from(bg.r()) + u32::from(bg.g()) + u32::from(bg.b())) > 384; // > 128*3
 
         // Track white key index for positioning
         let mut white_key_index = 0;
@@ -213,7 +213,7 @@ impl PianoRollGrid {
             if !is_black {
                 // Alternate background colors for white key rows
                 if white_key_index % 2 == 1 {
-                    let y = rect.min.y + white_key_index as f32 * self.white_key_width;
+                    let y = (white_key_index as f32).mul_add(self.white_key_width, rect.min.y);
                     let row_rect = Rect::from_min_size(
                         Pos2::new(rect.min.x, y),
                         Vec2::new(rect.width(), self.white_key_width),
@@ -243,7 +243,7 @@ impl PianoRollGrid {
 
         // Determine if theme is light or dark
         let bg = theme.background();
-        let is_light_theme = (bg.r() as u32 + bg.g() as u32 + bg.b() as u32) > 384;
+        let is_light_theme = (u32::from(bg.r()) + u32::from(bg.g()) + u32::from(bg.b())) > 384;
 
         // Use black lines for light theme, white lines for dark theme
         let base_line_color = if is_light_theme {
@@ -261,7 +261,7 @@ impl PianoRollGrid {
 
             if !is_black {
                 // Draw line at white key boundary
-                let y = rect.min.y + white_key_index as f32 * self.white_key_width;
+                let y = (white_key_index as f32).mul_add(self.white_key_width, rect.min.y);
 
                 let line_color = Color32::from_rgba_unmultiplied(
                     base_line_color.r(),
@@ -280,7 +280,7 @@ impl PianoRollGrid {
         }
 
         // Draw final bottom line
-        let y = rect.min.y + white_key_index as f32 * self.white_key_width;
+        let y = (white_key_index as f32).mul_add(self.white_key_width, rect.min.y);
         let line_color = Color32::from_rgba_unmultiplied(
             base_line_color.r(),
             base_line_color.g(),
@@ -302,7 +302,7 @@ impl PianoRollGrid {
 
         // Determine if theme is light or dark
         let bg = theme.background();
-        let is_light_theme = (bg.r() as u32 + bg.g() as u32 + bg.b() as u32) > 384;
+        let is_light_theme = (u32::from(bg.r()) + u32::from(bg.g()) + u32::from(bg.b())) > 384;
 
         // Use black lines for light theme, white lines for dark theme
         let base_line_color = if is_light_theme {
@@ -313,7 +313,7 @@ impl PianoRollGrid {
 
         for i in 0..=total_divisions {
             let beat_position = i as f32 * self.division.beat_fraction();
-            let x = rect.min.x + beat_position * self.beat_width;
+            let x = beat_position.mul_add(self.beat_width, rect.min.x);
 
             // Skip if out of bounds
             if x > rect.max.x {
@@ -351,7 +351,7 @@ impl PianoRollGrid {
         let painter = ui.painter();
 
         for measure in 0..self.measures {
-            let x = rect.min.x + measure as f32 * beats_per_measure * self.beat_width;
+            let x = (measure as f32 * beats_per_measure).mul_add(self.beat_width, rect.min.x);
             let label_pos = Pos2::new(x + 4.0, rect.min.y + 4.0);
 
             painter.text(
@@ -365,7 +365,7 @@ impl PianoRollGrid {
     }
 
     /// Check if a note is a black key
-    fn is_black_key(note: u8) -> bool {
+    const fn is_black_key(note: u8) -> bool {
         matches!(note % 12, 1 | 3 | 6 | 8 | 10) // C#, D#, F#, G#, A#
     }
 }

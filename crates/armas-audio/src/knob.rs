@@ -39,7 +39,7 @@ pub struct KnobResponse {
 impl KnobResponse {
     /// Check if the value changed this frame
     #[must_use]
-    pub fn changed(&self) -> bool {
+    pub const fn changed(&self) -> bool {
         self.changed
     }
 }
@@ -90,7 +90,7 @@ pub struct Knob {
 impl Knob {
     /// Create a new knob
     #[must_use]
-    pub fn new(_value: f32) -> Self {
+    pub const fn new(_value: f32) -> Self {
         Self {
             diameter: 60.0,
             label: None,
@@ -111,12 +111,13 @@ impl Knob {
 
     /// Set the knob diameter
     #[must_use]
-    pub fn diameter(mut self, diameter: f32) -> Self {
+    pub const fn diameter(mut self, diameter: f32) -> Self {
         self.diameter = diameter;
         self
     }
 
     /// Set label text
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
@@ -124,28 +125,28 @@ impl Knob {
 
     /// Show value text below knob
     #[must_use]
-    pub fn show_value(mut self, show: bool) -> Self {
+    pub const fn show_value(mut self, show: bool) -> Self {
         self.show_value = show;
         self
     }
 
     /// Set knob color (default: metallic silver)
     #[must_use]
-    pub fn color(mut self, color: Color32) -> Self {
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set glow color for level indicator
     #[must_use]
-    pub fn glow_color(mut self, color: Color32) -> Self {
+    pub const fn glow_color(mut self, color: Color32) -> Self {
         self.glow_color = Some(color);
         self
     }
 
     /// Set angle range in radians
     #[must_use]
-    pub fn angle_range(mut self, min: f32, max: f32) -> Self {
+    pub const fn angle_range(mut self, min: f32, max: f32) -> Self {
         self.min_angle = min;
         self.max_angle = max;
         self
@@ -153,42 +154,42 @@ impl Knob {
 
     /// Set drag sensitivity for normal (absolute) mode
     #[must_use]
-    pub fn sensitivity(mut self, sensitivity: f32) -> Self {
+    pub const fn sensitivity(mut self, sensitivity: f32) -> Self {
         self.sensitivity = sensitivity;
         self
     }
 
     /// Set sensitivity for velocity-based drag mode
     #[must_use]
-    pub fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
+    pub const fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
         self.velocity_sensitivity = sensitivity;
         self
     }
 
     /// Set knob response curve for different control types
     #[must_use]
-    pub fn response_curve(mut self, curve: KnobCurve) -> Self {
+    pub const fn response_curve(mut self, curve: KnobCurve) -> Self {
         self.curve = curve;
         self
     }
 
     /// Set value range (min, max) for display purposes
     #[must_use]
-    pub fn value_range(mut self, min: f32, max: f32) -> Self {
+    pub const fn value_range(mut self, min: f32, max: f32) -> Self {
         self.value_range = (min.min(max), min.max(max));
         self
     }
 
     /// Show tick marks at regular intervals
     #[must_use]
-    pub fn show_ticks(mut self, show: bool) -> Self {
+    pub const fn show_ticks(mut self, show: bool) -> Self {
         self.show_ticks = show;
         self
     }
 
     /// Set default value for double-click reset
     #[must_use]
-    pub fn default_value(mut self, value: f32) -> Self {
+    pub const fn default_value(mut self, value: f32) -> Self {
         self.default_value = Some(value);
         self
     }
@@ -198,7 +199,7 @@ impl Knob {
     /// When enabled, holding Ctrl/Cmd while dragging uses velocity mode
     /// where faster mouse movement = larger value changes.
     #[must_use]
-    pub fn velocity_mode(mut self, enabled: bool) -> Self {
+    pub const fn velocity_mode(mut self, enabled: bool) -> Self {
         self.velocity_mode = enabled;
         self
     }
@@ -228,7 +229,7 @@ impl Knob {
             let base_color = self
                 .color
                 .unwrap_or_else(|| Color32::from_rgb(210, 215, 222));
-            let glow_color = self.glow_color.unwrap_or(theme.primary());
+            let glow_color = self.glow_color.unwrap_or_else(|| theme.primary());
 
             self.render_knob(ui.painter(), center, radius, base_color, glow_color, *value);
         }
@@ -275,7 +276,7 @@ impl Knob {
                     self.velocity_mode && ui.input(|i| i.modifiers.command || i.modifiers.ctrl);
                 drag_state
                     .drag
-                    .begin(value as f64, pos.y as f64, use_velocity);
+                    .begin(f64::from(value), f64::from(pos.y), use_velocity);
             }
 
             ui.ctx()
@@ -303,7 +304,7 @@ impl Knob {
         let changed = if drag_state.drag.mode() == DragMode::Velocity {
             // Velocity mode: faster movement = larger change
             if let Some(pos) = response.interact_pointer_pos() {
-                let delta = drag_state.drag.update_tracked(pos.y as f64, 1.0, 200.0);
+                let delta = drag_state.drag.update_tracked(f64::from(pos.y), 1.0, 200.0);
                 let new_value = drag_state.drag_start_value - delta as f32;
                 if (new_value - *value).abs() > 0.0001 {
                     *value = new_value.clamp(0.0, 1.0);
@@ -394,7 +395,7 @@ impl Knob {
     /// Render outer shadow for depth
     fn render_outer_shadow(&self, painter: &egui::Painter, center: Pos2, radius: f32) {
         for i in 0..6 {
-            let shadow_radius = radius + (6 - i) as f32 * 1.0;
+            let shadow_radius = ((6 - i) as f32).mul_add(1.0, radius);
             let shadow_alpha = 20 - i * 3;
             painter.circle_filled(
                 center,
@@ -419,9 +420,9 @@ impl Knob {
         painter.circle_filled(center, radius, dark_base);
 
         // Top half lighter with gradient
-        let gradient_center = Pos2::new(center.x, center.y - radius * 0.2);
+        let gradient_center = Pos2::new(center.x, radius.mul_add(-0.2, center.y));
         for i in 0..8 {
-            let grad_radius = radius * (1.0 - i as f32 * 0.09);
+            let grad_radius = radius * (i as f32).mul_add(-0.09, 1.0);
             let alpha = 25 + i * 8;
             painter.circle_filled(
                 gradient_center,
@@ -445,7 +446,7 @@ impl Knob {
         let shadow_arc_start = 0.85;
         let shadow_arc_end = 2.35;
         for i in 0..6 {
-            let grad_radius = radius * 0.98 - i as f32 * 0.3;
+            let grad_radius = radius.mul_add(0.98, -(f32::from(i) * 0.3));
             self.draw_gradient_arc(
                 painter,
                 center,
@@ -458,7 +459,7 @@ impl Knob {
 
         // Side ambient occlusion
         for i in 0..4 {
-            let ao_radius = radius * 0.96 - i as f32 * 0.5;
+            let ao_radius = radius.mul_add(0.96, -(f32::from(i) * 0.5));
             self.draw_gradient_arc(
                 painter,
                 center,
@@ -473,9 +474,9 @@ impl Knob {
     /// Render glass glaze layers
     fn render_glass_glaze(&self, painter: &egui::Painter, center: Pos2, radius: f32) {
         // Base layer
-        let glaze_center = Pos2::new(center.x - radius * 0.1, center.y - radius * 0.25);
+        let glaze_center = Pos2::new(radius.mul_add(-0.1, center.x), radius.mul_add(-0.25, center.y));
         for i in 0..10 {
-            let glaze_radius = radius * (0.75 - i as f32 * 0.04);
+            let glaze_radius = radius * (i as f32).mul_add(-0.04, 0.75);
             let alpha = 20 + i * 3;
             painter.circle_filled(
                 glaze_center,
@@ -485,9 +486,9 @@ impl Knob {
         }
 
         // Mid layer
-        let mid_glaze_center = Pos2::new(center.x - radius * 0.15, center.y - radius * 0.32);
+        let mid_glaze_center = Pos2::new(radius.mul_add(-0.15, center.x), radius.mul_add(-0.32, center.y));
         for i in 0..6 {
-            let mid_radius = radius * (0.5 - i as f32 * 0.05);
+            let mid_radius = radius * (i as f32).mul_add(-0.05, 0.5);
             let alpha = 40 + i * 8;
             painter.circle_filled(
                 mid_glaze_center,
@@ -500,7 +501,7 @@ impl Knob {
         let rim_glow_start = -1.8;
         let rim_glow_end = -0.3;
         for i in 0..4 {
-            let rim_radius = radius * 0.94 - i as f32 * 0.4;
+            let rim_radius = radius.mul_add(0.94, -(f32::from(i) * 0.4));
             self.draw_gradient_arc(
                 painter,
                 center,
@@ -515,7 +516,7 @@ impl Knob {
     /// Render fresnel effects at edges
     fn render_fresnel_effects(&self, painter: &egui::Painter, center: Pos2, radius: f32) {
         for i in 0..5 {
-            let fresnel_radius = radius * (0.96 - i as f32 * 0.02);
+            let fresnel_radius = radius * f32::from(i).mul_add(-0.02, 0.96);
             painter.circle_stroke(
                 center,
                 fresnel_radius,
@@ -530,9 +531,9 @@ impl Knob {
     /// Render specular highlights
     fn render_specular_highlights(&self, painter: &egui::Painter, center: Pos2, radius: f32) {
         // Primary specular
-        let specular_primary = Pos2::new(center.x - radius * 0.2, center.y - radius * 0.36);
+        let specular_primary = Pos2::new(radius.mul_add(-0.2, center.x), radius.mul_add(-0.36, center.y));
         for i in 0..5 {
-            let spec_radius = radius * (0.18 - i as f32 * 0.025);
+            let spec_radius = radius * (i as f32).mul_add(-0.025, 0.18);
             let alpha = 200 - i * 30;
             painter.circle_filled(
                 specular_primary,
@@ -542,9 +543,9 @@ impl Knob {
         }
 
         // Secondary specular
-        let specular_secondary = Pos2::new(center.x + radius * 0.15, center.y - radius * 0.28);
+        let specular_secondary = Pos2::new(radius.mul_add(0.15, center.x), radius.mul_add(-0.28, center.y));
         for i in 0..3 {
-            let spec_radius = radius * (0.1 - i as f32 * 0.02);
+            let spec_radius = radius * (i as f32).mul_add(-0.02, 0.1);
             let alpha = 120 - i * 25;
             painter.circle_filled(
                 specular_secondary,
@@ -557,7 +558,7 @@ impl Knob {
     /// Render sharp bright highlights
     fn render_sharp_highlights(&self, painter: &egui::Painter, center: Pos2, radius: f32) {
         // Primary bright spot
-        let bright_spot_1 = Pos2::new(center.x - radius * 0.25, center.y - radius * 0.41);
+        let bright_spot_1 = Pos2::new(radius.mul_add(-0.25, center.x), radius.mul_add(-0.41, center.y));
         painter.circle_filled(
             bright_spot_1,
             radius * 0.08,
@@ -570,7 +571,7 @@ impl Knob {
         );
 
         // Secondary bright spot
-        let bright_spot_2 = Pos2::new(center.x - radius * 0.15, center.y - radius * 0.35);
+        let bright_spot_2 = Pos2::new(radius.mul_add(-0.15, center.x), radius.mul_add(-0.35, center.y));
         painter.circle_filled(
             bright_spot_2,
             radius * 0.04,
@@ -581,7 +582,7 @@ impl Knob {
     /// Render edge refraction effects
     fn render_edge_refraction(&self, painter: &egui::Painter, center: Pos2, radius: f32) {
         for i in 0..3 {
-            let refract_radius = radius * (0.97 - i as f32 * 0.01);
+            let refract_radius = radius * f32::from(i).mul_add(-0.01, 0.97);
             painter.circle_stroke(
                 center,
                 refract_radius,
@@ -643,15 +644,15 @@ impl Knob {
             let t = i as f32 / segments as f32;
             let angle = start_angle + t * (end_angle - start_angle);
             let next_angle =
-                start_angle + ((i + 1) as f32 / segments as f32) * (end_angle - start_angle);
+                ((i + 1) as f32 / segments as f32).mul_add(end_angle - start_angle, start_angle);
 
             let p1 = Pos2::new(
-                center.x + angle.cos() * radius,
-                center.y + angle.sin() * radius,
+                angle.cos().mul_add(radius, center.x),
+                angle.sin().mul_add(radius, center.y),
             );
             let p2 = Pos2::new(
-                center.x + next_angle.cos() * radius,
-                center.y + next_angle.sin() * radius,
+                next_angle.cos().mul_add(radius, center.x),
+                next_angle.sin().mul_add(radius, center.y),
             );
 
             painter.line_segment([p1, p2], Stroke::new(2.0, color));
@@ -670,7 +671,7 @@ impl Knob {
         min_angle: f32,
         max_angle: f32,
     ) {
-        let current_angle = min_angle + value * (max_angle - min_angle);
+        let current_angle = value.mul_add(max_angle - min_angle, min_angle);
         let segments = 48;
 
         // Draw very subtle glow layers first (behind the solid rim)
@@ -689,16 +690,16 @@ impl Knob {
                 }
 
                 let next_angle =
-                    min_angle + ((i + 1) as f32 / segments as f32) * (current_angle - min_angle);
+                    ((i + 1) as f32 / segments as f32).mul_add(current_angle - min_angle, min_angle);
 
                 let glow_radius = radius - 0.5 + glow_offset;
                 let p1 = Pos2::new(
-                    center.x + angle.cos() * glow_radius,
-                    center.y + angle.sin() * glow_radius,
+                    angle.cos().mul_add(glow_radius, center.x),
+                    angle.sin().mul_add(glow_radius, center.y),
                 );
                 let p2 = Pos2::new(
-                    center.x + next_angle.cos() * glow_radius,
-                    center.y + next_angle.sin() * glow_radius,
+                    next_angle.cos().mul_add(glow_radius, center.x),
+                    next_angle.sin().mul_add(glow_radius, center.y),
                 );
 
                 painter.line_segment([p1, p2], Stroke::new(2.5 + glow_offset, glow_color));
@@ -716,16 +717,16 @@ impl Knob {
             }
 
             let next_angle =
-                min_angle + ((i + 1) as f32 / segments as f32) * (current_angle - min_angle);
+                ((i + 1) as f32 / segments as f32).mul_add(current_angle - min_angle, min_angle);
 
             let outer_radius = radius - 0.5;
             let p1 = Pos2::new(
-                center.x + angle.cos() * outer_radius,
-                center.y + angle.sin() * outer_radius,
+                angle.cos().mul_add(outer_radius, center.x),
+                angle.sin().mul_add(outer_radius, center.y),
             );
             let p2 = Pos2::new(
-                center.x + next_angle.cos() * outer_radius,
-                center.y + next_angle.sin() * outer_radius,
+                next_angle.cos().mul_add(outer_radius, center.x),
+                next_angle.sin().mul_add(outer_radius, center.y),
             );
 
             // Solid colored rim

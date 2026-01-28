@@ -42,7 +42,7 @@ pub struct PadConfig {
 impl PadConfig {
     /// Create a new pad configuration
     #[must_use]
-    pub fn new(note: u8) -> Self {
+    pub const fn new(note: u8) -> Self {
         Self {
             note,
             label: None,
@@ -51,6 +51,7 @@ impl PadConfig {
     }
 
     /// Set label text
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
@@ -58,7 +59,7 @@ impl PadConfig {
 
     /// Set custom color
     #[must_use]
-    pub fn color(mut self, color: Color32) -> Self {
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
@@ -85,7 +86,7 @@ impl PadState {
 
     /// Check if pad is pressed (velocity > 0)
     #[must_use]
-    pub fn is_pressed(&self) -> bool {
+    pub const fn is_pressed(&self) -> bool {
         self.velocity > 0
     }
 }
@@ -197,42 +198,42 @@ impl MidiPad {
 
     /// Set visual variant
     #[must_use]
-    pub fn variant(mut self, variant: PadVariant) -> Self {
+    pub const fn variant(mut self, variant: PadVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set color scheme
     #[must_use]
-    pub fn color_scheme(mut self, scheme: PadColorScheme) -> Self {
+    pub const fn color_scheme(mut self, scheme: PadColorScheme) -> Self {
         self.color_scheme = scheme;
         self
     }
 
     /// Set pad size (both width and height)
     #[must_use]
-    pub fn pad_size(mut self, size: f32) -> Self {
+    pub const fn pad_size(mut self, size: f32) -> Self {
         self.pad_size = size.max(20.0);
         self
     }
 
     /// Set gap between pads
     #[must_use]
-    pub fn gap(mut self, gap: f32) -> Self {
+    pub const fn gap(mut self, gap: f32) -> Self {
         self.gap = gap.max(0.0);
         self
     }
 
     /// Set glow intensity (0.0-1.0)
     #[must_use]
-    pub fn glow_intensity(mut self, intensity: f32) -> Self {
+    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
     /// Show velocity as brightness
     #[must_use]
-    pub fn show_velocity(mut self, show: bool) -> Self {
+    pub const fn show_velocity(mut self, show: bool) -> Self {
         self.show_velocity = show;
         self
     }
@@ -240,8 +241,8 @@ impl MidiPad {
     /// Show the MIDI pad grid
     pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> MidiPadResponse {
         // Calculate total size
-        let total_width = self.cols as f32 * self.pad_size + (self.cols - 1) as f32 * self.gap;
-        let total_height = self.rows as f32 * self.pad_size + (self.rows - 1) as f32 * self.gap;
+        let total_width = (self.cols as f32).mul_add(self.pad_size, (self.cols - 1) as f32 * self.gap);
+        let total_height = (self.rows as f32).mul_add(self.pad_size, (self.rows - 1) as f32 * self.gap);
         let desired_size = Vec2::new(total_width, total_height);
 
         let (rect, _) = ui.allocate_exact_size(desired_size, Sense::hover());
@@ -272,8 +273,8 @@ impl MidiPad {
                         .map_or(0, |s| s.velocity);
 
                     // Calculate pad rect
-                    let pad_x = rect.min.x + col as f32 * (self.pad_size + self.gap);
-                    let pad_y = rect.min.y + row as f32 * (self.pad_size + self.gap);
+                    let pad_x = (col as f32).mul_add(self.pad_size + self.gap, rect.min.x);
+                    let pad_y = (row as f32).mul_add(self.pad_size + self.gap, rect.min.y);
                     let pad_rect =
                         Rect::from_min_size(Pos2::new(pad_x, pad_y), Vec2::splat(self.pad_size));
 
@@ -327,7 +328,7 @@ impl MidiPad {
         let base_color = self.get_pad_color(theme, config, index);
 
         // Calculate corner radius
-        let corner_radius = theme.spacing.corner_radius_small as f32;
+        let corner_radius = f32::from(theme.spacing.corner_radius_small);
 
         // Draw based on variant
         match self.variant {
@@ -412,7 +413,7 @@ impl MidiPad {
 
         if is_pressed && self.show_velocity {
             // Brighten based on velocity (0-127)
-            let velocity_factor = 1.0 + (velocity as f32 / 127.0) * 0.8;
+            let velocity_factor = (f32::from(velocity) / 127.0).mul_add(0.8, 1.0);
             fill_color = fill_color.gamma_multiply(velocity_factor);
         } else if is_hovered {
             fill_color = fill_color.gamma_multiply(1.2);
@@ -456,7 +457,7 @@ impl MidiPad {
         // Background is surface color
         let bg_color = if is_pressed && self.show_velocity {
             // Show color with velocity-based alpha
-            let alpha = (64.0 + (velocity as f32 / 127.0) * 191.0) as u8;
+            let alpha = (f32::from(velocity) / 127.0).mul_add(191.0, 64.0) as u8;
             Color32::from_rgba_unmultiplied(base_color.r(), base_color.g(), base_color.b(), alpha)
         } else if is_hovered {
             theme.muted()
@@ -504,7 +505,7 @@ impl MidiPad {
             for i in 0..3 {
                 let offset = (i + 1) as f32 * 0.5;
                 let shadow_rect = rect.translate(Vec2::new(0.0, offset));
-                let alpha = (20.0 - i as f32 * 5.0) as u8;
+                let alpha = (i as f32).mul_add(-5.0, 20.0) as u8;
                 let shadow_color = Color32::from_rgba_unmultiplied(0, 0, 0, alpha);
                 painter.rect_filled(shadow_rect, corner_radius, shadow_color);
             }
@@ -514,7 +515,7 @@ impl MidiPad {
         let mut fill_color = base_color;
 
         if is_pressed && self.show_velocity {
-            let velocity_factor = 1.0 + (velocity as f32 / 127.0) * 0.8;
+            let velocity_factor = (f32::from(velocity) / 127.0).mul_add(0.8, 1.0);
             fill_color = fill_color.gamma_multiply(velocity_factor);
         } else if is_hovered {
             fill_color = fill_color.gamma_multiply(1.15);
@@ -618,19 +619,19 @@ pub struct MidiPadResponse {
 impl MidiPadResponse {
     /// Check if any pad was pressed
     #[must_use]
-    pub fn has_press(&self) -> bool {
+    pub const fn has_press(&self) -> bool {
         self.pressed.is_some()
     }
 
     /// Check if any pad was released
     #[must_use]
-    pub fn has_release(&self) -> bool {
+    pub const fn has_release(&self) -> bool {
         self.released.is_some()
     }
 
     /// Check if any pads are being held
     #[must_use]
-    pub fn has_held(&self) -> bool {
+    pub const fn has_held(&self) -> bool {
         !self.held.is_empty()
     }
 }

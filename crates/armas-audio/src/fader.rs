@@ -107,7 +107,7 @@ pub struct Fader {
 impl Fader {
     /// Create a new minimal fader with default dimensions (track only)
     #[must_use]
-    pub fn new(value: f32) -> Self {
+    pub const fn new(value: f32) -> Self {
         Self {
             id: None,
             width: FADER_DEFAULT_WIDTH,
@@ -124,6 +124,7 @@ impl Fader {
     }
 
     /// Set ID for state persistence (useful when fader is recreated each frame)
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -131,7 +132,7 @@ impl Fader {
 
     /// Set custom size
     #[must_use]
-    pub fn size(mut self, width: f32, height: f32) -> Self {
+    pub const fn size(mut self, width: f32, height: f32) -> Self {
         self.width = width;
         self.height = height;
         self
@@ -139,35 +140,35 @@ impl Fader {
 
     /// Show scale on the right (convenience method)
     #[must_use]
-    pub fn show_scale(mut self) -> Self {
+    pub const fn show_scale(mut self) -> Self {
         self.scale_position = FaderScalePosition::Right;
         self
     }
 
     /// Show scale on the left
     #[must_use]
-    pub fn scale_left(mut self) -> Self {
+    pub const fn scale_left(mut self) -> Self {
         self.scale_position = FaderScalePosition::Left;
         self
     }
 
     /// Show scale on the right
     #[must_use]
-    pub fn scale_right(mut self) -> Self {
+    pub const fn scale_right(mut self) -> Self {
         self.scale_position = FaderScalePosition::Right;
         self
     }
 
     /// Set fader response curve for different control types
     #[must_use]
-    pub fn response_curve(mut self, curve: FaderCurve) -> Self {
+    pub const fn response_curve(mut self, curve: FaderCurve) -> Self {
         self.curve = curve;
         self
     }
 
     /// Set track/background color
     #[must_use]
-    pub fn track_color(mut self, color: Color32) -> Self {
+    pub const fn track_color(mut self, color: Color32) -> Self {
         self.track_color = Some(color);
         self
     }
@@ -175,14 +176,14 @@ impl Fader {
     /// Set value range for dB or other units (min, max)
     /// This affects the scale display but not the internal 0.0-1.0 value mapping
     #[must_use]
-    pub fn db_range(mut self, min: f32, max: f32) -> Self {
+    pub const fn db_range(mut self, min: f32, max: f32) -> Self {
         self.value_range = (min.min(max), min.max(max));
         self
     }
 
     /// Set default value for double-click reset
     #[must_use]
-    pub fn default_value(mut self, value: f32) -> Self {
+    pub const fn default_value(mut self, value: f32) -> Self {
         self.default_value = Some(value);
         self
     }
@@ -192,14 +193,14 @@ impl Fader {
     /// When enabled, holding Ctrl/Cmd while dragging uses velocity mode
     /// where faster mouse movement = larger value changes.
     #[must_use]
-    pub fn velocity_mode(mut self, enabled: bool) -> Self {
+    pub const fn velocity_mode(mut self, enabled: bool) -> Self {
         self.velocity_mode = enabled;
         self
     }
 
     /// Set sensitivity for velocity-based drag mode
     #[must_use]
-    pub fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
+    pub const fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
         self.velocity_sensitivity = sensitivity;
         self
     }
@@ -325,7 +326,7 @@ impl Fader {
                 self.velocity_mode && ui.input(|i| i.modifiers.command || i.modifiers.ctrl);
             drag_state
                 .drag
-                .begin(self.value as f64, pos.y as f64, use_velocity);
+                .begin(f64::from(self.value), f64::from(pos.y), use_velocity);
         }
 
         ui.ctx()
@@ -350,7 +351,7 @@ impl Fader {
                 // Velocity mode: faster movement = larger change
                 let delta = drag_state
                     .drag
-                    .update_tracked(pos.y as f64, 1.0, self.height as f64);
+                    .update_tracked(f64::from(pos.y), 1.0, f64::from(self.height));
                 // Invert because dragging up should increase value
                 let new_value = drag_state.drag_start_value - delta as f32;
                 if (new_value - self.value).abs() > 0.0001 {
@@ -463,7 +464,7 @@ impl Fader {
         let channel_y = fader_rect.min.y;
         let channel_height = self.height;
         let thumb_travel_range = channel_height - thumb_height;
-        let thumb_y = channel_y + (1.0 - self.value) * thumb_travel_range;
+        let thumb_y = (1.0 - self.value).mul_add(thumb_travel_range, channel_y);
 
         // Center thumb horizontally in track
         let thumb_width = THUMB_WIDTH * (self.width / FADER_DEFAULT_WIDTH);
@@ -504,7 +505,7 @@ impl Fader {
         let is_left = self.scale_position == FaderScalePosition::Left;
 
         for (level, label) in db_marks {
-            let y = fader_rect.max.y - (level * fader_rect.height());
+            let y = fader_rect.max.y - level * fader_rect.height();
 
             // Position text based on scale position (no tick marks, tight spacing)
             let (text_pos, text_align) = if is_left {
@@ -547,7 +548,7 @@ impl Fader {
 
         // Determine brightness based on theme - brighter in dark mode
         let bg = theme.background();
-        let bg_luminance = (bg.r() as u16 + bg.g() as u16 + bg.b() as u16) / 3;
+        let bg_luminance = (u16::from(bg.r()) + u16::from(bg.g()) + u16::from(bg.b())) / 3;
         let is_dark = bg_luminance < 128;
 
         // Base gray - brighter in dark mode, darker in light mode
@@ -602,14 +603,14 @@ impl Fader {
         let gradient_lines = (39.0 * h_scale) as usize;
         for i in 0..gradient_lines {
             let t = i as f32 / (gradient_lines - 1) as f32;
-            let gray_value = ((base_gray - 10) as f32 + t * 40.0) as u8;
+            let gray_value = (f32::from(base_gray - 10) + t * 40.0) as u8;
             let color = Color32::from_rgb(gray_value, gray_value, gray_value);
             painter.line_segment(
                 [
-                    pos + Vec2::new(2.0 * w_scale, 8.0 * h_scale + i as f32 * h_scale),
+                    pos + Vec2::new(2.0 * w_scale, 8.0f32.mul_add(h_scale, i as f32 * h_scale)),
                     pos + Vec2::new(
                         (THUMB_WIDTH - 2.0) * w_scale,
-                        8.0 * h_scale + i as f32 * h_scale,
+                        8.0f32.mul_add(h_scale, i as f32 * h_scale),
                     ),
                 ],
                 (1.0 * scale, color),
@@ -619,11 +620,11 @@ impl Fader {
         // Draw ridges (horizontal dark lines) (scaled)
         let ridge_count = (20.0 * h_scale) as usize;
         for i in 0..ridge_count {
-            let y = pos.y + 9.0 * h_scale + i as f32 * 2.0 * h_scale;
+            let y = 9.0f32.mul_add(h_scale, pos.y) + i as f32 * 2.0 * h_scale;
             painter.line_segment(
                 [
-                    Pos2::new(pos.x + 2.0 * w_scale, y),
-                    Pos2::new(pos.x + (THUMB_WIDTH - 2.0) * w_scale, y),
+                    Pos2::new(2.0f32.mul_add(w_scale, pos.x), y),
+                    Pos2::new((THUMB_WIDTH - 2.0).mul_add(w_scale, pos.x), y),
                 ],
                 (1.0 * scale, Color32::from_rgba_unmultiplied(0, 0, 0, 80)),
             );
@@ -651,7 +652,7 @@ impl Fader {
 
         // Bottom cap
         let bottom_cap = Rect::from_min_size(
-            pos + Vec2::new(1.0 * w_scale, height - 6.0 * h_scale),
+            pos + Vec2::new(1.0 * w_scale, 6.0f32.mul_add(-h_scale, height)),
             Vec2::new((THUMB_WIDTH - 2.0) * w_scale, 6.0 * h_scale),
         );
         painter.rect_filled(
@@ -664,7 +665,7 @@ impl Fader {
         painter.line_segment(
             [
                 pos + Vec2::new(1.0 * w_scale, 5.0 * h_scale),
-                pos + Vec2::new(1.0 * w_scale, height - 6.0 * h_scale),
+                pos + Vec2::new(1.0 * w_scale, 6.0f32.mul_add(-h_scale, height)),
             ],
             (
                 1.0 * scale,
@@ -674,7 +675,7 @@ impl Fader {
         painter.line_segment(
             [
                 pos + Vec2::new((THUMB_WIDTH - 1.0) * w_scale, 5.0 * h_scale),
-                pos + Vec2::new((THUMB_WIDTH - 1.0) * w_scale, height - 6.0 * h_scale),
+                pos + Vec2::new((THUMB_WIDTH - 1.0) * w_scale, 6.0f32.mul_add(-h_scale, height)),
             ],
             (
                 1.0 * scale,
@@ -707,7 +708,7 @@ pub struct FaderStrip {
 impl FaderStrip {
     /// Create a new fader strip with default dimensions (includes housing)
     #[must_use]
-    pub fn new(value: f32) -> Self {
+    pub const fn new(value: f32) -> Self {
         Self {
             width: STRIP_DEFAULT_WIDTH,
             height: STRIP_DEFAULT_HEIGHT,
@@ -717,7 +718,7 @@ impl FaderStrip {
 
     /// Set custom size
     #[must_use]
-    pub fn size(mut self, width: f32, height: f32) -> Self {
+    pub const fn size(mut self, width: f32, height: f32) -> Self {
         self.width = width;
         self.height = height;
         self
@@ -749,13 +750,13 @@ impl FaderStrip {
                 let t = i as f32 / (HOUSING_GRADIENT_STEPS - 1) as f32;
                 // Interpolate from top to bottom color
                 let color = Color32::from_rgb(
-                    (housing_top.r() as f32 * (1.0 - t) + housing_bottom.r() as f32 * t) as u8,
-                    (housing_top.g() as f32 * (1.0 - t) + housing_bottom.g() as f32 * t) as u8,
-                    (housing_top.b() as f32 * (1.0 - t) + housing_bottom.b() as f32 * t) as u8,
+                    f32::from(housing_top.r()).mul_add(1.0 - t, f32::from(housing_bottom.r()) * t) as u8,
+                    f32::from(housing_top.g()).mul_add(1.0 - t, f32::from(housing_bottom.g()) * t) as u8,
+                    f32::from(housing_top.b()).mul_add(1.0 - t, f32::from(housing_bottom.b()) * t) as u8,
                 );
 
                 let segment_height = self.height / HOUSING_GRADIENT_STEPS as f32;
-                let y = rect.min.y + i as f32 * segment_height;
+                let y = (i as f32).mul_add(segment_height, rect.min.y);
 
                 painter.rect_filled(
                     Rect::from_min_size(

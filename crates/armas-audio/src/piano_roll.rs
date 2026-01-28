@@ -53,7 +53,7 @@ pub struct Note {
 impl Note {
     /// Create a new note
     #[must_use]
-    pub fn new(note: u8, start_beat: f32, duration: f32) -> Self {
+    pub const fn new(note: u8, start_beat: f32, duration: f32) -> Self {
         Self {
             note,
             start_beat,
@@ -64,7 +64,7 @@ impl Note {
 
     /// Create a new note with velocity
     #[must_use]
-    pub fn with_velocity(note: u8, start_beat: f32, duration: f32, velocity: f32) -> Self {
+    pub const fn with_velocity(note: u8, start_beat: f32, duration: f32, velocity: f32) -> Self {
         Self {
             note,
             start_beat,
@@ -142,7 +142,7 @@ pub struct PianoRoll {
 impl PianoRoll {
     /// Create a new piano roll
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             start_note: 60, // C4
             octaves: 2,
@@ -173,56 +173,56 @@ impl PianoRoll {
 
     /// Set the starting MIDI note
     #[must_use]
-    pub fn start_note(mut self, note: u8) -> Self {
+    pub const fn start_note(mut self, note: u8) -> Self {
         self.start_note = note;
         self
     }
 
     /// Set number of octaves
     #[must_use]
-    pub fn octaves(mut self, octaves: u8) -> Self {
+    pub const fn octaves(mut self, octaves: u8) -> Self {
         self.octaves = octaves;
         self
     }
 
     /// Set width of white keys
     #[must_use]
-    pub fn white_key_width(mut self, width: f32) -> Self {
+    pub const fn white_key_width(mut self, width: f32) -> Self {
         self.white_key_width = width;
         self
     }
 
     /// Set height of white keys
     #[must_use]
-    pub fn white_key_height(mut self, height: f32) -> Self {
+    pub const fn white_key_height(mut self, height: f32) -> Self {
         self.white_key_height = height;
         self
     }
 
     /// Set number of measures
     #[must_use]
-    pub fn measures(mut self, measures: u32) -> Self {
+    pub const fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set grid division
     #[must_use]
-    pub fn division(mut self, division: GridDivision) -> Self {
+    pub const fn division(mut self, division: GridDivision) -> Self {
         self.division = division;
         self
     }
 
     /// Set width per beat
     #[must_use]
-    pub fn beat_width(mut self, width: f32) -> Self {
+    pub const fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width;
         self
     }
 
     /// Set default note duration when placing
     #[must_use]
-    pub fn default_note_duration(mut self, duration: f32) -> Self {
+    pub const fn default_note_duration(mut self, duration: f32) -> Self {
         self.default_note_duration = duration;
         self
     }
@@ -236,68 +236,69 @@ impl PianoRoll {
 
     /// Set whether to show grid
     #[must_use]
-    pub fn show_grid(mut self, show: bool) -> Self {
+    pub const fn show_grid(mut self, show: bool) -> Self {
         self.show_grid = show;
         self
     }
 
     /// Set whether to show piano
     #[must_use]
-    pub fn show_piano(mut self, show: bool) -> Self {
+    pub const fn show_piano(mut self, show: bool) -> Self {
         self.show_piano = show;
         self
     }
 
     /// Set note opacity
     #[must_use]
-    pub fn note_opacity(mut self, opacity: f32) -> Self {
+    pub const fn note_opacity(mut self, opacity: f32) -> Self {
         self.note_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Set whether notes are editable
     #[must_use]
-    pub fn editable(mut self, editable: bool) -> Self {
+    pub const fn editable(mut self, editable: bool) -> Self {
         self.editable = editable;
         self
     }
 
     /// Set black key color
     #[must_use]
-    pub fn black_key_color(mut self, color: Color32) -> Self {
+    pub const fn black_key_color(mut self, color: Color32) -> Self {
         self.black_key_color = Some(color);
         self
     }
 
     /// Set note block color
     #[must_use]
-    pub fn note_color(mut self, color: Color32) -> Self {
+    pub const fn note_color(mut self, color: Color32) -> Self {
         self.note_color = Some(color);
         self
     }
 
     /// Set selected note color
     #[must_use]
-    pub fn selected_note_color(mut self, color: Color32) -> Self {
+    pub const fn selected_note_color(mut self, color: Color32) -> Self {
         self.selected_note_color = Some(color);
         self
     }
 
     /// Set grid line style for customizing line appearance
     #[must_use]
-    pub fn grid_style(mut self, style: GridLineStyle) -> Self {
+    pub const fn grid_style(mut self, style: GridLineStyle) -> Self {
         self.grid_style = Some(style);
         self
     }
 
     /// Enable snap-to-grid for note placement and resizing
     #[must_use]
-    pub fn snap_to_grid(mut self, enabled: bool) -> Self {
+    pub const fn snap_to_grid(mut self, enabled: bool) -> Self {
         self.snap_to_grid = enabled;
         self
     }
 
     /// Set custom ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -308,7 +309,7 @@ impl PianoRoll {
     /// When enabled, the piano roll content can be scrolled within
     /// the specified viewport dimensions.
     #[must_use]
-    pub fn scrollable(mut self, width: f32, height: f32) -> Self {
+    pub const fn scrollable(mut self, width: f32, height: f32) -> Self {
         self.scrollable = true;
         self.viewport_width = Some(width);
         self.viewport_height = Some(height);
@@ -322,7 +323,7 @@ impl PianoRoll {
     ///
     /// Default is enabled (when scrollable).
     #[must_use]
-    pub fn momentum_scrolling(mut self, enabled: bool) -> Self {
+    pub const fn momentum_scrolling(mut self, enabled: bool) -> Self {
         self.momentum_scrolling = enabled;
         self
     }
@@ -332,7 +333,7 @@ impl PianoRoll {
     /// Higher values cause the scroll to stop faster.
     /// Default is 5.0.
     #[must_use]
-    pub fn momentum_damping(mut self, damping: f64) -> Self {
+    pub const fn momentum_damping(mut self, damping: f64) -> Self {
         self.momentum_damping = damping.max(1.0);
         self
     }
@@ -567,7 +568,7 @@ impl PianoRoll {
     fn draw_alternating_rows_clipped(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
         let total_notes = self.octaves as usize * 12;
         let bg = theme.background();
-        let is_light_theme = (bg.r() as u32 + bg.g() as u32 + bg.b() as u32) > 384;
+        let is_light_theme = (u32::from(bg.r()) + u32::from(bg.g()) + u32::from(bg.b())) > 384;
 
         let mut white_key_index = 0;
         for i in 0..total_notes {
@@ -576,7 +577,7 @@ impl PianoRoll {
 
             if !is_black {
                 if white_key_index % 2 == 1 {
-                    let y = rect.min.y + white_key_index as f32 * self.white_key_width;
+                    let y = (white_key_index as f32).mul_add(self.white_key_width, rect.min.y);
                     let row_rect = Rect::from_min_size(
                         Pos2::new(rect.min.x, y),
                         Vec2::new(rect.width(), self.white_key_width),
@@ -599,7 +600,7 @@ impl PianoRoll {
     fn draw_horizontal_lines_clipped(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
         let total_notes = self.octaves as usize * 12;
         let bg = theme.background();
-        let is_light_theme = (bg.r() as u32 + bg.g() as u32 + bg.b() as u32) > 384;
+        let is_light_theme = (u32::from(bg.r()) + u32::from(bg.g()) + u32::from(bg.b())) > 384;
 
         let base_line_color = if is_light_theme {
             Color32::from_rgb(0, 0, 0)
@@ -613,7 +614,7 @@ impl PianoRoll {
             let is_black = Self::is_black_key(note % 12);
 
             if !is_black {
-                let y = rect.min.y + white_key_index as f32 * self.white_key_width;
+                let y = (white_key_index as f32).mul_add(self.white_key_width, rect.min.y);
                 let line_color = Color32::from_rgba_unmultiplied(
                     base_line_color.r(),
                     base_line_color.g(),
@@ -634,7 +635,7 @@ impl PianoRoll {
     /// Draw vertical lines with clipping
     fn draw_vertical_lines_clipped(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
         let bg = theme.background();
-        let is_light_theme = (bg.r() as u32 + bg.g() as u32 + bg.b() as u32) > 384;
+        let is_light_theme = (u32::from(bg.r()) + u32::from(bg.g()) + u32::from(bg.b())) > 384;
 
         let base_line_color = if is_light_theme {
             Color32::from_rgb(0, 0, 0)
@@ -649,7 +650,7 @@ impl PianoRoll {
 
         for i in 0..=total_divisions {
             let beat_position = i as f32 * self.division.beat_fraction();
-            let x = rect.min.x + beat_position * self.beat_width;
+            let x = beat_position.mul_add(self.beat_width, rect.min.x);
 
             if x > rect.max.x {
                 break;
@@ -702,7 +703,7 @@ impl PianoRoll {
                     primary.r(),
                     primary.g(),
                     primary.b(),
-                    (intensity as f32 * self.note_opacity) as u8,
+                    (f32::from(intensity) * self.note_opacity) as u8,
                 );
 
                 painter.rect_filled(note_rect, 4.0, note_color);
@@ -711,7 +712,7 @@ impl PianoRoll {
                     primary.r(),
                     primary.g(),
                     primary.b(),
-                    ((intensity as f32 * 1.3).min(255.0)) as u8,
+                    ((f32::from(intensity) * 1.3).min(255.0)) as u8,
                 );
                 painter.rect_stroke(
                     note_rect,
@@ -739,8 +740,8 @@ impl PianoRoll {
     /// Get note rect in content space
     fn get_note_rect_in_content(&self, note: &Note, content_rect: Rect) -> Option<Rect> {
         let row = self.note_to_row(note.note)?;
-        let x = content_rect.min.x + note.start_beat * self.beat_width;
-        let y = content_rect.min.y + row as f32 * self.white_key_width;
+        let x = note.start_beat.mul_add(self.beat_width, content_rect.min.x);
+        let y = (row as f32).mul_add(self.white_key_width, content_rect.min.y);
         let width = note.duration * self.beat_width;
         let height = self.white_key_width;
 
@@ -935,7 +936,7 @@ impl PianoRoll {
     }
 
     /// Check if a note is a black key
-    fn is_black_key(note: u8) -> bool {
+    const fn is_black_key(note: u8) -> bool {
         matches!(note % 12, 1 | 3 | 6 | 8 | 10)
     }
 }

@@ -3,6 +3,7 @@
 //! Multi-row drum sequencer for DAW-style pattern programming.
 //! Each row represents a drum sound with independent step patterns and velocity control.
 //!
+
 //! Features:
 //! - Optional viewport scrolling with momentum physics
 //! - Smooth inertia-based scrolling that continues after mouse release
@@ -94,7 +95,7 @@ impl DrumRow {
 
     /// Set the row color
     #[must_use]
-    pub fn with_color(mut self, color: Color32) -> Self {
+    pub const fn with_color(mut self, color: Color32) -> Self {
         self.color = color;
         self
     }
@@ -165,7 +166,7 @@ pub struct DrumSequencer<'a> {
 
 impl<'a> DrumSequencer<'a> {
     /// Create a new drum sequencer
-    pub fn new(rows: &'a mut Vec<DrumRow>) -> Self {
+    pub const fn new(rows: &'a mut Vec<DrumRow>) -> Self {
         Self {
             rows,
             num_steps: 16,
@@ -189,6 +190,7 @@ impl<'a> DrumSequencer<'a> {
     }
 
     /// Set unique ID for state persistence across frame recreations
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -203,14 +205,14 @@ impl<'a> DrumSequencer<'a> {
 
     /// Set current playback step (for visual feedback)
     #[must_use]
-    pub fn current_step(mut self, step: Option<usize>) -> Self {
+    pub const fn current_step(mut self, step: Option<usize>) -> Self {
         self.current_step = step;
         self
     }
 
     /// Set step size (width and height)
     #[must_use]
-    pub fn step_size(mut self, width: f32, height: f32) -> Self {
+    pub const fn step_size(mut self, width: f32, height: f32) -> Self {
         self.step_width = width.max(20.0);
         self.step_height = height.max(20.0);
         self
@@ -218,49 +220,49 @@ impl<'a> DrumSequencer<'a> {
 
     /// Set row label width
     #[must_use]
-    pub fn row_label_width(mut self, width: f32) -> Self {
+    pub const fn row_label_width(mut self, width: f32) -> Self {
         self.row_label_width = width.max(40.0);
         self
     }
 
     /// Set row height
     #[must_use]
-    pub fn row_height(mut self, height: f32) -> Self {
+    pub const fn row_height(mut self, height: f32) -> Self {
         self.row_height = height.max(30.0);
         self
     }
 
     /// Set gap between steps and rows
     #[must_use]
-    pub fn gap(mut self, gap: f32) -> Self {
+    pub const fn gap(mut self, gap: f32) -> Self {
         self.gap = gap.max(0.0);
         self
     }
 
     /// Set glow intensity (0.0-1.0)
     #[must_use]
-    pub fn glow_intensity(mut self, intensity: f32) -> Self {
+    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
     /// Set visual variant
     #[must_use]
-    pub fn variant(mut self, variant: DrumSequencerVariant) -> Self {
+    pub const fn variant(mut self, variant: DrumSequencerVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set color scheme
     #[must_use]
-    pub fn color_scheme(mut self, scheme: DrumSequencerColorScheme) -> Self {
+    pub const fn color_scheme(mut self, scheme: DrumSequencerColorScheme) -> Self {
         self.color_scheme = scheme;
         self
     }
 
     /// Show velocity as brightness
     #[must_use]
-    pub fn show_velocity(mut self, show: bool) -> Self {
+    pub const fn show_velocity(mut self, show: bool) -> Self {
         self.show_velocity = show;
         self
     }
@@ -269,7 +271,7 @@ impl<'a> DrumSequencer<'a> {
     ///
     /// When content exceeds viewport size, scrolling is enabled.
     #[must_use]
-    pub fn scrollable(mut self, width: f32, height: f32) -> Self {
+    pub const fn scrollable(mut self, width: f32, height: f32) -> Self {
         self.scrollable = true;
         self.viewport_width = Some(width);
         self.viewport_height = Some(height);
@@ -280,7 +282,7 @@ impl<'a> DrumSequencer<'a> {
     ///
     /// When enabled, scrolling continues with inertia after mouse release.
     #[must_use]
-    pub fn momentum_scrolling(mut self, enabled: bool) -> Self {
+    pub const fn momentum_scrolling(mut self, enabled: bool) -> Self {
         self.momentum_scrolling = enabled;
         self
     }
@@ -289,7 +291,7 @@ impl<'a> DrumSequencer<'a> {
     ///
     /// Higher values = faster velocity decay. Range: 1.0 to 20.0
     #[must_use]
-    pub fn momentum_damping(mut self, damping: f64) -> Self {
+    pub const fn momentum_damping(mut self, damping: f64) -> Self {
         self.momentum_damping = damping.clamp(1.0, 20.0);
         self
     }
@@ -307,9 +309,9 @@ impl<'a> DrumSequencer<'a> {
     ) -> (f32, f32, f32, f32) {
         let num_visible_rows = rows.iter().filter(|r| r.visible).count();
         let content_width =
-            row_label_width + num_steps as f32 * step_width + (num_steps - 1) as f32 * gap;
+            (num_steps as f32).mul_add(step_width, row_label_width) + (num_steps - 1) as f32 * gap;
         let content_height =
-            num_visible_rows as f32 * row_height + (num_visible_rows - 1) as f32 * gap;
+            (num_visible_rows as f32).mul_add(row_height, (num_visible_rows - 1) as f32 * gap);
 
         let actual_width = viewport_width.unwrap_or(content_width).min(content_width);
         let actual_height = viewport_height
@@ -320,7 +322,7 @@ impl<'a> DrumSequencer<'a> {
     }
 
     /// Restore state from persistent storage
-    fn restore_state(ui: &mut Ui, id: egui::Id, rows: &mut Vec<DrumRow>) {
+    fn restore_state(ui: &mut Ui, id: egui::Id, rows: &mut [DrumRow]) {
         let state_id = id.with("drum_sequencer_state");
         if let Some(stored_state) = ui
             .ctx()
@@ -376,10 +378,8 @@ impl<'a> DrumSequencer<'a> {
         let mut changed = false;
 
         for step_idx in 0..num_steps {
-            let step_x = rect.min.x
-                + scroll_offset.x
-                + row_label_width
-                + step_idx as f32 * (step_width + gap);
+            let step_x = (step_idx as f32).mul_add(step_width + gap, rect.min.x
+                + scroll_offset.x + row_label_width);
 
             // Skip steps outside viewport
             if scrollable && (step_x + step_width < rect.min.x || step_x > rect.max.x) {
@@ -551,7 +551,7 @@ impl<'a> DrumSequencer<'a> {
             scroll_state.offset += scroll_state.velocity * dt;
 
             // Apply damping (exponential decay)
-            let damping_factor = (-momentum_damping * dt as f64).exp() as f32;
+            let damping_factor = (-momentum_damping * f64::from(dt)).exp() as f32;
             scroll_state.velocity *= damping_factor;
 
             // Stop animation when velocity is negligible
@@ -593,9 +593,7 @@ impl<'a> DrumSequencer<'a> {
         let step_width = self.step_width;
         let gap = self.gap;
         let num_steps = self.num_steps;
-        let _current_step = self.current_step;
         let variant = self.variant;
-        let _color_scheme = self.color_scheme;
         let show_velocity = self.show_velocity;
         let id = self.id;
         let scrollable = self.scrollable;
@@ -726,7 +724,7 @@ impl<'a> DrumSequencer<'a> {
     }
 
     fn draw_row_label_static(painter: &egui::Painter, theme: &Theme, rect: Rect, row: &DrumRow) {
-        let corner_radius = theme.spacing.corner_radius_small as f32;
+        let corner_radius = f32::from(theme.spacing.corner_radius_small);
 
         // Background - use row color with brightness adjustment
         let bg_color = if row.muted {
@@ -775,7 +773,7 @@ impl<'a> DrumSequencer<'a> {
         variant: DrumSequencerVariant,
         show_velocity: bool,
     ) {
-        let corner_radius = theme.spacing.corner_radius_small as f32;
+        let corner_radius = f32::from(theme.spacing.corner_radius_small);
 
         // Draw based on variant
         match variant {
@@ -839,7 +837,7 @@ impl<'a> DrumSequencer<'a> {
         let mut fill_color = if is_active { row_color } else { theme.muted() };
 
         if is_active && show_velocity {
-            let velocity_factor = 1.0 + (velocity * 0.8);
+            let velocity_factor = velocity.mul_add(0.8, 1.0);
             fill_color = fill_color.gamma_multiply(velocity_factor);
         } else if is_hovered {
             fill_color = fill_color.gamma_multiply(1.2);
@@ -884,7 +882,7 @@ impl<'a> DrumSequencer<'a> {
         glow_intensity: f32,
     ) {
         let bg_color = if is_active && show_velocity {
-            let alpha = (64.0 + (velocity * 191.0)) as u8;
+            let alpha = velocity.mul_add(191.0, 64.0) as u8;
             Color32::from_rgba_unmultiplied(row_color.r(), row_color.g(), row_color.b(), alpha)
         } else if is_hovered {
             theme.muted()
@@ -925,7 +923,7 @@ impl<'a> DrumSequencer<'a> {
             for i in 0..3 {
                 let offset = (i + 1) as f32 * 0.5;
                 let shadow_rect = rect.translate(Vec2::new(0.0, offset));
-                let alpha = (20.0 - i as f32 * 5.0) as u8;
+                let alpha = (i as f32).mul_add(-5.0, 20.0) as u8;
                 let shadow_color = Color32::from_rgba_unmultiplied(0, 0, 0, alpha);
                 painter.rect_filled(shadow_rect, corner_radius, shadow_color);
             }
@@ -933,7 +931,7 @@ impl<'a> DrumSequencer<'a> {
 
         let mut fill_color = row_color;
         if is_active && show_velocity {
-            let velocity_factor = 1.0 + (velocity * 0.8);
+            let velocity_factor = velocity.mul_add(0.8, 1.0);
             fill_color = fill_color.gamma_multiply(velocity_factor);
         } else if is_hovered {
             fill_color = fill_color.gamma_multiply(1.15);

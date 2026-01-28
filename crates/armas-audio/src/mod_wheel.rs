@@ -80,7 +80,7 @@ pub struct ModWheel<'a> {
 
 impl<'a> ModWheel<'a> {
     /// Create a new mod wheel
-    pub fn new(value: &'a mut f32) -> Self {
+    pub const fn new(value: &'a mut f32) -> Self {
         Self {
             value,
             wheel_type: WheelType::Modulation,
@@ -99,6 +99,7 @@ impl<'a> ModWheel<'a> {
     }
 
     /// Set unique ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -117,25 +118,26 @@ impl<'a> ModWheel<'a> {
 
     /// Set visual variant
     #[must_use]
-    pub fn variant(mut self, variant: WheelVariant) -> Self {
+    pub const fn variant(mut self, variant: WheelVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set width
     #[must_use]
-    pub fn width(mut self, width: f32) -> Self {
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = width.max(20.0);
         self
     }
 
     /// Set height
     #[must_use]
-    pub fn height(mut self, height: f32) -> Self {
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height.max(100.0);
         self
     }
 
+    #[must_use]
     /// Set label
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
@@ -144,21 +146,21 @@ impl<'a> ModWheel<'a> {
 
     /// Show numeric value
     #[must_use]
-    pub fn show_value(mut self, show: bool) -> Self {
+    pub const fn show_value(mut self, show: bool) -> Self {
         self.show_value = show;
         self
     }
 
     /// Show center line (for pitch bend)
     #[must_use]
-    pub fn show_center_line(mut self, show: bool) -> Self {
+    pub const fn show_center_line(mut self, show: bool) -> Self {
         self.show_center_line = show;
         self
     }
 
     /// Set glow intensity
     #[must_use]
-    pub fn glow_intensity(mut self, intensity: f32) -> Self {
+    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
     }
@@ -168,7 +170,7 @@ impl<'a> ModWheel<'a> {
     /// When enabled, holding Ctrl/Cmd while dragging provides fine control
     /// where faster mouse movement creates larger value changes.
     #[must_use]
-    pub fn velocity_mode(mut self, enabled: bool) -> Self {
+    pub const fn velocity_mode(mut self, enabled: bool) -> Self {
         self.velocity_mode = enabled;
         self
     }
@@ -178,7 +180,7 @@ impl<'a> ModWheel<'a> {
     /// Higher values make the wheel more responsive to mouse speed.
     /// Default is 1.0.
     #[must_use]
-    pub fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
+    pub const fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
         self.velocity_sensitivity = sensitivity.max(0.1);
         self
     }
@@ -187,7 +189,7 @@ impl<'a> ModWheel<'a> {
     ///
     /// When set, double-clicking the wheel resets it to this value.
     #[must_use]
-    pub fn default_value(mut self, value: f32) -> Self {
+    pub const fn default_value(mut self, value: f32) -> Self {
         self.default_value = Some(value);
         self
     }
@@ -236,8 +238,8 @@ impl<'a> ModWheel<'a> {
             let use_velocity =
                 self.velocity_mode && ui.input(|i| i.modifiers.command || i.modifiers.ctrl);
             drag_state.drag.begin(
-                *self.value as f64,
-                response.interact_pointer_pos().map_or(0.0, |p| p.y) as f64,
+                f64::from(*self.value),
+                f64::from(response.interact_pointer_pos().map_or(0.0, |p| p.y)),
                 use_velocity,
             );
         }
@@ -246,15 +248,15 @@ impl<'a> ModWheel<'a> {
             if let Some(pos) = response.interact_pointer_pos() {
                 if drag_state.drag.is_velocity_mode() {
                     // Velocity mode: value changes based on mouse speed
-                    let value_range = (max_val - min_val) as f64;
+                    let value_range = f64::from(max_val - min_val);
                     let delta = drag_state.drag.update_tracked(
-                        pos.y as f64,
+                        f64::from(pos.y),
                         value_range,
-                        self.height as f64,
+                        f64::from(self.height),
                     );
                     // Invert delta since moving up should increase value
                     *self.value =
-                        (*self.value as f64 - delta).clamp(min_val as f64, max_val as f64) as f32;
+                        (f64::from(*self.value) - delta).clamp(f64::from(min_val), f64::from(max_val)) as f32;
                 } else {
                     // Absolute mode: Y position to value (inverted: top = max, bottom = min)
                     let normalized = 1.0 - ((pos.y - rect.min.y) / rect.height()).clamp(0.0, 1.0);
@@ -279,7 +281,7 @@ impl<'a> ModWheel<'a> {
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
-            let corner_radius = theme.spacing.corner_radius_small as f32;
+            let corner_radius = f32::from(theme.spacing.corner_radius_small);
 
             // Draw based on variant
             match self.variant {
@@ -308,7 +310,7 @@ impl<'a> ModWheel<'a> {
 
             // Draw handle
             let normalized = (*self.value - min_val) / (max_val - min_val);
-            let handle_y = rect.max.y - normalized * rect.height();
+            let handle_y = normalized.mul_add(-rect.height(), rect.max.y);
             let handle_rect = Rect::from_min_size(
                 Pos2::new(rect.min.x + 2.0, handle_y - 8.0),
                 Vec2::new(self.width - 4.0, 16.0),
@@ -404,9 +406,9 @@ impl<'a> ModWheel<'a> {
             };
 
             let color = Color32::from_rgb(
-                (base_r as f32 * brightness).min(255.0) as u8,
-                (base_g as f32 * brightness).min(255.0) as u8,
-                (base_b as f32 * brightness).min(255.0) as u8,
+                (f32::from(base_r) * brightness).min(255.0) as u8,
+                (f32::from(base_g) * brightness).min(255.0) as u8,
+                (f32::from(base_b) * brightness).min(255.0) as u8,
             );
 
             let y = rect.min.y + i as f32;
@@ -434,7 +436,7 @@ impl<'a> ModWheel<'a> {
         let ridge_spacing = 2.5;
         let ridge_count = (rect.height() / ridge_spacing) as usize;
         for i in 0..ridge_count {
-            let y = rect.min.y + 2.0 + i as f32 * ridge_spacing;
+            let y = (i as f32).mul_add(ridge_spacing, rect.min.y + 2.0);
             if y < rect.max.y - 2.0 {
                 painter.line_segment(
                     [
@@ -530,7 +532,7 @@ impl<'a> ModWheel<'a> {
         for i in 0..3 {
             let offset = (i + 1) as f32 * 0.5;
             let shadow_rect = rect.translate(Vec2::new(offset * 0.5, offset));
-            let alpha = (20.0 - i as f32 * 5.0) as u8;
+            let alpha = (i as f32).mul_add(-5.0, 20.0) as u8;
             let shadow_color = Color32::from_rgba_unmultiplied(0, 0, 0, alpha);
             painter.rect_filled(shadow_rect, corner_radius, shadow_color);
         }

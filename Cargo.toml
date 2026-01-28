@@ -29,72 +29,20 @@ pedantic = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
 
 # Allow patterns common in UI/egui code
-module_name_repetitions = "allow"
-similar_names = "allow"
 cast_possible_truncation = "allow"
 cast_sign_loss = "allow"
 cast_precision_loss = "allow"
-float_cmp = "allow"
 
-# Builder pattern: returning Self is intentional, not must_use
-return_self_not_must_use = "allow"
 # UI structs often have many bool fields for state
 struct_excessive_bools = "allow"
 # egui drawing functions often need many parameters
 too_many_arguments = "allow"
-# const fn on builder methods adds noise, not value
-missing_const_for_fn = "allow"
-# f32::mul_add is less readable in UI layout math
-suboptimal_flops = "allow"
 # Common in egui: &self where self isn't used (trait impls, future use)
 unused_self = "allow"
 # Unnecessary for UI code - immutable refs are fine as-is
 needless_pass_by_ref_mut = "allow"
-# egui frequently deref-coerces
-explicit_deref_methods = "allow"
-# f32 from u8/u32 and f64 from f32 are safe and clearer as `as`
-cast_lossless = "allow"
-# while loops with float conditions are fine for animation/audio
-while_float = "allow"
-# Redundant closures are often clearer in UI callbacks
-redundant_closure_for_method_calls = "allow"
-# Complex types are fine when they represent UI state
-type_complexity = "allow"
-# function_call_inside_unwrap_or is acceptable for simple cases
-or_fun_call = "allow"
-# format!(..) appended to String is fine for clarity
-format_push_string = "allow"
-# if let/else is often clearer than map_or_else
-option_if_let_else = "allow"
-# Passing by value is intentional for builder pattern
-needless_pass_by_value = "allow"
-# Underscore-prefixed bindings are intentional for side effects
-no_effect_underscore_binding = "allow"
-# Missing docs are okay for internal/test code
-missing_errors_doc = "allow"
-missing_panics_doc = "allow"
-# &PathBuf is sometimes clearer than &Path in APIs
-ptr_arg = "allow"
-# Field name prefixing is okay for clarity
-struct_field_names = "allow"
-# Recursion parameters are intentional
-only_used_in_recursion = "allow"
-# Clone assignment patterns are fine
-assigning_clones = "allow"
-# Items after statements are acceptable
-items_after_statements = "allow"
-# Doctest main is fine
-needless_doctest_main = "allow"
-# to_* methods taking self by value is intentional
-wrong_self_convention = "allow"
-# Cognitive complexity is acceptable for UI/drawing code
-cognitive_complexity = "allow"
-# Long functions are fine for declarative UI code
-too_many_lines = "allow"
-# Similar if block starts are common in theme-based drawing
-branches_sharing_code = "allow"
-# Long literals for colors/IDs are fine
-unreadable_literal = "allow"
+# f32::mul_add is less readable in UI layout math
+suboptimal_flops = "allow"
 
 [profile.release]
 opt-level = 2

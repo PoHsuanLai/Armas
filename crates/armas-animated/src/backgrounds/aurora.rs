@@ -116,6 +116,7 @@ impl AuroraBackground {
     }
 
     /// Set a unique ID for this aurora (required for state persistence)
+    #[must_use]
     pub fn id(mut self, id: impl std::hash::Hash) -> Self {
         self.id = egui::Id::new(id);
         self
@@ -284,7 +285,7 @@ impl AuroraBackground {
 
         // Get or initialize state from egui memory
         let mut state = ui.data_mut(|d| {
-            d.get_temp::<AuroraState>(self.id).unwrap_or(AuroraState {
+            d.get_temp::<AuroraState>(self.id).unwrap_or_else(|| AuroraState {
                 blobs: self.blobs.clone(),
             })
         });

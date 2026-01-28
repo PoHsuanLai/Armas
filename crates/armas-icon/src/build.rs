@@ -12,31 +12,29 @@
 //! ```
 //!
 //! In `build.rs`:
-//! ```rust,no_run
+//! ```
 //! use std::path::Path;
 //! use std::fs::File;
 //! use std::io::Write;
 //!
-//! fn main() {
-//!     let out_dir = std::env::var("OUT_DIR").unwrap();
-//!     let dest = Path::new(&out_dir).join("my_icons.rs");
-//!     let mut output = File::create(&dest).unwrap();
+//! let out_dir = std::env::var("OUT_DIR").unwrap();
+//! let dest = Path::new(&out_dir).join("my_icons.rs");
+//! let mut output = File::create(&dest).unwrap();
 //!
-//!     writeln!(output, "// Generated icons\n").unwrap();
+//! writeln!(output, "// Generated icons\n").unwrap();
 //!
-//!     // Tessellate a single SVG into an IconData constant
-//!     let code = armas_icon::build::generate_icon_constant(
-//!         Path::new("assets/icons/sun.svg"),
-//!         "SUN",
-//!     ).unwrap();
-//!     writeln!(output, "{}", code).unwrap();
+//! // Tessellate a single SVG into an IconData constant
+//! let code = armas_icon::build::generate_icon_constant(
+//!     Path::new("assets/icons/sun.svg"),
+//!     "SUN",
+//! ).unwrap();
+//! writeln!(output, "{}", code).unwrap();
 //!
-//!     // Or tessellate an entire directory
-//!     armas_icon::build::generate_icons_from_dir(
-//!         Path::new("assets/icons/"),
-//!         &mut output,
-//!     ).unwrap();
-//! }
+//! // Or tessellate an entire directory
+//! armas_icon::build::generate_icons_from_dir(
+//!     Path::new("assets/icons/"),
+//!     &mut output,
+//! ).unwrap();
 //! ```
 
 use lyon_tessellation::{
@@ -55,6 +53,10 @@ pub type BuildResult<T> = Result<T, Box<dyn std::error::Error>>;
 ///
 /// The constant will be named `const_name` in `SCREAMING_SNAKE_CASE`.
 ///
+/// # Errors
+///
+/// Returns an error if the SVG file cannot be read or parsed.
+///
 /// # Example
 /// ```rust,no_run
 /// let code = armas_icon::build::generate_icon_constant(
@@ -64,23 +66,22 @@ pub type BuildResult<T> = Result<T, Box<dyn std::error::Error>>;
 /// // code contains: `pub static SUN: IconData = IconData { ... };`
 /// ```
 pub fn generate_icon_constant(svg_path: &Path, const_name: &str) -> BuildResult<String> {
+    use std::fmt::Write;
     let (vertices, indices, width, height) = tessellate_svg(svg_path)?;
 
     let mut code = String::new();
     code.push_str("#[allow(missing_docs)]\n");
-    code.push_str(&format!(
-        "pub static {const_name}: IconData = IconData {{\n"
-    ));
+    writeln!(code, "pub static {const_name}: IconData = IconData {{").unwrap();
 
     let file_name = svg_path
         .file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("unknown");
-    code.push_str(&format!("    name: \"{file_name}\",\n"));
-    code.push_str(&format!("    vertices: &[{vertices}],\n"));
-    code.push_str(&format!("    indices: &[{indices}],\n"));
-    code.push_str(&format!("    viewbox_width: {width:.1},\n"));
-    code.push_str(&format!("    viewbox_height: {height:.1},\n"));
+    writeln!(code, "    name: \"{file_name}\",").unwrap();
+    writeln!(code, "    vertices: &[{vertices}],").unwrap();
+    writeln!(code, "    indices: &[{indices}],").unwrap();
+    writeln!(code, "    viewbox_width: {width:.1},").unwrap();
+    writeln!(code, "    viewbox_height: {height:.1},").unwrap();
     code.push_str("};\n");
 
     Ok(code)
@@ -90,6 +91,14 @@ pub fn generate_icon_constant(svg_path: &Path, const_name: &str) -> BuildResult<
 ///
 /// Each SVG file is converted to a constant named after the file in `SCREAMING_SNAKE_CASE`
 /// (e.g., `my-icon.svg` → `MY_ICON`).
+///
+/// # Errors
+///
+/// Returns an error if the directory cannot be read or if any SVG file cannot be parsed.
+///
+/// # Panics
+///
+/// Panics if a file name cannot be converted to UTF-8.
 pub fn generate_icons_from_dir(dir: &Path, output: &mut impl Write) -> BuildResult<()> {
     if !dir.exists() {
         return Err(format!("Icon directory does not exist: {}", dir.display()).into());
@@ -123,7 +132,12 @@ pub fn generate_icons_from_dir(dir: &Path, output: &mut impl Write) -> BuildResu
 ///
 /// Returns `(vertices_code, indices_code, viewbox_width, viewbox_height)` where
 /// the code strings are ready to embed in Rust source.
+///
+/// # Errors
+///
+/// Returns an error if the SVG file cannot be read, parsed, or tessellated.
 pub fn tessellate_svg(path: &Path) -> BuildResult<(String, String, f32, f32)> {
+    use std::fmt::Write;
     let svg_data = fs::read_to_string(path)?;
 
     let (width, height) = extract_viewbox(&svg_data).unwrap_or((24.0, 24.0));
@@ -148,7 +162,7 @@ pub fn tessellate_svg(path: &Path) -> BuildResult<(String, String, f32, f32)> {
         if i > 0 {
             vertices_code.push_str(", ");
         }
-        vertices_code.push_str(&format!("({:.2}, {:.2})", vertex[0], vertex[1]));
+        write!(vertices_code, "({:.2}, {:.2})", vertex[0], vertex[1]).unwrap();
     }
 
     // Generate indices code
@@ -157,7 +171,7 @@ pub fn tessellate_svg(path: &Path) -> BuildResult<(String, String, f32, f32)> {
         if i > 0 {
             indices_code.push_str(", ");
         }
-        indices_code.push_str(&format!("{index}"));
+        write!(indices_code, "{index}").unwrap();
     }
 
     Ok((vertices_code, indices_code, width, height))

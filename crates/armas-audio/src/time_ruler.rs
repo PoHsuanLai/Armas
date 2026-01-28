@@ -75,7 +75,7 @@ impl Default for TimeRuler {
 impl TimeRuler {
     /// Create a new time ruler with default settings
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             measures: 8,
             beat_width: 60.0,
@@ -91,6 +91,7 @@ impl TimeRuler {
     }
 
     /// Set custom ID for the `ScrollArea` (prevents conflicts when multiple rulers exist)
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -98,63 +99,63 @@ impl TimeRuler {
 
     /// Set number of measures to display
     #[must_use]
-    pub fn measures(mut self, measures: u32) -> Self {
+    pub const fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set width per beat in pixels (zoom level)
     #[must_use]
-    pub fn beat_width(mut self, width: f32) -> Self {
+    pub const fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width;
         self
     }
 
     /// Set beats per measure (time signature numerator)
     #[must_use]
-    pub fn beats_per_measure(mut self, beats: u32) -> Self {
+    pub const fn beats_per_measure(mut self, beats: u32) -> Self {
         self.beats_per_measure = beats;
         self
     }
 
     /// Set grid division for subdivisions
     #[must_use]
-    pub fn division(mut self, division: GridDivision) -> Self {
+    pub const fn division(mut self, division: GridDivision) -> Self {
         self.division = division;
         self
     }
 
     /// Set ruler height
     #[must_use]
-    pub fn height(mut self, height: f32) -> Self {
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Set whether to show beat numbers
     #[must_use]
-    pub fn show_beat_numbers(mut self, show: bool) -> Self {
+    pub const fn show_beat_numbers(mut self, show: bool) -> Self {
         self.show_beat_numbers = show;
         self
     }
 
     /// Set whether to show subdivision tick marks
     #[must_use]
-    pub fn show_subdivisions(mut self, show: bool) -> Self {
+    pub const fn show_subdivisions(mut self, show: bool) -> Self {
         self.show_subdivisions = show;
         self
     }
 
     /// Set time display mode
     #[must_use]
-    pub fn time_mode(mut self, mode: TimeDisplayMode) -> Self {
+    pub const fn time_mode(mut self, mode: TimeDisplayMode) -> Self {
         self.time_mode = mode;
         self
     }
 
     /// Set tempo (BPM) for minutes:seconds display
     #[must_use]
-    pub fn tempo(mut self, tempo: f32) -> Self {
+    pub const fn tempo(mut self, tempo: f32) -> Self {
         self.tempo = tempo;
         self
     }
@@ -193,7 +194,7 @@ impl TimeRuler {
             let painter = ui.painter();
 
             // Draw background (only within clip)
-            painter.rect_filled(clip, theme.spacing.corner_radius_small as f32, theme.card());
+            painter.rect_filled(clip, f32::from(theme.spacing.corner_radius_small), theme.card());
 
             // Draw bottom border
             painter.line_segment(
@@ -233,7 +234,7 @@ impl TimeRuler {
             let painter = ui.painter();
 
             // Draw background
-            painter.rect_filled(rect, theme.spacing.corner_radius_small as f32, theme.card());
+            painter.rect_filled(rect, f32::from(theme.spacing.corner_radius_small), theme.card());
 
             // Draw bottom border
             painter.line_segment(
@@ -267,7 +268,7 @@ impl TimeRuler {
 
         for i in 0..=total_divisions {
             let beat_position = i as f32 * self.division.beat_fraction();
-            let x = rect.min.x + beat_position * self.beat_width;
+            let x = beat_position.mul_add(self.beat_width, rect.min.x);
 
             // Skip if out of bounds
             if x > rect.max.x {
@@ -311,7 +312,7 @@ impl TimeRuler {
     /// Draw measure numbers at the top
     fn draw_measure_numbers(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
         for measure in 0..self.measures {
-            let x = rect.min.x + measure as f32 * self.beats_per_measure as f32 * self.beat_width;
+            let x = (measure as f32 * self.beats_per_measure as f32).mul_add(self.beat_width, rect.min.x);
             let label_pos = Pos2::new(x + theme.spacing.xs, rect.min.y + theme.spacing.xs);
 
             let label = match self.time_mode {
@@ -347,11 +348,11 @@ impl TimeRuler {
                 continue;
             }
 
-            let x = rect.min.x + beat_idx as f32 * self.beat_width;
+            let x = (beat_idx as f32).mul_add(self.beat_width, rect.min.x);
             let beat_in_measure = (beat_idx % self.beats_per_measure) + 1;
 
             // Position beat numbers below measure numbers
-            let label_pos = Pos2::new(x + theme.spacing.xs * 0.5, rect.min.y + theme.spacing.md);
+            let label_pos = Pos2::new(theme.spacing.xs.mul_add(0.5, x), rect.min.y + theme.spacing.md);
 
             painter.text(
                 label_pos,

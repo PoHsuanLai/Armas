@@ -91,7 +91,7 @@ pub struct TrackHeader {
 impl TrackHeader {
     /// Create a new track header
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             id: None,
             width: 200.0,
@@ -108,6 +108,7 @@ impl TrackHeader {
     }
 
     /// Set custom ID (important when using multiple track headers)
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -115,70 +116,70 @@ impl TrackHeader {
 
     /// Set the header width
     #[must_use]
-    pub fn width(mut self, width: f32) -> Self {
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
     }
 
     /// Set the header height
     #[must_use]
-    pub fn height(mut self, height: f32) -> Self {
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Set the track color
     #[must_use]
-    pub fn color(mut self, color: Color32) -> Self {
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set the card background color
     #[must_use]
-    pub fn card_color(mut self, color: Color32) -> Self {
+    pub const fn card_color(mut self, color: Color32) -> Self {
         self.card_color = Some(color);
         self
     }
 
     /// Set the parent track color (for nested folder gradient interpolation)
     #[must_use]
-    pub fn parent_color(mut self, color: Color32) -> Self {
+    pub const fn parent_color(mut self, color: Color32) -> Self {
         self.parent_color = Some(color);
         self
     }
 
     /// Set whether the name is editable
     #[must_use]
-    pub fn editable(mut self, editable: bool) -> Self {
+    pub const fn editable(mut self, editable: bool) -> Self {
         self.editable = editable;
         self
     }
 
     /// Set whether to show control buttons
     #[must_use]
-    pub fn show_controls(mut self, show: bool) -> Self {
+    pub const fn show_controls(mut self, show: bool) -> Self {
         self.show_controls = show;
         self
     }
 
     /// Set compact mode (smaller controls)
     #[must_use]
-    pub fn compact(mut self, compact: bool) -> Self {
+    pub const fn compact(mut self, compact: bool) -> Self {
         self.compact = compact;
         self
     }
 
     /// Set whether this is a folder track
     #[must_use]
-    pub fn is_folder(mut self, is_folder: bool) -> Self {
+    pub const fn is_folder(mut self, is_folder: bool) -> Self {
         self.is_folder = is_folder;
         self
     }
 
     /// Set indentation level for nested tracks
     #[must_use]
-    pub fn indent_level(mut self, level: usize) -> Self {
+    pub const fn indent_level(mut self, level: usize) -> Self {
         self.indent_level = level;
         self
     }
@@ -192,7 +193,7 @@ impl TrackHeader {
         collapsed: &mut bool,
         theme: &Theme,
     ) -> TrackHeaderResponse {
-        let track_color = self.color.unwrap_or(theme.primary());
+        let track_color = self.color.unwrap_or_else(|| theme.primary());
         let button_size = if self.compact { 20.0 } else { 24.0 };
         let spacing = if self.compact { 2.0 } else { 4.0 };
         let color_bar_width = if self.compact { 3.0 } else { 4.0 };
@@ -267,7 +268,7 @@ impl TrackHeader {
                         // Vertical gradient: parent color (or theme primary) → track color
                         // Root folders: primary → self
                         // Child folders: parent → self
-                        let gradient_start = self.parent_color.unwrap_or(theme.primary());
+                        let gradient_start = self.parent_color.unwrap_or_else(|| theme.primary());
                         let top_color = Color32::from_rgba_unmultiplied(
                             gradient_start.r(),
                             gradient_start.g(),
@@ -289,10 +290,10 @@ impl TrackHeader {
                             let step_color = lerp_color(top_color, bottom_color, t);
 
                             let step_rect = egui::Rect::from_min_max(
-                                egui::Pos2::new(rect.min.x, rect.min.y + i as f32 * step_height),
+                                egui::Pos2::new(rect.min.x, (i as f32).mul_add(step_height, rect.min.y)),
                                 egui::Pos2::new(
                                     rect.max.x,
-                                    rect.min.y + (i + 1) as f32 * step_height,
+                                    ((i + 1) as f32).mul_add(step_height, rect.min.y),
                                 ),
                             );
                             painter.rect_filled(step_rect, 0.0, step_color);
@@ -340,7 +341,7 @@ impl TrackHeader {
                         // Track name - editable text or label
                         if self.editable {
                             // Get card background color for text edit
-                            let card_bg = self.card_color.unwrap_or(theme.muted());
+                            let card_bg = self.card_color.unwrap_or_else(|| theme.muted());
 
                             // Calculate available width
                             let used_width = horizontal_padding * 2.0

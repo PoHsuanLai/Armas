@@ -161,63 +161,63 @@ impl TransportControl {
 
     /// Set the playback state
     #[must_use]
-    pub fn state(mut self, state: TransportState) -> Self {
+    pub const fn state(mut self, state: TransportState) -> Self {
         self.state = state;
         self
     }
 
     /// Set the current time in seconds
     #[must_use]
-    pub fn current_time(mut self, time: f64) -> Self {
+    pub const fn current_time(mut self, time: f64) -> Self {
         self.current_time = time;
         self
     }
 
     /// Set the tempo in BPM
     #[must_use]
-    pub fn tempo(mut self, tempo: f32) -> Self {
+    pub const fn tempo(mut self, tempo: f32) -> Self {
         self.tempo = tempo;
         self
     }
 
     /// Set the time signature (numerator, denominator)
     #[must_use]
-    pub fn time_signature(mut self, numerator: u8, denominator: u8) -> Self {
+    pub const fn time_signature(mut self, numerator: u8, denominator: u8) -> Self {
         self.time_signature = (numerator, denominator);
         self
     }
 
     /// Set loop enabled state
     #[must_use]
-    pub fn loop_enabled(mut self, enabled: bool) -> Self {
+    pub const fn loop_enabled(mut self, enabled: bool) -> Self {
         self.loop_enabled = enabled;
         self
     }
 
     /// Set metronome enabled state
     #[must_use]
-    pub fn metronome_enabled(mut self, enabled: bool) -> Self {
+    pub const fn metronome_enabled(mut self, enabled: bool) -> Self {
         self.metronome_enabled = enabled;
         self
     }
 
     /// Set button color
     #[must_use]
-    pub fn button_color(mut self, color: Color32) -> Self {
+    pub const fn button_color(mut self, color: Color32) -> Self {
         self.button_color = Some(color);
         self
     }
 
     /// Set button visibility configuration
     #[must_use]
-    pub fn buttons(mut self, buttons: TransportButtons) -> Self {
+    pub const fn buttons(mut self, buttons: TransportButtons) -> Self {
         self.buttons = buttons;
         self
     }
 
     /// Set the width of the transport (None = fill available width)
     #[must_use]
-    pub fn width(mut self, width: f32) -> Self {
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
@@ -491,7 +491,7 @@ impl TransportControl {
     }
 
     /// Handle play/pause button interaction
-    fn handle_play_pause_click(&mut self, play_clicked: &mut bool, pause_clicked: &mut bool) {
+    const fn handle_play_pause_click(&mut self, play_clicked: &mut bool, pause_clicked: &mut bool) {
         match self.state {
             TransportState::Playing | TransportState::Recording => {
                 *pause_clicked = true;

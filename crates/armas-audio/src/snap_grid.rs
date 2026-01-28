@@ -51,7 +51,7 @@ pub struct SnapGrid {
 impl SnapGrid {
     /// Create a new snap grid
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             beat_width: 60.0,
             measures: 16,
@@ -71,21 +71,21 @@ impl SnapGrid {
 
     /// Set pixels per beat
     #[must_use]
-    pub fn beat_width(mut self, width: f32) -> Self {
+    pub const fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width.max(1.0);
         self
     }
 
     /// Set number of measures
     #[must_use]
-    pub fn measures(mut self, measures: u32) -> Self {
+    pub const fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set beats per measure
     #[must_use]
-    pub fn beats_per_measure(mut self, beats: u32) -> Self {
+    pub const fn beats_per_measure(mut self, beats: u32) -> Self {
         self.beats_per_measure = beats;
         self
     }
@@ -100,63 +100,63 @@ impl SnapGrid {
 
     /// Show or hide beat lines
     #[must_use]
-    pub fn show_beats(mut self, show: bool) -> Self {
+    pub const fn show_beats(mut self, show: bool) -> Self {
         self.show_beats = show;
         self
     }
 
     /// Show or hide measure lines (downbeats)
     #[must_use]
-    pub fn show_measures(mut self, show: bool) -> Self {
+    pub const fn show_measures(mut self, show: bool) -> Self {
         self.show_measures = show;
         self
     }
 
     /// Show or hide subdivision lines
     #[must_use]
-    pub fn show_subdivisions(mut self, show: bool) -> Self {
+    pub const fn show_subdivisions(mut self, show: bool) -> Self {
         self.show_subdivisions = show;
         self
     }
 
     /// Set custom color for beat lines
     #[must_use]
-    pub fn beat_color(mut self, color: Color32) -> Self {
+    pub const fn beat_color(mut self, color: Color32) -> Self {
         self.beat_color = Some(color);
         self
     }
 
     /// Set custom color for measure lines
     #[must_use]
-    pub fn measure_color(mut self, color: Color32) -> Self {
+    pub const fn measure_color(mut self, color: Color32) -> Self {
         self.measure_color = Some(color);
         self
     }
 
     /// Set custom color for subdivision lines
     #[must_use]
-    pub fn subdivision_color(mut self, color: Color32) -> Self {
+    pub const fn subdivision_color(mut self, color: Color32) -> Self {
         self.subdivision_color = Some(color);
         self
     }
 
     /// Set opacity for beat lines (0.0 to 1.0)
     #[must_use]
-    pub fn beat_opacity(mut self, opacity: f32) -> Self {
+    pub const fn beat_opacity(mut self, opacity: f32) -> Self {
         self.beat_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Set opacity for measure lines (0.0 to 1.0)
     #[must_use]
-    pub fn measure_opacity(mut self, opacity: f32) -> Self {
+    pub const fn measure_opacity(mut self, opacity: f32) -> Self {
         self.measure_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Set opacity for subdivision lines (0.0 to 1.0)
     #[must_use]
-    pub fn subdivision_opacity(mut self, opacity: f32) -> Self {
+    pub const fn subdivision_opacity(mut self, opacity: f32) -> Self {
         self.subdivision_opacity = opacity.clamp(0.0, 1.0);
         self
     }
@@ -189,7 +189,7 @@ impl SnapGrid {
 
             // Draw all grid lines
             for i in 0..=total_subdivisions {
-                let x = rect.min.x + i as f32 * subdivision_width;
+                let x = (i as f32).mul_add(subdivision_width, rect.min.x);
 
                 let is_measure = i % (self.beats_per_measure * self.subdivision) == 0;
                 let is_beat = i % self.subdivision == 0;
@@ -269,7 +269,7 @@ impl SnapGrid {
             // Draw all grid lines - calculate from content_rect, but only draw if in clip
             for i in 0..=total_subdivisions {
                 // X position relative to content origin (with scroll offset)
-                let x = content_rect.min.x + i as f32 * subdivision_width;
+                let x = (i as f32).mul_add(subdivision_width, content_rect.min.x);
 
                 // Skip if outside visible area (clip rect)
                 if x < clip.min.x - 1.0 || x > clip.max.x + 1.0 {

@@ -120,13 +120,13 @@ impl RetroGrid {
         let horizon_y = rect.height().mul_add(0.6, rect.top());
 
         // Draw horizontal lines (perspective grid)
-        let num_h_lines = ((rect.bottom() - horizon_y) / (self.cell_size / 4.0)) as usize;
+        let num_horizontal_lines = ((rect.bottom() - horizon_y) / (self.cell_size / 4.0)) as usize;
 
-        for i in 0..num_h_lines {
-            let t = i as f32 / num_h_lines as f32;
+        for i in 0..num_horizontal_lines {
+            let t = i as f32 / num_horizontal_lines as f32;
 
             let animated_t = if self.animate {
-                (t + animation_offset / (self.cell_size * num_h_lines as f32)) % 1.0
+                (t + animation_offset / (self.cell_size * num_horizontal_lines as f32)) % 1.0
             } else {
                 t
             };
@@ -152,10 +152,10 @@ impl RetroGrid {
 
         // Draw vertical lines (converging to vanishing point)
         let vanishing_point = Pos2::new(rect.center().x, horizon_y);
-        let num_v_lines = (rect.width() / self.cell_size) as usize;
+        let num_vertical_lines = (rect.width() / self.cell_size) as usize;
 
-        for i in 0..=num_v_lines {
-            let t = i as f32 / num_v_lines as f32 - 0.5;
+        for i in 0..=num_vertical_lines {
+            let t = i as f32 / num_vertical_lines as f32 - 0.5;
             let x = (i as f32).mul_add(self.cell_size, rect.left());
 
             let bottom_point = Pos2::new(x, rect.bottom());

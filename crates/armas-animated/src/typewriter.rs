@@ -49,6 +49,7 @@ impl Typewriter {
     }
 
     /// Set unique ID for this typewriter (required for multiple instances)
+    #[must_use]
     pub fn id(mut self, id: impl std::hash::Hash) -> Self {
         self.id = Id::new(id);
         self
@@ -125,7 +126,7 @@ impl Typewriter {
             }
         } else if is_complete && !self.loop_mode {
             // Mark loop start time when complete (for delay)
-            if state.loop_start_time == state.start_time {
+            if (state.loop_start_time - state.start_time).abs() < f32::EPSILON {
                 state.loop_start_time = time;
             }
         }
@@ -202,6 +203,7 @@ impl WordTypewriter {
         }
     }
 
+    #[must_use]
     /// Set unique ID for this typewriter (required for multiple instances)
     pub fn id(mut self, id: impl std::hash::Hash) -> Self {
         self.id = Id::new(id);
@@ -268,7 +270,7 @@ impl WordTypewriter {
             }
         } else if is_complete && !self.loop_mode {
             // Mark loop start time when complete (for delay)
-            if state.loop_start_time == state.start_time {
+            if (state.loop_start_time - state.start_time).abs() < f32::EPSILON {
                 state.loop_start_time = time;
             }
         }

@@ -112,7 +112,7 @@ pub fn render_icon(painter: &Painter, rect: Rect, icon_data: &IconData, color: C
 /// # }
 /// ```
 pub struct Icon<'a> {
-    icon_data: &'a IconData,
+    data: &'a IconData,
     size: f32,
     color: Color32,
 }
@@ -122,7 +122,7 @@ impl<'a> Icon<'a> {
     #[must_use]
     pub const fn new(icon_data: &'a IconData) -> Self {
         Self {
-            icon_data,
+            data: icon_data,
             size: 24.0,
             color: Color32::WHITE,
         }
@@ -147,11 +147,11 @@ impl<'a> Icon<'a> {
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), Sense::click());
 
         if ui.is_rect_visible(rect) {
-            if self.icon_data.vertices.is_empty() {
+            if self.data.vertices.is_empty() {
                 // Fallback: draw a placeholder if icon data is empty
                 ui.painter().rect_filled(rect, 2.0, Color32::from_gray(100));
             } else {
-                render_icon(ui.painter(), rect, self.icon_data, self.color);
+                render_icon(ui.painter(), rect, self.data, self.color);
             }
         }
 

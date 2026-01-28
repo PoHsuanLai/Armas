@@ -35,7 +35,7 @@ pub struct XYPadResponse {
 impl XYPadResponse {
     /// Check if values changed this frame
     #[must_use]
-    pub fn changed(&self) -> bool {
+    pub const fn changed(&self) -> bool {
         self.changed
     }
 }
@@ -100,7 +100,7 @@ pub struct XYPad<'a> {
 
 impl<'a> XYPad<'a> {
     /// Create a new XY pad
-    pub fn new(x: &'a mut f32, y: &'a mut f32) -> Self {
+    pub const fn new(x: &'a mut f32, y: &'a mut f32) -> Self {
         Self {
             x,
             y,
@@ -121,6 +121,7 @@ impl<'a> XYPad<'a> {
     }
 
     /// Set unique ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -128,25 +129,27 @@ impl<'a> XYPad<'a> {
 
     /// Set pad size (width and height)
     #[must_use]
-    pub fn size(mut self, size: f32) -> Self {
+    pub const fn size(mut self, size: f32) -> Self {
         self.size = size.max(100.0);
         self
     }
 
     /// Set visual variant
     #[must_use]
-    pub fn variant(mut self, variant: XYPadVariant) -> Self {
+    pub const fn variant(mut self, variant: XYPadVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set X axis label
+    #[must_use]
     pub fn x_label(mut self, label: impl Into<String>) -> Self {
         self.x_label = Some(label.into());
         self
     }
 
     /// Set Y axis label
+    #[must_use]
     pub fn y_label(mut self, label: impl Into<String>) -> Self {
         self.y_label = Some(label.into());
         self
@@ -154,63 +157,63 @@ impl<'a> XYPad<'a> {
 
     /// Show crosshair lines
     #[must_use]
-    pub fn show_crosshair(mut self, show: bool) -> Self {
+    pub const fn show_crosshair(mut self, show: bool) -> Self {
         self.show_crosshair = show;
         self
     }
 
     /// Show numeric values
     #[must_use]
-    pub fn show_values(mut self, show: bool) -> Self {
+    pub const fn show_values(mut self, show: bool) -> Self {
         self.show_values = show;
         self
     }
 
     /// Set handle size
     #[must_use]
-    pub fn handle_size(mut self, size: f32) -> Self {
+    pub const fn handle_size(mut self, size: f32) -> Self {
         self.handle_size = size.max(8.0);
         self
     }
 
     /// Set glow intensity
     #[must_use]
-    pub fn glow_intensity(mut self, intensity: f32) -> Self {
+    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
     /// Enable velocity mode (Ctrl/Cmd for fine control). Default: true
     #[must_use]
-    pub fn velocity_mode(mut self, enabled: bool) -> Self {
+    pub const fn velocity_mode(mut self, enabled: bool) -> Self {
         self.velocity_mode = enabled;
         self
     }
 
     /// Set sensitivity for velocity mode. Default: 1.0
     #[must_use]
-    pub fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
+    pub const fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
         self.velocity_sensitivity = sensitivity.max(0.1);
         self
     }
 
     /// Set default X value for double-click reset
     #[must_use]
-    pub fn default_x(mut self, value: f32) -> Self {
+    pub const fn default_x(mut self, value: f32) -> Self {
         self.default_x = Some(value.clamp(0.0, 1.0));
         self
     }
 
     /// Set default Y value for double-click reset
     #[must_use]
-    pub fn default_y(mut self, value: f32) -> Self {
+    pub const fn default_y(mut self, value: f32) -> Self {
         self.default_y = Some(value.clamp(0.0, 1.0));
         self
     }
 
     /// Set default values for both axes (convenience method)
     #[must_use]
-    pub fn default_values(mut self, x: f32, y: f32) -> Self {
+    pub const fn default_values(mut self, x: f32, y: f32) -> Self {
         self.default_x = Some(x.clamp(0.0, 1.0));
         self.default_y = Some(y.clamp(0.0, 1.0));
         self
@@ -273,10 +276,10 @@ impl<'a> XYPad<'a> {
             if let Some(pos) = response.interact_pointer_pos() {
                 drag_state
                     .drag_x
-                    .begin(*self.x as f64, pos.x as f64, use_velocity);
+                    .begin(f64::from(*self.x), f64::from(pos.x), use_velocity);
                 drag_state
                     .drag_y
-                    .begin(*self.y as f64, pos.y as f64, use_velocity);
+                    .begin(f64::from(*self.y), f64::from(pos.y), use_velocity);
             }
         }
 
@@ -287,22 +290,21 @@ impl<'a> XYPad<'a> {
                     let delta_x =
                         drag_state
                             .drag_x
-                            .update_tracked(pos.x as f64, 1.0, self.size as f64);
+                            .update_tracked(f64::from(pos.x), 1.0, f64::from(self.size));
                     let delta_y =
                         drag_state
                             .drag_y
-                            .update_tracked(pos.y as f64, 1.0, self.size as f64);
+                            .update_tracked(f64::from(pos.y), 1.0, f64::from(self.size));
 
                     *self.x = (*self.x + delta_x as f32).clamp(0.0, 1.0);
                     // Y is inverted (up = higher value)
                     *self.y = (*self.y - delta_y as f32).clamp(0.0, 1.0);
-                    response.mark_changed();
                 } else {
                     // Absolute mode: jump to cursor position
                     *self.x = ((pos.x - rect.min.x) / rect.width()).clamp(0.0, 1.0);
                     *self.y = 1.0 - ((pos.y - rect.min.y) / rect.height()).clamp(0.0, 1.0);
-                    response.mark_changed();
                 }
+                response.mark_changed();
             }
         }
 
@@ -317,7 +319,7 @@ impl<'a> XYPad<'a> {
 
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
-            let corner_radius = theme.spacing.corner_radius as f32;
+            let corner_radius = f32::from(theme.spacing.corner_radius);
 
             // Draw based on variant
             match self.variant {
@@ -334,8 +336,8 @@ impl<'a> XYPad<'a> {
 
             // Draw crosshair
             if self.show_crosshair {
-                let handle_x = rect.min.x + *self.x * rect.width();
-                let handle_y = rect.max.y - *self.y * rect.height();
+                let handle_x = (*self.x).mul_add(rect.width(), rect.min.x);
+                let handle_y = (*self.y).mul_add(-rect.height(), rect.max.y);
 
                 let crosshair_color = theme.muted_foreground().gamma_multiply(0.3);
                 painter.line_segment(
@@ -355,8 +357,8 @@ impl<'a> XYPad<'a> {
             }
 
             // Draw handle
-            let handle_x = rect.min.x + *self.x * rect.width();
-            let handle_y = rect.max.y - *self.y * rect.height();
+            let handle_x = (*self.x).mul_add(rect.width(), rect.min.x);
+            let handle_y = (*self.y).mul_add(-rect.height(), rect.max.y);
             let handle_pos = Pos2::new(handle_x, handle_y);
 
             // Handle glow
@@ -482,7 +484,7 @@ impl<'a> XYPad<'a> {
         for i in 0..3 {
             let offset = (i + 1) as f32 * 0.5;
             let shadow_rect = rect.translate(Vec2::new(0.0, offset));
-            let alpha = (20.0 - i as f32 * 5.0) as u8;
+            let alpha = (i as f32).mul_add(-5.0, 20.0) as u8;
             let shadow_color = Color32::from_rgba_unmultiplied(0, 0, 0, alpha);
             painter.rect_filled(shadow_rect, corner_radius, shadow_color);
         }

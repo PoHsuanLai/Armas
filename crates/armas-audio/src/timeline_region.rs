@@ -30,7 +30,7 @@ impl RegionVariant {
 
     /// Get default height for the variant
     #[must_use]
-    pub fn default_height(&self) -> f32 {
+    pub const fn default_height(&self) -> f32 {
         match self {
             Self::Selection => 60.0,
             Self::Loop => 50.0,
@@ -40,7 +40,7 @@ impl RegionVariant {
 
     /// Get region opacity
     #[must_use]
-    pub fn region_opacity(&self) -> u8 {
+    pub const fn region_opacity(&self) -> u8 {
         match self {
             Self::Selection | Self::Loop | Self::Punch => 80,
         }
@@ -117,7 +117,7 @@ struct RegionInteraction {
 
 impl<'a> TimelineRegion<'a> {
     /// Create a new timeline region with default Selection variant
-    pub fn new(start: &'a mut f32, end: &'a mut f32) -> Self {
+    pub const fn new(start: &'a mut f32, end: &'a mut f32) -> Self {
         Self {
             start,
             end,
@@ -140,12 +140,13 @@ impl<'a> TimelineRegion<'a> {
 
     /// Set the region variant
     #[must_use]
-    pub fn variant(mut self, variant: RegionVariant) -> Self {
+    pub const fn variant(mut self, variant: RegionVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set unique ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -153,84 +154,84 @@ impl<'a> TimelineRegion<'a> {
 
     /// Set pixels per beat (must match Timeline)
     #[must_use]
-    pub fn beat_width(mut self, width: f32) -> Self {
+    pub const fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width.max(1.0);
         self
     }
 
     /// Set number of measures
     #[must_use]
-    pub fn measures(mut self, measures: u32) -> Self {
+    pub const fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set beats per measure
     #[must_use]
-    pub fn beats_per_measure(mut self, beats: u32) -> Self {
+    pub const fn beats_per_measure(mut self, beats: u32) -> Self {
         self.beats_per_measure = beats;
         self
     }
 
     /// Set height of the marker component
     #[must_use]
-    pub fn height(mut self, height: f32) -> Self {
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = Some(height.max(20.0));
         self
     }
 
     /// Enable or disable the region
     #[must_use]
-    pub fn enabled(mut self, enabled: bool) -> Self {
+    pub const fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
     /// Enable snap to grid
     #[must_use]
-    pub fn snap_to_grid(mut self, snap: bool) -> Self {
+    pub const fn snap_to_grid(mut self, snap: bool) -> Self {
         self.snap_to_grid = snap;
         self
     }
 
     /// Set grid division for snapping (e.g., 1.0 = whole beats, 0.25 = 16th notes)
     #[must_use]
-    pub fn grid_division(mut self, division: f32) -> Self {
+    pub const fn grid_division(mut self, division: f32) -> Self {
         self.grid_division = division.max(0.0625);
         self
     }
 
     /// Set custom color for the region
     #[must_use]
-    pub fn color(mut self, color: Color32) -> Self {
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set handle width
     #[must_use]
-    pub fn handle_width(mut self, width: f32) -> Self {
+    pub const fn handle_width(mut self, width: f32) -> Self {
         self.handle_width = width.max(4.0);
         self
     }
 
     /// Show or hide time labels on handles
     #[must_use]
-    pub fn show_labels(mut self, show: bool) -> Self {
+    pub const fn show_labels(mut self, show: bool) -> Self {
         self.show_labels = show;
         self
     }
 
     /// Set clip rect for rendering
     #[must_use]
-    pub fn clip_rect(mut self, clip_rect: Rect) -> Self {
+    pub const fn clip_rect(mut self, clip_rect: Rect) -> Self {
         self.clip_rect = Some(clip_rect);
         self
     }
 
     /// Set vertical range as percentages (0.0 to 1.0)
     #[must_use]
-    pub fn vertical_range(mut self, top_percent: f32, bottom_percent: f32) -> Self {
+    pub const fn vertical_range(mut self, top_percent: f32, bottom_percent: f32) -> Self {
         self.vertical_range = (top_percent.clamp(0.0, 1.0), bottom_percent.clamp(0.0, 1.0));
         self
     }
@@ -361,11 +362,10 @@ impl<'a> TimelineRegion<'a> {
 
     fn get_painter(&self, ui: &mut Ui) -> egui::Painter {
         let base_painter = ui.painter();
-        if let Some(clip) = self.clip_rect {
-            base_painter.with_clip_rect(clip)
-        } else {
-            base_painter.clone()
-        }
+        self.clip_rect.map_or_else(
+            || base_painter.clone(),
+            |clip| base_painter.with_clip_rect(clip),
+        )
     }
 
     fn calculate_handle_positions(&self, rect: &Rect, timeline_width: f32) -> (f32, f32) {
@@ -509,25 +509,32 @@ impl<'a> TimelineRegion<'a> {
         let stroke_width = 1.5;
 
         // Top edge
-        let mut x = rect.min.x;
-        while x < rect.max.x {
+        let width = rect.width();
+        let dash_cycle = dash_len + gap_len;
+        let num_dashes = (width / dash_cycle).ceil() as usize;
+        for i in 0..num_dashes {
+            let x = (i as f32).mul_add(dash_cycle, rect.min.x);
+            if x >= rect.max.x {
+                break;
+            }
             let end_x = (x + dash_len).min(rect.max.x);
             painter.line_segment(
                 [Pos2::new(x, rect.min.y), Pos2::new(end_x, rect.min.y)],
                 egui::Stroke::new(stroke_width, color),
             );
-            x += dash_len + gap_len;
         }
 
         // Bottom edge
-        x = rect.min.x;
-        while x < rect.max.x {
+        for i in 0..num_dashes {
+            let x = (i as f32).mul_add(dash_cycle, rect.min.x);
+            if x >= rect.max.x {
+                break;
+            }
             let end_x = (x + dash_len).min(rect.max.x);
             painter.line_segment(
                 [Pos2::new(x, rect.max.y), Pos2::new(end_x, rect.max.y)],
                 egui::Stroke::new(stroke_width, color),
             );
-            x += dash_len + gap_len;
         }
     }
 
@@ -549,7 +556,7 @@ impl<'a> TimelineRegion<'a> {
             }
         };
 
-        painter.rect_filled(rect, theme.spacing.corner_radius_small as f32, bg_color);
+        painter.rect_filled(rect, f32::from(theme.spacing.corner_radius_small), bg_color);
 
         // Handle border
         let border_width = if self.variant == RegionVariant::Punch {
@@ -564,7 +571,7 @@ impl<'a> TimelineRegion<'a> {
 
         painter.rect_stroke(
             rect,
-            theme.spacing.corner_radius_small as f32,
+            f32::from(theme.spacing.corner_radius_small),
             egui::Stroke::new(border_width, border_color),
             egui::StrokeKind::Outside,
         );
@@ -737,7 +744,7 @@ impl<'a> TimelineRegion<'a> {
                     Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
                 painter.rect_stroke(
                     rect.expand(offset),
-                    theme.spacing.corner_radius_small as f32,
+                    f32::from(theme.spacing.corner_radius_small),
                     egui::Stroke::new(
                         if self.variant == RegionVariant::Punch {
                             2.0

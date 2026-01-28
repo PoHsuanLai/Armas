@@ -47,7 +47,7 @@ pub struct MPENote {
 impl MPENote {
     /// Create a new MPE note with default expression values
     #[must_use]
-    pub fn new(note: u8) -> Self {
+    pub const fn new(note: u8) -> Self {
         Self {
             note,
             velocity: 0.8,
@@ -59,7 +59,7 @@ impl MPENote {
 
     /// Create with specific velocity
     #[must_use]
-    pub fn with_velocity(note: u8, velocity: f32) -> Self {
+    pub const fn with_velocity(note: u8, velocity: f32) -> Self {
         Self {
             note,
             velocity: velocity.clamp(0.0, 1.0),
@@ -71,21 +71,21 @@ impl MPENote {
 
     /// Set pressure (aftertouch)
     #[must_use]
-    pub fn pressure(mut self, pressure: f32) -> Self {
+    pub const fn pressure(mut self, pressure: f32) -> Self {
         self.pressure = pressure.clamp(0.0, 1.0);
         self
     }
 
     /// Set pitch bend in semitones
     #[must_use]
-    pub fn pitch_bend(mut self, semitones: f32) -> Self {
+    pub const fn pitch_bend(mut self, semitones: f32) -> Self {
         self.pitch_bend = semitones;
         self
     }
 
     /// Set slide position (0.0-1.0)
     #[must_use]
-    pub fn slide(mut self, slide: f32) -> Self {
+    pub const fn slide(mut self, slide: f32) -> Self {
         self.slide = slide.clamp(0.0, 1.0);
         self
     }
@@ -109,7 +109,7 @@ pub struct MPEKey {
 impl MPEKey {
     /// Create a new piano key identifier
     #[must_use]
-    pub fn new(note: u8, is_black: bool) -> Self {
+    pub const fn new(note: u8, is_black: bool) -> Self {
         Self { note, is_black }
     }
 
@@ -119,14 +119,14 @@ impl MPEKey {
         const NOTE_NAMES: [&str; 12] = [
             "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
         ];
-        let octave = (self.note / 12) as i32 - 1;
+        let octave = i32::from(self.note / 12) - 1;
         let note_index = (self.note % 12) as usize;
         format!("{}{}", NOTE_NAMES[note_index], octave)
     }
 
     /// Check if a MIDI note number is a black key
     #[must_use]
-    pub fn is_black_key(note: u8) -> bool {
+    pub const fn is_black_key(note: u8) -> bool {
         matches!(note % 12, 1 | 3 | 6 | 8 | 10)
     }
 }
@@ -239,56 +239,56 @@ impl MPEKeyboard {
     // Builder methods
     /// Set the starting MIDI note number (default: 60, middle C)
     #[must_use]
-    pub fn start_note(mut self, note: u8) -> Self {
+    pub const fn start_note(mut self, note: u8) -> Self {
         self.start_note = note;
         self
     }
 
     /// Set the number of octaves to display (default: 2)
     #[must_use]
-    pub fn octaves(mut self, octaves: u8) -> Self {
+    pub const fn octaves(mut self, octaves: u8) -> Self {
         self.octaves = octaves;
         self
     }
 
     /// Set the width of white keys in pixels (default: 40.0)
     #[must_use]
-    pub fn white_key_width(mut self, width: f32) -> Self {
+    pub const fn white_key_width(mut self, width: f32) -> Self {
         self.white_key_width = width;
         self
     }
 
     /// Set the height of white keys in pixels (default: 120.0)
     #[must_use]
-    pub fn white_key_height(mut self, height: f32) -> Self {
+    pub const fn white_key_height(mut self, height: f32) -> Self {
         self.white_key_height = height;
         self
     }
 
     /// Set opacity for white keys (0.0-1.0, default: 0.7)
     #[must_use]
-    pub fn white_key_opacity(mut self, opacity: f32) -> Self {
+    pub const fn white_key_opacity(mut self, opacity: f32) -> Self {
         self.white_key_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Set opacity for black keys (0.0-1.0, default: 0.85)
     #[must_use]
-    pub fn black_key_opacity(mut self, opacity: f32) -> Self {
+    pub const fn black_key_opacity(mut self, opacity: f32) -> Self {
         self.black_key_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Show or hide note labels on the keys (default: true)
     #[must_use]
-    pub fn show_labels(mut self, show: bool) -> Self {
+    pub const fn show_labels(mut self, show: bool) -> Self {
         self.show_labels = show;
         self
     }
 
     /// Set the keyboard orientation (default: Horizontal)
     #[must_use]
-    pub fn orientation(mut self, orientation: MPEOrientation) -> Self {
+    pub const fn orientation(mut self, orientation: MPEOrientation) -> Self {
         self.orientation = orientation;
         self
     }
@@ -308,6 +308,7 @@ impl MPEKeyboard {
     }
 
     /// Set unique ID for state persistence (required for scrollable keyboards)
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -315,7 +316,7 @@ impl MPEKeyboard {
 
     /// Enable scrollable viewport with specified size in pixels
     #[must_use]
-    pub fn scrollable(mut self, viewport_size: f32) -> Self {
+    pub const fn scrollable(mut self, viewport_size: f32) -> Self {
         self.scrollable = true;
         self.viewport_size = Some(viewport_size);
         self
@@ -323,35 +324,35 @@ impl MPEKeyboard {
 
     /// Enable or disable momentum scrolling (default: true)
     #[must_use]
-    pub fn momentum_scrolling(mut self, enabled: bool) -> Self {
+    pub const fn momentum_scrolling(mut self, enabled: bool) -> Self {
         self.momentum_scrolling = enabled;
         self
     }
 
     /// Set momentum damping factor (1.0-20.0, higher = more damping, default: 5.0)
     #[must_use]
-    pub fn momentum_damping(mut self, damping: f64) -> Self {
+    pub const fn momentum_damping(mut self, damping: f64) -> Self {
         self.momentum_damping = damping.clamp(1.0, 20.0);
         self
     }
 
     /// Set pitch bend range in semitones for visualization scaling
     #[must_use]
-    pub fn pitch_bend_range(mut self, semitones: f32) -> Self {
+    pub const fn pitch_bend_range(mut self, semitones: f32) -> Self {
         self.pitch_bend_range = semitones.max(1.0);
         self
     }
 
     /// Set custom fill color for velocity circles
     #[must_use]
-    pub fn circle_fill_color(mut self, color: Color32) -> Self {
+    pub const fn circle_fill_color(mut self, color: Color32) -> Self {
         self.circle_fill_color = Some(color);
         self
     }
 
     /// Set custom outline color for pressure circles
     #[must_use]
-    pub fn circle_outline_color(mut self, color: Color32) -> Self {
+    pub const fn circle_outline_color(mut self, color: Color32) -> Self {
         self.circle_outline_color = Some(color);
         self
     }
@@ -429,7 +430,7 @@ impl MPEKeyboard {
 
         let scroll_state_id = self
             .id
-            .unwrap_or(egui::Id::new("mpe_keyboard"))
+            .unwrap_or_else(|| egui::Id::new("mpe_keyboard"))
             .with("scroll");
         let mut state: MPEScrollState = ui
             .ctx()
@@ -469,7 +470,7 @@ impl MPEKeyboard {
 
         if self.momentum_scrolling && state.is_animating {
             state.offset += state.velocity * dt;
-            state.velocity *= (-self.momentum_damping * dt as f64).exp() as f32;
+            state.velocity *= (-self.momentum_damping * f64::from(dt)).exp() as f32;
 
             if state.velocity.abs() < 1.0 {
                 state.velocity = 0.0;
@@ -600,7 +601,7 @@ impl MPEKeyboard {
             let is_active = self.active_notes.contains_key(&note);
             let is_pressed = is_active || response.is_pointer_button_down_on();
 
-            self.draw_key(KeyDrawParams {
+            self.draw_key(&KeyDrawParams {
                 painter,
                 theme,
                 rect: key_rect,
@@ -671,7 +672,7 @@ impl MPEKeyboard {
             let is_active = self.active_notes.contains_key(&note);
             let is_pressed = is_active || response.is_pointer_button_down_on();
 
-            self.draw_key(KeyDrawParams {
+            self.draw_key(&KeyDrawParams {
                 painter,
                 theme,
                 rect: key_rect,
@@ -699,8 +700,8 @@ impl MPEKeyboard {
         layout: &MPELayout,
         key_rects: &HashMap<u8, Rect>,
     ) {
-        let fill_color = self.circle_fill_color.unwrap_or(theme.primary());
-        let outline_color = self.circle_outline_color.unwrap_or(theme.secondary());
+        let fill_color = self.circle_fill_color.unwrap_or_else(|| theme.primary());
+        let outline_color = self.circle_outline_color.unwrap_or_else(|| theme.secondary());
         let max_radius = self.white_key_width * self.max_circle_radius_scale;
 
         for (note, mpe_note) in &self.active_notes {
@@ -715,9 +716,8 @@ impl MPEKeyboard {
                 self.calculate_circle_position(mpe_note, base_rect, layout, key_rects);
 
             // Calculate circle radii based on velocity and pressure
-            let velocity_radius = self.min_circle_radius + mpe_note.velocity * max_radius;
-            let pressure_radius = self.min_circle_radius
-                + mpe_note.velocity * max_radius
+            let velocity_radius = mpe_note.velocity.mul_add(max_radius, self.min_circle_radius);
+            let pressure_radius = mpe_note.velocity.mul_add(max_radius, self.min_circle_radius)
                 + mpe_note.pressure * max_radius * 0.5;
 
             // Draw outer circle (pressure) - outline only
@@ -732,7 +732,7 @@ impl MPEKeyboard {
 
             // Draw a subtle glow around the circle
             for i in 0..3 {
-                let glow_radius = pressure_radius + (i + 1) as f32 * 2.0;
+                let glow_radius = ((i + 1) as f32).mul_add(2.0, pressure_radius);
                 let alpha = ((1.0 - i as f32 / 3.0) * 30.0) as u8;
                 let glow_color = Color32::from_rgba_unmultiplied(
                     fill_color.r(),
@@ -768,12 +768,12 @@ impl MPEKeyboard {
         if layout.is_horizontal {
             // Horizontal keyboard: X = pitch bend, Y = slide
             let x = base_rect.center().x + pitch_bend_offset;
-            let y = base_rect.max.y - slide_normalized * base_rect.height();
+            let y = slide_normalized.mul_add(-base_rect.height(), base_rect.max.y);
             Pos2::new(x, y)
         } else {
             // Vertical keyboard: Y = pitch bend, X = slide
             let y = base_rect.center().y - pitch_bend_offset; // Inverted for vertical
-            let x = base_rect.min.x + slide_normalized * base_rect.width();
+            let x = slide_normalized.mul_add(base_rect.width(), base_rect.min.x);
             Pos2::new(x, y)
         }
     }
@@ -791,14 +791,14 @@ impl MPEKeyboard {
         facing_left: bool,
     ) -> Rect {
         if layout.is_horizontal {
-            let key_x = rect.min.x + scroll_offset + white_key_index as f32 * self.white_key_width;
+            let key_x = (white_key_index as f32).mul_add(self.white_key_width, rect.min.x + scroll_offset);
             Rect::from_min_size(
                 Pos2::new(key_x, rect.min.y),
                 Vec2::new(self.white_key_width, self.white_key_height),
             )
         } else {
             let key_y =
-                rect.max.y - scroll_offset - (white_key_index + 1) as f32 * self.white_key_width;
+                ((white_key_index + 1) as f32).mul_add(-self.white_key_width, rect.max.y - scroll_offset);
             let key_x = if facing_left {
                 rect.max.x - self.white_key_height
             } else {
@@ -821,7 +821,7 @@ impl MPEKeyboard {
         facing_left: bool,
     ) -> Rect {
         if layout.is_horizontal {
-            let key_x = rect.min.x + scroll_offset + white_key_index as f32 * self.white_key_width
+            let key_x = (white_key_index as f32).mul_add(self.white_key_width, rect.min.x + scroll_offset)
                 - layout.black_key_size * 0.5;
             let key_y = if facing_up {
                 rect.max.y - layout.black_key_depth
@@ -833,9 +833,7 @@ impl MPEKeyboard {
                 Vec2::new(layout.black_key_size, layout.black_key_depth),
             )
         } else {
-            let key_y = rect.max.y
-                - scroll_offset
-                - white_key_index as f32 * self.white_key_width
+            let key_y = (white_key_index as f32).mul_add(-self.white_key_width, rect.max.y - scroll_offset)
                 - layout.black_key_size * 0.5;
             let key_x = if facing_left {
                 rect.max.x - layout.black_key_depth
@@ -849,7 +847,7 @@ impl MPEKeyboard {
         }
     }
 
-    fn white_key_corner_radius(
+    const fn white_key_corner_radius(
         &self,
         is_horizontal: bool,
         facing_up: bool,
@@ -888,7 +886,7 @@ impl MPEKeyboard {
         }
     }
 
-    fn black_key_corner_radius(
+    const fn black_key_corner_radius(
         &self,
         is_horizontal: bool,
         facing_up: bool,
@@ -901,7 +899,7 @@ impl MPEKeyboard {
     // Key Drawing
     // ========================================================================
 
-    fn draw_key(&self, params: KeyDrawParams) {
+    fn draw_key(&self, params: &KeyDrawParams) {
         // Calculate opacity based on state
         let opacity = if params.is_pressed {
             params.base_opacity * 0.85
@@ -1031,13 +1029,13 @@ pub struct MPEKeyboardResponse {
 impl MPEKeyboardResponse {
     /// Check if any keys were clicked this frame
     #[must_use]
-    pub fn has_clicks(&self) -> bool {
+    pub const fn has_clicks(&self) -> bool {
         !self.clicked_keys.is_empty()
     }
 
     /// Check if any keys were released this frame
     #[must_use]
-    pub fn has_releases(&self) -> bool {
+    pub const fn has_releases(&self) -> bool {
         !self.released_keys.is_empty()
     }
 }

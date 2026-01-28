@@ -65,7 +65,7 @@ impl Default for Slot<'_> {
 impl<'a> Slot<'a> {
     /// Create a new empty slot with default dimensions (140x28)
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             name: None,
             bypassed: false,
@@ -77,7 +77,7 @@ impl<'a> Slot<'a> {
 
     /// Set custom width and height
     #[must_use]
-    pub fn size(mut self, width: f32, height: f32) -> Self {
+    pub const fn size(mut self, width: f32, height: f32) -> Self {
         self.width = width;
         self.height = height;
         self
@@ -85,35 +85,35 @@ impl<'a> Slot<'a> {
 
     /// Set width
     #[must_use]
-    pub fn width(mut self, width: f32) -> Self {
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
     }
 
     /// Set height
     #[must_use]
-    pub fn height(mut self, height: f32) -> Self {
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Set the plugin/effect name
     #[must_use]
-    pub fn effect(mut self, name: &'a str) -> Self {
+    pub const fn effect(mut self, name: &'a str) -> Self {
         self.name = Some(name);
         self
     }
 
     /// Set whether the effect is bypassed
     #[must_use]
-    pub fn bypassed(mut self, bypassed: bool) -> Self {
+    pub const fn bypassed(mut self, bypassed: bool) -> Self {
         self.bypassed = bypassed;
         self
     }
 
     /// Set the activity level (0.0 to 1.0)
     #[must_use]
-    pub fn level(mut self, level: f32) -> Self {
+    pub const fn level(mut self, level: f32) -> Self {
         self.level = level.clamp(0.0, 1.0);
         self
     }
@@ -127,17 +127,18 @@ impl<'a> Slot<'a> {
         let filled = self.name.is_some();
 
         // Determine colors
-        let (mut box_color, mut border_color, mut text_color) = if let Some(name) = self.name {
-            let effect_color = get_effect_color(name, theme);
-            let border = if self.bypassed {
-                theme.muted_foreground()
-            } else {
-                effect_color.gamma_multiply(1.3)
-            };
-            (effect_color, border, theme.foreground())
-        } else {
-            (theme.card(), theme.border(), theme.muted_foreground())
-        };
+        let (mut box_color, mut border_color, mut text_color) = self.name.map_or_else(
+            || (theme.card(), theme.border(), theme.muted_foreground()),
+            |name| {
+                let effect_color = get_effect_color(name, theme);
+                let border = if self.bypassed {
+                    theme.muted_foreground()
+                } else {
+                    effect_color.gamma_multiply(1.3)
+                };
+                (effect_color, border, theme.foreground())
+            },
+        );
 
         // Hover effect - brighten box, border, and text (especially for empty slots with "+")
         if response.hovered() {
@@ -189,7 +190,7 @@ impl<'a> Slot<'a> {
             const MINI_METER_WIDTH: f32 = 2.0;
             let meter_rect = egui::Rect::from_min_size(
                 egui::pos2(
-                    rect.max.x - MINI_METER_WIDTH - theme.spacing.sm * 0.8,
+                    theme.spacing.sm.mul_add(-0.8, rect.max.x - MINI_METER_WIDTH),
                     rect.min.y + 4.0,
                 ),
                 egui::vec2(MINI_METER_WIDTH, self.height - 8.0),

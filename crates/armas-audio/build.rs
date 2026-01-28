@@ -71,6 +71,7 @@ fn main() {
 }
 
 fn parse_svg(path: &Path) -> Result<(String, String, f32, f32), Box<dyn std::error::Error>> {
+    use std::fmt::Write;
     let svg_data = fs::read_to_string(path)?;
 
     // Extract viewBox dimensions from the raw SVG
@@ -93,7 +94,7 @@ fn parse_svg(path: &Path) -> Result<(String, String, f32, f32), Box<dyn std::err
         if i > 0 {
             vertices_code.push_str(", ");
         }
-        vertices_code.push_str(&format!("({:.2}, {:.2})", vertex[0], vertex[1]));
+        write!(vertices_code, "({:.2}, {:.2})", vertex[0], vertex[1]).unwrap();
     }
 
     // Generate Rust code for indices
@@ -102,7 +103,7 @@ fn parse_svg(path: &Path) -> Result<(String, String, f32, f32), Box<dyn std::err
         if i > 0 {
             indices_code.push_str(", ");
         }
-        indices_code.push_str(&format!("{index}"));
+        write!(indices_code, "{index}").unwrap();
     }
 
     Ok((vertices_code, indices_code, width, height))

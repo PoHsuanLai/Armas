@@ -30,13 +30,13 @@ pub struct MidiData {
 impl MidiData {
     /// Create empty MIDI data (will show simulated pattern)
     #[must_use]
-    pub fn empty() -> Self {
+    pub const fn empty() -> Self {
         Self { notes: Vec::new() }
     }
 
     /// Create MIDI data from notes
     #[must_use]
-    pub fn from_notes(notes: Vec<MidiNote>) -> Self {
+    pub const fn from_notes(notes: Vec<MidiNote>) -> Self {
         Self { notes }
     }
 }
@@ -68,7 +68,7 @@ pub struct AutomationData {
 impl AutomationData {
     /// Create empty automation data (will show simulated curve)
     #[must_use]
-    pub fn empty() -> Self {
+    pub const fn empty() -> Self {
         Self { points: Vec::new() }
     }
 
@@ -78,7 +78,7 @@ impl AutomationData {
     /// If integrating with `audio-automation`, sample the envelope
     /// at regular intervals and pass the results here.
     #[must_use]
-    pub fn from_points(points: Vec<AutomationPoint>) -> Self {
+    pub const fn from_points(points: Vec<AutomationPoint>) -> Self {
         Self { points }
     }
 }
@@ -121,7 +121,7 @@ impl FadeCurve {
             Self::Logarithmic => t.sqrt(),
             Self::SCurve => {
                 // Smoothstep function
-                t * t * (3.0 - 2.0 * t)
+                t * t * 2.0f32.mul_add(-t, 3.0)
             }
         }
     }
@@ -164,14 +164,14 @@ impl FadeSettings {
 
     /// Set fade in curve type
     #[must_use]
-    pub fn fade_in_curve(mut self, curve: FadeCurve) -> Self {
+    pub const fn fade_in_curve(mut self, curve: FadeCurve) -> Self {
         self.fade_in_curve = curve;
         self
     }
 
     /// Set fade out curve type
     #[must_use]
-    pub fn fade_out_curve(mut self, curve: FadeCurve) -> Self {
+    pub const fn fade_out_curve(mut self, curve: FadeCurve) -> Self {
         self.fade_out_curve = curve;
         self
     }
@@ -214,14 +214,14 @@ impl PlaybackSettings {
 
     /// Set clip gain (linear, 1.0 = 0dB)
     #[must_use]
-    pub fn gain(mut self, gain: f32) -> Self {
+    pub const fn gain(mut self, gain: f32) -> Self {
         self.gain = gain.max(0.0);
         self
     }
 
     /// Set time stretch ratio
     #[must_use]
-    pub fn time_stretch(mut self, ratio: f32) -> Self {
+    pub const fn time_stretch(mut self, ratio: f32) -> Self {
         self.time_stretch = ratio.clamp(0.25, 4.0);
         self
     }
@@ -235,14 +235,14 @@ impl PlaybackSettings {
 
     /// Set reversed playback
     #[must_use]
-    pub fn reversed(mut self, reversed: bool) -> Self {
+    pub const fn reversed(mut self, reversed: bool) -> Self {
         self.reversed = reversed;
         self
     }
 
     /// Set source offset
     #[must_use]
-    pub fn source_offset(mut self, offset: f32) -> Self {
+    pub const fn source_offset(mut self, offset: f32) -> Self {
         self.source_offset = offset.max(0.0);
         self
     }
@@ -374,56 +374,56 @@ impl Region {
 
     /// Set region color
     #[must_use]
-    pub fn color(mut self, color: Color32) -> Self {
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set selected state
     #[must_use]
-    pub fn selected(mut self, selected: bool) -> Self {
+    pub const fn selected(mut self, selected: bool) -> Self {
         self.selected = selected;
         self
     }
 
     /// Set muted state
     #[must_use]
-    pub fn muted(mut self, muted: bool) -> Self {
+    pub const fn muted(mut self, muted: bool) -> Self {
         self.muted = muted;
         self
     }
 
     /// Set fade settings
     #[must_use]
-    pub fn fades(mut self, fades: FadeSettings) -> Self {
+    pub const fn fades(mut self, fades: FadeSettings) -> Self {
         self.fades = fades;
         self
     }
 
     /// Set fade in duration
     #[must_use]
-    pub fn fade_in(mut self, duration: f32) -> Self {
+    pub const fn fade_in(mut self, duration: f32) -> Self {
         self.fades.fade_in = duration.max(0.0);
         self
     }
 
     /// Set fade out duration
     #[must_use]
-    pub fn fade_out(mut self, duration: f32) -> Self {
+    pub const fn fade_out(mut self, duration: f32) -> Self {
         self.fades.fade_out = duration.max(0.0);
         self
     }
 
     /// Set playback settings
     #[must_use]
-    pub fn playback(mut self, playback: PlaybackSettings) -> Self {
+    pub const fn playback(mut self, playback: PlaybackSettings) -> Self {
         self.playback = playback;
         self
     }
 
     /// Set clip gain (linear, 1.0 = 0dB)
     #[must_use]
-    pub fn gain(mut self, gain: f32) -> Self {
+    pub const fn gain(mut self, gain: f32) -> Self {
         self.playback.gain = gain.max(0.0);
         self
     }
@@ -517,7 +517,7 @@ pub struct TimelineTrack {
 impl TimelineTrack {
     /// Create a new timeline track
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             id: None,
             height: 80.0,
@@ -531,6 +531,7 @@ impl TimelineTrack {
     }
 
     /// Set custom ID (important when using multiple timeline tracks)
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -538,49 +539,49 @@ impl TimelineTrack {
 
     /// Set track height
     #[must_use]
-    pub fn height(mut self, height: f32) -> Self {
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Set region height (None = auto-calculate with padding)
     #[must_use]
-    pub fn region_height(mut self, height: f32) -> Self {
+    pub const fn region_height(mut self, height: f32) -> Self {
         self.region_height = Some(height);
         self
     }
 
     /// Set pixels per beat (must match `TimeRuler`)
     #[must_use]
-    pub fn beat_width(mut self, width: f32) -> Self {
+    pub const fn beat_width(mut self, width: f32) -> Self {
         self.beat_width = width;
         self
     }
 
     /// Set number of measures
     #[must_use]
-    pub fn measures(mut self, measures: u32) -> Self {
+    pub const fn measures(mut self, measures: u32) -> Self {
         self.measures = measures;
         self
     }
 
     /// Set beats per measure
     #[must_use]
-    pub fn beats_per_measure(mut self, beats: u32) -> Self {
+    pub const fn beats_per_measure(mut self, beats: u32) -> Self {
         self.beats_per_measure = beats;
         self
     }
 
     /// Set track color (used for regions if not specified)
     #[must_use]
-    pub fn track_color(mut self, color: Color32) -> Self {
+    pub const fn track_color(mut self, color: Color32) -> Self {
         self.track_color = Some(color);
         self
     }
 
     /// Set background color
     #[must_use]
-    pub fn background_color(mut self, color: Color32) -> Self {
+    pub const fn background_color(mut self, color: Color32) -> Self {
         self.background_color = Some(color);
         self
     }
@@ -604,7 +605,7 @@ impl TimelineTrack {
 
         // Don't add any padding - allocate full height to match TrackHeader
         let content_height = self.height;
-        let region_h = self.region_height.unwrap_or((self.height * 0.7).max(20.0));
+        let region_h = self.region_height.unwrap_or_else(|| (self.height * 0.7).max(20.0));
 
         let card = Card::new()
             .variant(CardVariant::Filled)
@@ -627,7 +628,7 @@ impl TimelineTrack {
 
                 // Draw subtle grid lines for beats
                 for beat in 0..=total_beats {
-                    let x = rect.min.x + beat as f32 * self.beat_width;
+                    let x = (beat as f32).mul_add(self.beat_width, rect.min.x);
                     let is_measure = beat % self.beats_per_measure == 0;
 
                     let line_color = if is_measure {
@@ -657,11 +658,11 @@ impl TimelineTrack {
                 let region_y_offset = (rect_height - region_h) / 2.0;
 
                 // Handle zones (in pixels)
-                const EDGE_HANDLE_WIDTH: f32 = 8.0;
-                const FADE_HANDLE_WIDTH: f32 = 12.0;
-
                 for (i, region) in regions.iter().enumerate() {
-                    let region_x = rect.min.x + region.start * self.beat_width;
+                    const EDGE_HANDLE_WIDTH: f32 = 8.0;
+                    const FADE_HANDLE_WIDTH: f32 = 12.0;
+
+                    let region_x = region.start.mul_add(self.beat_width, rect.min.x);
                     let region_width = region.duration * self.beat_width;
                     let region_rect = Rect::from_min_size(
                         Pos2::new(region_x, rect.min.y + region_y_offset),
@@ -713,8 +714,7 @@ impl TimelineTrack {
 
                                     // Fade out handle (if fade exists)
                                     if !handled && region.fades.fade_out > 0.0 {
-                                        let fade_out_x = region_width
-                                            - (region.fades.fade_out * self.beat_width);
+                                        let fade_out_x = region.fades.fade_out.mul_add(-self.beat_width, region_width);
                                         if rel_x >= fade_out_x - FADE_HANDLE_WIDTH / 2.0
                                             && rel_x <= fade_out_x + FADE_HANDLE_WIDTH / 2.0
                                         {
@@ -780,7 +780,7 @@ impl TimelineTrack {
 
     /// Draw a single region
     fn draw_region(&self, painter: &egui::Painter, rect: Rect, region: &Region, theme: &Theme) {
-        let region_color = region.color.or(self.track_color).unwrap_or(theme.primary());
+        let region_color = region.color.or(self.track_color).unwrap_or_else(|| theme.primary());
 
         // Adjust color for muted state
         let display_color = if region.muted {
@@ -802,7 +802,7 @@ impl TimelineTrack {
         // Draw region background with glassmorphism
         painter.rect_filled(
             rect,
-            theme.spacing.corner_radius_small as f32,
+            f32::from(theme.spacing.corner_radius_small),
             display_color,
         );
 
@@ -810,7 +810,7 @@ impl TimelineTrack {
         if region.selected {
             painter.rect_stroke(
                 rect,
-                theme.spacing.corner_radius_small as f32,
+                f32::from(theme.spacing.corner_radius_small),
                 egui::Stroke::new(2.0, theme.primary()),
                 StrokeKind::Outside,
             );
@@ -818,7 +818,7 @@ impl TimelineTrack {
             // Subtle border
             painter.rect_stroke(
                 rect,
-                theme.spacing.corner_radius_small as f32,
+                f32::from(theme.spacing.corner_radius_small),
                 egui::Stroke::new(1.0, Color32::from_black_alpha(40)),
                 StrokeKind::Outside,
             );
@@ -890,9 +890,9 @@ impl TimelineTrack {
             // Draw simulated waveform - use full vertical space
             let num_lines = (content_rect.width() / 4.0) as i32;
             for i in 0..num_lines {
-                let x = content_rect.min.x + i as f32 * 4.0;
+                let x = (i as f32).mul_add(4.0, content_rect.min.x);
                 // Range from 0.1 to 0.9 for more dynamic waveform (80% of space)
-                let height_factor = ((i as f32 * 0.5).sin() * 0.4 + 0.5) * 0.9;
+                let height_factor = (i as f32 * 0.5).sin().mul_add(0.4, 0.5) * 0.9;
                 let line_height = available_height * height_factor;
 
                 painter.line_segment(
@@ -908,15 +908,15 @@ impl TimelineTrack {
             let x_step = content_rect.width() / peaks.len().max(1) as f32;
 
             for (i, (min_peak, max_peak)) in peaks.iter().enumerate() {
-                let x = content_rect.min.x + i as f32 * x_step;
+                let x = (i as f32).mul_add(x_step, content_rect.min.x);
 
                 // Clamp peaks to [-1.0, 1.0] range
                 let min = min_peak.clamp(-1.0, 1.0);
                 let max = max_peak.clamp(-1.0, 1.0);
 
                 // Convert to screen coordinates (inverted y-axis)
-                let y_min = center_y - (max * available_height * 0.5);
-                let y_max = center_y - (min * available_height * 0.5);
+                let y_min = (max * available_height).mul_add(-0.5, center_y);
+                let y_max = (min * available_height).mul_add(-0.5, center_y);
 
                 painter.line_segment(
                     [Pos2::new(x, y_min), Pos2::new(x, y_max)],
@@ -960,10 +960,9 @@ impl TimelineTrack {
             let region_width = content_rect.width();
 
             for (lane, start_norm, duration_norm) in pattern {
-                let y = content_rect.min.y
-                    + (lane as f32 * lane_height)
+                let y = (lane as f32).mul_add(lane_height, content_rect.min.y)
                     + (lane_height - note_height) / 2.0;
-                let x_start = content_rect.min.x + (start_norm * region_width);
+                let x_start = content_rect.min.x + start_norm * region_width;
                 let block_width = duration_norm * region_width;
 
                 painter.rect_filled(
@@ -977,27 +976,26 @@ impl TimelineTrack {
             // Calculate note range for vertical positioning
             let min_note = data.notes.iter().map(|n| n.note).min().unwrap_or(0);
             let max_note = data.notes.iter().map(|n| n.note).max().unwrap_or(127);
-            let note_range = (max_note - min_note).max(12) as f32; // At least one octave
+            let note_range = f32::from((max_note - min_note).max(12)); // At least one octave
 
             for note in &data.notes {
                 // Horizontal position based on start time (assuming beats)
-                let x_start = content_rect.min.x
-                    + (note.start / self.beats_per_measure as f32) * self.beat_width;
+                let x_start = (note.start / self.beats_per_measure as f32).mul_add(self.beat_width, content_rect.min.x);
                 let note_width = (note.duration / self.beats_per_measure as f32) * self.beat_width;
 
                 // Vertical position based on note number (inverted: higher notes at top)
-                let y_normalized = (note.note - min_note) as f32 / note_range;
+                let y_normalized = f32::from(note.note - min_note) / note_range;
                 let y = content_rect.max.y - (y_normalized * content_rect.height());
 
                 // Note height based on velocity
-                let height = 3.0 + (note.velocity as f32 / 127.0) * 2.0;
+                let height = (f32::from(note.velocity) / 127.0).mul_add(2.0, 3.0);
 
                 // Vary color slightly based on velocity
-                let velocity_factor = note.velocity as f32 / 127.0;
+                let velocity_factor = f32::from(note.velocity) / 127.0;
                 let note_color = Color32::from_rgba_unmultiplied(
-                    (color.r() as f32 * velocity_factor) as u8,
-                    (color.g() as f32 * velocity_factor) as u8,
-                    (color.b() as f32 * velocity_factor) as u8,
+                    (f32::from(color.r()) * velocity_factor) as u8,
+                    (f32::from(color.g()) * velocity_factor) as u8,
+                    (f32::from(color.b()) * velocity_factor) as u8,
                     120,
                 );
 
@@ -1036,7 +1034,7 @@ impl TimelineTrack {
                 let x = content_rect.min.x + t * content_rect.width();
 
                 // Sine wave from 0.1 to 0.9 (80% of space)
-                let value = 0.5 + 0.4 * (t * std::f32::consts::PI * 2.0).sin();
+                let value = 0.4f32.mul_add((t * std::f32::consts::PI * 2.0).sin(), 0.5);
                 let y = content_rect.max.y - (value * content_rect.height());
 
                 points.push(Pos2::new(x, y));
@@ -1060,11 +1058,10 @@ impl TimelineTrack {
 
             for point in &data.points {
                 // Horizontal position based on time
-                let x = content_rect.min.x
-                    + (point.time / self.beats_per_measure as f32) * self.beat_width;
+                let x = (point.time / self.beats_per_measure as f32).mul_add(self.beat_width, content_rect.min.x);
 
                 // Vertical position based on value (0.0 at bottom, 1.0 at top)
-                let y = content_rect.max.y - (point.value.clamp(0.0, 1.0) * content_rect.height());
+                let y = point.value.clamp(0.0, 1.0).mul_add(-content_rect.height(), content_rect.max.y);
 
                 screen_points.push(Pos2::new(x, y));
             }
@@ -1130,8 +1127,8 @@ impl TimelineTrack {
             );
 
             // Draw fade in handle (hollow circle at fade end point)
-            let fade_in_x = rect.min.x + region.fades.fade_in * beat_width;
-            let fade_handle_y = rect.min.y + rect.height() * 0.25;
+            let fade_in_x = region.fades.fade_in.mul_add(beat_width, rect.min.x);
+            let fade_handle_y = rect.height().mul_add(0.25, rect.min.y);
             painter.circle_stroke(
                 Pos2::new(fade_in_x, fade_handle_y),
                 3.0,
@@ -1151,8 +1148,8 @@ impl TimelineTrack {
             );
 
             // Draw fade out handle (hollow circle at fade start point)
-            let fade_out_x = rect.max.x - region.fades.fade_out * beat_width;
-            let fade_handle_y = rect.min.y + rect.height() * 0.75;
+            let fade_out_x = region.fades.fade_out.mul_add(-beat_width, rect.max.x);
+            let fade_handle_y = rect.height().mul_add(0.75, rect.min.y);
             painter.circle_stroke(
                 Pos2::new(fade_out_x, fade_handle_y),
                 3.0,
@@ -1202,7 +1199,7 @@ impl TimelineTrack {
             let y = if is_fade_in {
                 rect.max.y - (gain * rect.height())
             } else {
-                rect.min.y + ((1.0 - gain) * rect.height())
+                (1.0 - gain).mul_add(rect.height(), rect.min.y)
             };
 
             points.push(Pos2::new(x, y));

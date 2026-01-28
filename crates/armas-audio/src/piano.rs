@@ -36,7 +36,7 @@ pub struct PianoKey {
 impl PianoKey {
     /// Create a new piano key identifier
     #[must_use]
-    pub fn new(note: u8, is_black: bool) -> Self {
+    pub const fn new(note: u8, is_black: bool) -> Self {
         Self { note, is_black }
     }
 
@@ -46,14 +46,14 @@ impl PianoKey {
         const NOTE_NAMES: [&str; 12] = [
             "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
         ];
-        let octave = (self.note / 12) as i32 - 1;
+        let octave = i32::from(self.note / 12) - 1;
         let note_index = (self.note % 12) as usize;
         format!("{}{}", NOTE_NAMES[note_index], octave)
     }
 
     /// Check if a MIDI note number is a black key
     #[must_use]
-    pub fn is_black_key(note: u8) -> bool {
+    pub const fn is_black_key(note: u8) -> bool {
         matches!(note % 12, 1 | 3 | 6 | 8 | 10)
     }
 }
@@ -148,63 +148,63 @@ impl Piano {
     // Builder methods
     /// Set the starting MIDI note number (default: 60, middle C)
     #[must_use]
-    pub fn start_note(mut self, note: u8) -> Self {
+    pub const fn start_note(mut self, note: u8) -> Self {
         self.start_note = note;
         self
     }
 
     /// Set the number of octaves to display (default: 2)
     #[must_use]
-    pub fn octaves(mut self, octaves: u8) -> Self {
+    pub const fn octaves(mut self, octaves: u8) -> Self {
         self.octaves = octaves;
         self
     }
 
     /// Set the width of white keys in pixels (default: 40.0)
     #[must_use]
-    pub fn white_key_width(mut self, width: f32) -> Self {
+    pub const fn white_key_width(mut self, width: f32) -> Self {
         self.white_key_width = width;
         self
     }
 
     /// Set the height of white keys in pixels (default: 120.0)
     #[must_use]
-    pub fn white_key_height(mut self, height: f32) -> Self {
+    pub const fn white_key_height(mut self, height: f32) -> Self {
         self.white_key_height = height;
         self
     }
 
     /// Set opacity for white keys (0.0-1.0, default: 0.7)
     #[must_use]
-    pub fn white_key_opacity(mut self, opacity: f32) -> Self {
+    pub const fn white_key_opacity(mut self, opacity: f32) -> Self {
         self.white_key_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Set opacity for black keys (0.0-1.0, default: 0.85)
     #[must_use]
-    pub fn black_key_opacity(mut self, opacity: f32) -> Self {
+    pub const fn black_key_opacity(mut self, opacity: f32) -> Self {
         self.black_key_opacity = opacity.clamp(0.0, 1.0);
         self
     }
 
     /// Set glow intensity for pressed keys (0.0-1.0, default: 0.8)
     #[must_use]
-    pub fn glow_intensity(mut self, intensity: f32) -> Self {
+    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
         self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
     /// Show or hide note labels on the keys (default: true)
     #[must_use]
-    pub fn show_labels(mut self, show: bool) -> Self {
+    pub const fn show_labels(mut self, show: bool) -> Self {
         self.show_labels = show;
         self
     }
 
     /// Set the keyboard orientation (default: Horizontal)
     #[must_use]
-    pub fn orientation(mut self, orientation: PianoOrientation) -> Self {
+    pub const fn orientation(mut self, orientation: PianoOrientation) -> Self {
         self.orientation = orientation;
         self
     }
@@ -217,6 +217,7 @@ impl Piano {
     }
 
     /// Set unique ID for state persistence (required for scrollable keyboards)
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -224,7 +225,7 @@ impl Piano {
 
     /// Enable scrollable viewport with specified size in pixels
     #[must_use]
-    pub fn scrollable(mut self, viewport_size: f32) -> Self {
+    pub const fn scrollable(mut self, viewport_size: f32) -> Self {
         self.scrollable = true;
         self.viewport_size = Some(viewport_size);
         self
@@ -232,14 +233,14 @@ impl Piano {
 
     /// Enable or disable momentum scrolling (default: true)
     #[must_use]
-    pub fn momentum_scrolling(mut self, enabled: bool) -> Self {
+    pub const fn momentum_scrolling(mut self, enabled: bool) -> Self {
         self.momentum_scrolling = enabled;
         self
     }
 
     /// Set momentum damping factor (1.0-20.0, higher = more damping, default: 5.0)
     #[must_use]
-    pub fn momentum_damping(mut self, damping: f64) -> Self {
+    pub const fn momentum_damping(mut self, damping: f64) -> Self {
         self.momentum_damping = damping.clamp(1.0, 20.0);
         self
     }
@@ -315,7 +316,7 @@ impl Piano {
             return 0.0;
         }
 
-        let scroll_state_id = self.id.unwrap_or(egui::Id::new("piano")).with("scroll");
+        let scroll_state_id = self.id.unwrap_or_else(|| egui::Id::new("piano")).with("scroll");
         let mut state: PianoScrollState = ui
             .ctx()
             .data(|d| d.get_temp(scroll_state_id).unwrap_or_default());
@@ -357,7 +358,7 @@ impl Piano {
         // Apply momentum physics
         if self.momentum_scrolling && state.is_animating {
             state.offset += state.velocity * dt;
-            state.velocity *= (-self.momentum_damping * dt as f64).exp() as f32;
+            state.velocity *= (-self.momentum_damping * f64::from(dt)).exp() as f32;
 
             if state.velocity.abs() < 1.0 {
                 state.velocity = 0.0;
@@ -477,7 +478,7 @@ impl Piano {
             let is_pressed =
                 self.pressed_keys.contains(&note) || response.is_pointer_button_down_on();
 
-            self.draw_key(KeyDrawParams {
+            self.draw_key(&KeyDrawParams {
                 painter,
                 theme,
                 rect: key_rect,
@@ -545,7 +546,7 @@ impl Piano {
             let is_pressed =
                 self.pressed_keys.contains(&note) || response.is_pointer_button_down_on();
 
-            self.draw_key(KeyDrawParams {
+            self.draw_key(&KeyDrawParams {
                 painter,
                 theme,
                 rect: key_rect,
@@ -579,14 +580,14 @@ impl Piano {
         facing_left: bool,
     ) -> Rect {
         if layout.is_horizontal {
-            let key_x = rect.min.x + scroll_offset + white_key_index as f32 * self.white_key_width;
+            let key_x = (white_key_index as f32).mul_add(self.white_key_width, rect.min.x + scroll_offset);
             Rect::from_min_size(
                 Pos2::new(key_x, rect.min.y),
                 Vec2::new(self.white_key_width, self.white_key_height),
             )
         } else {
             let key_y =
-                rect.max.y - scroll_offset - (white_key_index + 1) as f32 * self.white_key_width;
+                ((white_key_index + 1) as f32).mul_add(-self.white_key_width, rect.max.y - scroll_offset);
             let key_x = if facing_left {
                 rect.max.x - self.white_key_height
             } else {
@@ -609,7 +610,7 @@ impl Piano {
         facing_left: bool,
     ) -> Rect {
         if layout.is_horizontal {
-            let key_x = rect.min.x + scroll_offset + white_key_index as f32 * self.white_key_width
+            let key_x = (white_key_index as f32).mul_add(self.white_key_width, rect.min.x + scroll_offset)
                 - layout.black_key_size * 0.5;
             let key_y = if facing_up {
                 rect.max.y - layout.black_key_depth
@@ -621,9 +622,7 @@ impl Piano {
                 Vec2::new(layout.black_key_size, layout.black_key_depth),
             )
         } else {
-            let key_y = rect.max.y
-                - scroll_offset
-                - white_key_index as f32 * self.white_key_width
+            let key_y = (white_key_index as f32).mul_add(-self.white_key_width, rect.max.y - scroll_offset)
                 - layout.black_key_size * 0.5;
             let key_x = if facing_left {
                 rect.max.x - layout.black_key_depth
@@ -637,7 +636,7 @@ impl Piano {
         }
     }
 
-    fn white_key_corner_radius(
+    const fn white_key_corner_radius(
         &self,
         is_horizontal: bool,
         facing_up: bool,
@@ -676,7 +675,7 @@ impl Piano {
         }
     }
 
-    fn black_key_corner_radius(
+    const fn black_key_corner_radius(
         &self,
         is_horizontal: bool,
         facing_up: bool,
@@ -690,7 +689,7 @@ impl Piano {
     // Key Drawing
     // ========================================================================
 
-    fn draw_key(&self, params: KeyDrawParams) {
+    fn draw_key(&self, params: &KeyDrawParams) {
         let opacity = if params.is_pressed {
             params.opacity * 0.85
         } else if params.is_hovered {
@@ -852,13 +851,13 @@ pub struct PianoResponse {
 impl PianoResponse {
     /// Check if any keys were clicked this frame
     #[must_use]
-    pub fn has_clicks(&self) -> bool {
+    pub const fn has_clicks(&self) -> bool {
         !self.clicked_keys.is_empty()
     }
 
     /// Check if any keys were released this frame
     #[must_use]
-    pub fn has_releases(&self) -> bool {
+    pub const fn has_releases(&self) -> bool {
         !self.released_keys.is_empty()
     }
 }
