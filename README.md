@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="crates/armas-web/assets/images/logo.png" alt="Armas Logo" width="200"/>
+</p>
+
 # Armas
 
 [![Crates.io](https://img.shields.io/crates/v/armas.svg)](https://crates.io/crates/armas)
