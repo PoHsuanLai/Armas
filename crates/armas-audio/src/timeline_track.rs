@@ -605,7 +605,9 @@ impl TimelineTrack {
 
         // Don't add any padding - allocate full height to match TrackHeader
         let content_height = self.height;
-        let region_h = self.region_height.unwrap_or_else(|| (self.height * 0.7).max(20.0));
+        let region_h = self
+            .region_height
+            .unwrap_or_else(|| (self.height * 0.7).max(20.0));
 
         let card = Card::new()
             .variant(CardVariant::Filled)
@@ -714,7 +716,10 @@ impl TimelineTrack {
 
                                     // Fade out handle (if fade exists)
                                     if !handled && region.fades.fade_out > 0.0 {
-                                        let fade_out_x = region.fades.fade_out.mul_add(-self.beat_width, region_width);
+                                        let fade_out_x = region
+                                            .fades
+                                            .fade_out
+                                            .mul_add(-self.beat_width, region_width);
                                         if rel_x >= fade_out_x - FADE_HANDLE_WIDTH / 2.0
                                             && rel_x <= fade_out_x + FADE_HANDLE_WIDTH / 2.0
                                         {
@@ -780,7 +785,10 @@ impl TimelineTrack {
 
     /// Draw a single region
     fn draw_region(&self, painter: &egui::Painter, rect: Rect, region: &Region, theme: &Theme) {
-        let region_color = region.color.or(self.track_color).unwrap_or_else(|| theme.primary());
+        let region_color = region
+            .color
+            .or(self.track_color)
+            .unwrap_or_else(|| theme.primary());
 
         // Adjust color for muted state
         let display_color = if region.muted {
@@ -980,7 +988,8 @@ impl TimelineTrack {
 
             for note in &data.notes {
                 // Horizontal position based on start time (assuming beats)
-                let x_start = (note.start / self.beats_per_measure as f32).mul_add(self.beat_width, content_rect.min.x);
+                let x_start = (note.start / self.beats_per_measure as f32)
+                    .mul_add(self.beat_width, content_rect.min.x);
                 let note_width = (note.duration / self.beats_per_measure as f32) * self.beat_width;
 
                 // Vertical position based on note number (inverted: higher notes at top)
@@ -1058,10 +1067,14 @@ impl TimelineTrack {
 
             for point in &data.points {
                 // Horizontal position based on time
-                let x = (point.time / self.beats_per_measure as f32).mul_add(self.beat_width, content_rect.min.x);
+                let x = (point.time / self.beats_per_measure as f32)
+                    .mul_add(self.beat_width, content_rect.min.x);
 
                 // Vertical position based on value (0.0 at bottom, 1.0 at top)
-                let y = point.value.clamp(0.0, 1.0).mul_add(-content_rect.height(), content_rect.max.y);
+                let y = point
+                    .value
+                    .clamp(0.0, 1.0)
+                    .mul_add(-content_rect.height(), content_rect.max.y);
 
                 screen_points.push(Pos2::new(x, y));
             }

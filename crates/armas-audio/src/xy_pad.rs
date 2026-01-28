@@ -287,14 +287,16 @@ impl<'a> XYPad<'a> {
             if let Some(pos) = response.interact_pointer_pos() {
                 if drag_state.drag_x.is_velocity_mode() {
                     // Velocity mode: incremental changes based on mouse speed
-                    let delta_x =
-                        drag_state
-                            .drag_x
-                            .update_tracked(f64::from(pos.x), 1.0, f64::from(self.size));
-                    let delta_y =
-                        drag_state
-                            .drag_y
-                            .update_tracked(f64::from(pos.y), 1.0, f64::from(self.size));
+                    let delta_x = drag_state.drag_x.update_tracked(
+                        f64::from(pos.x),
+                        1.0,
+                        f64::from(self.size),
+                    );
+                    let delta_y = drag_state.drag_y.update_tracked(
+                        f64::from(pos.y),
+                        1.0,
+                        f64::from(self.size),
+                    );
 
                     *self.x = (*self.x + delta_x as f32).clamp(0.0, 1.0);
                     // Y is inverted (up = higher value)

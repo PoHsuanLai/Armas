@@ -701,7 +701,9 @@ impl MPEKeyboard {
         key_rects: &HashMap<u8, Rect>,
     ) {
         let fill_color = self.circle_fill_color.unwrap_or_else(|| theme.primary());
-        let outline_color = self.circle_outline_color.unwrap_or_else(|| theme.secondary());
+        let outline_color = self
+            .circle_outline_color
+            .unwrap_or_else(|| theme.secondary());
         let max_radius = self.white_key_width * self.max_circle_radius_scale;
 
         for (note, mpe_note) in &self.active_notes {
@@ -716,8 +718,12 @@ impl MPEKeyboard {
                 self.calculate_circle_position(mpe_note, base_rect, layout, key_rects);
 
             // Calculate circle radii based on velocity and pressure
-            let velocity_radius = mpe_note.velocity.mul_add(max_radius, self.min_circle_radius);
-            let pressure_radius = mpe_note.velocity.mul_add(max_radius, self.min_circle_radius)
+            let velocity_radius = mpe_note
+                .velocity
+                .mul_add(max_radius, self.min_circle_radius);
+            let pressure_radius = mpe_note
+                .velocity
+                .mul_add(max_radius, self.min_circle_radius)
                 + mpe_note.pressure * max_radius * 0.5;
 
             // Draw outer circle (pressure) - outline only
@@ -791,14 +797,15 @@ impl MPEKeyboard {
         facing_left: bool,
     ) -> Rect {
         if layout.is_horizontal {
-            let key_x = (white_key_index as f32).mul_add(self.white_key_width, rect.min.x + scroll_offset);
+            let key_x =
+                (white_key_index as f32).mul_add(self.white_key_width, rect.min.x + scroll_offset);
             Rect::from_min_size(
                 Pos2::new(key_x, rect.min.y),
                 Vec2::new(self.white_key_width, self.white_key_height),
             )
         } else {
-            let key_y =
-                ((white_key_index + 1) as f32).mul_add(-self.white_key_width, rect.max.y - scroll_offset);
+            let key_y = ((white_key_index + 1) as f32)
+                .mul_add(-self.white_key_width, rect.max.y - scroll_offset);
             let key_x = if facing_left {
                 rect.max.x - self.white_key_height
             } else {
@@ -821,7 +828,8 @@ impl MPEKeyboard {
         facing_left: bool,
     ) -> Rect {
         if layout.is_horizontal {
-            let key_x = (white_key_index as f32).mul_add(self.white_key_width, rect.min.x + scroll_offset)
+            let key_x = (white_key_index as f32)
+                .mul_add(self.white_key_width, rect.min.x + scroll_offset)
                 - layout.black_key_size * 0.5;
             let key_y = if facing_up {
                 rect.max.y - layout.black_key_depth
@@ -833,7 +841,8 @@ impl MPEKeyboard {
                 Vec2::new(layout.black_key_size, layout.black_key_depth),
             )
         } else {
-            let key_y = (white_key_index as f32).mul_add(-self.white_key_width, rect.max.y - scroll_offset)
+            let key_y = (white_key_index as f32)
+                .mul_add(-self.white_key_width, rect.max.y - scroll_offset)
                 - layout.black_key_size * 0.5;
             let key_x = if facing_left {
                 rect.max.x - layout.black_key_depth

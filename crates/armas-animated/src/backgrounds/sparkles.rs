@@ -141,7 +141,7 @@ impl Sparkles {
             ],
             min_size: 2.0,
             max_size: 4.0,
-            particles:Vec::new(),
+            particles: Vec::new(),
             initialized: false,
         }
     }
@@ -226,7 +226,7 @@ impl Sparkles {
         let mut state = ui.data_mut(|d| {
             d.get_temp::<SparklesState>(self.id)
                 .unwrap_or_else(|| SparklesState {
-                    particles:self.particles.clone(),
+                    particles: self.particles.clone(),
                     initialized: self.initialized,
                 })
         });
@@ -275,7 +275,7 @@ impl Sparkles {
         let mut state = ui.data_mut(|d| {
             d.get_temp::<SparklesState>(self.id)
                 .unwrap_or_else(|| SparklesState {
-                    particles:self.particles.clone(),
+                    particles: self.particles.clone(),
                     initialized: self.initialized,
                 })
         });

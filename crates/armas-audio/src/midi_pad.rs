@@ -241,8 +241,10 @@ impl MidiPad {
     /// Show the MIDI pad grid
     pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> MidiPadResponse {
         // Calculate total size
-        let total_width = (self.cols as f32).mul_add(self.pad_size, (self.cols - 1) as f32 * self.gap);
-        let total_height = (self.rows as f32).mul_add(self.pad_size, (self.rows - 1) as f32 * self.gap);
+        let total_width =
+            (self.cols as f32).mul_add(self.pad_size, (self.cols - 1) as f32 * self.gap);
+        let total_height =
+            (self.rows as f32).mul_add(self.pad_size, (self.rows - 1) as f32 * self.gap);
         let desired_size = Vec2::new(total_width, total_height);
 
         let (rect, _) = ui.allocate_exact_size(desired_size, Sense::hover());

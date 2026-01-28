@@ -194,7 +194,11 @@ impl TimeRuler {
             let painter = ui.painter();
 
             // Draw background (only within clip)
-            painter.rect_filled(clip, f32::from(theme.spacing.corner_radius_small), theme.card());
+            painter.rect_filled(
+                clip,
+                f32::from(theme.spacing.corner_radius_small),
+                theme.card(),
+            );
 
             // Draw bottom border
             painter.line_segment(
@@ -234,7 +238,11 @@ impl TimeRuler {
             let painter = ui.painter();
 
             // Draw background
-            painter.rect_filled(rect, f32::from(theme.spacing.corner_radius_small), theme.card());
+            painter.rect_filled(
+                rect,
+                f32::from(theme.spacing.corner_radius_small),
+                theme.card(),
+            );
 
             // Draw bottom border
             painter.line_segment(
@@ -312,7 +320,8 @@ impl TimeRuler {
     /// Draw measure numbers at the top
     fn draw_measure_numbers(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
         for measure in 0..self.measures {
-            let x = (measure as f32 * self.beats_per_measure as f32).mul_add(self.beat_width, rect.min.x);
+            let x = (measure as f32 * self.beats_per_measure as f32)
+                .mul_add(self.beat_width, rect.min.x);
             let label_pos = Pos2::new(x + theme.spacing.xs, rect.min.y + theme.spacing.xs);
 
             let label = match self.time_mode {
@@ -352,7 +361,10 @@ impl TimeRuler {
             let beat_in_measure = (beat_idx % self.beats_per_measure) + 1;
 
             // Position beat numbers below measure numbers
-            let label_pos = Pos2::new(theme.spacing.xs.mul_add(0.5, x), rect.min.y + theme.spacing.md);
+            let label_pos = Pos2::new(
+                theme.spacing.xs.mul_add(0.5, x),
+                rect.min.y + theme.spacing.md,
+            );
 
             painter.text(
                 label_pos,

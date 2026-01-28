@@ -552,7 +552,8 @@ impl MixerStrip {
         scale: f32,
         scaled_width: f32,
     ) {
-        let button_width_grid = (4.0f32.mul_add(-scale, scaled_width) - theme.spacing.xs * scale) / 2.0;
+        let button_width_grid =
+            (4.0f32.mul_add(-scale, scaled_width) - theme.spacing.xs * scale) / 2.0;
 
         // First row: Mute and Solo
         ui.horizontal(|ui| {

@@ -255,8 +255,9 @@ impl<'a> ModWheel<'a> {
                         f64::from(self.height),
                     );
                     // Invert delta since moving up should increase value
-                    *self.value =
-                        (f64::from(*self.value) - delta).clamp(f64::from(min_val), f64::from(max_val)) as f32;
+                    *self.value = (f64::from(*self.value) - delta)
+                        .clamp(f64::from(min_val), f64::from(max_val))
+                        as f32;
                 } else {
                     // Absolute mode: Y position to value (inverted: top = max, bottom = min)
                     let normalized = 1.0 - ((pos.y - rect.min.y) / rect.height()).clamp(0.0, 1.0);

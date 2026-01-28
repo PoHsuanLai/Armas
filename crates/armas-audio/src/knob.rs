@@ -474,7 +474,10 @@ impl Knob {
     /// Render glass glaze layers
     fn render_glass_glaze(&self, painter: &egui::Painter, center: Pos2, radius: f32) {
         // Base layer
-        let glaze_center = Pos2::new(radius.mul_add(-0.1, center.x), radius.mul_add(-0.25, center.y));
+        let glaze_center = Pos2::new(
+            radius.mul_add(-0.1, center.x),
+            radius.mul_add(-0.25, center.y),
+        );
         for i in 0..10 {
             let glaze_radius = radius * (i as f32).mul_add(-0.04, 0.75);
             let alpha = 20 + i * 3;
@@ -486,7 +489,10 @@ impl Knob {
         }
 
         // Mid layer
-        let mid_glaze_center = Pos2::new(radius.mul_add(-0.15, center.x), radius.mul_add(-0.32, center.y));
+        let mid_glaze_center = Pos2::new(
+            radius.mul_add(-0.15, center.x),
+            radius.mul_add(-0.32, center.y),
+        );
         for i in 0..6 {
             let mid_radius = radius * (i as f32).mul_add(-0.05, 0.5);
             let alpha = 40 + i * 8;
@@ -531,7 +537,10 @@ impl Knob {
     /// Render specular highlights
     fn render_specular_highlights(&self, painter: &egui::Painter, center: Pos2, radius: f32) {
         // Primary specular
-        let specular_primary = Pos2::new(radius.mul_add(-0.2, center.x), radius.mul_add(-0.36, center.y));
+        let specular_primary = Pos2::new(
+            radius.mul_add(-0.2, center.x),
+            radius.mul_add(-0.36, center.y),
+        );
         for i in 0..5 {
             let spec_radius = radius * (i as f32).mul_add(-0.025, 0.18);
             let alpha = 200 - i * 30;
@@ -543,7 +552,10 @@ impl Knob {
         }
 
         // Secondary specular
-        let specular_secondary = Pos2::new(radius.mul_add(0.15, center.x), radius.mul_add(-0.28, center.y));
+        let specular_secondary = Pos2::new(
+            radius.mul_add(0.15, center.x),
+            radius.mul_add(-0.28, center.y),
+        );
         for i in 0..3 {
             let spec_radius = radius * (i as f32).mul_add(-0.02, 0.1);
             let alpha = 120 - i * 25;
@@ -558,7 +570,10 @@ impl Knob {
     /// Render sharp bright highlights
     fn render_sharp_highlights(&self, painter: &egui::Painter, center: Pos2, radius: f32) {
         // Primary bright spot
-        let bright_spot_1 = Pos2::new(radius.mul_add(-0.25, center.x), radius.mul_add(-0.41, center.y));
+        let bright_spot_1 = Pos2::new(
+            radius.mul_add(-0.25, center.x),
+            radius.mul_add(-0.41, center.y),
+        );
         painter.circle_filled(
             bright_spot_1,
             radius * 0.08,
@@ -571,7 +586,10 @@ impl Knob {
         );
 
         // Secondary bright spot
-        let bright_spot_2 = Pos2::new(radius.mul_add(-0.15, center.x), radius.mul_add(-0.35, center.y));
+        let bright_spot_2 = Pos2::new(
+            radius.mul_add(-0.15, center.x),
+            radius.mul_add(-0.35, center.y),
+        );
         painter.circle_filled(
             bright_spot_2,
             radius * 0.04,
@@ -689,8 +707,8 @@ impl Knob {
                     break;
                 }
 
-                let next_angle =
-                    ((i + 1) as f32 / segments as f32).mul_add(current_angle - min_angle, min_angle);
+                let next_angle = ((i + 1) as f32 / segments as f32)
+                    .mul_add(current_angle - min_angle, min_angle);
 
                 let glow_radius = radius - 0.5 + glow_offset;
                 let p1 = Pos2::new(

@@ -290,7 +290,10 @@ impl TrackHeader {
                             let step_color = lerp_color(top_color, bottom_color, t);
 
                             let step_rect = egui::Rect::from_min_max(
-                                egui::Pos2::new(rect.min.x, (i as f32).mul_add(step_height, rect.min.y)),
+                                egui::Pos2::new(
+                                    rect.min.x,
+                                    (i as f32).mul_add(step_height, rect.min.y),
+                                ),
                                 egui::Pos2::new(
                                     rect.max.x,
                                     ((i + 1) as f32).mul_add(step_height, rect.min.y),

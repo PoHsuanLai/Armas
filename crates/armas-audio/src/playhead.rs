@@ -338,10 +338,14 @@ impl Playhead {
         let right_ctrl = Pos2::new(top.x + half_width * 0.3, height.mul_add(0.5, top.y));
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
-            let x = (1.0 - t).powi(2).mul_add(top.x + half_width, 2.0 * (1.0 - t) * t * right_ctrl.x)
+            let x = (1.0 - t)
+                .powi(2)
+                .mul_add(top.x + half_width, 2.0 * (1.0 - t) * t * right_ctrl.x)
                 + t.powi(2) * bottom.x;
-            let y = (1.0 - t).powi(2).mul_add(top.y + half_width * top_roundness, 2.0 * (1.0 - t) * t * right_ctrl.y)
-                + t.powi(2) * bottom.y;
+            let y = (1.0 - t).powi(2).mul_add(
+                top.y + half_width * top_roundness,
+                2.0 * (1.0 - t) * t * right_ctrl.y,
+            ) + t.powi(2) * bottom.y;
             path.push(Pos2::new(x, y));
         }
 
@@ -349,9 +353,13 @@ impl Playhead {
         let left_ctrl = Pos2::new(top.x - half_width * 0.3, height.mul_add(0.5, top.y));
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
-            let x = (1.0 - t).powi(2).mul_add(bottom.x, 2.0 * (1.0 - t) * t * left_ctrl.x)
+            let x = (1.0 - t)
+                .powi(2)
+                .mul_add(bottom.x, 2.0 * (1.0 - t) * t * left_ctrl.x)
                 + t.powi(2) * (top.x - half_width);
-            let y = (1.0 - t).powi(2).mul_add(bottom.y, 2.0 * (1.0 - t) * t * left_ctrl.y)
+            let y = (1.0 - t)
+                .powi(2)
+                .mul_add(bottom.y, 2.0 * (1.0 - t) * t * left_ctrl.y)
                 + t.powi(2) * (top.y + half_width * top_roundness);
             path.push(Pos2::new(x, y));
         }
@@ -390,10 +398,14 @@ impl Playhead {
         let right_ctrl = Pos2::new(top.x + half_width * 0.3, height.mul_add(0.5, top.y));
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
-            let x = (1.0 - t).powi(2).mul_add(top.x + half_width, 2.0 * (1.0 - t) * t * right_ctrl.x)
+            let x = (1.0 - t)
+                .powi(2)
+                .mul_add(top.x + half_width, 2.0 * (1.0 - t) * t * right_ctrl.x)
                 + t.powi(2) * bottom.x;
-            let y = (1.0 - t).powi(2).mul_add(top.y + half_width * top_roundness, 2.0 * (1.0 - t) * t * right_ctrl.y)
-                + t.powi(2) * bottom.y;
+            let y = (1.0 - t).powi(2).mul_add(
+                top.y + half_width * top_roundness,
+                2.0 * (1.0 - t) * t * right_ctrl.y,
+            ) + t.powi(2) * bottom.y;
             path.push(Pos2::new(x, y));
         }
 
@@ -401,9 +413,13 @@ impl Playhead {
         let left_ctrl = Pos2::new(top.x - half_width * 0.3, height.mul_add(0.5, top.y));
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
-            let x = (1.0 - t).powi(2).mul_add(bottom.x, 2.0 * (1.0 - t) * t * left_ctrl.x)
+            let x = (1.0 - t)
+                .powi(2)
+                .mul_add(bottom.x, 2.0 * (1.0 - t) * t * left_ctrl.x)
                 + t.powi(2) * (top.x - half_width);
-            let y = (1.0 - t).powi(2).mul_add(bottom.y, 2.0 * (1.0 - t) * t * left_ctrl.y)
+            let y = (1.0 - t)
+                .powi(2)
+                .mul_add(bottom.y, 2.0 * (1.0 - t) * t * left_ctrl.y)
                 + t.powi(2) * (top.y + half_width * top_roundness);
             path.push(Pos2::new(x, y));
         }

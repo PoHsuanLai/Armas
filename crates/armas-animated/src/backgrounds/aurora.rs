@@ -285,9 +285,10 @@ impl AuroraBackground {
 
         // Get or initialize state from egui memory
         let mut state = ui.data_mut(|d| {
-            d.get_temp::<AuroraState>(self.id).unwrap_or_else(|| AuroraState {
-                blobs: self.blobs.clone(),
-            })
+            d.get_temp::<AuroraState>(self.id)
+                .unwrap_or_else(|| AuroraState {
+                    blobs: self.blobs.clone(),
+                })
         });
 
         // Update and draw all blobs

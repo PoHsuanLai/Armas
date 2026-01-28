@@ -349,9 +349,10 @@ impl Fader {
 
             let value_changed = if drag_state.drag.mode() == DragMode::Velocity {
                 // Velocity mode: faster movement = larger change
-                let delta = drag_state
-                    .drag
-                    .update_tracked(f64::from(pos.y), 1.0, f64::from(self.height));
+                let delta =
+                    drag_state
+                        .drag
+                        .update_tracked(f64::from(pos.y), 1.0, f64::from(self.height));
                 // Invert because dragging up should increase value
                 let new_value = drag_state.drag_start_value - delta as f32;
                 if (new_value - self.value).abs() > 0.0001 {
@@ -675,7 +676,10 @@ impl Fader {
         painter.line_segment(
             [
                 pos + Vec2::new((THUMB_WIDTH - 1.0) * w_scale, 5.0 * h_scale),
-                pos + Vec2::new((THUMB_WIDTH - 1.0) * w_scale, 6.0f32.mul_add(-h_scale, height)),
+                pos + Vec2::new(
+                    (THUMB_WIDTH - 1.0) * w_scale,
+                    6.0f32.mul_add(-h_scale, height),
+                ),
             ],
             (
                 1.0 * scale,
@@ -750,9 +754,12 @@ impl FaderStrip {
                 let t = i as f32 / (HOUSING_GRADIENT_STEPS - 1) as f32;
                 // Interpolate from top to bottom color
                 let color = Color32::from_rgb(
-                    f32::from(housing_top.r()).mul_add(1.0 - t, f32::from(housing_bottom.r()) * t) as u8,
-                    f32::from(housing_top.g()).mul_add(1.0 - t, f32::from(housing_bottom.g()) * t) as u8,
-                    f32::from(housing_top.b()).mul_add(1.0 - t, f32::from(housing_bottom.b()) * t) as u8,
+                    f32::from(housing_top.r()).mul_add(1.0 - t, f32::from(housing_bottom.r()) * t)
+                        as u8,
+                    f32::from(housing_top.g()).mul_add(1.0 - t, f32::from(housing_bottom.g()) * t)
+                        as u8,
+                    f32::from(housing_top.b()).mul_add(1.0 - t, f32::from(housing_bottom.b()) * t)
+                        as u8,
                 );
 
                 let segment_height = self.height / HOUSING_GRADIENT_STEPS as f32;

@@ -378,8 +378,10 @@ impl<'a> DrumSequencer<'a> {
         let mut changed = false;
 
         for step_idx in 0..num_steps {
-            let step_x = (step_idx as f32).mul_add(step_width + gap, rect.min.x
-                + scroll_offset.x + row_label_width);
+            let step_x = (step_idx as f32).mul_add(
+                step_width + gap,
+                rect.min.x + scroll_offset.x + row_label_width,
+            );
 
             // Skip steps outside viewport
             if scrollable && (step_x + step_width < rect.min.x || step_x > rect.max.x) {

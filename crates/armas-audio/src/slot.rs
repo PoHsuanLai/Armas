@@ -190,7 +190,10 @@ impl<'a> Slot<'a> {
             const MINI_METER_WIDTH: f32 = 2.0;
             let meter_rect = egui::Rect::from_min_size(
                 egui::pos2(
-                    theme.spacing.sm.mul_add(-0.8, rect.max.x - MINI_METER_WIDTH),
+                    theme
+                        .spacing
+                        .sm
+                        .mul_add(-0.8, rect.max.x - MINI_METER_WIDTH),
                     rect.min.y + 4.0,
                 ),
                 egui::vec2(MINI_METER_WIDTH, self.height - 8.0),

@@ -301,8 +301,9 @@ impl AudioMeter {
             // Hold for 1.5 seconds, then fade over 1.0 seconds
             if self.peak_hold_time > 1.5 {
                 let fade_progress = ((self.peak_hold_time - 1.5) / 1.0).min(1.0);
-                self.peak_hold =
-                    self.peak_hold.mul_add(1.0 - fade_progress, current_level * fade_progress);
+                self.peak_hold = self
+                    .peak_hold
+                    .mul_add(1.0 - fade_progress, current_level * fade_progress);
             }
         }
 
@@ -368,7 +369,9 @@ impl AudioMeter {
 
             // Draw peak hold indicator
             if self.peak_hold > 0.01 && self.peak_hold_time < 2.5 {
-                let peak_y = self.peak_hold.mul_add(-inner_meter_rect.height(), inner_meter_rect.max.y);
+                let peak_y = self
+                    .peak_hold
+                    .mul_add(-inner_meter_rect.height(), inner_meter_rect.max.y);
                 let peak_color = self.peak_color.unwrap_or_else(|| theme.primary());
 
                 // Fade out after hold period

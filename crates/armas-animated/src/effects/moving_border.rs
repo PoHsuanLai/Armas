@@ -134,7 +134,9 @@ impl MovingBorder {
             text_color,
         );
 
-        let width = self.width.unwrap_or_else(|| text_galley.rect.width() + 40.0);
+        let width = self
+            .width
+            .unwrap_or_else(|| text_galley.rect.width() + 40.0);
         let size = Vec2::new(width, self.height);
 
         let (rect, response) = ui.allocate_exact_size(size, Sense::click());

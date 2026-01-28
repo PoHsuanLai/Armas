@@ -32,6 +32,7 @@ nursery = { level = "warn", priority = -1 }
 cast_possible_truncation = "allow"
 cast_sign_loss = "allow"
 cast_precision_loss = "allow"
+float_cmp = "allow"
 
 # UI structs often have many bool fields for state
 struct_excessive_bools = "allow"

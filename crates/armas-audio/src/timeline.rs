@@ -1020,7 +1020,8 @@ impl<'a> Timeline<'a> {
         let painter = ui.painter().with_clip_rect(tracks_rect);
         for measure in 0..self.measures {
             for beat in 0..self.beats_per_measure {
-                let x = ((measure * self.beats_per_measure + beat) as f32).mul_add(self.beat_width, tracks_rect.min.x - scroll_offset.x);
+                let x = ((measure * self.beats_per_measure + beat) as f32)
+                    .mul_add(self.beat_width, tracks_rect.min.x - scroll_offset.x);
                 if x >= tracks_rect.min.x && x <= tracks_rect.max.x {
                     let is_measure = beat == 0;
                     let color = if is_measure {
