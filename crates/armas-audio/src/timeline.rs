@@ -317,6 +317,8 @@ pub struct Timeline<'a> {
     momentum_scrolling: bool,
     /// Momentum damping factor (higher = faster stop)
     momentum_damping: f64,
+    /// Region height as a ratio of track height (0.0-1.0)
+    region_height_ratio: f32,
 }
 
 /// Info about a track in the flattened hierarchy
@@ -386,7 +388,7 @@ impl<'a> Timeline<'a> {
             beat_width: 60.0,
             measures: 16,
             beats_per_measure: 4,
-            ruler_height: 40.0,
+            ruler_height: 28.0,
             show_playhead: true,
             playhead_color: None,
             scroll_to_beat: None,
@@ -404,6 +406,7 @@ impl<'a> Timeline<'a> {
             empty_message: None,
             momentum_scrolling: true,
             momentum_damping: 5.0,
+            region_height_ratio: 0.9,
         }
     }
 
@@ -488,6 +491,18 @@ impl<'a> Timeline<'a> {
     #[must_use]
     pub const fn track_height(mut self, height: f32) -> Self {
         self.track_height = height;
+        self
+    }
+
+    /// Set region height as a ratio of track height (0.0-1.0)
+    ///
+    /// Controls how much of each track's vertical space regions fill.
+    /// - 0.7: Regions fill 70% of track height (spacious)
+    /// - 0.9: Regions fill 90% of track height (default, matches most DAWs)
+    /// - 1.0: Regions fill the entire track height
+    #[must_use]
+    pub const fn region_height_ratio(mut self, ratio: f32) -> Self {
+        self.region_height_ratio = ratio.clamp(0.1, 1.0);
         self
     }
 
@@ -767,6 +782,8 @@ impl<'a> Timeline<'a> {
         theme: &Theme,
     ) {
         ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 0.0;
+
             // Top-left corner
             ui.allocate_exact_size(
                 Vec2::new(self.track_header_width, self.ruler_height),
@@ -1518,6 +1535,7 @@ impl<'a> Timeline<'a> {
         let track_response = TimelineTrack::new()
             .id(track_id)
             .height(self.track_height)
+            .region_height_ratio(self.region_height_ratio)
             .beat_width(self.beat_width)
             .measures(self.measures)
             .beats_per_measure(self.beats_per_measure)
@@ -1563,11 +1581,14 @@ impl<'a> Timeline<'a> {
         // === RENDER MAIN UI ===
         let response = ui
             .vertical(|ui| {
+                ui.spacing_mut().item_spacing.y = 0.0;
+
                 // Row 1: Corner + Ruler
                 self.render_ruler(ui, &layout, scroll_offset, theme);
 
                 // Row 2: Headers + Tracks
                 ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = 0.0;
                     // Left: Track headers
                     let headers_rect = self.render_headers(
                         ui,

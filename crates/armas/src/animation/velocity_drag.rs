@@ -145,6 +145,11 @@ impl VelocityDrag {
         self.mode == DragMode::Velocity
     }
 
+    /// Check if absolute mode is active
+    pub fn is_absolute_mode(&self) -> bool {
+        self.mode == DragMode::Absolute
+    }
+
     /// Begin a drag operation
     ///
     /// - `current_value`: The current parameter value

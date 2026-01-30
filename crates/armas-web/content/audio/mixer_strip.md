@@ -15,9 +15,9 @@ let mut strip = MixerStrip::new("Lead")
     .width(80.0)
     .fader_level(0.75)
     .meter_level(level)
-    .sends_color(Color32::from_rgb(35, 25, 22))
-    .routing_color(Color32::from_rgb(22, 25, 35))
-    .inserts_color(Color32::from_rgb(22, 32, 25))
+    .sends_color(Color32::from_gray(30))
+    .routing_color(Color32::from_gray(24))
+    .inserts_color(Color32::from_gray(18))
     .inserts(vec![
         Insert::new("Pro-Q 3"),
         Insert::new("LA-2A"),

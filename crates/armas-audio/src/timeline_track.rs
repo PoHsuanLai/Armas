@@ -512,6 +512,8 @@ pub struct TimelineTrack {
     track_color: Option<Color32>,
     /// Background color
     background_color: Option<Color32>,
+    /// Region height as a ratio of track height (0.0-1.0), used when region_height is None
+    region_height_ratio: f32,
 }
 
 impl TimelineTrack {
@@ -527,6 +529,7 @@ impl TimelineTrack {
             beats_per_measure: 4,
             track_color: None,
             background_color: None,
+            region_height_ratio: 0.9,
         }
     }
 
@@ -544,10 +547,20 @@ impl TimelineTrack {
         self
     }
 
-    /// Set region height (None = auto-calculate with padding)
+    /// Set region height (None = auto-calculate from ratio)
     #[must_use]
     pub const fn region_height(mut self, height: f32) -> Self {
         self.region_height = Some(height);
+        self
+    }
+
+    /// Set region height as a ratio of track height (0.0-1.0)
+    ///
+    /// Only used when `region_height` is not explicitly set.
+    /// Default is 0.9 (regions fill 90% of track height).
+    #[must_use]
+    pub const fn region_height_ratio(mut self, ratio: f32) -> Self {
+        self.region_height_ratio = ratio.clamp(0.1, 1.0);
         self
     }
 
@@ -607,7 +620,7 @@ impl TimelineTrack {
         let content_height = self.height;
         let region_h = self
             .region_height
-            .unwrap_or_else(|| (self.height * 0.7).max(20.0));
+            .unwrap_or_else(|| (self.height * self.region_height_ratio).max(20.0));
 
         let card = Card::new()
             .variant(CardVariant::Filled)

@@ -400,45 +400,23 @@ impl AudioMeter {
         }
 
         let corner_radius = (meter_rect.width() * 0.5).min(6.0);
-        let fill_height = meter_rect.height() * Self::level_to_display(level);
+        let display_level = Self::level_to_display(level);
 
-        // Calculate fill rect (the actual colored area)
-        let fill_rect = Rect::from_min_max(
-            Pos2::new(meter_rect.min.x, meter_rect.max.y - fill_height),
-            meter_rect.max,
-        );
-
-        // Draw outer glow for the colored fill - subtle and consistent
-        let glow_intensity = level.powf(1.5);
-        let fill_color = self.get_color_at_level(level);
-
-        for layer in 0..3 {
-            let expansion = (3 - layer) as f32 * 0.8;
-            let alpha = ((20 - layer * 5) as f32 * glow_intensity) as u8; // Consistent: 20, 15, 10
-
-            let glow_rect = fill_rect.expand(expansion);
-            let glow_with_alpha = Color32::from_rgba_unmultiplied(
-                fill_color.r(),
-                fill_color.g(),
-                fill_color.b(),
-                alpha,
-            );
-
-            painter.rect_filled(glow_rect, corner_radius + expansion, glow_with_alpha);
-        }
-
-        // Sample colors from bottom to top for the actual fill
+        // Sample colors from bottom to top
         let steps = 50;
         for i in 0..steps {
             let t = i as f32 / steps as f32;
             let next_t = (i + 1) as f32 / steps as f32;
 
-            if next_t > level {
+            if t > display_level {
                 break;
             }
 
-            // Get base color and brighten it slightly based on level
-            let base_color = self.get_color_at_level(t);
+            let capped_next = next_t.min(display_level);
+
+            // Map display position back to linear level for color lookup
+            let color_t = t * t; // inverse of sqrt
+            let base_color = self.get_color_at_level(color_t);
 
             // Subtle brightness increase for the fill itself
             let brightness = level.powf(1.5).mul_add(0.3, 1.0);
@@ -450,7 +428,7 @@ impl AudioMeter {
                 base_color.a(),
             );
 
-            let segment_min_y = meter_rect.max.y - (next_t * meter_rect.height());
+            let segment_min_y = meter_rect.max.y - (capped_next * meter_rect.height());
             let segment_max_y = meter_rect.max.y - (t * meter_rect.height());
 
             let segment_rect = Rect::from_min_max(

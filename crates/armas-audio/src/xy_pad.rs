@@ -133,7 +133,7 @@ impl<'a> XYPad<'a> {
             glow_intensity: 0.8,
             id: None,
             velocity_mode: true,
-            velocity_sensitivity: 1.0,
+            velocity_sensitivity: 0.4,
             default_x: None,
             default_y: None,
         }

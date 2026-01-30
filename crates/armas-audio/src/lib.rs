@@ -44,10 +44,7 @@ pub use fader::{Fader, FaderScalePosition, FaderStrip};
 pub use icons::TransportIcon;
 pub use knob::Knob;
 pub use meter::{AudioMeter, MeterStyle, ScalePosition};
-pub use midi_controller::{
-    ControllerLayout, ControllerSections, MidiController, MidiControllerResponse,
-    MidiControllerState,
-};
+pub use midi_controller::{MidiController, MidiControllerResponse, MidiControllerState};
 pub use midi_pad::{MidiPad, MidiPadResponse, PadColorScheme, PadConfig, PadState, PadVariant};
 pub use mixer_strip::{Insert, MixerStrip, MixerStripMode, MixerStripResponse, Route, Send};
 pub use mod_wheel::{ModWheel, WheelSize, WheelType};
