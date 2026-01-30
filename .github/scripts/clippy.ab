@@ -1,0 +1,8 @@
+// CI: Run clippy lints
+main {
+    $ cargo clippy --workspace --all-features --all-targets -- -D warnings $ failed {
+        echo "Clippy found warnings"
+        fail 1
+    }
+    echo "Clippy passed"
+}

@@ -1,0 +1,8 @@
+// CI: Run workspace tests
+main {
+    $ cargo test --workspace --all-features $ failed {
+        echo "Tests failed"
+        fail 1
+    }
+    echo "All tests passed"
+}

@@ -1,0 +1,38 @@
+// Helper: Bump workspace version and update inter-crate dependency pins
+main(args) {
+    let ver = args[1]
+    if ver == "" {
+        echo "Usage: bump_version.sh <new-version>"
+        echo "Example: bump_version.sh 0.2.0"
+        fail 1
+    }
+
+    echo "Bumping all versions to {ver}..."
+    echo ""
+
+    // Update workspace version in root Cargo.toml
+    trust $ sed -i '' 's/^version = "[0-9.]*"/version = "'{ver}'"/' Cargo.toml $
+    echo "Updated Cargo.toml (workspace)"
+
+    // Update armas/Cargo.toml: armas-icon version
+    trust $ sed -i '' 's/armas-icon = \{ version = "[0-9.]*"/armas-icon = \{ version = "'{ver}'"/' crates/armas/Cargo.toml $
+    echo "Updated crates/armas/Cargo.toml"
+
+    // Update armas-audio/Cargo.toml: armas and armas-icon versions
+    trust $ sed -i '' 's/armas = \{ version = "[0-9.]*"/armas = \{ version = "'{ver}'"/' crates/armas-audio/Cargo.toml $
+    trust $ sed -i '' 's/armas-icon = \{ version = "[0-9.]*"/armas-icon = \{ version = "'{ver}'"/' crates/armas-audio/Cargo.toml $
+    echo "Updated crates/armas-audio/Cargo.toml"
+
+    // Update armas-animated/Cargo.toml: armas version
+    trust $ sed -i '' 's/armas = \{ version = "[0-9.]*"/armas = \{ version = "'{ver}'"/' crates/armas-animated/Cargo.toml $
+    echo "Updated crates/armas-animated/Cargo.toml"
+
+    echo ""
+    echo "All versions bumped to {ver}"
+    echo ""
+    echo "Next steps:"
+    echo "  1. Update CHANGELOGs in each crate"
+    echo "  2. git add -A && git commit -m 'Release v{ver}'"
+    echo "  3. git tag v{ver}"
+    echo "  4. git push origin master --tags"
+}

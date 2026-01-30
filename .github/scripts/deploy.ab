@@ -1,0 +1,14 @@
+// Deploy: Build WASM with Trunk and prepare for GitHub Pages
+main {
+    $ cd crates/armas-web && trunk build --release $ failed {
+        echo "WASM build failed"
+        fail 1
+    }
+    echo "WASM build succeeded"
+
+    $ touch dist/.nojekyll $ failed {
+        echo "Failed to create .nojekyll"
+        fail 1
+    }
+    echo "Deploy artifacts ready"
+}

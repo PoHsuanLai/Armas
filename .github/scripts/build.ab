@@ -1,0 +1,8 @@
+// CI: Build workspace
+main {
+    $ cargo build --workspace --all-features $ failed {
+        echo "Build failed"
+        fail 1
+    }
+    echo "Build succeeded"
+}

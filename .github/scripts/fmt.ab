@@ -1,0 +1,8 @@
+// CI: Check formatting
+main {
+    $ cargo fmt --all -- --check $ failed {
+        echo "Formatting check failed. Run 'cargo fmt --all' to fix."
+        fail 1
+    }
+    echo "Formatting OK"
+}

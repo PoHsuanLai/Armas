@@ -25,7 +25,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run tests
-        run: cargo test --workspace --all-features
+        run: bash .github/scripts/test.sh
 
   fmt:
     name: Format
@@ -41,7 +41,7 @@ jobs:
           components: rustfmt
 
       - name: Check formatting
-        run: cargo fmt --all -- --check
+        run: bash .github/scripts/fmt.sh
 
   clippy:
     name: Clippy
@@ -60,7 +60,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run clippy
-        run: cargo clippy --workspace --all-features --all-targets -- -D warnings
+        run: bash .github/scripts/clippy.sh
 
   build:
     name: Build
@@ -77,7 +77,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Build workspace
-        run: cargo build --workspace --all-features
+        run: bash .github/scripts/build.sh
 
   build-wasm:
     name: Build WASM
@@ -101,6 +101,4 @@ jobs:
           version: 'latest'
 
       - name: Build with Trunk
-        run: |
-          cd crates/armas-web
-          trunk build --release
+        run: bash .github/scripts/build_wasm.sh

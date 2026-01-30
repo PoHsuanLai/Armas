@@ -36,13 +36,8 @@ jobs:
         with:
           version: 'latest'
 
-      - name: Build with Trunk
-        run: |
-          cd crates/armas-web
-          trunk build --release
-
-      - name: Add .nojekyll
-        run: touch dist/.nojekyll
+      - name: Build and prepare deploy
+        run: bash .github/scripts/deploy.sh
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
