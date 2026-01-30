@@ -54,6 +54,8 @@ pub struct Slot<'a> {
     pub width: f32,
     /// Height of the insert box
     pub height: f32,
+    /// Custom slot color (overrides auto-detection from effect name)
+    pub color: Option<egui::Color32>,
 }
 
 impl Default for Slot<'_> {
@@ -72,6 +74,7 @@ impl<'a> Slot<'a> {
             level: 0.0,
             width: 140.0,
             height: 28.0,
+            color: None,
         }
     }
 
@@ -118,9 +121,16 @@ impl<'a> Slot<'a> {
         self
     }
 
+    /// Set a custom slot color (overrides auto-detection from effect name)
+    #[must_use]
+    pub const fn color(mut self, color: egui::Color32) -> Self {
+        self.color = Some(color);
+        self
+    }
+
     /// Show the slot component
     pub fn show(self, ui: &mut egui::Ui, theme: &armas::Theme) -> SlotResponse {
-        let font_size = ui.spacing().interact_size.y * 0.4;
+        let font_size = (self.height * 0.55).max(8.0);
         let (rect, response) =
             ui.allocate_exact_size(egui::vec2(self.width, self.height), egui::Sense::click());
 
@@ -130,13 +140,22 @@ impl<'a> Slot<'a> {
         let (mut box_color, mut border_color, mut text_color) = self.name.map_or_else(
             || (theme.card(), theme.border(), theme.muted_foreground()),
             |name| {
-                let effect_color = get_effect_color(name, theme);
+                let effect_color = self.color.unwrap_or_else(|| get_effect_color(name, theme));
                 let border = if self.bypassed {
                     theme.muted_foreground()
                 } else {
                     effect_color.gamma_multiply(1.3)
                 };
-                (effect_color, border, theme.foreground())
+                // Use luminance to pick contrasting text color
+                let lum = 0.299 * effect_color.r() as f32
+                    + 0.587 * effect_color.g() as f32
+                    + 0.114 * effect_color.b() as f32;
+                let text = if lum > 140.0 {
+                    egui::Color32::from_gray(20)
+                } else {
+                    egui::Color32::from_gray(240)
+                };
+                (effect_color, border, text)
             },
         );
 
@@ -181,7 +200,7 @@ impl<'a> Slot<'a> {
             rect.left_center() + egui::vec2(theme.spacing.sm, 0.0),
             egui::Align2::LEFT_CENTER,
             label,
-            egui::FontId::proportional(font_size * 0.9),
+            egui::FontId::proportional(font_size),
             text_color,
         );
 

@@ -66,6 +66,7 @@ pub struct Input {
     left_icon: Option<String>,
     right_icon: Option<String>,
     width: Option<f32>,
+    custom_height: Option<f32>,
     password: bool,
     disabled: bool,
 }
@@ -83,6 +84,7 @@ impl Input {
             left_icon: None,
             right_icon: None,
             width: None,
+            custom_height: None,
             password: false,
             disabled: false,
         }
@@ -139,6 +141,12 @@ impl Input {
     /// Set width
     pub fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
+        self
+    }
+
+    /// Set explicit height (overrides variant-based height)
+    pub fn height(mut self, height: f32) -> Self {
+        self.custom_height = Some(height);
         self
     }
 
@@ -238,11 +246,13 @@ impl Input {
         width: f32,
         theme: &crate::Theme,
     ) -> Response {
-        let height = if self.variant == InputVariant::Inline {
-            28.0
-        } else {
-            HEIGHT
-        };
+        let height = self
+            .custom_height
+            .unwrap_or(if self.variant == InputVariant::Inline {
+                28.0
+            } else {
+                HEIGHT
+            });
 
         // Calculate border color based on state
         let border_color = match self.state {
@@ -299,8 +309,14 @@ impl Input {
                 egui::StrokeKind::Inside,
             );
 
-            // Calculate content rect with padding
-            let content_rect = rect.shrink2(Vec2::new(PADDING_X, PADDING_Y));
+            // Scale font and padding to fit custom height
+            let font_size = if height < FONT_SIZE + PADDING_Y * 2.0 {
+                (height * 0.6).max(8.0)
+            } else {
+                FONT_SIZE
+            };
+            let padding_y = ((height - font_size) / 2.0).max(0.0);
+            let content_rect = rect.shrink2(Vec2::new(PADDING_X, padding_y));
 
             // Layout: [left_icon] [text_input] [right_icon]
             let mut x_offset = content_rect.left();
@@ -359,7 +375,7 @@ impl Input {
             child_ui
                 .style_mut()
                 .text_styles
-                .insert(egui::TextStyle::Body, egui::FontId::proportional(FONT_SIZE));
+                .insert(egui::TextStyle::Body, egui::FontId::proportional(font_size));
 
             let mut text_edit = TextEdit::singleline(text)
                 .hint_text(&self.placeholder)

@@ -381,7 +381,6 @@ impl Knob {
         glow_color: Color32,
         value: f32,
     ) {
-        self.render_outer_shadow(painter, center, radius);
         self.render_ceramic_body(painter, center, radius, base_color);
         self.render_shadow_arcs(painter, center, radius);
         self.render_glass_glaze(painter, center, radius);
@@ -390,19 +389,6 @@ impl Knob {
         self.render_sharp_highlights(painter, center, radius);
         self.render_edge_refraction(painter, center, radius);
         self.render_rim_effects(painter, center, radius, value, glow_color);
-    }
-
-    /// Render outer shadow for depth
-    fn render_outer_shadow(&self, painter: &egui::Painter, center: Pos2, radius: f32) {
-        for i in 0..6 {
-            let shadow_radius = ((6 - i) as f32).mul_add(1.0, radius);
-            let shadow_alpha = 20 - i * 3;
-            painter.circle_filled(
-                center,
-                shadow_radius,
-                Color32::from_rgba_unmultiplied(0, 0, 0, shadow_alpha as u8),
-            );
-        }
     }
 
     /// Render ceramic body with gradient
@@ -642,7 +628,7 @@ impl Knob {
         // Bottom edge shadow
         painter.circle_stroke(
             center,
-            radius + 0.5,
+            radius - 0.5,
             Stroke::new(1.0, Color32::from_rgba_unmultiplied(0, 0, 0, 50)),
         );
     }
@@ -710,7 +696,7 @@ impl Knob {
                 let next_angle = ((i + 1) as f32 / segments as f32)
                     .mul_add(current_angle - min_angle, min_angle);
 
-                let glow_radius = radius - 0.5 + glow_offset;
+                let glow_radius = (radius - 0.5 + glow_offset).min(radius);
                 let p1 = Pos2::new(
                     angle.cos().mul_add(glow_radius, center.x),
                     angle.sin().mul_add(glow_radius, center.y),

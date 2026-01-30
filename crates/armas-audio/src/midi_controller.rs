@@ -5,7 +5,7 @@
 
 use crate::{
     MidiPad, MidiPadResponse, ModWheel, PadColorScheme, PadConfig, PadState, PadVariant, Piano,
-    PianoOrientation, PianoResponse, StepSequencer, WheelType, WheelVariant, XYPad, XYPadVariant,
+    PianoOrientation, PianoResponse, StepSequencer, WheelType, WheelSize, XYPad, XYPadVariant,
 };
 use armas::components::cards::{Card, CardVariant};
 use egui::{Response, Ui};
@@ -135,7 +135,7 @@ pub struct MidiController<'a> {
     drum_pad_rows: usize,
     drum_pad_cols: usize,
     sequencer_steps: usize,
-    wheel_variant: WheelVariant,
+    wheel_size: WheelSize,
     pad_variant: PadVariant,
 }
 
@@ -151,7 +151,7 @@ impl<'a> MidiController<'a> {
             drum_pad_rows: 4,
             drum_pad_cols: 4,
             sequencer_steps: 16,
-            wheel_variant: WheelVariant::Filled,
+            wheel_size: WheelSize::Default,
             pad_variant: PadVariant::Filled,
         }
     }
@@ -211,10 +211,10 @@ impl<'a> MidiController<'a> {
         self
     }
 
-    /// Set visual variant for wheels
+    /// Set size preset for wheels
     #[must_use]
-    pub const fn wheel_variant(mut self, variant: WheelVariant) -> Self {
-        self.wheel_variant = variant;
+    pub const fn wheel_size(mut self, size: WheelSize) -> Self {
+        self.wheel_size = size;
         self
     }
 
@@ -256,18 +256,16 @@ impl<'a> MidiController<'a> {
 
                                     let mod_response = ModWheel::new(&mut self.state.mod_wheel)
                                         .wheel_type(WheelType::Modulation)
-                                        .variant(self.wheel_variant)
+                                        .size(self.wheel_size)
                                         .label("Mod")
-                                        .height(180.0)
                                         .id("midi_controller_mod_wheel")
                                         .show(ui, theme);
                                     mod_wheel_changed = mod_response.changed();
 
                                     let pitch_response = ModWheel::new(&mut self.state.pitch_wheel)
                                         .wheel_type(WheelType::PitchBend)
-                                        .variant(self.wheel_variant)
+                                        .size(self.wheel_size)
                                         .label("Pitch")
-                                        .height(180.0)
                                         .id("midi_controller_pitch_wheel")
                                         .show(ui, theme);
                                     pitch_wheel_changed = pitch_response.changed();

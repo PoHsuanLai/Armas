@@ -1,7 +1,8 @@
 //! Mod Wheel Component
 //!
-//! Vertical strip controller for modulation, pitch bend, and expression.
-//! Essential for expressive MIDI performance.
+//! Rotating cylinder controller for modulation, pitch bend, and expression.
+//! Renders as a 3D cylinder visible through a recessed slot, with scrolling
+//! grip ridges that simulate rotation as the value changes.
 
 use armas::animation::{VelocityDrag, VelocityDragConfig};
 use armas::theme::Theme;
@@ -18,15 +19,36 @@ pub enum WheelType {
     Expression,
 }
 
-/// Visual style variant for wheel
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum WheelVariant {
-    /// Filled wheel with solid background
-    Filled,
-    /// Outlined wheel with transparent background
-    Outlined,
-    /// Elevated wheel with shadow effect
-    Elevated,
+/// Size preset for wheel
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum WheelSize {
+    /// Small - 30x120
+    Small,
+    /// Default - 40x180
+    #[default]
+    Default,
+    /// Large - 50x220
+    Large,
+}
+
+impl WheelSize {
+    /// Width in pixels
+    const fn width(self) -> f32 {
+        match self {
+            Self::Small => 30.0,
+            Self::Default => 40.0,
+            Self::Large => 50.0,
+        }
+    }
+
+    /// Height in pixels
+    const fn height(self) -> f32 {
+        match self {
+            Self::Small => 120.0,
+            Self::Default => 180.0,
+            Self::Large => 220.0,
+        }
+    }
 }
 
 /// Internal drag state for `ModWheel`
@@ -37,7 +59,7 @@ struct ModWheelDragState {
 
 /// Mod Wheel controller component
 ///
-/// A vertical strip controller for modulation, pitch bend, and expression.
+/// A rotating cylinder controller for modulation, pitch bend, and expression.
 ///
 /// # Example
 ///
@@ -62,13 +84,10 @@ struct ModWheelDragState {
 pub struct ModWheel<'a> {
     value: &'a mut f32,
     wheel_type: WheelType,
-    variant: WheelVariant,
-    width: f32,
-    height: f32,
+    size: WheelSize,
     label: Option<String>,
     show_value: bool,
     show_center_line: bool,
-    glow_intensity: f32,
     id: Option<egui::Id>,
     /// Enable velocity-based dragging (Ctrl/Cmd for fine control)
     velocity_mode: bool,
@@ -84,13 +103,10 @@ impl<'a> ModWheel<'a> {
         Self {
             value,
             wheel_type: WheelType::Modulation,
-            variant: WheelVariant::Filled,
-            width: 40.0,
-            height: 200.0,
+            size: WheelSize::Default,
             label: None,
             show_value: false,
             show_center_line: false,
-            glow_intensity: 0.8,
             id: None,
             velocity_mode: true,
             velocity_sensitivity: 1.0,
@@ -116,24 +132,10 @@ impl<'a> ModWheel<'a> {
         self
     }
 
-    /// Set visual variant
+    /// Set size preset
     #[must_use]
-    pub const fn variant(mut self, variant: WheelVariant) -> Self {
-        self.variant = variant;
-        self
-    }
-
-    /// Set width
-    #[must_use]
-    pub const fn width(mut self, width: f32) -> Self {
-        self.width = width.max(20.0);
-        self
-    }
-
-    /// Set height
-    #[must_use]
-    pub const fn height(mut self, height: f32) -> Self {
-        self.height = height.max(100.0);
+    pub const fn size(mut self, size: WheelSize) -> Self {
+        self.size = size;
         self
     }
 
@@ -155,13 +157,6 @@ impl<'a> ModWheel<'a> {
     #[must_use]
     pub const fn show_center_line(mut self, show: bool) -> Self {
         self.show_center_line = show;
-        self
-    }
-
-    /// Set glow intensity
-    #[must_use]
-    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
-        self.glow_intensity = intensity.clamp(0.0, 1.0);
         self
     }
 
@@ -212,7 +207,7 @@ impl<'a> ModWheel<'a> {
 
         *self.value = self.value.clamp(min_val, max_val);
 
-        let desired_size = Vec2::new(self.width, self.height);
+        let desired_size = Vec2::new(self.size.width(), self.size.height());
         let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
 
         // Get or create drag state
@@ -252,7 +247,7 @@ impl<'a> ModWheel<'a> {
                     let delta = drag_state.drag.update_tracked(
                         f64::from(pos.y),
                         value_range,
-                        f64::from(self.height),
+                        f64::from(self.size.height()),
                     );
                     // Invert delta since moving up should increase value
                     *self.value = (f64::from(*self.value) - delta)
@@ -277,6 +272,18 @@ impl<'a> ModWheel<'a> {
             response.mark_changed();
         }
 
+        // Handle mouse wheel scroll for fine adjustment
+        if response.hovered() {
+            let scroll_delta = ui.input(|i| i.smooth_scroll_delta.y);
+            if scroll_delta.abs() > 0.0 {
+                let sensitivity = 0.005;
+                let delta = scroll_delta * sensitivity;
+                *self.value = (*self.value + delta).clamp(min_val, max_val);
+                response.mark_changed();
+                ui.ctx().input_mut(|i| i.smooth_scroll_delta = Vec2::ZERO);
+            }
+        }
+
         // Store drag state
         ui.ctx().data_mut(|d| d.insert_temp(drag_id, drag_state));
 
@@ -284,46 +291,38 @@ impl<'a> ModWheel<'a> {
             let painter = ui.painter();
             let corner_radius = f32::from(theme.spacing.corner_radius_small);
 
-            // Draw based on variant
-            match self.variant {
-                WheelVariant::Filled => {
-                    self.draw_filled(painter, theme, rect, corner_radius);
-                }
-                WheelVariant::Outlined => {
-                    self.draw_outlined(painter, theme, rect, corner_radius);
-                }
-                WheelVariant::Elevated => {
-                    self.draw_elevated(painter, theme, rect, corner_radius);
-                }
-            }
+            // Draw housing
+            painter.rect_filled(rect, corner_radius, theme.muted());
+            painter.rect_stroke(
+                rect,
+                corner_radius,
+                egui::Stroke::new(1.0, theme.border()),
+                egui::StrokeKind::Outside,
+            );
 
-            // Draw center line (for pitch bend)
+            // Calculate cylinder surface area (inset from housing)
+            let inset = 3.0;
+            let cylinder_rect = rect.shrink2(Vec2::new(inset, inset));
+
+            // Calculate ridge offset from current value (scrolling texture)
+            let normalized = (*self.value - min_val) / (max_val - min_val);
+            let ridge_offset = normalized * cylinder_rect.height();
+
+            // Draw the rotating cylinder surface
+            let is_active = response.dragged() || response.is_pointer_button_down_on();
+            self.draw_cylinder_surface(painter, theme, cylinder_rect, ridge_offset, is_active);
+
+            // Draw center line (for pitch bend) on top of cylinder
             if self.show_center_line {
-                let center_y = rect.center().y;
+                let center_y = cylinder_rect.center().y;
                 painter.line_segment(
                     [
-                        Pos2::new(rect.min.x + 4.0, center_y),
-                        Pos2::new(rect.max.x - 4.0, center_y),
+                        Pos2::new(cylinder_rect.min.x + 2.0, center_y),
+                        Pos2::new(cylinder_rect.max.x - 2.0, center_y),
                     ],
                     egui::Stroke::new(1.0, theme.border()),
                 );
             }
-
-            // Draw handle
-            let normalized = (*self.value - min_val) / (max_val - min_val);
-            let handle_y = normalized.mul_add(-rect.height(), rect.max.y);
-            let handle_rect = Rect::from_min_size(
-                Pos2::new(rect.min.x + 2.0, handle_y - 8.0),
-                Vec2::new(self.width - 4.0, 16.0),
-            );
-
-            // Draw realistic wheel handle
-            self.draw_wheel_handle(
-                painter,
-                theme,
-                handle_rect,
-                response.dragged() || response.is_pointer_button_down_on(),
-            );
 
             // Draw label
             if let Some(label) = &self.label {
@@ -360,195 +359,145 @@ impl<'a> ModWheel<'a> {
         response
     }
 
-    fn draw_wheel_handle(
+    /// Draw the cylinder surface visible through the slot.
+    ///
+    /// The cylinder stays in place — only the grip ridges scroll vertically
+    /// to simulate rotation, creating the illusion of a real mod wheel.
+    fn draw_cylinder_surface(
         &self,
         painter: &egui::Painter,
         theme: &Theme,
         rect: Rect,
-        is_dragging: bool,
+        ridge_offset: f32,
+        is_active: bool,
     ) {
-        let handle_color = theme.primary();
+        // --- Layer 1: Dark recessed slot background ---
+        painter.rect_filled(rect, 2.0, Color32::from_rgb(15, 15, 18));
 
-        // Base color components from primary
-        let base_r = handle_color.r();
-        let base_g = handle_color.g();
-        let base_b = handle_color.b();
+        // --- Layer 2: Cylinder body with horizontal cylindrical shading ---
+        // Shade column-by-column: darkest at left/right edges, brightest at center
+        // This simulates a convex cylinder lit from the front.
+        let bg = theme.muted();
+        let bg_lum = (u16::from(bg.r()) + u16::from(bg.g()) + u16::from(bg.b())) / 3;
+        let is_dark_theme = bg_lum < 128;
+        let base_gray: u8 = if is_dark_theme { 85 } else { 160 };
+        let brightness_boost: f32 = if is_active { 0.08 } else { 0.0 };
 
-        // Glow effect when dragging (outer shadow)
-        if is_dragging {
-            for i in 0..5 {
-                let offset = (i + 1) as f32 * 2.0;
-                let alpha = ((1.0 - i as f32 / 5.0) * 60.0 * self.glow_intensity) as u8;
-                let glow_color = Color32::from_rgba_unmultiplied(base_r, base_g, base_b, alpha);
-                painter.rect_filled(rect.expand(offset), 6.0, glow_color);
-            }
-        }
+        let width = rect.width();
+        let steps = width.max(1.0) as usize;
 
-        // Wheel body rounded corners (more wheel-like)
-        let wheel_radius = 6.0;
+        for i in 0..steps {
+            let t = i as f32 / (steps.max(2) - 1) as f32;
+            // Cosine falloff: 1.0 at center (t=0.5), 0.0 at edges
+            let angle = (t - 0.5) * std::f32::consts::PI;
+            let cylinder_brightness = angle.cos();
+            // Map to brightness range: ~0.55 at edges, ~1.0 at center
+            let brightness = (0.55 + 0.45 * cylinder_brightness + brightness_boost).min(1.15);
 
-        // Shadow/depth on bottom and right edges for 3D effect
-        let shadow_rect = rect.translate(Vec2::new(0.5, 0.8));
-        painter.rect_filled(
-            shadow_rect,
-            wheel_radius,
-            Color32::from_rgba_unmultiplied(0, 0, 0, 50),
-        );
+            let gray = (f32::from(base_gray) * brightness).min(255.0) as u8;
+            let color = Color32::from_rgb(gray, gray, gray);
 
-        // Main wheel body with vertical gradient for cylindrical depth
-        let gradient_steps = rect.height() as usize;
-        for i in 0..gradient_steps {
-            let t = i as f32 / gradient_steps.max(1) as f32;
-            // Create cylindrical effect: darker at edges, lighter at center
-            let brightness = if t < 0.5 {
-                0.75 + t * 0.5 // 0.75 to 1.0
-            } else {
-                1.25 - t * 0.5 // 1.0 to 0.75
-            };
-
-            let color = Color32::from_rgb(
-                (f32::from(base_r) * brightness).min(255.0) as u8,
-                (f32::from(base_g) * brightness).min(255.0) as u8,
-                (f32::from(base_b) * brightness).min(255.0) as u8,
-            );
-
-            let y = rect.min.y + i as f32;
-            if y < rect.max.y {
+            let x = rect.min.x + i as f32;
+            if x < rect.max.x {
                 painter.line_segment(
-                    [
-                        Pos2::new(rect.min.x + 2.0, y),
-                        Pos2::new(rect.max.x - 2.0, y),
-                    ],
+                    [Pos2::new(x, rect.min.y), Pos2::new(x, rect.max.y)],
                     egui::Stroke::new(1.0, color),
                 );
             }
         }
 
-        // Top highlight (wheel edge catching light)
-        painter.line_segment(
-            [
-                Pos2::new(rect.min.x + 3.0, rect.min.y + 1.0),
-                Pos2::new(rect.max.x - 3.0, rect.min.y + 1.0),
-            ],
-            egui::Stroke::new(1.5, Color32::from_rgba_unmultiplied(255, 255, 255, 100)),
-        );
+        // --- Layer 3: Scrolling grip ridges (clipped to slot) ---
+        let clipped = painter.with_clip_rect(rect);
+        let ridge_spacing = 4.0;
+        // Enough ridges to cover the slot plus full scroll range
+        let total_extent = rect.height() * 2.0;
+        let ridge_count = (total_extent / ridge_spacing) as usize + 2;
+        let base_y = rect.min.y - rect.height();
 
-        // Horizontal grip ridges (suggesting tactile texture)
-        let ridge_spacing = 2.5;
-        let ridge_count = (rect.height() / ridge_spacing) as usize;
         for i in 0..ridge_count {
-            let y = (i as f32).mul_add(ridge_spacing, rect.min.y + 2.0);
-            if y < rect.max.y - 2.0 {
-                painter.line_segment(
+            let y = base_y + (i as f32 * ridge_spacing) + (ridge_offset % ridge_spacing);
+            if y > rect.min.y - ridge_spacing && y < rect.max.y + ridge_spacing {
+                // Dark ridge line
+                clipped.line_segment(
                     [
-                        Pos2::new(rect.min.x + 4.0, y),
-                        Pos2::new(rect.max.x - 4.0, y),
+                        Pos2::new(rect.min.x + 3.0, y),
+                        Pos2::new(rect.max.x - 3.0, y),
                     ],
-                    egui::Stroke::new(0.5, Color32::from_rgba_unmultiplied(0, 0, 0, 70)),
+                    egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(0, 0, 0, 80)),
+                );
+                // Light highlight below each ridge (3D groove effect)
+                clipped.line_segment(
+                    [
+                        Pos2::new(rect.min.x + 3.0, y + 1.0),
+                        Pos2::new(rect.max.x - 3.0, y + 1.0),
+                    ],
+                    egui::Stroke::new(0.5, Color32::from_rgba_unmultiplied(255, 255, 255, 30)),
                 );
             }
         }
 
-        // Center vertical groove (finger grip indent)
-        let groove_x = rect.center().x;
-        let groove_top = rect.min.y + 3.0;
-        let groove_bottom = rect.max.y - 3.0;
+        // --- Layer 4: Top edge shadow (slot rim casts shadow downward) ---
+        for i in 0..6u8 {
+            let alpha = 40u8.saturating_sub(i * 6);
+            let y = rect.min.y + f32::from(i);
+            painter.line_segment(
+                [Pos2::new(rect.min.x, y), Pos2::new(rect.max.x, y)],
+                egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(0, 0, 0, alpha)),
+            );
+        }
 
-        // Dark line for groove
-        painter.line_segment(
-            [
-                Pos2::new(groove_x - 0.5, groove_top),
-                Pos2::new(groove_x - 0.5, groove_bottom),
-            ],
-            egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(0, 0, 0, 100)),
-        );
+        // --- Layer 5: Bottom edge shadow (slot rim casts shadow upward) ---
+        for i in 0..6u8 {
+            let alpha = 40u8.saturating_sub(i * 6);
+            let y = rect.max.y - f32::from(i);
+            painter.line_segment(
+                [Pos2::new(rect.min.x, y), Pos2::new(rect.max.x, y)],
+                egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(0, 0, 0, alpha)),
+            );
+        }
 
-        // Light highlight on right side of groove
-        painter.line_segment(
-            [
-                Pos2::new(groove_x + 0.5, groove_top),
-                Pos2::new(groove_x + 0.5, groove_bottom),
-            ],
-            egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(255, 255, 255, 50)),
-        );
+        // --- Layer 6: Left/right edge darkening (curvature reinforcement) ---
+        for i in 0..3u8 {
+            let alpha = 50u8.saturating_sub(i * 15);
+            // Left edge
+            let lx = rect.min.x + f32::from(i);
+            painter.line_segment(
+                [Pos2::new(lx, rect.min.y), Pos2::new(lx, rect.max.y)],
+                egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(0, 0, 0, alpha)),
+            );
+            // Right edge
+            let rx = rect.max.x - f32::from(i);
+            painter.line_segment(
+                [Pos2::new(rx, rect.min.y), Pos2::new(rx, rect.max.y)],
+                egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(0, 0, 0, alpha)),
+            );
+        }
 
-        // Outer border/edge for definition
+        // --- Layer 7: Center specular highlight ---
+        let cx = rect.center().x;
+        for offset in -1..=1_i32 {
+            let alpha = if offset == 0 { 35u8 } else { 15u8 };
+            painter.line_segment(
+                [
+                    Pos2::new(cx + offset as f32, rect.min.y + 6.0),
+                    Pos2::new(cx + offset as f32, rect.max.y - 6.0),
+                ],
+                egui::Stroke::new(
+                    1.0,
+                    Color32::from_rgba_unmultiplied(255, 255, 255, alpha),
+                ),
+            );
+        }
+
+        // --- Layer 8: Slot border (crisp edge definition) ---
         painter.rect_stroke(
             rect,
-            wheel_radius,
-            egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(0, 0, 0, 140)),
-            egui::StrokeKind::Outside,
-        );
-
-        // Inner highlight border for depth
-        let inner_rect = rect.shrink(1.0);
-        painter.rect_stroke(
-            inner_rect,
-            wheel_radius - 1.0,
-            egui::Stroke::new(0.5, Color32::from_rgba_unmultiplied(255, 255, 255, 30)),
+            2.0,
+            egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(0, 0, 0, 120)),
             egui::StrokeKind::Inside,
         );
     }
 
-    fn draw_filled(&self, painter: &egui::Painter, theme: &Theme, rect: Rect, corner_radius: f32) {
-        // Background
-        painter.rect_filled(rect, corner_radius, theme.muted());
-
-        // Border
-        painter.rect_stroke(
-            rect,
-            corner_radius,
-            egui::Stroke::new(1.0, theme.border()),
-            egui::StrokeKind::Outside,
-        );
-    }
-
-    fn draw_outlined(
-        &self,
-        painter: &egui::Painter,
-        theme: &Theme,
-        rect: Rect,
-        corner_radius: f32,
-    ) {
-        // Background
-        painter.rect_filled(rect, corner_radius, theme.card());
-
-        // Border
-        painter.rect_stroke(
-            rect,
-            corner_radius,
-            egui::Stroke::new(1.5, theme.border()),
-            egui::StrokeKind::Outside,
-        );
-    }
-
-    fn draw_elevated(
-        &self,
-        painter: &egui::Painter,
-        theme: &Theme,
-        rect: Rect,
-        corner_radius: f32,
-    ) {
-        // Shadow layers
-        for i in 0..3 {
-            let offset = (i + 1) as f32 * 0.5;
-            let shadow_rect = rect.translate(Vec2::new(offset * 0.5, offset));
-            let alpha = (i as f32).mul_add(-5.0, 20.0) as u8;
-            let shadow_color = Color32::from_rgba_unmultiplied(0, 0, 0, alpha);
-            painter.rect_filled(shadow_rect, corner_radius, shadow_color);
-        }
-
-        // Background
-        painter.rect_filled(rect, corner_radius, theme.muted());
-
-        // Border
-        painter.rect_stroke(
-            rect,
-            corner_radius,
-            egui::Stroke::new(1.0, theme.border()),
-            egui::StrokeKind::Outside,
-        );
-    }
 }
 
 #[cfg(test)]

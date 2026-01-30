@@ -1,9 +1,8 @@
 //! Audio Meter Component
 //!
-//! DAW-style audio level meter with smooth animations,
-//! peak hold, and customizable color gradients.
+//! DAW-style audio level meter with peak hold
+//! and customizable color gradients.
 
-use armas::animation::SpringAnimation;
 use armas::color::{lerp_color, with_alpha, ColorStop, Gradient};
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
@@ -40,7 +39,7 @@ pub enum ScalePosition {
 
 /// Audio level meter component
 ///
-/// A professional DAW-style vertical meter with smooth spring-based animation,
+/// A professional DAW-style vertical meter with instant response,
 /// peak hold indicator, and customizable color schemes.
 ///
 /// # Example
@@ -78,8 +77,6 @@ pub enum ScalePosition {
 pub struct AudioMeter {
     /// Target level (0.0 to 1.0)
     target_level: f32,
-    /// Spring animation for smooth level changes
-    level_animation: SpringAnimation,
     /// Peak hold value
     peak_hold: f32,
     /// Time since peak was hit (for fade out)
@@ -106,10 +103,6 @@ pub struct AudioMeter {
     background_opacity: f32,
     /// Enable glassmorphic background
     glassmorphic: bool,
-    /// Animation stiffness (higher = faster response)
-    animation_stiffness: f32,
-    /// Animation damping (higher = less oscillation)
-    animation_damping: f32,
 }
 
 impl AudioMeter {
@@ -119,7 +112,6 @@ impl AudioMeter {
         let clamped_level = level.clamp(0.0, 1.0);
         Self {
             target_level: clamped_level,
-            level_animation: SpringAnimation::new(clamped_level, clamped_level).params(250.0, 18.0), // Fast response, light damping
             peak_hold: clamped_level,
             peak_hold_time: 0.0,
             gradient: None,
@@ -133,8 +125,6 @@ impl AudioMeter {
             corner_radius: 16.0,
             background_opacity: 0.3,
             glassmorphic: true,
-            animation_stiffness: 250.0,
-            animation_damping: 18.0,
         }
     }
 
@@ -251,26 +241,9 @@ impl AudioMeter {
         self
     }
 
-    /// Set animation speed (stiffness parameter, higher = faster response)
-    /// Default is 250.0, try 150.0 for slower, 400.0 for very fast
-    #[must_use]
-    pub const fn animation_speed(mut self, stiffness: f32) -> Self {
-        self.animation_stiffness = stiffness.max(10.0);
-        self
-    }
-
-    /// Set animation damping (higher = less oscillation/bounce)
-    /// Default is 18.0, try 12.0 for more responsive, 25.0 for smoother
-    #[must_use]
-    pub const fn animation_damping(mut self, damping: f32) -> Self {
-        self.animation_damping = damping.max(1.0);
-        self
-    }
-
     /// Update the target level (call this when audio level changes)
     pub fn set_level(&mut self, level: f32) {
         self.target_level = level.clamp(0.0, 1.0);
-        self.level_animation.set_target(self.target_level);
     }
 
     /// Show the meter and return the response
@@ -287,10 +260,9 @@ impl AudioMeter {
         let desired_size = Vec2::new(total_width, self.height);
         let (rect, response) = ui.allocate_exact_size(desired_size, Sense::hover());
 
-        // Update animation
+        // Use target level directly — no animation lag for accurate metering
         let dt = ui.input(|i| i.stable_dt);
-        self.level_animation.update(dt);
-        let current_level = self.level_animation.value.clamp(0.0, 1.0);
+        let current_level = self.target_level.clamp(0.0, 1.0);
 
         // Update peak hold
         if current_level > self.peak_hold {
@@ -307,8 +279,8 @@ impl AudioMeter {
             }
         }
 
-        // Request repaint if animating
-        if !self.level_animation.is_settled(0.001, 0.001) || self.peak_hold_time < 2.5 {
+        // Request repaint if peak hold is still fading
+        if self.peak_hold_time < 2.5 {
             ui.ctx().request_repaint();
         }
 
@@ -369,8 +341,7 @@ impl AudioMeter {
 
             // Draw peak hold indicator
             if self.peak_hold > 0.01 && self.peak_hold_time < 2.5 {
-                let peak_y = self
-                    .peak_hold
+                let peak_y = Self::level_to_display(self.peak_hold)
                     .mul_add(-inner_meter_rect.height(), inner_meter_rect.max.y);
                 let peak_color = self.peak_color.unwrap_or_else(|| theme.primary());
 
@@ -410,6 +381,16 @@ impl AudioMeter {
         }
     }
 
+    /// Map linear amplitude (0.0–1.0) to display position (0.0–1.0).
+    ///
+    /// Uses a power curve so that lower dB values get more visual space,
+    /// matching standard DAW meter ballistics. Without this, the bottom
+    /// quarter of the meter would cover -6 dB to -∞, leaving scale labels
+    /// bunched together.
+    fn level_to_display(level: f32) -> f32 {
+        level.clamp(0.0, 1.0).sqrt()
+    }
+
     /// Draw smooth gradient meter fill
     fn draw_smooth_meter(&self, ui: &mut Ui, meter_rect: Rect, level: f32) {
         let painter = ui.painter();
@@ -419,7 +400,7 @@ impl AudioMeter {
         }
 
         let corner_radius = (meter_rect.width() * 0.5).min(6.0);
-        let fill_height = meter_rect.height() * level;
+        let fill_height = meter_rect.height() * Self::level_to_display(level);
 
         // Calculate fill rect (the actual colored area)
         let fill_rect = Rect::from_min_max(
@@ -490,7 +471,7 @@ impl AudioMeter {
         let gap = 2.0;
         let segment_height =
             (meter_rect.height() - (gap * (segment_count - 1) as f32)) / segment_count as f32;
-        let lit_segments = (level * segment_count as f32).ceil() as usize;
+        let lit_segments = (Self::level_to_display(level) * segment_count as f32).ceil() as usize;
         let corner_radius = (segment_height * 0.5).min(4.0);
 
         // Glow intensity increases with level
@@ -573,7 +554,7 @@ impl AudioMeter {
         let is_left = self.scale_position == ScalePosition::Left;
 
         for (level, label) in db_marks {
-            let y = meter_rect.max.y - level * meter_rect.height();
+            let y = meter_rect.max.y - Self::level_to_display(level) * meter_rect.height();
 
             // Position text in the scale area (outside the meter)
             let (text_pos, text_align) = if is_left {

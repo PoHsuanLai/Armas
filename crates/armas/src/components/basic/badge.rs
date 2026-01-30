@@ -71,6 +71,11 @@ pub struct Badge {
     show_dot: bool,
     removable: bool,
     is_selected: bool,
+    custom_font_size: Option<f32>,
+    custom_corner_radius: Option<f32>,
+    custom_vertical_padding: Option<f32>,
+    custom_height: Option<f32>,
+    min_width: Option<f32>,
 }
 
 impl Badge {
@@ -83,6 +88,11 @@ impl Badge {
             show_dot: false,
             removable: false,
             is_selected: false,
+            custom_font_size: None,
+            custom_corner_radius: None,
+            custom_vertical_padding: None,
+            custom_height: None,
+            min_width: None,
         }
     }
 
@@ -110,8 +120,9 @@ impl Badge {
         self
     }
 
-    /// Set text size (backwards compatibility - ignored)
-    pub fn size(self, _size: f32) -> Self {
+    /// Set text size
+    pub fn size(mut self, size: f32) -> Self {
+        self.custom_font_size = Some(size);
         self
     }
 
@@ -121,13 +132,27 @@ impl Badge {
         self
     }
 
-    /// Set corner radius (backwards compatibility - ignored, always pill)
-    pub fn corner_radius(self, _radius: f32) -> Self {
+    /// Set corner radius
+    pub fn corner_radius(mut self, radius: f32) -> Self {
+        self.custom_corner_radius = Some(radius);
         self
     }
 
-    /// Set vertical padding (backwards compatibility - ignored)
-    pub fn vertical_padding(self, _padding: f32) -> Self {
+    /// Set vertical padding
+    pub fn vertical_padding(mut self, padding: f32) -> Self {
+        self.custom_vertical_padding = Some(padding);
+        self
+    }
+
+    /// Set explicit height (overrides computed height)
+    pub fn height(mut self, height: f32) -> Self {
+        self.custom_height = Some(height);
+        self
+    }
+
+    /// Set minimum width
+    pub fn min_width(mut self, width: f32) -> Self {
+        self.min_width = Some(width);
         self
     }
 
@@ -141,8 +166,13 @@ impl Badge {
     pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> BadgeResponse {
         let (bg_color, text_color, border_color) = self.get_colors(theme);
 
-        // Calculate size using shadcn constants
-        let font_id = egui::FontId::proportional(FONT_SIZE);
+        // Resolve effective values (custom overrides or defaults)
+        let font_size = self.custom_font_size.unwrap_or(FONT_SIZE);
+        let corner_radius = self.custom_corner_radius.unwrap_or(CORNER_RADIUS);
+        let padding_y = self.custom_vertical_padding.unwrap_or(PADDING_Y);
+
+        // Calculate size
+        let font_id = egui::FontId::proportional(font_size);
         let text_galley =
             ui.painter()
                 .layout_no_wrap(self.text.clone(), font_id.clone(), text_color);
@@ -151,8 +181,15 @@ impl Badge {
         let dot_space = if self.show_dot { 12.0 } else { 0.0 };
         let remove_space = if self.removable { 16.0 } else { 0.0 };
 
-        let width = text_width + dot_space + remove_space + PADDING_X * 2.0;
-        let height = FONT_SIZE + PADDING_Y * 2.0 + 4.0; // Extra height for better proportions
+        let content_width = text_width + dot_space + remove_space + PADDING_X * 2.0;
+        let width = if let Some(min_w) = self.min_width {
+            content_width.max(min_w)
+        } else {
+            content_width
+        };
+        let height = self
+            .custom_height
+            .unwrap_or(font_size + padding_y * 2.0 + 4.0);
 
         // Use click sense for interactive badges
         let (rect, response) =
@@ -164,14 +201,14 @@ impl Badge {
                 // Outline: no fill, just border
                 ui.painter().rect_stroke(
                     rect,
-                    CORNER_RADIUS,
+                    corner_radius,
                     egui::Stroke::new(1.0, border_color),
                     egui::StrokeKind::Inside,
                 );
             }
             _ => {
                 // All other variants: filled background
-                ui.painter().rect_filled(rect, CORNER_RADIUS, bg_color);
+                ui.painter().rect_filled(rect, corner_radius, bg_color);
             }
         }
 

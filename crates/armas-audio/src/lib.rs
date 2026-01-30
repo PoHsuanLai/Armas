@@ -49,8 +49,8 @@ pub use midi_controller::{
     MidiControllerState,
 };
 pub use midi_pad::{MidiPad, MidiPadResponse, PadColorScheme, PadConfig, PadState, PadVariant};
-pub use mixer_strip::{Insert, MixerStrip, MixerStripResponse, Route, Send};
-pub use mod_wheel::{ModWheel, WheelType, WheelVariant};
+pub use mixer_strip::{Insert, MixerStrip, MixerStripMode, MixerStripResponse, Route, Send};
+pub use mod_wheel::{ModWheel, WheelSize, WheelType};
 pub use mpe_keyboard::{MPEKey, MPEKeyboard, MPEKeyboardResponse, MPENote, MPEOrientation};
 pub use piano::{Piano, PianoKey, PianoOrientation, PianoResponse};
 pub use piano_roll::{Note, PianoRoll, PianoRollResponse};

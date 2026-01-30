@@ -135,12 +135,12 @@ MidiController::new(&mut state)
 Customize component appearance.
 
 ```demo
-use armas_audio::{MidiController, MidiControllerState, WheelVariant, PadVariant};
+use armas_audio::{MidiController, MidiControllerState, WheelSize, PadVariant};
 
 let mut state = MidiControllerState::default();
 
 MidiController::new(&mut state)
-    .wheel_variant(WheelVariant::Elevated)
+    .wheel_size(WheelSize::Large)
     .pad_variant(PadVariant::Outlined)
     .show(ui, &theme);
 ```
@@ -217,7 +217,7 @@ Creates a new MIDI controller with mutable state reference.
 | `.piano()` | `(u8, i32)` | `(3, 3)` | Piano octaves and start octave |
 | `.drum_pads()` | `(usize, usize)` | `(4, 4)` | Drum pad grid (rows, cols) |
 | `.sequencer_steps()` | `usize` | `16` | Number of sequencer steps |
-| `.wheel_variant()` | `WheelVariant` | `Filled` | Visual variant for wheels |
+| `.wheel_size()` | `WheelSize` | `Default` | Size preset for wheels |
 | `.pad_variant()` | `PadVariant` | `Filled` | Visual variant for pads |
 
 ### Show Method

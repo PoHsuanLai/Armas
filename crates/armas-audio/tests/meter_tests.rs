@@ -209,30 +209,6 @@ fn test_meter_glassmorphic_disabled() {
     harness.step();
 }
 
-/// Test `AudioMeter` with custom animation speed
-#[test]
-fn test_meter_animation_speed() {
-    let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
-        AudioMeter::new(0.5).animation_speed(400.0).show(ui, &theme);
-    });
-
-    harness.step();
-}
-
-/// Test `AudioMeter` with custom animation damping
-#[test]
-fn test_meter_animation_damping() {
-    let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
-        AudioMeter::new(0.5)
-            .animation_damping(25.0)
-            .show(ui, &theme);
-    });
-
-    harness.step();
-}
-
 /// Test `AudioMeter` at minimum level
 #[test]
 fn test_meter_minimum_level() {
@@ -287,8 +263,6 @@ fn test_meter_full_config() {
             .corner_radius(12.0)
             .background_opacity(0.4)
             .glassmorphic(true)
-            .animation_speed(300.0)
-            .animation_damping(20.0)
             .show(ui, &theme);
     });
 

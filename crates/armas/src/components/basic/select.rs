@@ -91,6 +91,7 @@ pub struct Select {
     label: Option<String>,
     placeholder: String,
     width: Option<f32>,
+    custom_height: Option<f32>,
     max_height: f32,
     searchable: bool,
 }
@@ -110,6 +111,7 @@ impl Select {
             label: None,
             placeholder: "Select an option...".to_string(),
             width: None,
+            custom_height: None,
             max_height: 300.0,
             searchable: true,
         }
@@ -151,6 +153,12 @@ impl Select {
     /// Set the width of the select component
     pub fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
+        self
+    }
+
+    /// Set the trigger height (overrides default 36px)
+    pub fn height(mut self, height: f32) -> Self {
+        self.custom_height = Some(height);
         self
     }
 
@@ -275,16 +283,17 @@ impl Select {
     }
 
     fn show_trigger(&self, ui: &mut Ui, theme: &Theme, width: f32) -> (Rect, Response) {
-        let (rect, response) = ui.allocate_exact_size(vec2(width, TRIGGER_HEIGHT), Sense::click());
+        let height = self.custom_height.unwrap_or(TRIGGER_HEIGHT);
+        let (rect, response) = ui.allocate_exact_size(vec2(width, height), Sense::click());
 
         if ui.is_rect_visible(rect) {
-            self.paint_trigger(ui.painter(), rect, &response, theme);
+            self.paint_trigger(ui.painter(), rect, &response, theme, height);
         }
 
         (rect, response)
     }
 
-    fn paint_trigger(&self, painter: &Painter, rect: Rect, response: &Response, theme: &Theme) {
+    fn paint_trigger(&self, painter: &Painter, rect: Rect, response: &Response, theme: &Theme, height: f32) {
         let hovered = response.hovered();
         let is_focused = self.is_open;
         let corner_radius = CornerRadius::same(CORNER_RADIUS);
@@ -325,6 +334,18 @@ impl Select {
             );
         }
 
+        // Scale font and padding for small heights
+        let font_size = if height < 30.0 {
+            (height * 0.55).max(8.0)
+        } else {
+            14.0
+        };
+        let padding_x = if height < 30.0 {
+            (height * 0.3).max(4.0)
+        } else {
+            12.0
+        };
+
         // Display text
         let display_text = self.get_display_text();
         let text_color = if self.selected_value.is_some() {
@@ -333,22 +354,40 @@ impl Select {
             theme.muted_foreground()
         };
         painter.text(
-            rect.left_center() + vec2(12.0, 0.0),
+            rect.left_center() + vec2(padding_x, 0.0),
             egui::Align2::LEFT_CENTER,
             display_text,
-            egui::FontId::proportional(14.0),
+            egui::FontId::proportional(font_size),
             text_color,
         );
 
-        // Chevron
-        let chevron = if self.is_open { "^" } else { "v" };
-        painter.text(
-            rect.right_center() - vec2(12.0, 0.0),
-            egui::Align2::RIGHT_CENTER,
-            chevron,
-            egui::FontId::proportional(12.0),
+        // Solid triangle indicator
+        let tri_size = if height < 30.0 {
+            (height * 0.15).max(2.5)
+        } else {
+            4.0
+        };
+        let center = rect.right_center() - vec2(padding_x + tri_size, 0.0);
+        let triangle = if self.is_open {
+            // Pointing up
+            vec![
+                egui::pos2(center.x, center.y - tri_size),
+                egui::pos2(center.x - tri_size, center.y + tri_size * 0.6),
+                egui::pos2(center.x + tri_size, center.y + tri_size * 0.6),
+            ]
+        } else {
+            // Pointing down
+            vec![
+                egui::pos2(center.x, center.y + tri_size),
+                egui::pos2(center.x - tri_size, center.y - tri_size * 0.6),
+                egui::pos2(center.x + tri_size, center.y - tri_size * 0.6),
+            ]
+        };
+        painter.add(egui::Shape::convex_polygon(
+            triangle,
             theme.muted_foreground(),
-        );
+            Stroke::NONE,
+        ));
     }
 
     fn get_display_text(&self) -> &str {
@@ -483,8 +522,17 @@ impl Select {
             });
     }
 
+    fn item_height(&self) -> f32 {
+        self.custom_height.unwrap_or(ITEM_HEIGHT)
+    }
+
+    fn item_font_size(&self) -> f32 {
+        let h = self.item_height();
+        if h < 30.0 { (h * 0.55).max(8.0) } else { 14.0 }
+    }
+
     fn show_disabled_option(&self, ui: &mut Ui, option: &SelectOption, theme: &Theme, width: f32) {
-        let (rect, _) = ui.allocate_exact_size(vec2(width - 16.0, ITEM_HEIGHT), Sense::hover());
+        let (rect, _) = ui.allocate_exact_size(vec2(width - 16.0, self.item_height()), Sense::hover());
 
         if !ui.is_rect_visible(rect) {
             return;
@@ -494,12 +542,13 @@ impl Select {
         let color = theme.muted_foreground().linear_multiply(0.5);
         let mut label_x = 0.0;
 
+        let font_size = self.item_font_size();
         if let Some(icon) = &option.icon {
             ui.painter().text(
                 content_rect.left_center(),
                 egui::Align2::LEFT_CENTER,
                 icon,
-                egui::FontId::proportional(14.0),
+                egui::FontId::proportional(font_size),
                 color,
             );
             label_x = ICON_WIDTH;
@@ -509,7 +558,7 @@ impl Select {
             content_rect.left_center() + vec2(label_x, 0.0),
             egui::Align2::LEFT_CENTER,
             &option.label,
-            egui::FontId::proportional(14.0),
+            egui::FontId::proportional(font_size),
             color,
         );
     }
@@ -522,16 +571,12 @@ impl Select {
         theme: &Theme,
         width: f32,
     ) -> Option<String> {
-        let is_selected = self
-            .selected_value
-            .as_ref()
-            .map(|v| v == &option.value)
-            .unwrap_or(false);
         let is_highlighted = self.highlighted_index == Some(option_idx);
+        let base_height = self.item_height();
         let height = if option.description.is_some() {
-            ITEM_HEIGHT_WITH_DESC
+            base_height + (ITEM_HEIGHT_WITH_DESC - ITEM_HEIGHT)
         } else {
-            ITEM_HEIGHT
+            base_height
         };
 
         let (rect, response) = ui.allocate_exact_size(vec2(width - 16.0, height), Sense::click());
@@ -554,7 +599,7 @@ impl Select {
         } else {
             theme.popover_foreground()
         };
-        self.paint_option_content(ui.painter(), rect, option, text_color, is_selected, theme);
+        self.paint_option_content(ui.painter(), rect, option, text_color, theme);
 
         // Update highlight on hover
         if response.hovered() {
@@ -574,9 +619,9 @@ impl Select {
         rect: Rect,
         option: &SelectOption,
         text_color: Color32,
-        is_selected: bool,
         theme: &Theme,
     ) {
+        let font_size = self.item_font_size();
         let content_rect = rect.shrink2(vec2(PADDING, 0.0));
         let mut label_x = 0.0;
 
@@ -586,7 +631,7 @@ impl Select {
                 content_rect.left_center(),
                 egui::Align2::LEFT_CENTER,
                 icon,
-                egui::FontId::proportional(14.0),
+                egui::FontId::proportional(font_size),
                 text_color,
             );
             label_x = ICON_WIDTH;
@@ -599,14 +644,14 @@ impl Select {
                 label_pos,
                 egui::Align2::LEFT_TOP,
                 &option.label,
-                egui::FontId::proportional(14.0),
+                egui::FontId::proportional(font_size),
                 text_color,
             );
             painter.text(
-                label_pos + vec2(0.0, 18.0),
+                label_pos + vec2(0.0, font_size + 4.0),
                 egui::Align2::LEFT_TOP,
                 description,
-                egui::FontId::proportional(12.0),
+                egui::FontId::proportional((font_size - 2.0).max(8.0)),
                 theme.muted_foreground(),
             );
         } else {
@@ -614,21 +659,11 @@ impl Select {
                 content_rect.left_center() + vec2(label_x, 0.0),
                 egui::Align2::LEFT_CENTER,
                 &option.label,
-                egui::FontId::proportional(14.0),
+                egui::FontId::proportional(font_size),
                 text_color,
             );
         }
 
-        // Checkmark
-        if is_selected {
-            painter.text(
-                rect.right_center() - vec2(PADDING, 0.0),
-                egui::Align2::RIGHT_CENTER,
-                "v",
-                egui::FontId::proportional(12.0),
-                text_color,
-            );
-        }
     }
 
     // ========================================================================

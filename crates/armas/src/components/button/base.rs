@@ -11,7 +11,6 @@ use egui::{Color32, Response, Sense, Ui, Vec2};
 
 // shadcn Button constants
 const CORNER_RADIUS: f32 = 6.0; // rounded-md
-const FONT_SIZE: f32 = 14.0; // text-sm
 
 /// Button style variant following shadcn/ui
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -32,6 +31,8 @@ pub enum ButtonVariant {
 /// Button size following shadcn/ui
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub enum ButtonSize {
+    /// Extra small - h-5.5 (22px), px-1.5
+    Xs,
     /// Small - h-8 (32px), px-3
     Small,
     /// Default - h-9 (36px), px-4
@@ -44,6 +45,7 @@ pub enum ButtonSize {
 impl ButtonSize {
     fn height(&self) -> f32 {
         match self {
+            ButtonSize::Xs => 22.0,
             ButtonSize::Small => 32.0,
             ButtonSize::Default => 36.0,
             ButtonSize::Large => 40.0,
@@ -52,9 +54,17 @@ impl ButtonSize {
 
     fn padding_x(&self) -> f32 {
         match self {
+            ButtonSize::Xs => 6.0,
             ButtonSize::Small => 12.0,   // px-3
             ButtonSize::Default => 16.0, // px-4
             ButtonSize::Large => 24.0,   // px-6
+        }
+    }
+
+    fn font_size(&self) -> f32 {
+        match self {
+            ButtonSize::Xs => 11.0,
+            _ => 14.0, // text-sm
         }
     }
 }
@@ -67,6 +77,7 @@ pub struct Button {
     enabled: bool,
     full_width: bool,
     min_width: Option<f32>,
+    custom_height: Option<f32>,
 }
 
 impl Button {
@@ -79,6 +90,7 @@ impl Button {
             enabled: true,
             full_width: false,
             min_width: None,
+            custom_height: None,
         }
     }
 
@@ -112,6 +124,12 @@ impl Button {
         self
     }
 
+    /// Set explicit height (overrides size-based height)
+    pub fn height(mut self, height: f32) -> Self {
+        self.custom_height = Some(height);
+        self
+    }
+
     /// Show the button
     pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
         let sense = if self.enabled {
@@ -121,11 +139,11 @@ impl Button {
         };
 
         // Calculate size
-        let height = self.size.height();
+        let height = self.custom_height.unwrap_or_else(|| self.size.height());
         let padding_x = self.size.padding_x();
 
         // Measure text
-        let font_id = egui::FontId::proportional(FONT_SIZE);
+        let font_id = egui::FontId::proportional(self.size.font_size());
         let text_galley =
             ui.painter()
                 .layout_no_wrap(self.text.clone(), font_id.clone(), Color32::PLACEHOLDER);

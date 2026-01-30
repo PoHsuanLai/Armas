@@ -4,7 +4,8 @@
 //! so we use `harness.step()` instead of `harness.run()` for rendering tests.
 
 use armas::ArmasContextExt;
-use armas_audio::mixer_strip::{Insert, MixerStrip, Route, Send};
+use armas::components::basic::SelectOption;
+use armas_audio::mixer_strip::{Insert, MixerStrip, MixerStripMode, Route, Send};
 use egui::Color32;
 use egui_kittest::Harness;
 
@@ -261,7 +262,10 @@ fn test_mixer_strip_custom_sends() {
 fn test_mixer_strip_custom_input_route() {
     let mut harness = Harness::new_ui(|ui| {
         let theme = ui.ctx().armas_theme();
-        let mut strip = MixerStrip::new("Channel 1").input_route(Route::new("Mic 1"));
+        let mut strip = MixerStrip::new("Channel 1").input_route(
+            "mic_1",
+            vec![SelectOption::new("mic_1", "Mic 1"), SelectOption::new("line_1", "Line 1")],
+        );
         strip.show(ui, &theme);
     });
 
@@ -273,7 +277,10 @@ fn test_mixer_strip_custom_input_route() {
 fn test_mixer_strip_custom_output_route() {
     let mut harness = Harness::new_ui(|ui| {
         let theme = ui.ctx().armas_theme();
-        let mut strip = MixerStrip::new("Channel 1").output_route(Route::new("Bus A"));
+        let mut strip = MixerStrip::new("Channel 1").output_route(
+            "bus_a",
+            vec![SelectOption::new("main", "Main"), SelectOption::new("bus_a", "Bus A")],
+        );
         strip.show(ui, &theme);
     });
 
@@ -297,8 +304,8 @@ fn test_mixer_strip_getters() {
         .meter_level(0.5)
         .inserts(inserts)
         .sends(sends)
-        .input_route(Route::new("Input 3"))
-        .output_route(Route::new("Main"));
+        .input_route("input_3", vec![SelectOption::new("input_3", "Input 3")])
+        .output_route("main", vec![SelectOption::new("main", "Main")]);
 
     assert_eq!(strip.get_name(), "Test Channel");
     assert!((strip.get_fader_level() - 0.8).abs() < 0.01);
@@ -310,8 +317,8 @@ fn test_mixer_strip_getters() {
     assert!((strip.get_meter_level() - 0.5).abs() < 0.01);
     assert_eq!(strip.get_inserts().len(), 2);
     assert_eq!(strip.get_sends().len(), 1);
-    assert_eq!(strip.get_input_route().name, "Input 3");
-    assert_eq!(strip.get_output_route().name, "Main");
+    assert_eq!(strip.get_input_route(), "input_3");
+    assert_eq!(strip.get_output_route(), "main");
 }
 
 /// Test `MixerStrip` response fields
@@ -330,9 +337,9 @@ fn test_mixer_strip_response() {
         assert!(!response.solo_toggled);
         assert!(!response.record_toggled);
         assert!(!response.monitor_toggled);
-        assert!(!response.sends_clicked);
-        assert!(!response.input_routing_clicked);
-        assert!(!response.output_routing_clicked);
+        assert!(!response.send_add_clicked);
+        assert!(!response.input_route_changed);
+        assert!(!response.output_route_changed);
     });
 
     harness.step();
@@ -366,8 +373,8 @@ fn test_mixer_strip_full_config() {
             .meter_color(Color32::from_rgb(100, 255, 100))
             .inserts(inserts)
             .sends(sends)
-            .input_route(Route::new("Mic 1"))
-            .output_route(Route::new("Main"));
+            .input_route("mic_1", vec![SelectOption::new("mic_1", "Mic 1")])
+            .output_route("main", vec![SelectOption::new("main", "Main")]);
 
         strip.show(ui, &theme);
     });
@@ -439,6 +446,66 @@ fn test_mixer_strip_default() {
     let mut harness = Harness::new_ui(|ui| {
         let theme = ui.ctx().armas_theme();
         let mut strip = MixerStrip::default();
+        strip.show(ui, &theme);
+    });
+
+    harness.step();
+}
+
+/// Test `MixerStrip` with Full mode
+#[test]
+fn test_mixer_strip_mode_full() {
+    let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
+        let mut strip = MixerStrip::new("Channel 1").mode(MixerStripMode::Full);
+        strip.show(ui, &theme);
+    });
+
+    harness.step();
+}
+
+/// Test `MixerStrip` with Standard mode
+#[test]
+fn test_mixer_strip_mode_standard() {
+    let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
+        let mut strip = MixerStrip::new("Channel 1").mode(MixerStripMode::Standard);
+        strip.show(ui, &theme);
+    });
+
+    harness.step();
+}
+
+/// Test `MixerStrip` with Compact mode
+#[test]
+fn test_mixer_strip_mode_compact() {
+    let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
+        let mut strip = MixerStrip::new("Channel 1").mode(MixerStripMode::Compact);
+        strip.show(ui, &theme);
+    });
+
+    harness.step();
+}
+
+/// Test `MixerStrip` with Minimal mode
+#[test]
+fn test_mixer_strip_mode_minimal() {
+    let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
+        let mut strip = MixerStrip::new("Channel 1").mode(MixerStripMode::Minimal);
+        strip.show(ui, &theme);
+    });
+
+    harness.step();
+}
+
+/// Test `MixerStrip` with Auto mode (default)
+#[test]
+fn test_mixer_strip_mode_auto() {
+    let mut harness = Harness::new_ui(|ui| {
+        let theme = ui.ctx().armas_theme();
+        let mut strip = MixerStrip::new("Channel 1").mode(MixerStripMode::Auto);
         strip.show(ui, &theme);
     });
 

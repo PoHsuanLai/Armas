@@ -59,7 +59,12 @@ fn test_button_min_width() {
 /// Test Button with different sizes
 #[test]
 fn test_button_sizes() {
-    let sizes = [ButtonSize::Small, ButtonSize::Default, ButtonSize::Large];
+    let sizes = [
+        ButtonSize::Xs,
+        ButtonSize::Small,
+        ButtonSize::Default,
+        ButtonSize::Large,
+    ];
 
     for size in sizes {
         let mut harness = Harness::new_ui(|ui| {

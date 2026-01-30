@@ -1,6 +1,6 @@
 # Mod Wheel
 
-Vertical strip controller for modulation, pitch bend, and expression. Essential for expressive MIDI performance.
+Rotating cylinder controller for modulation, pitch bend, and expression. Essential for expressive MIDI performance.
 
 ## Basic Usage
 
@@ -27,7 +27,6 @@ let mut mod_value = 0.0;
 ModWheel::new(&mut mod_value)
     .wheel_type(WheelType::Modulation)
     .label("Mod".to_string())
-    .height(200.0)
     .show(ui, &theme);
 ```
 
@@ -39,7 +38,6 @@ let mut pitch = 0.0;
 ModWheel::new(&mut pitch)
     .wheel_type(WheelType::PitchBend)
     .label("Pitch".to_string())
-    .height(200.0)
     .show(ui, &theme);
 
 ui.label("Release to return to center");
@@ -53,46 +51,36 @@ let mut expression = 0.5;
 ModWheel::new(&mut expression)
     .wheel_type(WheelType::Expression)
     .label("Expr".to_string())
-    .height(200.0)
     .show(ui, &theme);
 ```
 
-## Variants
-
-### Filled (Default)
+## Sizes
 
 ```demo
-let mut value = 0.3;
+ui.horizontal(|ui| {
+    let mut small = 0.3;
+    let mut default = 0.5;
+    let mut large = 0.7;
 
-ModWheel::new(&mut value)
-    .wheel_type(WheelType::Modulation)
-    .variant(WheelVariant::Filled)
-    .height(180.0)
-    .show(ui, &theme);
-```
+    ModWheel::new(&mut small)
+        .size(WheelSize::Small)
+        .label("Small".to_string())
+        .show(ui, &theme);
 
-### Outlined
+    ui.add_space(8.0);
 
-```demo
-let mut value = 0.5;
+    ModWheel::new(&mut default)
+        .size(WheelSize::Default)
+        .label("Default".to_string())
+        .show(ui, &theme);
 
-ModWheel::new(&mut value)
-    .wheel_type(WheelType::Modulation)
-    .variant(WheelVariant::Outlined)
-    .height(180.0)
-    .show(ui, &theme);
-```
+    ui.add_space(8.0);
 
-### Elevated
-
-```demo
-let mut value = 0.7;
-
-ModWheel::new(&mut value)
-    .wheel_type(WheelType::Modulation)
-    .variant(WheelVariant::Elevated)
-    .height(180.0)
-    .show(ui, &theme);
+    ModWheel::new(&mut large)
+        .size(WheelSize::Large)
+        .label("Large".to_string())
+        .show(ui, &theme);
+});
 ```
 
 ## With Value Display
@@ -104,20 +92,6 @@ ModWheel::new(&mut value)
     .wheel_type(WheelType::Modulation)
     .label("Mod".to_string())
     .show_value(true)
-    .height(200.0)
-    .show(ui, &theme);
-```
-
-## Custom Sizing
-
-```demo
-let mut value = 0.4;
-
-ModWheel::new(&mut value)
-    .wheel_type(WheelType::Modulation)
-    .width(50.0)
-    .height(250.0)
-    .label("Wide".to_string())
     .show(ui, &theme);
 ```
 
@@ -131,7 +105,6 @@ let response = ModWheel::new(&mut pitch_bend)
     .label("Pitch".to_string())
     .show_value(true)
     .show_center_line(true)
-    .height(220.0)
     .show(ui, &theme);
 
 // Convert to semitones (+/- 2 semitones typical)
@@ -149,7 +122,6 @@ ui.horizontal(|ui| {
     ModWheel::new(&mut mod_value)
         .wheel_type(WheelType::Modulation)
         .label("Mod".to_string())
-        .height(180.0)
         .show(ui, &theme);
 
     ui.add_space(8.0);
@@ -157,7 +129,6 @@ ui.horizontal(|ui| {
     ModWheel::new(&mut pitch_value)
         .wheel_type(WheelType::PitchBend)
         .label("Pitch".to_string())
-        .height(180.0)
         .show(ui, &theme);
 });
 ```
@@ -177,13 +148,10 @@ Creates a new mod wheel with mutable reference to value.
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
 | `.wheel_type()` | `WheelType` | `Modulation` | Type of wheel controller |
-| `.variant()` | `WheelVariant` | `Filled` | Visual variant |
-| `.width()` | `f32` | `40.0` | Width in pixels |
-| `.height()` | `f32` | `200.0` | Height in pixels |
+| `.size()` | `WheelSize` | `Default` | Size preset |
 | `.label()` | `impl Into<String>` | None | Label below wheel |
 | `.show_value()` | `bool` | `false` | Show numeric value |
 | `.show_center_line()` | `bool` | Auto | Show center reference line |
-| `.glow_intensity()` | `f32` | `0.8` | Glow intensity when dragging (0.0-1.0) |
 
 ### Show Method
 
@@ -207,13 +175,13 @@ pub enum WheelType {
 - **Modulation/Expression**: Values from 0.0 to 1.0, stays where positioned
 - **PitchBend**: Values from -1.0 to 1.0, automatically returns to 0.0 when released
 
-### WheelVariant
+### WheelSize
 
 ```rust
-pub enum WheelVariant {
-    Filled,   // Solid background
-    Outlined, // Transparent with border
-    Elevated, // Shadow effect
+pub enum WheelSize {
+    Small,   // 30x120
+    Default, // 40x180
+    Large,   // 50x220
 }
 ```
 
@@ -231,11 +199,11 @@ pub enum WheelVariant {
 
 ## Visual Design
 
-### Handle
-- Rectangular draggable strip
-- Primary theme color
-- Multi-layer glow effect when dragging
-- 16px height, spans width minus margins
+### Cylinder Surface
+- Rotating cylinder visible through a recessed slot
+- Cylindrical 3D shading (darker at edges, brighter at center)
+- Scrolling grip ridges simulate rotation as value changes
+- Slot edge shadows add depth
 
 ### Center Line
 - Automatically shown for pitch bend
@@ -243,16 +211,18 @@ pub enum WheelVariant {
 - Helps find zero/center position
 
 ### Layout
-- Vertical strip with rounded corners (8px radius)
+- Recessed housing with rounded corners
+- Cylinder surface inset within the housing
 - Label positioned below wheel
 - Value displayed above when enabled
 
 ## Interaction
 
 - **Click**: Jump to position
-- **Drag**: Smooth continuous control
+- **Drag**: Smooth continuous control with scrolling ridges
+- **Scroll**: Fine adjustment when hovered
 - **Release (PitchBend)**: Springs back to center
-- **Visual Feedback**: Glow effect on interaction
+- **Visual Feedback**: Cylinder brightens slightly on interaction
 
 ## Use Cases
 
@@ -266,8 +236,6 @@ ui.horizontal(|ui| {
     ModWheel::new(&mut mod_wheel)
         .wheel_type(WheelType::Modulation)
         .label("Mod".to_string())
-        .height(200.0)
-        .variant(WheelVariant::Elevated)
         .show(ui, &theme);
 
     ui.add_space(12.0);
@@ -275,8 +243,6 @@ ui.horizontal(|ui| {
     ModWheel::new(&mut pitch_wheel)
         .wheel_type(WheelType::PitchBend)
         .label("Pitch".to_string())
-        .height(200.0)
-        .variant(WheelVariant::Elevated)
         .show(ui, &theme);
 });
 ```
@@ -290,7 +256,7 @@ ModWheel::new(&mut dynamics)
     .wheel_type(WheelType::Expression)
     .label("Dynamics".to_string())
     .show_value(true)
-    .height(220.0)
+    .size(WheelSize::Large)
     .show(ui, &theme);
 ```
 
@@ -302,8 +268,6 @@ let mut filter_mod = 0.3;
 ModWheel::new(&mut filter_mod)
     .wheel_type(WheelType::Modulation)
     .label("Filter".to_string())
-    .height(200.0)
-    .glow_intensity(1.2)
     .show(ui, &theme);
 
 let cutoff_hz = 100.0 + filter_mod * 5000.0;
@@ -319,12 +283,6 @@ Standard MIDI CC mappings:
 | Modulation | CC 1 | 0-127 | Stays at position |
 | Pitch Bend | Pitch Bend | -8192 to +8191 | Springs to center |
 | Expression | CC 11 | 0-127 | Stays at position |
-
-## Dependencies
-
-- `egui = "0.33"`
-- Theme colors: `primary`, `surface`, `surface_variant`, `outline`, `outline_variant`, `on_surface`, `on_surface_variant`
-- Minimum version: `armas 0.1.0`
 
 ## Related Components
 

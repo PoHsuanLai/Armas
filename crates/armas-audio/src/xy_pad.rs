@@ -19,6 +19,23 @@ struct XYPadDragState {
     drag_y: VelocityDrag,
 }
 
+/// Trail history state (stored in egui temp data)
+#[derive(Clone, Default)]
+struct XYPadTrailState {
+    points: Vec<(f32, f32)>,
+}
+
+impl XYPadTrailState {
+    const MAX_POINTS: usize = 32;
+
+    fn push(&mut self, x: f32, y: f32) {
+        if self.points.len() >= Self::MAX_POINTS {
+            self.points.remove(0);
+        }
+        self.points.push((x, y));
+    }
+}
+
 /// Response from the XY pad
 #[derive(Debug, Clone)]
 pub struct XYPadResponse {
@@ -85,6 +102,7 @@ pub struct XYPad<'a> {
     y_label: Option<String>,
     show_crosshair: bool,
     show_values: bool,
+    show_trail: bool,
     handle_size: f32,
     glow_intensity: f32,
     id: Option<egui::Id>,
@@ -110,6 +128,7 @@ impl<'a> XYPad<'a> {
             y_label: None,
             show_crosshair: true,
             show_values: false,
+            show_trail: true,
             handle_size: 16.0,
             glow_intensity: 0.8,
             id: None,
@@ -166,6 +185,13 @@ impl<'a> XYPad<'a> {
     #[must_use]
     pub const fn show_values(mut self, show: bool) -> Self {
         self.show_values = show;
+        self
+    }
+
+    /// Show movement trail
+    #[must_use]
+    pub const fn show_trail(mut self, show: bool) -> Self {
+        self.show_trail = show;
         self
     }
 
@@ -319,109 +345,59 @@ impl<'a> XYPad<'a> {
         ui.ctx()
             .data_mut(|d| d.insert_temp(drag_state_id, drag_state));
 
+        // Update trail state
+        let trail_id = self
+            .id
+            .unwrap_or(response.id)
+            .with("xy_pad_trail");
+        let mut trail_state: XYPadTrailState = ui
+            .ctx()
+            .data_mut(|d| d.get_temp(trail_id).unwrap_or_default());
+        if response.changed() {
+            trail_state.push(*self.x, *self.y);
+        }
+        // Decay trail when not interacting
+        if !response.dragged() && !trail_state.points.is_empty() {
+            // Remove oldest point each frame to fade out
+            trail_state.points.remove(0);
+        }
+        ui.ctx()
+            .data_mut(|d| d.insert_temp(trail_id, trail_state.clone()));
+
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
             let corner_radius = f32::from(theme.spacing.corner_radius);
+            let is_active = response.dragged() || response.is_pointer_button_down_on();
 
-            // Draw based on variant
-            match self.variant {
-                XYPadVariant::Filled => {
-                    self.draw_filled(painter, theme, rect, corner_radius);
-                }
-                XYPadVariant::Outlined => {
-                    self.draw_outlined(painter, theme, rect, corner_radius);
-                }
-                XYPadVariant::Elevated => {
-                    self.draw_elevated(painter, theme, rect, corner_radius);
-                }
-            }
-
-            // Draw crosshair
-            if self.show_crosshair {
-                let handle_x = (*self.x).mul_add(rect.width(), rect.min.x);
-                let handle_y = (*self.y).mul_add(-rect.height(), rect.max.y);
-
-                let crosshair_color = theme.muted_foreground().gamma_multiply(0.3);
-                painter.line_segment(
-                    [
-                        Pos2::new(rect.min.x, handle_y),
-                        Pos2::new(rect.max.x, handle_y),
-                    ],
-                    egui::Stroke::new(1.0, crosshair_color),
-                );
-                painter.line_segment(
-                    [
-                        Pos2::new(handle_x, rect.min.y),
-                        Pos2::new(handle_x, rect.max.y),
-                    ],
-                    egui::Stroke::new(1.0, crosshair_color),
-                );
-            }
-
-            // Draw handle
+            // Handle position in pixel space
             let handle_x = (*self.x).mul_add(rect.width(), rect.min.x);
             let handle_y = (*self.y).mul_add(-rect.height(), rect.max.y);
             let handle_pos = Pos2::new(handle_x, handle_y);
 
-            // Handle glow
-            if response.dragged() || response.is_pointer_button_down_on() {
-                for i in 0..4 {
-                    let offset = (i + 1) as f32 * 2.0;
-                    let alpha = ((1.0 - i as f32 / 4.0) * 50.0 * self.glow_intensity) as u8;
-                    let glow_color = Color32::from_rgba_unmultiplied(
-                        theme.primary().r(),
-                        theme.primary().g(),
-                        theme.primary().b(),
-                        alpha,
-                    );
-                    painter.circle_stroke(
-                        handle_pos,
-                        self.handle_size / 2.0 + offset,
-                        egui::Stroke::new(2.0, glow_color),
-                    );
-                }
+            // Draw based on variant
+            match self.variant {
+                XYPadVariant::Filled => self.draw_filled(painter, theme, rect, corner_radius),
+                XYPadVariant::Outlined => self.draw_outlined(painter, theme, rect, corner_radius),
+                XYPadVariant::Elevated => self.draw_elevated(painter, theme, rect, corner_radius),
             }
 
-            // Handle circle
-            painter.circle_filled(handle_pos, self.handle_size / 2.0, theme.primary());
-            painter.circle_stroke(
-                handle_pos,
-                self.handle_size / 2.0,
-                egui::Stroke::new(2.0, theme.foreground().gamma_multiply(0.9)),
-            );
+            Self::draw_grid(painter, theme, rect);
+            Self::draw_tick_marks(painter, theme, rect);
 
-            // Draw labels
-            if let Some(x_label) = &self.x_label {
-                painter.text(
-                    Pos2::new(rect.center().x, rect.max.y + theme.spacing.sm),
-                    egui::Align2::CENTER_TOP,
-                    x_label,
-                    egui::FontId::proportional(11.0),
-                    theme.muted_foreground(),
-                );
+            if self.show_trail {
+                Self::draw_trail(painter, theme, rect, &trail_state);
+            }
+            if self.show_crosshair {
+                Self::draw_crosshair_lines(painter, theme, rect, handle_pos);
             }
 
-            if let Some(y_label) = &self.y_label {
-                painter.text(
-                    Pos2::new(rect.min.x - theme.spacing.sm, rect.center().y),
-                    egui::Align2::RIGHT_CENTER,
-                    y_label,
-                    egui::FontId::proportional(11.0),
-                    theme.muted_foreground(),
-                );
+            self.draw_handle(painter, theme, handle_pos, is_active);
+
+            if is_active {
+                Self::draw_coordinate_readout(painter, theme, rect, handle_pos, *self.x, *self.y, self.handle_size);
             }
 
-            // Draw values
-            if self.show_values {
-                let value_text = format!("X:{:.2} Y:{:.2}", self.x, self.y);
-                painter.text(
-                    Pos2::new(rect.center().x, rect.min.y + theme.spacing.sm),
-                    egui::Align2::CENTER_TOP,
-                    value_text,
-                    egui::FontId::proportional(10.0),
-                    theme.foreground(),
-                );
-            }
+            self.draw_labels(painter, theme, rect);
         }
 
         // Save state to memory if ID is set
@@ -440,6 +416,224 @@ impl<'a> XYPad<'a> {
             x: *self.x,
             y: *self.y,
             changed,
+        }
+    }
+
+    /// Draw 4x4 grid lines with brighter center lines
+    fn draw_grid(painter: &egui::Painter, theme: &Theme, rect: Rect) {
+        let grid_color = theme.border();
+        for i in 1..4u8 {
+            let t = f32::from(i) / 4.0;
+            let alpha = if i == 2 { 0.3 } else { 0.15 };
+            let color = grid_color.gamma_multiply(alpha);
+            let stroke = egui::Stroke::new(1.0, color);
+
+            let gx = rect.min.x + t * rect.width();
+            painter.line_segment(
+                [Pos2::new(gx, rect.min.y), Pos2::new(gx, rect.max.y)],
+                stroke,
+            );
+            let gy = rect.min.y + t * rect.height();
+            painter.line_segment(
+                [Pos2::new(rect.min.x, gy), Pos2::new(rect.max.x, gy)],
+                stroke,
+            );
+        }
+    }
+
+    /// Draw axis tick marks on all four edges
+    fn draw_tick_marks(painter: &egui::Painter, theme: &Theme, rect: Rect) {
+        let tick_color = theme.border().gamma_multiply(0.25);
+        let tick_len = 3.0;
+        let stroke = egui::Stroke::new(1.0, tick_color);
+
+        for i in 0..5u8 {
+            let t = f32::from(i) / 4.0;
+
+            let tx = rect.min.x + t * rect.width();
+            painter.line_segment(
+                [Pos2::new(tx, rect.max.y), Pos2::new(tx, rect.max.y - tick_len)],
+                stroke,
+            );
+            painter.line_segment(
+                [Pos2::new(tx, rect.min.y), Pos2::new(tx, rect.min.y + tick_len)],
+                stroke,
+            );
+
+            let ty = rect.min.y + t * rect.height();
+            painter.line_segment(
+                [Pos2::new(rect.min.x, ty), Pos2::new(rect.min.x + tick_len, ty)],
+                stroke,
+            );
+            painter.line_segment(
+                [Pos2::new(rect.max.x, ty), Pos2::new(rect.max.x - tick_len, ty)],
+                stroke,
+            );
+        }
+    }
+
+    /// Draw fading movement trail from recent handle positions
+    fn draw_trail(
+        painter: &egui::Painter,
+        theme: &Theme,
+        rect: Rect,
+        trail_state: &XYPadTrailState,
+    ) {
+        if trail_state.points.len() < 2 {
+            return;
+        }
+
+        let primary = theme.primary();
+        let (pr, pg, pb) = (primary.r(), primary.g(), primary.b());
+        let total = trail_state.points.len();
+
+        for i in 1..total {
+            let t = i as f32 / total as f32;
+            let alpha = (t * 120.0) as u8;
+            let color = Color32::from_rgba_unmultiplied(pr, pg, pb, alpha);
+
+            let (x0, y0) = trail_state.points[i - 1];
+            let (x1, y1) = trail_state.points[i];
+
+            let p0 = Pos2::new(
+                x0.mul_add(rect.width(), rect.min.x),
+                y0.mul_add(-rect.height(), rect.max.y),
+            );
+            let p1 = Pos2::new(
+                x1.mul_add(rect.width(), rect.min.x),
+                y1.mul_add(-rect.height(), rect.max.y),
+            );
+
+            painter.line_segment([p0, p1], egui::Stroke::new(2.0, color));
+        }
+    }
+
+    /// Draw crosshair lines through the handle position
+    fn draw_crosshair_lines(
+        painter: &egui::Painter,
+        theme: &Theme,
+        rect: Rect,
+        handle_pos: Pos2,
+    ) {
+        let color = theme.muted_foreground().gamma_multiply(0.3);
+        let stroke = egui::Stroke::new(1.0, color);
+
+        painter.line_segment(
+            [Pos2::new(rect.min.x, handle_pos.y), Pos2::new(rect.max.x, handle_pos.y)],
+            stroke,
+        );
+        painter.line_segment(
+            [Pos2::new(handle_pos.x, rect.min.y), Pos2::new(handle_pos.x, rect.max.y)],
+            stroke,
+        );
+    }
+
+    /// Draw the handle with glow, fill, highlight, specular dot, and border
+    fn draw_handle(
+        &self,
+        painter: &egui::Painter,
+        theme: &Theme,
+        handle_pos: Pos2,
+        is_active: bool,
+    ) {
+        let radius = self.handle_size / 2.0;
+
+        // Glow rings when active
+        if is_active {
+            let primary = theme.primary();
+            let (pr, pg, pb) = (primary.r(), primary.g(), primary.b());
+            for i in 0..4u8 {
+                let offset = f32::from(i + 1) * 2.0;
+                let alpha = ((1.0 - f32::from(i) / 4.0) * 50.0 * self.glow_intensity) as u8;
+                let glow_color = Color32::from_rgba_unmultiplied(pr, pg, pb, alpha);
+                painter.circle_stroke(
+                    handle_pos,
+                    radius + offset,
+                    egui::Stroke::new(2.0, glow_color),
+                );
+            }
+        }
+
+        // Main fill
+        painter.circle_filled(handle_pos, radius, theme.primary());
+
+        // Inner highlight (lighter center for depth)
+        painter.circle_filled(
+            handle_pos,
+            radius * 0.6,
+            Color32::from_rgba_unmultiplied(255, 255, 255, 40),
+        );
+
+        // Specular dot (top-left light catch)
+        let spec_pos = Pos2::new(handle_pos.x - radius * 0.25, handle_pos.y - radius * 0.25);
+        painter.circle_filled(
+            spec_pos,
+            radius * 0.2,
+            Color32::from_rgba_unmultiplied(255, 255, 255, 70),
+        );
+
+        // Border stroke
+        painter.circle_stroke(
+            handle_pos,
+            radius,
+            egui::Stroke::new(1.5, theme.foreground().gamma_multiply(0.9)),
+        );
+    }
+
+    /// Draw floating coordinate readout near the handle when dragging
+    fn draw_coordinate_readout(
+        painter: &egui::Painter,
+        theme: &Theme,
+        rect: Rect,
+        handle_pos: Pos2,
+        x: f32,
+        y: f32,
+        handle_size: f32,
+    ) {
+        let radius = handle_size / 2.0;
+        let coord_text = format!("{x:.2}, {y:.2}");
+        let text_x = (handle_pos.x + radius + 6.0).min(rect.max.x - 40.0);
+        let text_y = (handle_pos.y - radius - 14.0).max(rect.min.y + 2.0);
+        painter.text(
+            Pos2::new(text_x, text_y),
+            egui::Align2::LEFT_BOTTOM,
+            coord_text,
+            egui::FontId::proportional(9.0),
+            theme.foreground().gamma_multiply(0.7),
+        );
+    }
+
+    /// Draw axis labels and value display
+    fn draw_labels(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
+        if let Some(x_label) = &self.x_label {
+            painter.text(
+                Pos2::new(rect.center().x, rect.max.y + theme.spacing.sm),
+                egui::Align2::CENTER_TOP,
+                x_label,
+                egui::FontId::proportional(11.0),
+                theme.muted_foreground(),
+            );
+        }
+
+        if let Some(y_label) = &self.y_label {
+            painter.text(
+                Pos2::new(rect.min.x - theme.spacing.sm, rect.center().y),
+                egui::Align2::RIGHT_CENTER,
+                y_label,
+                egui::FontId::proportional(11.0),
+                theme.muted_foreground(),
+            );
+        }
+
+        if self.show_values {
+            let value_text = format!("X:{:.2} Y:{:.2}", self.x, self.y);
+            painter.text(
+                Pos2::new(rect.center().x, rect.min.y + theme.spacing.sm),
+                egui::Align2::CENTER_TOP,
+                value_text,
+                egui::FontId::proportional(10.0),
+                theme.foreground(),
+            );
         }
     }
 

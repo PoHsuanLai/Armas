@@ -1,21 +1,29 @@
 # Mixer Strip
 
-Complete DAW-style mixer channel strip with sends, routing, inserts, pan, mute/solo, meter, and fader.
+DAW-style mixer channel strip with sends, routing, inserts, pan, mute/solo, meter, and fader.
 
 ## Basic Usage
 
 ```demo
 use egui::Color32;
-use std::f32::consts::PI;
 
 let time = ui.input(|i| i.time) as f32;
 let level = ((time * 2.0).sin() * 0.5 + 0.5) * 0.8;
 
-let mut strip = MixerStrip::new("Vocal")
+let mut strip = MixerStrip::new("Lead")
+    .mode(MixerStripMode::Full)
     .width(80.0)
     .fader_level(0.75)
-    .pan(0.0)
-    .meter_level(level);
+    .meter_level(level)
+    .sends_color(Color32::from_rgb(35, 25, 22))
+    .routing_color(Color32::from_rgb(22, 25, 35))
+    .inserts_color(Color32::from_rgb(22, 32, 25))
+    .inserts(vec![
+        Insert::new("Pro-Q 3"),
+        Insert::new("LA-2A"),
+        Insert::empty(),
+        Insert::empty(),
+    ]);
 
 strip.show(ui, &theme);
 ```
@@ -24,7 +32,6 @@ strip.show(ui, &theme);
 
 ```demo
 use egui::Color32;
-use std::f32::consts::PI;
 
 let time = ui.input(|i| i.time) as f32;
 
@@ -57,90 +64,57 @@ ui.horizontal(|ui| {
 });
 ```
 
-## With Custom Settings
+## Display Modes
+
+Progressively hides sections as height decreases. Set explicitly or use `Auto` (default) to adapt to available space.
 
 ```demo
 use egui::Color32;
-use std::f32::consts::PI;
 
 let time = ui.input(|i| i.time) as f32;
-let level = ((time * 1.5).sin() * 0.5 + 0.5) * 0.9;
 
-let mut strip = MixerStrip::new("Drum Bus")
-    .width(70.0)
-    .fader_level(0.8)
-    .pan(-0.3)
-    .meter_level(level);
+ui.horizontal(|ui| {
+    let modes = [
+        ("Full", MixerStripMode::Full),
+        ("Standard", MixerStripMode::Standard),
+        ("Compact", MixerStripMode::Compact),
+        ("Minimal", MixerStripMode::Minimal),
+    ];
 
-strip.show(ui, &theme);
+    for (i, (name, mode)) in modes.iter().enumerate() {
+        let level = ((time * 2.0 + i as f32 * 0.5).sin() * 0.5 + 0.5) * 0.8;
+
+        let mut strip = MixerStrip::new(*name)
+            .mode(*mode)
+            .meter_level(level);
+
+        strip.show(ui, &theme);
+
+        if i < modes.len() - 1 {
+            ui.add_space(4.0);
+        }
+    }
+});
 ```
+
+| Mode | Scroll Rows | Pan Label | R/I | Gain |
+|------|-------------|-----------|-----|------|
+| Full | 4 | yes | yes | yes |
+| Standard | 3 | yes | yes | yes |
+| Compact | 2 | no | no | yes |
+| Minimal | 1 | no | no | no |
 
 ## API Reference
 
 | Method | Type | Default | Description |
 |--------|------|---------|-------------|
-| `::new(name)` | `impl Into<String>` | - | Create mixer strip with name |
-| `.width(width)` | `f32` | `70.0` | Set strip width |
-| `.fader_level(level)` | `f32` | `0.75` | Set fader level (0.0-1.0) |
-| `.pan(pan)` | `f32` | `0.0` | Set pan value (-1.0 to 1.0) |
-| `.meter_level(level)` | `f32` | `0.0` | Set meter level (0.0-1.0) |
-| `.card_color(color)` | `Color32` | `RGB(28,28,30)` | Set card background color |
-| `.knob_color(color)` | `Color32` | `theme.primary()` | Set pan knob glow color |
-| `.meter_color(color)` | `Color32` | `theme.primary()` | Set meter color |
-| `.show(&mut Ui)` | - | - | Show mixer strip, returns Response |
-
-## Features
-
-- **Sends Section**: Manages send effects (Reverb, Delay)
-- **Routing**: Input and output routing buttons
-- **Insert Slots**: 4 plugin insert slots
-- **Pan Control**: Rotary pan knob with center indicator
-- **M/S/R/I Buttons**: 2x2 grid with Mute, Solo, Record Arm, and Input Monitor toggle buttons
-- **Gain Display**: Real-time dB value display
-- **Meter**: Professional audio level meter with dB scale
-- **Fader**: Smooth volume fader control
-- **Card Container**: Dark card background for professional DAW aesthetic
-
-## Components Used
-
-The mixer strip internally uses:
-- `Card` - Container with dark background
-- `Badge` - Send effect labels
-- `Button` - All interactive controls (sends, routing, M/S/R/I)
-- `Separator` - Visual separator
-- `Knob` - Pan control
-- `Slot` - Plugin insert slots
-- `AudioMeter` - Level metering
-- `Fader` - Volume fader
-- `Modal` - Send configuration dialog
-
-## State Management
-
-The mixer strip maintains its own state including:
-- Fader level (converted to dB)
-- Pan position (-1.0 to 1.0)
-- Mute/Solo/Record Arm/Input Monitor state
-- Insert plugin names
-- Input/Output routing
-
-## Layout
-
-The strip layout from top to bottom:
-1. Sends button (opens modal)
-2. Send badges (vertical list)
-3. Separator
-4. Input routing button
-5. Output routing button
-6. 4x Insert slots
-7. Pan knob
-8. Control buttons (2x2 grid):
-   - Row 1: Mute (M) | Solo (S)
-   - Row 2: Record (R) | Input Monitor (I)
-9. dB value display
-10. Meter (with dB scale) + Fader (side by side)
-11. Channel name
-
-## Dependencies
-
-- `egui = "0.33"`
-- Internal components: Card, Badge, Button, Separator, Knob, Slot, AudioMeter, Fader, Modal
+| `::new(name)` | `impl Into<String>` | - | Create mixer strip |
+| `.width(w)` | `f32` | `70.0` | Strip width |
+| `.mode(mode)` | `MixerStripMode` | `Auto` | Display mode |
+| `.scale(s)` | `f32` | `1.0` | Zoom factor (0.5-2.0) |
+| `.fader_level(l)` | `f32` | `0.75` | Fader level (0.0-1.0) |
+| `.pan(p)` | `f32` | `0.0` | Pan (-1.0 to 1.0) |
+| `.meter_level(l)` | `f32` | `0.0` | Meter level (0.0-1.0) |
+| `.card_color(c)` | `Color32` | dark | Card background |
+| `.knob_color(c)` | `Color32` | primary | Pan knob glow |
+| `.meter_color(c)` | `Color32` | primary | Meter color |

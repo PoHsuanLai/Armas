@@ -24,6 +24,7 @@ ui.horizontal(|ui| {
 ```demo
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
+    Button::new("Xs").size(ButtonSize::Xs).show(ui, &theme);
     Button::new("Small").size(ButtonSize::Small).show(ui, &theme);
     Button::new("Default").show(ui, &theme);
     Button::new("Large").size(ButtonSize::Large).show(ui, &theme);

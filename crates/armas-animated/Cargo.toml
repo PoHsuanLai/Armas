@@ -12,7 +12,7 @@ categories = ["gui"]
 
 [dependencies]
 egui.workspace = true
-armas = { version = "0.1.0", path = "../armas" }
+armas = { version = "0.1.2", path = "../armas" }
 
 [lints]
 workspace = true
