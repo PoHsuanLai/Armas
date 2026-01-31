@@ -26,7 +26,6 @@ pub mod xy_pad;
 // Icon module - transport icons used by documentation
 pub mod icons;
 pub(crate) mod piano;
-pub(crate) mod piano_roll_grid;
 pub(crate) mod playhead;
 pub(crate) mod slot;
 pub(crate) mod snap_grid;
@@ -59,7 +58,7 @@ pub use icons::TransportIcon;
 pub use xy_pad::{XYPad, XYPadVariant};
 
 // Types from internal modules that are exposed through public API structs
-pub use piano_roll_grid::GridDivision;
+pub use piano_roll::GridDivision;
 pub use timeline_track::{
     AutomationData, AutomationPoint, FadeCurve, FadeHandle, FadeSettings, MidiData, MidiNote,
     PlaybackSettings, Region, RegionEdge, RegionType,

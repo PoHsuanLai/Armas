@@ -11,10 +11,7 @@ use egui;
 
 /// Response from the slot component
 #[derive(Debug, Clone)]
-pub struct SlotResponse {
-    /// The UI response
-    pub response: egui::Response,
-}
+pub struct SlotResponse;
 
 /// Plugin/effect insert slot component
 ///
@@ -33,12 +30,12 @@ pub struct SlotResponse {
 /// fn ui(ui: &mut egui::Ui, theme: &Theme) {
 ///     Slot::new()
 ///         .effect("Reverb")
-///         .level(0.75)
 ///         .show(ui, theme);
 ///
 ///     // Custom size
 ///     Slot::new()
-///         .size(100.0, 40.0)
+///         .width(100.0)
+///         .height(40.0)
 ///         .effect("EQ")
 ///         .show(ui, theme);
 /// }
@@ -78,14 +75,6 @@ impl<'a> Slot<'a> {
         }
     }
 
-    /// Set custom width and height
-    #[must_use]
-    pub const fn size(mut self, width: f32, height: f32) -> Self {
-        self.width = width;
-        self.height = height;
-        self
-    }
-
     /// Set width
     #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
@@ -104,20 +93,6 @@ impl<'a> Slot<'a> {
     #[must_use]
     pub const fn effect(mut self, name: &'a str) -> Self {
         self.name = Some(name);
-        self
-    }
-
-    /// Set whether the effect is bypassed
-    #[must_use]
-    pub const fn bypassed(mut self, bypassed: bool) -> Self {
-        self.bypassed = bypassed;
-        self
-    }
-
-    /// Set the activity level (0.0 to 1.0)
-    #[must_use]
-    pub const fn level(mut self, level: f32) -> Self {
-        self.level = level.clamp(0.0, 1.0);
         self
     }
 
@@ -235,7 +210,7 @@ impl<'a> Slot<'a> {
             }
         }
 
-        SlotResponse { response }
+        SlotResponse
     }
 }
 

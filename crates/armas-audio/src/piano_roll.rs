@@ -3,9 +3,38 @@
 //! Complete DAW-style piano roll with vertical piano keyboard, grid, and interactive note blocks.
 //! Supports clicking to place notes, dragging to resize, and beautiful glassmorphic styling.
 
-use crate::{GridDivision, Piano, PianoOrientation};
+use crate::{Piano, PianoOrientation};
 use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
+
+/// Time division for vertical grid lines
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GridDivision {
+    /// Whole notes (4 beats)
+    Whole,
+    /// Half notes (2 beats)
+    Half,
+    /// Quarter notes (1 beat)
+    Quarter,
+    /// Eighth notes (1/2 beat)
+    Eighth,
+    /// Sixteenth notes (1/4 beat)
+    Sixteenth,
+}
+
+impl GridDivision {
+    /// Get the beat fraction for this division
+    #[must_use]
+    pub const fn beat_fraction(&self) -> f32 {
+        match self {
+            Self::Whole => 4.0,
+            Self::Half => 2.0,
+            Self::Quarter => 1.0,
+            Self::Eighth => 0.5,
+            Self::Sixteenth => 0.25,
+        }
+    }
+}
 
 /// Momentum scroll state stored in egui temp data
 #[derive(Clone, Default)]

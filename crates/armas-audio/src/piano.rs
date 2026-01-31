@@ -15,15 +15,6 @@ use std::collections::HashSet;
 // Types and Constants
 // ============================================================================
 
-/// State for momentum scrolling (stored in egui temp data)
-#[derive(Clone, Default)]
-struct PianoScrollState {
-    offset: f32,
-    velocity: f32,
-    last_frame_time: f64,
-    is_animating: bool,
-}
-
 /// A single piano key identifier
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PianoKey {
@@ -64,17 +55,18 @@ pub enum PianoOrientation {
     /// Horizontal with keys extending upward
     Horizontal,
     /// Horizontal with keys extending downward
+    #[allow(dead_code)]
     HorizontalUp,
     /// Vertical with keys extending rightward
     Vertical,
     /// Vertical with keys extending leftward
+    #[allow(dead_code)]
     VerticalLeft,
 }
 
 /// Internal layout parameters computed from Piano config
 struct PianoLayout {
     total_notes: usize,
-    content_size: f32,
     display_size: f32,
     black_key_size: f32,
     black_key_depth: f32,
@@ -113,11 +105,6 @@ pub struct Piano {
     pressed_keys: HashSet<u8>,
     show_labels: bool,
     orientation: PianoOrientation,
-    scrollable: bool,
-    viewport_size: Option<f32>,
-    momentum_scrolling: bool,
-    momentum_damping: f64,
-    id: Option<egui::Id>,
 }
 
 impl Piano {
@@ -137,11 +124,6 @@ impl Piano {
             pressed_keys: HashSet::new(),
             show_labels: true,
             orientation: PianoOrientation::Horizontal,
-            scrollable: false,
-            viewport_size: None,
-            momentum_scrolling: true,
-            momentum_damping: 5.0,
-            id: None,
         }
     }
 
@@ -174,34 +156,6 @@ impl Piano {
         self
     }
 
-    /// Set opacity for white keys (0.0-1.0, default: 0.7)
-    #[must_use]
-    pub const fn white_key_opacity(mut self, opacity: f32) -> Self {
-        self.white_key_opacity = opacity.clamp(0.0, 1.0);
-        self
-    }
-
-    /// Set opacity for black keys (0.0-1.0, default: 0.85)
-    #[must_use]
-    pub const fn black_key_opacity(mut self, opacity: f32) -> Self {
-        self.black_key_opacity = opacity.clamp(0.0, 1.0);
-        self
-    }
-
-    /// Set glow intensity for pressed keys (0.0-1.0, default: 0.8)
-    #[must_use]
-    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
-        self.glow_intensity = intensity.clamp(0.0, 1.0);
-        self
-    }
-
-    /// Show or hide note labels on the keys (default: true)
-    #[must_use]
-    pub const fn show_labels(mut self, show: bool) -> Self {
-        self.show_labels = show;
-        self
-    }
-
     /// Set the keyboard orientation (default: Horizontal)
     #[must_use]
     pub const fn orientation(mut self, orientation: PianoOrientation) -> Self {
@@ -216,35 +170,6 @@ impl Piano {
         self
     }
 
-    /// Set unique ID for state persistence (required for scrollable keyboards)
-    #[must_use]
-    pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
-        self.id = Some(id.into());
-        self
-    }
-
-    /// Enable scrollable viewport with specified size in pixels
-    #[must_use]
-    pub const fn scrollable(mut self, viewport_size: f32) -> Self {
-        self.scrollable = true;
-        self.viewport_size = Some(viewport_size);
-        self
-    }
-
-    /// Enable or disable momentum scrolling (default: true)
-    #[must_use]
-    pub const fn momentum_scrolling(mut self, enabled: bool) -> Self {
-        self.momentum_scrolling = enabled;
-        self
-    }
-
-    /// Set momentum damping factor (1.0-20.0, higher = more damping, default: 5.0)
-    #[must_use]
-    pub const fn momentum_damping(mut self, damping: f64) -> Self {
-        self.momentum_damping = damping.clamp(1.0, 20.0);
-        self
-    }
-
     /// Show the piano keyboard
     pub fn show(self, ui: &mut egui::Ui, theme: &Theme) -> PianoResponse {
         let mut clicked_keys = Vec::new();
@@ -255,13 +180,11 @@ impl Piano {
         }
 
         let layout = self.compute_layout();
-        let scroll_offset = self.handle_scrolling(ui, &layout);
 
         self.render_keys(
             ui,
             theme,
             &layout,
-            scroll_offset,
             &mut clicked_keys,
             &mut released_keys,
         );
@@ -287,97 +210,18 @@ impl Piano {
             PianoOrientation::Horizontal | PianoOrientation::HorizontalUp
         );
 
-        let content_size = white_key_count as f32 * self.white_key_width;
-        let display_size = if self.scrollable {
-            self.viewport_size.unwrap_or(content_size).min(content_size)
-        } else {
-            content_size
-        };
+        let display_size = white_key_count as f32 * self.white_key_width;
 
         let black_key_size = self.white_key_width * self.black_key_width_ratio;
         let black_key_depth = self.white_key_height * self.black_key_height_ratio;
 
         PianoLayout {
             total_notes,
-            content_size,
             display_size,
             black_key_size,
             black_key_depth,
             is_horizontal,
         }
-    }
-
-    // ========================================================================
-    // Scrolling
-    // ========================================================================
-
-    fn handle_scrolling(&self, ui: &mut egui::Ui, layout: &PianoLayout) -> f32 {
-        if !self.scrollable {
-            return 0.0;
-        }
-
-        let scroll_state_id = self
-            .id
-            .unwrap_or_else(|| egui::Id::new("piano"))
-            .with("scroll");
-        let mut state: PianoScrollState = ui
-            .ctx()
-            .data(|d| d.get_temp(scroll_state_id).unwrap_or_default());
-
-        let current_time = ui.ctx().input(|i| i.time);
-        let dt = if state.last_frame_time > 0.0 {
-            (current_time - state.last_frame_time) as f32
-        } else {
-            0.016
-        };
-        state.last_frame_time = current_time;
-
-        // Sense area for scroll input
-        let sense_size = if layout.is_horizontal {
-            Vec2::new(layout.display_size, self.white_key_height)
-        } else {
-            Vec2::new(self.white_key_height, layout.display_size)
-        };
-        let (_, sense_response) = ui.allocate_exact_size(sense_size, Sense::hover());
-
-        // Handle scroll wheel
-        if sense_response.hovered() {
-            let scroll_delta = ui.ctx().input(|i| i.raw_scroll_delta);
-            let amount = if layout.is_horizontal {
-                scroll_delta.x
-            } else {
-                scroll_delta.y
-            };
-            if amount.abs() > 0.0 {
-                if self.momentum_scrolling {
-                    state.velocity += amount * 3.0;
-                    state.is_animating = true;
-                } else {
-                    state.offset += amount;
-                }
-            }
-        }
-
-        // Apply momentum physics
-        if self.momentum_scrolling && state.is_animating {
-            state.offset += state.velocity * dt;
-            state.velocity *= (-self.momentum_damping * f64::from(dt)).exp() as f32;
-
-            if state.velocity.abs() < 1.0 {
-                state.velocity = 0.0;
-                state.is_animating = false;
-            } else {
-                ui.ctx().request_repaint();
-            }
-        }
-
-        // Clamp offset
-        let max_scroll = (layout.content_size - layout.display_size).max(0.0);
-        state.offset = state.offset.clamp(-max_scroll, 0.0);
-
-        ui.ctx()
-            .data_mut(|d| d.insert_temp(scroll_state_id, state.clone()));
-        state.offset
     }
 
     // ========================================================================
@@ -389,7 +233,6 @@ impl Piano {
         ui: &mut egui::Ui,
         theme: &Theme,
         layout: &PianoLayout,
-        scroll_offset: f32,
         clicked_keys: &mut Vec<u8>,
         released_keys: &mut Vec<u8>,
     ) {
@@ -405,11 +248,7 @@ impl Piano {
             return;
         }
 
-        let painter = if self.scrollable {
-            ui.painter().with_clip_rect(rect)
-        } else {
-            ui.painter().clone()
-        };
+        let painter = ui.painter().clone();
 
         let facing_up = matches!(self.orientation, PianoOrientation::HorizontalUp);
         let facing_left = matches!(self.orientation, PianoOrientation::VerticalLeft);
@@ -421,7 +260,7 @@ impl Piano {
             theme,
             layout,
             rect,
-            scroll_offset,
+            0.0,
             facing_up,
             facing_left,
             clicked_keys,
@@ -434,7 +273,7 @@ impl Piano {
             theme,
             layout,
             rect,
-            scroll_offset,
+            0.0,
             facing_up,
             facing_left,
             clicked_keys,
@@ -472,7 +311,7 @@ impl Piano {
             );
 
             // Skip if outside viewport
-            if self.scrollable && !key_rect.intersects(rect) {
+            if !key_rect.intersects(rect) {
                 white_key_index += 1;
                 continue;
             }
@@ -541,7 +380,7 @@ impl Piano {
             );
 
             // Skip if outside viewport
-            if self.scrollable && !key_rect.intersects(rect) {
+            if !key_rect.intersects(rect) {
                 continue;
             }
 
@@ -909,12 +748,10 @@ mod tests {
         let piano = Piano::new()
             .start_note(48)
             .octaves(3)
-            .white_key_width(50.0)
-            .show_labels(false);
+            .white_key_width(50.0);
 
         assert_eq!(piano.start_note, 48);
         assert_eq!(piano.octaves, 3);
         assert_eq!(piano.white_key_width, 50.0);
-        assert!(!piano.show_labels);
     }
 }

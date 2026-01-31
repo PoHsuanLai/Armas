@@ -1,46 +1,27 @@
 //! Time Ruler Component
 //!
 //! Horizontal ruler showing measures, beats, and subdivisions for DAW timeline.
-//! Designed to align perfectly with `PianoRollGrid`'s vertical grid lines.
 
 use armas_basic::theme::Theme;
-use egui::{Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
+use egui::{Pos2, Rect, Response, Sense, Stroke, Ui};
 
-/// Re-export `GridDivision` from `piano_roll_grid` for time subdivisions
-pub use super::piano_roll_grid::GridDivision;
-
-/// Response from the time ruler
-#[derive(Debug, Clone)]
-pub struct TimeRulerResponse {
-    /// The UI response
-    pub response: Response,
-}
-
-/// Time display mode for the ruler
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TimeDisplayMode {
-    /// Display as bars:beats (e.g., "1.1", "1.2", "2.1")
-    BarsBeatsSixteenths,
-    /// Display as minutes:seconds (e.g., "0:00", "0:15")
-    MinutesSeconds,
-}
+/// Re-export `GridDivision` from `piano_roll` for time subdivisions
+pub use super::piano_roll::GridDivision;
 
 /// Horizontal time ruler for DAW timeline
 ///
-/// Shows measures, beats, and subdivisions with precise alignment to `PianoRollGrid`.
-/// Uses the same measurement system to ensure perfect synchronization.
+/// Shows measures, beats, and subdivisions with precise alignment.
 ///
 /// # Example
 ///
 /// ```rust,ignore
-/// use armas_audio::{TimeRuler, GridDivision};
+/// use armas_audio::TimeRuler;
 ///
 /// fn ui(ui: &mut egui::Ui, theme: &armas_basic::Theme) {
 ///     TimeRuler::new()
 ///         .measures(8)
 ///         .beat_width(60.0)
-///         .division(GridDivision::Sixteenth)
-///         .show(ui, theme);
+///         .show_clipped(ui, theme);
 /// }
 /// ```
 pub struct TimeRuler {
@@ -58,10 +39,6 @@ pub struct TimeRuler {
     show_beat_numbers: bool,
     /// Show subdivision tick marks
     show_subdivisions: bool,
-    /// Time display mode
-    time_mode: TimeDisplayMode,
-    /// Tempo (BPM) for minutes:seconds mode
-    tempo: f32,
     /// Optional ID for `ScrollArea` (to avoid conflicts when multiple rulers exist)
     id: Option<egui::Id>,
 }
@@ -84,8 +61,6 @@ impl TimeRuler {
             height: 36.0,
             show_beat_numbers: true,
             show_subdivisions: true,
-            time_mode: TimeDisplayMode::BarsBeatsSixteenths,
-            tempo: 120.0,
             id: None,
         }
     }
@@ -118,13 +93,6 @@ impl TimeRuler {
         self
     }
 
-    /// Set grid division for subdivisions
-    #[must_use]
-    pub const fn division(mut self, division: GridDivision) -> Self {
-        self.division = division;
-        self
-    }
-
     /// Set ruler height
     #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
@@ -132,57 +100,12 @@ impl TimeRuler {
         self
     }
 
-    /// Set whether to show beat numbers
-    #[must_use]
-    pub const fn show_beat_numbers(mut self, show: bool) -> Self {
-        self.show_beat_numbers = show;
-        self
-    }
-
-    /// Set whether to show subdivision tick marks
-    #[must_use]
-    pub const fn show_subdivisions(mut self, show: bool) -> Self {
-        self.show_subdivisions = show;
-        self
-    }
-
-    /// Set time display mode
-    #[must_use]
-    pub const fn time_mode(mut self, mode: TimeDisplayMode) -> Self {
-        self.time_mode = mode;
-        self
-    }
-
-    /// Set tempo (BPM) for minutes:seconds display
-    #[must_use]
-    pub const fn tempo(mut self, tempo: f32) -> Self {
-        self.tempo = tempo;
-        self
-    }
-
-    /// Show the time ruler (allocates full content width)
-    ///
-    /// Use this when the ruler is the only content and should define its own size.
-    /// For use inside a scrollable timeline, use `show_clipped()` instead.
-    pub fn show(self, ui: &mut Ui, theme: &Theme) -> TimeRulerResponse {
-        TimeRulerResponse {
-            response: self.show_inner(ui, theme),
-        }
-    }
-
-    /// Show the time ruler without `ScrollArea` wrapper
-    pub fn show_no_scroll(self, ui: &mut Ui, theme: &Theme) -> TimeRulerResponse {
-        TimeRulerResponse {
-            response: self.show_inner(ui, theme),
-        }
-    }
-
     /// Show the time ruler within a pre-allocated clipped area
     ///
     /// Use this when the ruler is part of a scrollable timeline.
     /// The ruler paints within `ui.max_rect()` and respects `ui.clip_rect()`.
     /// Does not allocate additional space.
-    pub fn show_clipped(self, ui: &mut Ui, theme: &Theme) -> TimeRulerResponse {
+    pub fn show_clipped(self, ui: &mut Ui, theme: &Theme) -> Response {
         // Use max_rect as our drawing area (set by parent)
         let rect = ui.max_rect();
         let clip = ui.clip_rect();
@@ -221,54 +144,10 @@ impl TimeRuler {
             }
         }
 
-        TimeRulerResponse { response }
-    }
-
-    /// Internal render function (allocates full width)
-    fn show_inner(self, ui: &mut Ui, theme: &Theme) -> Response {
-        // Calculate width (MUST match PianoRollGrid calculation)
-        let total_beats = self.measures as f32 * self.beats_per_measure as f32;
-        let width = total_beats * self.beat_width;
-
-        // Allocate space
-        let (rect, response) =
-            ui.allocate_exact_size(Vec2::new(width, self.height), Sense::hover());
-
-        if ui.is_rect_visible(rect) {
-            let painter = ui.painter();
-
-            // Draw background
-            painter.rect_filled(
-                rect,
-                f32::from(theme.spacing.corner_radius_small),
-                theme.card(),
-            );
-
-            // Draw bottom border
-            painter.line_segment(
-                [
-                    Pos2::new(rect.min.x, rect.max.y),
-                    Pos2::new(rect.max.x, rect.max.y),
-                ],
-                Stroke::new(1.0, theme.input()),
-            );
-
-            // Draw vertical lines and tick marks
-            self.draw_grid_lines(painter, theme, rect);
-
-            // Draw measure numbers
-            self.draw_measure_numbers(painter, theme, rect);
-
-            // Draw beat numbers if enabled
-            if self.show_beat_numbers {
-                self.draw_beat_numbers(painter, theme, rect);
-            }
-        }
-
         response
     }
 
-    /// Draw vertical grid lines matching `PianoRollGrid`
+    /// Draw vertical grid lines
     fn draw_grid_lines(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
         let divisions_per_beat = 1.0 / self.division.beat_fraction();
         let total_beats = self.measures as f32 * self.beats_per_measure as f32;
@@ -288,13 +167,11 @@ impl TimeRuler {
             let is_beat_line = (beat_position % 1.0) == 0.0;
 
             if is_measure_line {
-                // Measure line - strong, full height
                 painter.line_segment(
                     [Pos2::new(x, rect.min.y), Pos2::new(x, rect.max.y)],
                     Stroke::new(2.0, theme.border()),
                 );
             } else if is_beat_line {
-                // Beat line - medium, 60% height
                 let line_height = rect.height() * 0.6;
                 painter.line_segment(
                     [
@@ -304,7 +181,6 @@ impl TimeRuler {
                     Stroke::new(1.5, theme.border()),
                 );
             } else if self.show_subdivisions {
-                // Subdivision line - subtle, 30% height
                 let line_height = rect.height() * 0.3;
                 painter.line_segment(
                     [
@@ -324,18 +200,7 @@ impl TimeRuler {
                 .mul_add(self.beat_width, rect.min.x);
             let label_pos = Pos2::new(x + theme.spacing.xs, rect.min.y + theme.spacing.xs);
 
-            let label = match self.time_mode {
-                TimeDisplayMode::BarsBeatsSixteenths => {
-                    format!("{}", measure + 1)
-                }
-                TimeDisplayMode::MinutesSeconds => {
-                    let total_beats = measure as f32 * self.beats_per_measure as f32;
-                    let seconds = (total_beats / self.tempo) * 60.0;
-                    let minutes = (seconds / 60.0) as u32;
-                    let secs = (seconds % 60.0) as u32;
-                    format!("{minutes}:{secs:02}")
-                }
-            };
+            let label = format!("{}", measure + 1);
 
             painter.text(
                 label_pos,
@@ -360,7 +225,6 @@ impl TimeRuler {
             let x = (beat_idx as f32).mul_add(self.beat_width, rect.min.x);
             let beat_in_measure = (beat_idx % self.beats_per_measure) + 1;
 
-            // Position beat numbers below measure numbers
             let label_pos = Pos2::new(
                 theme.spacing.xs.mul_add(0.5, x),
                 rect.min.y + theme.spacing.md,

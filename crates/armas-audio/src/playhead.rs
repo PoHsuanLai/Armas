@@ -6,19 +6,6 @@
 use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 
-/// Playhead handle shape variant
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum PlayheadHandleShape {
-    /// Triangle/teardrop pointing down (default)
-    Triangle,
-    /// Rounded rectangle
-    RoundedRect,
-    /// Circle/dot
-    Circle,
-    /// Diamond shape
-    Diamond,
-}
-
 /// Playhead indicator for DAW timeline
 ///
 /// Shows the current playback position as a vertical line with a draggable handle.
@@ -59,10 +46,6 @@ pub struct Playhead {
     show_glow: bool,
     /// Glow intensity (0.0-1.0)
     glow_intensity: f32,
-    /// Handle shape variant
-    handle_shape: PlayheadHandleShape,
-    /// Snap to grid (in beats)
-    snap_to_beat: Option<f32>,
 }
 
 impl Playhead {
@@ -75,12 +58,10 @@ impl Playhead {
             height: 400.0,
             color: None,
             line_width: 2.0,
-            show_handle: false, // Just a line, no triangle
+            show_handle: false,
             handle_size: 6.0,
             show_glow: true,
             glow_intensity: 0.3,
-            handle_shape: PlayheadHandleShape::Triangle,
-            snap_to_beat: None,
         }
     }
 
@@ -109,56 +90,6 @@ impl Playhead {
     #[must_use]
     pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
-        self
-    }
-
-    /// Set line width
-    #[must_use]
-    pub const fn line_width(mut self, width: f32) -> Self {
-        self.line_width = width;
-        self
-    }
-
-    /// Set whether to show draggable handle
-    #[must_use]
-    pub const fn show_handle(mut self, show: bool) -> Self {
-        self.show_handle = show;
-        self
-    }
-
-    /// Set handle size (radius)
-    #[must_use]
-    pub const fn handle_size(mut self, size: f32) -> Self {
-        self.handle_size = size;
-        self
-    }
-
-    /// Set whether to show glow effect
-    #[must_use]
-    pub const fn show_glow(mut self, show: bool) -> Self {
-        self.show_glow = show;
-        self
-    }
-
-    /// Set glow intensity (0.0-1.0)
-    #[must_use]
-    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
-        self.glow_intensity = intensity.clamp(0.0, 1.0);
-        self
-    }
-
-    /// Set handle shape variant
-    #[must_use]
-    pub const fn handle_shape(mut self, shape: PlayheadHandleShape) -> Self {
-        self.handle_shape = shape;
-        self
-    }
-
-    /// Enable snap-to-grid with specified beat division
-    /// E.g., `snap_to_beat(0.25)` snaps to 16th notes
-    #[must_use]
-    pub const fn snap_to_beat(mut self, beat_division: f32) -> Self {
-        self.snap_to_beat = Some(beat_division.max(0.001));
         self
     }
 
@@ -194,7 +125,7 @@ impl Playhead {
 
         // Draw glow on entire playhead line if enabled
         if self.show_glow {
-            let glow_alpha = (30.0 * self.glow_intensity) as u8; // Much more subtle (was 80)
+            let glow_alpha = (30.0 * self.glow_intensity) as u8;
             for i in 0..3 {
                 let glow_width = self.line_width + f32::from(3 - i) * 1.5;
                 let alpha = glow_alpha.saturating_sub(i * 8);
@@ -223,13 +154,11 @@ impl Playhead {
         let mut response = if self.show_handle {
             let handle_top = Pos2::new(x, timeline_rect.min.y);
             let handle_height = self.handle_size * 2.0;
-            let handle_width = self.handle_size * 1.2; // Narrower top
+            let handle_width = self.handle_size * 1.2;
 
-            // Create interactive handle
             let handle_id = ui.id().with("playhead_handle");
             let handle_response = ui.interact(interact_rect, handle_id, Sense::click_and_drag());
 
-            // Handle color based on interaction
             let handle_color = if handle_response.hovered() || handle_response.dragged() {
                 playhead_color.gamma_multiply(1.2)
             } else {
@@ -249,7 +178,6 @@ impl Playhead {
                         alpha,
                     );
 
-                    // Draw rounded triangle with glow
                     self.draw_rounded_triangle(
                         ui,
                         handle_top,
@@ -281,7 +209,7 @@ impl Playhead {
                 Stroke::new(1.5, theme.card()),
             );
 
-            // Inner highlight for 3D effect (small rounded triangle at top)
+            // Inner highlight for 3D effect
             self.draw_rounded_triangle(
                 ui,
                 handle_top + Vec2::new(0.0, 1.0),
@@ -292,7 +220,6 @@ impl Playhead {
 
             handle_response
         } else {
-            // No handle, just return a dummy response
             ui.interact(interact_rect, ui.id().with("playhead_line"), Sense::hover())
         };
 
@@ -321,12 +248,10 @@ impl Playhead {
         let half_width = width / 2.0;
         let bottom = Pos2::new(top.x, top.y + height);
 
-        // Create a path with rounded corners
         let mut path = Vec::new();
 
-        // Top rounded section (smaller arc from left to right)
         let segments = 8;
-        let top_roundness = 0.15; // Reduced from 0.3 for smaller top edge
+        let top_roundness = 0.15;
         for i in 0..=segments {
             let angle = std::f32::consts::PI * (i as f32 / segments as f32);
             let x = top.x + half_width * angle.cos();
@@ -334,7 +259,6 @@ impl Playhead {
             path.push(Pos2::new(x, y));
         }
 
-        // Right side curve to point
         let right_ctrl = Pos2::new(top.x + half_width * 0.3, height.mul_add(0.5, top.y));
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
@@ -349,7 +273,6 @@ impl Playhead {
             path.push(Pos2::new(x, y));
         }
 
-        // Left side curve from point
         let left_ctrl = Pos2::new(top.x - half_width * 0.3, height.mul_add(0.5, top.y));
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
@@ -384,9 +307,8 @@ impl Playhead {
 
         let mut path = Vec::new();
 
-        // Top rounded section (smaller arc)
         let segments = 8;
-        let top_roundness = 0.15; // Match the fill method
+        let top_roundness = 0.15;
         for i in 0..=segments {
             let angle = std::f32::consts::PI * (i as f32 / segments as f32);
             let x = top.x + half_width * angle.cos();
@@ -394,7 +316,6 @@ impl Playhead {
             path.push(Pos2::new(x, y));
         }
 
-        // Right side curve
         let right_ctrl = Pos2::new(top.x + half_width * 0.3, height.mul_add(0.5, top.y));
         for i in 0..=segments {
             let t = i as f32 / segments as f32;
@@ -409,7 +330,6 @@ impl Playhead {
             path.push(Pos2::new(x, y));
         }
 
-        // Left side curve
         let left_ctrl = Pos2::new(top.x - half_width * 0.3, height.mul_add(0.5, top.y));
         for i in 0..=segments {
             let t = i as f32 / segments as f32;

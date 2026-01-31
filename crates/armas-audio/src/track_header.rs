@@ -23,18 +23,12 @@ pub struct TrackControls {
 pub struct TrackHeaderResponse {
     /// The egui response for the entire header
     pub response: Response,
-    /// Track name was changed
-    pub name_changed: bool,
-    /// New track name (if changed)
-    pub name: String,
     /// Mute button was clicked
     pub mute_clicked: bool,
     /// Solo button was clicked
     pub solo_clicked: bool,
     /// Record arm button was clicked
     pub arm_clicked: bool,
-    /// Controls state (after any changes)
-    pub controls: TrackControls,
     /// Collapse/expand button was clicked (for folder tracks)
     pub collapse_clicked: bool,
 }
@@ -74,14 +68,6 @@ pub struct TrackHeader {
     color: Option<Color32>,
     /// Parent track color (for gradient interpolation in nested folders)
     parent_color: Option<Color32>,
-    /// Card background color
-    card_color: Option<Color32>,
-    /// Allow name editing
-    editable: bool,
-    /// Show control buttons
-    show_controls: bool,
-    /// Compact mode (smaller controls)
-    compact: bool,
     /// Is this a folder track?
     is_folder: bool,
     /// Indentation level (for nested tracks)
@@ -98,10 +84,6 @@ impl TrackHeader {
             height: 60.0,
             color: None,
             parent_color: None,
-            card_color: None,
-            editable: true,
-            show_controls: true,
-            compact: false,
             is_folder: false,
             indent_level: 0,
         }
@@ -135,38 +117,10 @@ impl TrackHeader {
         self
     }
 
-    /// Set the card background color
-    #[must_use]
-    pub const fn card_color(mut self, color: Color32) -> Self {
-        self.card_color = Some(color);
-        self
-    }
-
     /// Set the parent track color (for nested folder gradient interpolation)
     #[must_use]
     pub const fn parent_color(mut self, color: Color32) -> Self {
         self.parent_color = Some(color);
-        self
-    }
-
-    /// Set whether the name is editable
-    #[must_use]
-    pub const fn editable(mut self, editable: bool) -> Self {
-        self.editable = editable;
-        self
-    }
-
-    /// Set whether to show control buttons
-    #[must_use]
-    pub const fn show_controls(mut self, show: bool) -> Self {
-        self.show_controls = show;
-        self
-    }
-
-    /// Set compact mode (smaller controls)
-    #[must_use]
-    pub const fn compact(mut self, compact: bool) -> Self {
-        self.compact = compact;
         self
     }
 
@@ -194,12 +148,11 @@ impl TrackHeader {
         theme: &Theme,
     ) -> TrackHeaderResponse {
         let track_color = self.color.unwrap_or_else(|| theme.primary());
-        let button_size = if self.compact { 20.0 } else { 24.0 };
-        let spacing = if self.compact { 2.0 } else { 4.0 };
-        let color_bar_width = if self.compact { 3.0 } else { 4.0 };
+        let button_size = 24.0;
+        let spacing = 4.0;
+        let color_bar_width = 4.0;
         let indent_pixels = (self.indent_level as f32) * 16.0;
 
-        let mut name_changed = false;
         let mut mute_clicked = false;
         let mut solo_clicked = false;
         let mut arm_clicked = false;
@@ -207,38 +160,23 @@ impl TrackHeader {
 
         // Get actual egui measurements
         let text_height = ui.text_style_height(&egui::TextStyle::Body);
-        let content_spacing = if self.show_controls {
-            spacing / 2.0
-        } else {
-            0.0
-        };
-        let buttons_height = if self.show_controls { button_size } else { 0.0 };
+        let content_spacing = spacing / 2.0;
+        let content_height = text_height + content_spacing + button_size;
 
-        let content_height = text_height + content_spacing + buttons_height;
-
-        // Calculate padding for left/right only
         let horizontal_padding = 8.0;
 
-        let mut card = Card::new()
+        let card = Card::new()
             .variant(CardVariant::Filled)
             .width(self.width)
             .height(self.height)
-            .inner_margin(0.0); // No card padding
-
-        // Apply custom card color if provided
-        if let Some(color) = self.card_color {
-            card = card.fill(color);
-        }
+            .inner_margin(0.0);
 
         let card_response = card.show(ui, theme, |ui| {
-            // Allocate exact size first (like TimelineTrack does)
             let (track_rect, _) =
                 ui.allocate_exact_size(Vec2::new(self.width, self.height), Sense::hover());
 
-            // Calculate vertical centering
             let content_y = track_rect.min.y + (self.height - content_height) / 2.0;
 
-            // Create a scoped UI within a sub-rect for the content
             let content_rect = egui::Rect::from_min_size(
                 egui::Pos2::new(track_rect.min.x + horizontal_padding, content_y),
                 Vec2::new(self.width - horizontal_padding * 2.0, content_height),
@@ -249,12 +187,10 @@ impl TrackHeader {
                     .max_rect(content_rect)
                     .layout(egui::Layout::left_to_right(egui::Align::Min)),
                 |ui| {
-                    // Add indentation space for nested tracks
                     if self.indent_level > 0 {
                         ui.add_space(indent_pixels);
                     }
 
-                    // Color indicator bar with glassmorphism and subtle glow
                     let (rect, response) = ui.allocate_exact_size(
                         Vec2::new(color_bar_width, content_height),
                         Sense::click(),
@@ -263,11 +199,6 @@ impl TrackHeader {
                     let painter = ui.painter();
 
                     if self.is_folder {
-                        // Folder track: Enhanced visual with gradient and stronger glow
-
-                        // Vertical gradient: parent color (or theme primary) → track color
-                        // Root folders: primary → self
-                        // Child folders: parent → self
                         let gradient_start = self.parent_color.unwrap_or_else(|| theme.primary());
                         let top_color = Color32::from_rgba_unmultiplied(
                             gradient_start.r(),
@@ -282,7 +213,6 @@ impl TrackHeader {
                             120,
                         );
 
-                        // Draw gradient using lerp_color interpolation
                         let num_steps = 10;
                         let step_height = rect.height() / num_steps as f32;
                         for i in 0..num_steps {
@@ -302,7 +232,6 @@ impl TrackHeader {
                             painter.rect_filled(step_rect, 0.0, step_color);
                         }
 
-                        // Stronger glow for folder tracks
                         let glow_alpha: u8 = 40;
                         for i in 0..5 {
                             let inset = (i + 1) as f32 * 0.4;
@@ -312,13 +241,11 @@ impl TrackHeader {
                             painter.rect_filled(inset_rect, 0.0, glow_color);
                         }
 
-                        // Check for clicks on the color bar to toggle collapse
                         if response.clicked() {
                             *collapsed = !*collapsed;
                             collapse_clicked = true;
                         }
                     } else {
-                        // Regular track: Simple glassmorphic color bar
                         let glass_color = Color32::from_rgba_unmultiplied(
                             track_color.r(),
                             track_color.g(),
@@ -327,7 +254,6 @@ impl TrackHeader {
                         );
                         painter.rect_filled(rect, 0.0, glass_color);
 
-                        // Subtle inner glow
                         let glow_alpha: u8 = 20;
                         for i in 0..3 {
                             let inset = (i + 1) as f32 * 0.5;
@@ -338,99 +264,83 @@ impl TrackHeader {
                         }
                     }
 
-                    ui.add_space(if self.compact { 4.0 } else { 6.0 });
+                    ui.add_space(6.0);
 
                     ui.vertical(|ui| {
-                        // Track name - editable text or label
-                        if self.editable {
-                            // Get card background color for text edit
-                            let card_bg = self.card_color.unwrap_or_else(|| theme.muted());
+                        // Track name - editable text
+                        let card_bg = theme.muted();
+                        let used_width = horizontal_padding * 2.0
+                            + indent_pixels
+                            + color_bar_width
+                            + 6.0;
+                        let available_width = (self.width - used_width).max(50.0);
 
-                            // Calculate available width
-                            let used_width = horizontal_padding * 2.0
-                                + indent_pixels
-                                + color_bar_width
-                                + (if self.compact { 4.0 } else { 6.0 });
-                            let available_width = (self.width - used_width).max(50.0);
+                        let mut text_edit = TextEdit::singleline(name)
+                            .desired_width(available_width)
+                            .hint_text("Track Name")
+                            .text_color(theme.foreground())
+                            .background_color(card_bg);
 
-                            let mut text_edit = TextEdit::singleline(name)
-                                .desired_width(available_width)
-                                .hint_text("Track Name")
-                                .text_color(theme.foreground())
-                                .background_color(card_bg);
-
-                            // Apply custom ID if provided
-                            if let Some(id) = self.id {
-                                text_edit = text_edit.id(id);
-                            }
-
-                            let response = ui.add(text_edit);
-                            if response.changed() {
-                                name_changed = true;
-                            }
-                        } else {
-                            ui.colored_label(theme.foreground(), name.as_str());
+                        if let Some(id) = self.id {
+                            text_edit = text_edit.id(id);
                         }
+
+                        ui.add(text_edit);
 
                         // Control buttons row
-                        if self.show_controls {
-                            ui.add_space(spacing / 2.0);
+                        ui.add_space(spacing / 2.0);
 
-                            ui.horizontal(|ui| {
-                                ui.spacing_mut().item_spacing.x = spacing;
+                        ui.horizontal(|ui| {
+                            ui.spacing_mut().item_spacing.x = spacing;
 
-                                // Mute button
-                                let mute_variant = if controls.muted {
-                                    ButtonVariant::Default
-                                } else {
-                                    ButtonVariant::Outline
-                                };
+                            let mute_variant = if controls.muted {
+                                ButtonVariant::Default
+                            } else {
+                                ButtonVariant::Outline
+                            };
 
-                                if Button::new("M")
-                                    .variant(mute_variant)
-                                    .min_width(button_size)
-                                    .show(ui, theme)
-                                    .clicked()
-                                {
-                                    controls.muted = !controls.muted;
-                                    mute_clicked = true;
-                                }
+                            if Button::new("M")
+                                .variant(mute_variant)
+                                .min_width(button_size)
+                                .show(ui, theme)
+                                .clicked()
+                            {
+                                controls.muted = !controls.muted;
+                                mute_clicked = true;
+                            }
 
-                                // Solo button
-                                let solo_variant = if controls.soloed {
-                                    ButtonVariant::Default
-                                } else {
-                                    ButtonVariant::Outline
-                                };
+                            let solo_variant = if controls.soloed {
+                                ButtonVariant::Default
+                            } else {
+                                ButtonVariant::Outline
+                            };
 
-                                if Button::new("S")
-                                    .variant(solo_variant)
-                                    .min_width(button_size)
-                                    .show(ui, theme)
-                                    .clicked()
-                                {
-                                    controls.soloed = !controls.soloed;
-                                    solo_clicked = true;
-                                }
+                            if Button::new("S")
+                                .variant(solo_variant)
+                                .min_width(button_size)
+                                .show(ui, theme)
+                                .clicked()
+                            {
+                                controls.soloed = !controls.soloed;
+                                solo_clicked = true;
+                            }
 
-                                // Record arm button
-                                let arm_variant = if controls.armed {
-                                    ButtonVariant::Default
-                                } else {
-                                    ButtonVariant::Outline
-                                };
+                            let arm_variant = if controls.armed {
+                                ButtonVariant::Default
+                            } else {
+                                ButtonVariant::Outline
+                            };
 
-                                if Button::new("R")
-                                    .variant(arm_variant)
-                                    .min_width(button_size)
-                                    .show(ui, theme)
-                                    .clicked()
-                                {
-                                    controls.armed = !controls.armed;
-                                    arm_clicked = true;
-                                }
-                            });
-                        }
+                            if Button::new("R")
+                                .variant(arm_variant)
+                                .min_width(button_size)
+                                .show(ui, theme)
+                                .clicked()
+                            {
+                                controls.armed = !controls.armed;
+                                arm_clicked = true;
+                            }
+                        });
                     });
                 },
             )
@@ -438,12 +348,9 @@ impl TrackHeader {
 
         TrackHeaderResponse {
             response: card_response.response,
-            name_changed,
-            name: name.clone(),
             mute_clicked,
             solo_clicked,
             arm_clicked,
-            controls: *controls,
             collapse_clicked,
         }
     }

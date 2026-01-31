@@ -463,14 +463,6 @@ pub struct TimelineTrackResponse {
     pub region_clicked: Option<usize>,
     /// Empty area clicked (position in beats)
     pub empty_clicked: Option<f32>,
-    /// Region edge being dragged (`region_idx`, edge, `new_position`)
-    pub region_edge_dragged: Option<(usize, RegionEdge, f32)>,
-    /// Fade handle being dragged (`region_idx`, handle, `new_duration`)
-    pub fade_handle_dragged: Option<(usize, FadeHandle, f32)>,
-    /// Region body dragged (`region_idx`, `new_start_position`)
-    pub region_dragged: Option<(usize, f32)>,
-    /// Region double-clicked for name editing
-    pub region_double_clicked: Option<usize>,
 }
 
 /// Timeline track component for DAW
@@ -547,13 +539,6 @@ impl TimelineTrack {
         self
     }
 
-    /// Set region height (None = auto-calculate from ratio)
-    #[must_use]
-    pub const fn region_height(mut self, height: f32) -> Self {
-        self.region_height = Some(height);
-        self
-    }
-
     /// Set region height as a ratio of track height (0.0-1.0)
     ///
     /// Only used when `region_height` is not explicitly set.
@@ -592,13 +577,6 @@ impl TimelineTrack {
         self
     }
 
-    /// Set background color
-    #[must_use]
-    pub const fn background_color(mut self, color: Color32) -> Self {
-        self.background_color = Some(color);
-        self
-    }
-
     /// Show the timeline track
     pub fn show(
         self,
@@ -611,10 +589,6 @@ impl TimelineTrack {
 
         let mut region_clicked = None;
         let mut empty_clicked = None;
-        let mut region_edge_dragged = None;
-        let mut fade_handle_dragged = None;
-        let mut region_dragged = None;
-        let mut region_double_clicked = None;
 
         // Don't add any padding - allocate full height to match TrackHeader
         let content_height = self.height;
@@ -626,16 +600,13 @@ impl TimelineTrack {
             .variant(CardVariant::Filled)
             .width(total_width)
             .height(self.height)
-            .inner_margin(0.0) // No card padding
-            .fill(self.background_color.unwrap_or(Color32::TRANSPARENT)); // Transparent by default to show grid
+            .inner_margin(0.0)
+            .fill(self.background_color.unwrap_or(Color32::TRANSPARENT));
 
         let card_response = card.show(ui, theme, |ui| {
-            // Allocate full height without any top padding
-
-            // Allocate space for the track content
             let (rect, response) = ui.allocate_exact_size(
                 Vec2::new(total_width, content_height),
-                Sense::click_and_drag(),
+                Sense::click(),
             );
 
             if ui.is_rect_visible(rect) {
@@ -672,11 +643,7 @@ impl TimelineTrack {
                 let rect_height = rect.height();
                 let region_y_offset = (rect_height - region_h) / 2.0;
 
-                // Handle zones (in pixels)
                 for (i, region) in regions.iter().enumerate() {
-                    const EDGE_HANDLE_WIDTH: f32 = 8.0;
-                    const FADE_HANDLE_WIDTH: f32 = 12.0;
-
                     let region_x = region.start.mul_add(self.beat_width, rect.min.x);
                     let region_width = region.duration * self.beat_width;
                     let region_rect = Rect::from_min_size(
@@ -684,81 +651,16 @@ impl TimelineTrack {
                         Vec2::new(region_width, region_h),
                     );
 
-                    // Check interactions
-                    if let Some(pos) = response.interact_pointer_pos() {
-                        if region_rect.contains(pos) {
-                            let rel_x = pos.x - region_rect.min.x;
-
-                            // Check for double click
-                            if response.double_clicked() {
-                                region_double_clicked = Some(i);
-                            }
-                            // Check for dragging edge handles
-                            else if response.dragged() {
-                                let mut handled = false;
-
-                                // Left edge resize handle
-                                if rel_x <= EDGE_HANDLE_WIDTH && region.selected {
-                                    let new_start = (pos.x - rect.min.x) / self.beat_width;
-                                    region_edge_dragged = Some((i, RegionEdge::Start, new_start));
-                                    handled = true;
-                                }
-                                // Right edge resize handle
-                                else if rel_x >= region_width - EDGE_HANDLE_WIDTH
-                                    && region.selected
-                                {
-                                    let new_end = (pos.x - rect.min.x) / self.beat_width;
-                                    region_edge_dragged = Some((i, RegionEdge::End, new_end));
-                                    handled = true;
-                                }
-
-                                // Check fade handles (only for selected regions)
-                                if !handled && region.selected {
-                                    // Fade in handle (if fade exists)
-                                    if region.fades.fade_in > 0.0 {
-                                        let fade_in_x = region.fades.fade_in * self.beat_width;
-                                        if rel_x >= fade_in_x - FADE_HANDLE_WIDTH / 2.0
-                                            && rel_x <= fade_in_x + FADE_HANDLE_WIDTH / 2.0
-                                        {
-                                            let new_fade = rel_x / self.beat_width;
-                                            fade_handle_dragged =
-                                                Some((i, FadeHandle::In, new_fade));
-                                            handled = true;
-                                        }
-                                    }
-
-                                    // Fade out handle (if fade exists)
-                                    if !handled && region.fades.fade_out > 0.0 {
-                                        let fade_out_x = region
-                                            .fades
-                                            .fade_out
-                                            .mul_add(-self.beat_width, region_width);
-                                        if rel_x >= fade_out_x - FADE_HANDLE_WIDTH / 2.0
-                                            && rel_x <= fade_out_x + FADE_HANDLE_WIDTH / 2.0
-                                        {
-                                            let new_fade = (region_width - rel_x) / self.beat_width;
-                                            fade_handle_dragged =
-                                                Some((i, FadeHandle::Out, new_fade));
-                                            handled = true;
-                                        }
-                                    }
-                                }
-
-                                // Region body drag (move entire region) - only if no handle was grabbed
-                                if !handled {
-                                    let new_start =
-                                        (pos.x - region_width / 2.0 - rect.min.x) / self.beat_width;
-                                    region_dragged = Some((i, new_start));
-                                }
-                            }
-                            // Single click (select)
-                            else if response.clicked() {
+                    // Check for click on region
+                    if response.clicked() {
+                        if let Some(pos) = response.interact_pointer_pos() {
+                            if region_rect.contains(pos) {
                                 region_clicked = Some(i);
                             }
                         }
                     }
 
-                    // Draw region with handles
+                    // Draw region
                     self.draw_region(painter, region_rect, region, theme);
 
                     // Draw interactive handles if region is selected
@@ -789,10 +691,6 @@ impl TimelineTrack {
             response: card_response.response,
             region_clicked,
             empty_clicked,
-            region_edge_dragged,
-            fade_handle_dragged,
-            region_dragged,
-            region_double_clicked,
         }
     }
 
