@@ -58,6 +58,7 @@ impl Pagination {
     /// # Arguments
     /// * `initial_page` - Initial/current page (1-indexed)
     /// * `total_pages` - Total number of pages
+    #[must_use] 
     pub fn new(initial_page: usize, total_pages: usize) -> Self {
         Self {
             id: None,
@@ -75,18 +76,20 @@ impl Pagination {
     }
 
     /// Set the number of sibling pages to show on each side of current page
-    pub fn sibling_count(mut self, count: usize) -> Self {
+    #[must_use] 
+    pub const fn sibling_count(mut self, count: usize) -> Self {
         self.sibling_count = count;
         self
     }
 
     /// Show or hide previous/next buttons
-    pub fn show_prev_next(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_prev_next(mut self, show: bool) -> Self {
         self.show_prev_next = show;
         self
     }
 
-    /// Show the pagination and return (Response, current_page)
+    /// Show the pagination and return (Response, `current_page`)
     pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> (egui::Response, usize) {
         let total_pages = self.total_pages;
 
@@ -116,7 +119,7 @@ impl Pagination {
                 }
 
                 // Page number buttons
-                for page in pages.iter() {
+                for page in &pages {
                     if let Some(page_num) = page {
                         let is_current = *page_num == current_page;
                         let variant = if is_current {

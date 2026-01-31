@@ -596,7 +596,7 @@ impl MixerStrip {
         let scale = self.scale;
 
         let send_gap = 1.0;
-        let rows = layout.scroll_rows as f32;
+        let rows = f32::from(layout.scroll_rows);
         let scroll_height = layout.row_height * rows + send_gap * (rows - 1.0).max(0.0);
 
         egui::ScrollArea::vertical()
@@ -711,7 +711,7 @@ impl MixerStrip {
     ) {
         let slot_height = (layout.row_height * 0.72).round();
         let slot_gap = 1.0;
-        let rows = layout.scroll_rows as f32;
+        let rows = f32::from(layout.scroll_rows);
         let scroll_height = slot_height * rows + slot_gap * (rows - 1.0).max(0.0);
 
         egui::ScrollArea::vertical()

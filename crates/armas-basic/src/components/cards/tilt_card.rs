@@ -29,15 +29,16 @@ pub struct TiltCard {
 
 impl TiltCard {
     /// Create a new tilt card with theme-based defaults
+    #[must_use] 
     pub fn new(width: f32, height: f32, theme: &Theme) -> Self {
         let outline = theme.border();
         let primary = theme.primary();
         // Use primary color with low alpha over surface for a lighter, themed background
         let surface = theme.card();
         let background = Color32::from_rgba_unmultiplied(
-            ((surface.r() as u16 * 200 + primary.r() as u16 * 55) / 255) as u8,
-            ((surface.g() as u16 * 200 + primary.g() as u16 * 55) / 255) as u8,
-            ((surface.b() as u16 * 200 + primary.b() as u16 * 55) / 255) as u8,
+            ((u16::from(surface.r()) * 200 + u16::from(primary.r()) * 55) / 255) as u8,
+            ((u16::from(surface.g()) * 200 + u16::from(primary.g()) * 55) / 255) as u8,
+            ((u16::from(surface.b()) * 200 + u16::from(primary.b()) * 55) / 255) as u8,
             255,
         );
         Self {
@@ -62,37 +63,43 @@ impl TiltCard {
     }
 
     /// Set tilt strength (0.0 to 1.0)
-    pub fn tilt_strength(mut self, strength: f32) -> Self {
+    #[must_use] 
+    pub const fn tilt_strength(mut self, strength: f32) -> Self {
         self.tilt_strength = strength.clamp(0.0, 1.0);
         self
     }
 
     /// Enable/disable glare effect
-    pub fn glare(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn glare(mut self, enabled: bool) -> Self {
         self.glare_enabled = enabled;
         self
     }
 
     /// Set corner radius
-    pub fn corner_radius(mut self, radius: f32) -> Self {
+    #[must_use] 
+    pub const fn corner_radius(mut self, radius: f32) -> Self {
         self.corner_radius = radius;
         self
     }
 
     /// Set background color
-    pub fn background(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn background(mut self, color: Color32) -> Self {
         self.background = color;
         self
     }
 
     /// Set border color
-    pub fn border(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn border(mut self, color: Color32) -> Self {
         self.border_color = Some(color);
         self
     }
 
     /// Set elevation (shadow depth)
-    pub fn elevation(mut self, elevation: f32) -> Self {
+    #[must_use] 
+    pub const fn elevation(mut self, elevation: f32) -> Self {
         self.elevation = elevation;
         self
     }

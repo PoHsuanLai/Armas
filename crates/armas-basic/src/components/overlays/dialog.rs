@@ -37,12 +37,12 @@ impl DialogSize {
     fn max_width(&self, screen_width: f32) -> f32 {
         let max = screen_width - 32.0; // max-w-[calc(100%-2rem)]
         match self {
-            DialogSize::Small => 384.0_f32.min(max),
-            DialogSize::Medium => 512.0_f32.min(max),
-            DialogSize::Large => 672.0_f32.min(max),
-            DialogSize::ExtraLarge => 896.0_f32.min(max),
-            DialogSize::FullScreen => max,
-            DialogSize::Custom(w) => w.min(max),
+            Self::Small => 384.0_f32.min(max),
+            Self::Medium => 512.0_f32.min(max),
+            Self::Large => 672.0_f32.min(max),
+            Self::ExtraLarge => 896.0_f32.min(max),
+            Self::FullScreen => max,
+            Self::Custom(w) => w.min(max),
         }
     }
 }
@@ -73,7 +73,8 @@ impl Dialog {
     }
 
     /// Set the dialog to be open (for external control)
-    pub fn open(mut self, is_open: bool) -> Self {
+    #[must_use] 
+    pub const fn open(mut self, is_open: bool) -> Self {
         self.is_open = Some(is_open);
         self
     }
@@ -91,13 +92,15 @@ impl Dialog {
     }
 
     /// Set the dialog size
-    pub fn size(mut self, size: DialogSize) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: DialogSize) -> Self {
         self.size = size;
         self
     }
 
     /// Set whether the dialog can be closed with ESC or backdrop click
-    pub fn closable(mut self, closable: bool) -> Self {
+    #[must_use] 
+    pub const fn closable(mut self, closable: bool) -> Self {
         self.closable = closable;
         self
     }
@@ -142,7 +145,7 @@ impl Dialog {
         let eased = self.fade_animation.value();
 
         // Draw backdrop - bg-black/50
-        let backdrop_alpha = (eased * OVERLAY_ALPHA as f32) as u8;
+        let backdrop_alpha = (eased * f32::from(OVERLAY_ALPHA)) as u8;
         let backdrop_color = Color32::from_rgba_unmultiplied(0, 0, 0, backdrop_alpha);
 
         let backdrop_id = self.id.with("dialog_backdrop");

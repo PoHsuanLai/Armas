@@ -1480,7 +1480,7 @@ impl<'a> Timeline<'a> {
             .width(self.track_header_width)
             .height(self.track_height)
             .color(track.color)
-            .is_folder(track.is_folder)
+            .folder(track.is_folder)
             .indent_level(indent_level);
 
         // Set parent color for nested folders

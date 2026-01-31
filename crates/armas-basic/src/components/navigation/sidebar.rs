@@ -75,6 +75,7 @@ impl Default for SidebarState {
 
 impl SidebarState {
     /// Create new sidebar state
+    #[must_use] 
     pub fn new(open: bool) -> Self {
         let target = if open {
             SIDEBAR_WIDTH
@@ -91,7 +92,7 @@ impl SidebarState {
     }
 
     /// Toggle the sidebar open/closed
-    pub fn toggle(&mut self) {
+    pub const fn toggle(&mut self) {
         self.open = !self.open;
         let target = if self.open {
             SIDEBAR_WIDTH
@@ -102,7 +103,7 @@ impl SidebarState {
     }
 
     /// Set the sidebar open state
-    pub fn set_open(&mut self, open: bool) {
+    pub const fn set_open(&mut self, open: bool) {
         if self.open != open {
             self.open = open;
             let target = if open {
@@ -115,16 +116,19 @@ impl SidebarState {
     }
 
     /// Check if sidebar is expanded
-    pub fn is_open(&self) -> bool {
+    #[must_use] 
+    pub const fn is_open(&self) -> bool {
         self.open
     }
 
     /// Get current animated width
-    pub fn width(&self) -> f32 {
+    #[must_use] 
+    pub const fn width(&self) -> f32 {
         self.width_spring.value
     }
 
     /// Check if animation is still running
+    #[must_use] 
     pub fn is_animating(&self) -> bool {
         !self.width_spring.is_settled(0.5, 0.5)
     }
@@ -135,7 +139,7 @@ impl SidebarState {
 // ============================================================================
 
 /// Sidebar visual variant
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum SidebarVariant {
     /// Standard sidebar with border
     #[default]
@@ -147,7 +151,7 @@ pub enum SidebarVariant {
 }
 
 /// Collapsible mode for the sidebar
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum CollapsibleMode {
     /// Collapse to icon-only view
     #[default]
@@ -183,9 +187,10 @@ pub struct SidebarItemBuilder<'a> {
     item: &'a mut InternalSidebarItem,
 }
 
-impl<'a> SidebarItemBuilder<'a> {
+impl SidebarItemBuilder<'_> {
     /// Mark this item as active
-    pub fn active(self, active: bool) -> Self {
+    #[must_use] 
+    pub const fn active(self, active: bool) -> Self {
         self.item.active = active;
         self
     }
@@ -204,7 +209,7 @@ pub struct SidebarBuilder<'a> {
     expanded_groups: &'a mut std::collections::HashMap<String, bool>,
 }
 
-impl<'a> SidebarBuilder<'a> {
+impl SidebarBuilder<'_> {
     /// Add an item to the sidebar
     ///
     /// Returns a builder that can be used to configure the item with chained methods.
@@ -231,7 +236,7 @@ impl<'a> SidebarBuilder<'a> {
 
     /// Add a group label (non-interactive header text)
     pub fn group_label(&mut self, label: &str) {
-        let id = format!("group_label_{}", label);
+        let id = format!("group_label_{label}");
         let item = InternalSidebarItem {
             id,
             icon: String::new(),
@@ -258,7 +263,7 @@ impl<'a> SidebarBuilder<'a> {
 
         // Add the group header as an item
         let group_item = InternalSidebarItem {
-            id: group_id.clone(),
+            id: group_id,
             icon: icon.to_string(),
             label: label.to_string(),
             active: false,
@@ -292,7 +297,7 @@ pub struct SidebarResponse {
 
 /// Animated sidebar component styled to match shadcn/ui
 ///
-/// Supports both controlled mode (with external SidebarState) and uncontrolled mode.
+/// Supports both controlled mode (with external `SidebarState`) and uncontrolled mode.
 ///
 /// # Controlled Mode Example
 ///
@@ -343,7 +348,8 @@ pub struct Sidebar<'a> {
 
 impl<'a> Sidebar<'a> {
     /// Create a new sidebar with shadcn defaults
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             external_state: None,
             initial_open: true,
@@ -358,43 +364,49 @@ impl<'a> Sidebar<'a> {
     /// Use external state for controlled mode
     ///
     /// This allows you to control the sidebar from outside and persist state.
-    pub fn state(mut self, state: &'a mut SidebarState) -> Self {
+    pub const fn state(mut self, state: &'a mut SidebarState) -> Self {
         self.external_state = Some(state);
         self
     }
 
     /// Set whether the sidebar starts collapsed (uncontrolled mode only)
-    pub fn collapsed(mut self, collapsed: bool) -> Self {
+    #[must_use] 
+    pub const fn collapsed(mut self, collapsed: bool) -> Self {
         self.initial_open = !collapsed;
         self
     }
 
     /// Set the collapsed width (default: 48px / 3rem)
-    pub fn collapsed_width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn collapsed_width(mut self, width: f32) -> Self {
         self.collapsed_width = Some(width);
         self
     }
 
     /// Set the expanded width (default: 256px / 16rem)
-    pub fn expanded_width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn expanded_width(mut self, width: f32) -> Self {
         self.expanded_width = Some(width);
         self
     }
 
     /// Set the collapsible mode
-    pub fn collapsible(mut self, mode: CollapsibleMode) -> Self {
+    #[must_use] 
+    pub const fn collapsible(mut self, mode: CollapsibleMode) -> Self {
         self.collapsible = mode;
         self
     }
 
     /// Set whether to show icons
-    pub fn show_icons(mut self, show_icons: bool) -> Self {
+    #[must_use] 
+    pub const fn show_icons(mut self, show_icons: bool) -> Self {
         self.show_icons = show_icons;
         self
     }
 
     /// Set the visual variant
-    pub fn variant(mut self, variant: SidebarVariant) -> Self {
+    #[must_use] 
+    pub const fn variant(mut self, variant: SidebarVariant) -> Self {
         self.variant = variant;
         self
     }
@@ -715,7 +727,7 @@ impl<'a> Sidebar<'a> {
                         text_color.r(),
                         text_color.g(),
                         text_color.b(),
-                        (text_color.a() as f32 * label_opacity) as u8,
+                        (f32::from(text_color.a()) * label_opacity) as u8,
                     );
 
                     let label_x = if self.show_icons && !item.icon.is_empty() {

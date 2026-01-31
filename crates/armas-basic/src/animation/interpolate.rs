@@ -3,6 +3,7 @@ use egui::{Color32, Pos2, Rect, Vec2};
 /// Trait for types that can be interpolated between two values
 pub trait Interpolate: Clone {
     /// Interpolate between self and other by factor t (0.0 to 1.0)
+    #[must_use]
     fn interpolate(&self, other: &Self, t: f32) -> Self;
 }
 
@@ -16,14 +17,14 @@ impl Interpolate for f32 {
 // Implementation for f64
 impl Interpolate for f64 {
     fn interpolate(&self, other: &Self, t: f32) -> Self {
-        self + (other - self) * t as f64
+        self + (other - self) * Self::from(t)
     }
 }
 
 // Implementation for Vec2
 impl Interpolate for Vec2 {
     fn interpolate(&self, other: &Self, t: f32) -> Self {
-        Vec2::new(
+        Self::new(
             self.x.interpolate(&other.x, t),
             self.y.interpolate(&other.y, t),
         )
@@ -33,7 +34,7 @@ impl Interpolate for Vec2 {
 // Implementation for Pos2
 impl Interpolate for Pos2 {
     fn interpolate(&self, other: &Self, t: f32) -> Self {
-        Pos2::new(
+        Self::new(
             self.x.interpolate(&other.x, t),
             self.y.interpolate(&other.y, t),
         )
@@ -43,7 +44,7 @@ impl Interpolate for Pos2 {
 // Implementation for Rect
 impl Interpolate for Rect {
     fn interpolate(&self, other: &Self, t: f32) -> Self {
-        Rect {
+        Self {
             min: self.min.interpolate(&other.min, t),
             max: self.max.interpolate(&other.max, t),
         }
@@ -52,19 +53,20 @@ impl Interpolate for Rect {
 
 // Implementation for Color32
 impl Interpolate for Color32 {
+    #[allow(clippy::many_single_char_names)]
     fn interpolate(&self, other: &Self, t: f32) -> Self {
         let r = interpolate_u8(self.r(), other.r(), t);
         let g = interpolate_u8(self.g(), other.g(), t);
         let b = interpolate_u8(self.b(), other.b(), t);
         let a = interpolate_u8(self.a(), other.a(), t);
-        Color32::from_rgba_premultiplied(r, g, b, a)
+        Self::from_rgba_premultiplied(r, g, b, a)
     }
 }
 
 // Helper function to interpolate u8 values
 fn interpolate_u8(a: u8, b: u8, t: f32) -> u8 {
-    let a = a as f32;
-    let b = b as f32;
+    let a = f32::from(a);
+    let b = f32::from(b);
     (a + (b - a) * t).round().clamp(0.0, 255.0) as u8
 }
 
@@ -106,12 +108,14 @@ pub fn lerp<T: Interpolate>(a: &T, b: &T, t: f32) -> T {
 }
 
 /// Smooth step interpolation (S-curve)
+#[must_use] 
 pub fn smooth_step(t: f32) -> f32 {
     let t = t.clamp(0.0, 1.0);
     t * t * (3.0 - 2.0 * t)
 }
 
 /// Smoother step interpolation (smoother S-curve)
+#[must_use] 
 pub fn smoother_step(t: f32) -> f32 {
     let t = t.clamp(0.0, 1.0);
     t * t * t * (t * (t * 6.0 - 15.0) + 10.0)

@@ -573,7 +573,7 @@ impl MidiPad {
     }
 
     /// Get pad color based on color scheme
-    fn get_pad_color(&self, theme: &Theme, config: &PadConfig, index: usize) -> Color32 {
+    const fn get_pad_color(&self, theme: &Theme, config: &PadConfig, index: usize) -> Color32 {
         // Custom color takes precedence
         if let Some(color) = config.color {
             return color;

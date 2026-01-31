@@ -3,8 +3,8 @@
 //! Progress indicators styled like shadcn/ui Progress.
 //! Includes:
 //! - Progress: Simple horizontal progress bar (shadcn style)
-//! - CircularProgressBar: Circular/spinner progress
-//! - RingProgress: Ring with center label
+//! - `CircularProgressBar`: Circular/spinner progress
+//! - `RingProgress`: Ring with center label
 
 use egui::{Color32, Pos2, Ui, Vec2};
 use std::f32::consts::PI;
@@ -53,7 +53,8 @@ impl Progress {
     ///
     /// # Arguments
     /// * `value` - Progress value from 0 to 100
-    pub fn new(value: f32) -> Self {
+    #[must_use] 
+    pub const fn new(value: f32) -> Self {
         Self {
             value: value.clamp(0.0, 100.0),
             width: None,
@@ -62,13 +63,15 @@ impl Progress {
     }
 
     /// Set the width of the progress bar
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set the height of the progress bar
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
@@ -152,7 +155,8 @@ impl CircularProgressBar {
     ///
     /// # Arguments
     /// * `value` - Progress value from 0 to 100
-    pub fn new(value: f32) -> Self {
+    #[must_use] 
+    pub const fn new(value: f32) -> Self {
         Self {
             value: Some(value.clamp(0.0, 100.0)),
             size: CIRCULAR_SIZE,
@@ -163,7 +167,8 @@ impl CircularProgressBar {
     }
 
     /// Create an indeterminate circular progress (loading spinner)
-    pub fn indeterminate() -> Self {
+    #[must_use] 
+    pub const fn indeterminate() -> Self {
         Self {
             value: None,
             size: CIRCULAR_SIZE,
@@ -174,19 +179,22 @@ impl CircularProgressBar {
     }
 
     /// Set circle size (diameter)
-    pub fn size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set stroke width
-    pub fn stroke_width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn stroke_width(mut self, width: f32) -> Self {
         self.stroke_width = width;
         self
     }
 
     /// Show percentage in center (only for determinate mode)
-    pub fn show_percentage(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_percentage(mut self, show: bool) -> Self {
         self.show_percentage = show;
         self
     }
@@ -222,7 +230,7 @@ impl CircularProgressBar {
                     ui.painter().text(
                         center,
                         egui::Align2::CENTER_CENTER,
-                        format!("{}%", percentage),
+                        format!("{percentage}%"),
                         egui::FontId::proportional(self.size * 0.25),
                         theme.foreground(),
                     );
@@ -313,7 +321,8 @@ impl RingProgress {
     ///
     /// # Arguments
     /// * `value` - Progress value from 0 to 100
-    pub fn new(value: f32) -> Self {
+    #[must_use] 
+    pub const fn new(value: f32) -> Self {
         Self {
             value: value.clamp(0.0, 100.0),
             size: RING_SIZE,
@@ -323,13 +332,15 @@ impl RingProgress {
     }
 
     /// Set ring size (diameter)
-    pub fn size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set ring thickness
-    pub fn thickness(mut self, thickness: f32) -> Self {
+    #[must_use] 
+    pub const fn thickness(mut self, thickness: f32) -> Self {
         self.thickness = thickness;
         self
     }
@@ -348,7 +359,7 @@ impl RingProgress {
             let center = rect.center();
             let outer_radius = self.size / 2.0;
             let inner_radius = outer_radius - self.thickness;
-            let mid_radius = (outer_radius + inner_radius) / 2.0;
+            let mid_radius = f32::midpoint(outer_radius, inner_radius);
             let primary = theme.primary();
 
             // Background track: primary at 20% opacity
@@ -384,7 +395,7 @@ impl RingProgress {
             ui.painter().text(
                 Pos2::new(center.x, center.y + text_y_offset),
                 egui::Align2::CENTER_CENTER,
-                format!("{}%", percentage),
+                format!("{percentage}%"),
                 egui::FontId::proportional(self.size * 0.2),
                 theme.foreground(),
             );

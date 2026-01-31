@@ -60,9 +60,10 @@ pub struct Tabs {
 
 impl Tabs {
     /// Create new tabs with labels
+    #[must_use] 
     pub fn new(labels: Vec<impl Into<String>>) -> Self {
         Self {
-            labels: labels.into_iter().map(|l| l.into()).collect(),
+            labels: labels.into_iter().map(std::convert::Into::into).collect(),
             active_index: 0,
             animate: true,
             indicator_pos: 0.0,
@@ -71,6 +72,7 @@ impl Tabs {
     }
 
     /// Set active tab index
+    #[must_use] 
     pub fn active(mut self, index: usize) -> Self {
         self.active_index = index.min(self.labels.len().saturating_sub(1));
         self.indicator_pos = self.active_index as f32;
@@ -79,7 +81,8 @@ impl Tabs {
     }
 
     /// Enable or disable animation
-    pub fn animate(mut self, animate: bool) -> Self {
+    #[must_use] 
+    pub const fn animate(mut self, animate: bool) -> Self {
         self.animate = animate;
         self
     }

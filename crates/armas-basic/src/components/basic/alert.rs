@@ -24,31 +24,31 @@ pub enum AlertVariant {
 }
 
 impl AlertVariant {
-    fn icon(&self) -> WindowIcon {
+    const fn icon(&self) -> WindowIcon {
         match self {
-            AlertVariant::Info => WindowIcon::Info,
-            AlertVariant::Destructive => WindowIcon::Error,
+            Self::Info => WindowIcon::Info,
+            Self::Destructive => WindowIcon::Error,
         }
     }
 
-    fn color(&self, theme: &Theme) -> Color32 {
+    const fn color(&self, theme: &Theme) -> Color32 {
         match self {
-            AlertVariant::Info => theme.foreground(),
-            AlertVariant::Destructive => theme.destructive(),
+            Self::Info => theme.foreground(),
+            Self::Destructive => theme.destructive(),
         }
     }
 
     fn background_color(&self, theme: &Theme) -> Color32 {
         match self {
-            AlertVariant::Info => theme.muted(),
-            AlertVariant::Destructive => theme.destructive().linear_multiply(0.08),
+            Self::Info => theme.muted(),
+            Self::Destructive => theme.destructive().linear_multiply(0.08),
         }
     }
 
-    fn border_color(&self, theme: &Theme) -> Color32 {
+    const fn border_color(&self, theme: &Theme) -> Color32 {
         match self {
-            AlertVariant::Info => theme.border(),
-            AlertVariant::Destructive => theme.destructive(),
+            Self::Info => theme.border(),
+            Self::Destructive => theme.destructive(),
         }
     }
 }
@@ -110,37 +110,43 @@ impl Alert {
     }
 
     /// Set the variant
-    pub fn variant(mut self, variant: AlertVariant) -> Self {
+    #[must_use] 
+    pub const fn variant(mut self, variant: AlertVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Make this a destructive alert
-    pub fn destructive(mut self) -> Self {
+    #[must_use] 
+    pub const fn destructive(mut self) -> Self {
         self.variant = AlertVariant::Destructive;
         self
     }
 
     /// Set custom color (overrides variant color)
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.custom_color = Some(color);
         self
     }
 
     /// Make the alert dismissible
-    pub fn dismissible(mut self, dismissible: bool) -> Self {
+    #[must_use] 
+    pub const fn dismissible(mut self, dismissible: bool) -> Self {
         self.dismissible = dismissible;
         self
     }
 
     /// Set a fixed width
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Show or hide the icon
-    pub fn show_icon(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_icon(mut self, show: bool) -> Self {
         self.show_icon = show;
         self
     }

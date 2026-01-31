@@ -60,17 +60,17 @@ pub enum ToastVariant {
 }
 
 impl ToastVariant {
-    fn icon(&self) -> WindowIcon {
+    const fn icon(&self) -> WindowIcon {
         match self {
-            ToastVariant::Default => WindowIcon::Info,
-            ToastVariant::Destructive => WindowIcon::Error,
+            Self::Default => WindowIcon::Info,
+            Self::Destructive => WindowIcon::Error,
         }
     }
 
-    fn color(&self, theme: &Theme) -> Color32 {
+    const fn color(&self, theme: &Theme) -> Color32 {
         match self {
-            ToastVariant::Default => theme.foreground(),
-            ToastVariant::Destructive => theme.destructive(),
+            Self::Default => theme.foreground(),
+            Self::Destructive => theme.destructive(),
         }
     }
 }
@@ -93,14 +93,14 @@ pub enum ToastPosition {
 }
 
 impl ToastPosition {
-    fn anchor(&self) -> Align2 {
+    const fn anchor(&self) -> Align2 {
         match self {
-            ToastPosition::TopLeft => Align2::LEFT_TOP,
-            ToastPosition::TopCenter => Align2::CENTER_TOP,
-            ToastPosition::TopRight => Align2::RIGHT_TOP,
-            ToastPosition::BottomLeft => Align2::LEFT_BOTTOM,
-            ToastPosition::BottomCenter => Align2::CENTER_BOTTOM,
-            ToastPosition::BottomRight => Align2::RIGHT_BOTTOM,
+            Self::TopLeft => Align2::LEFT_TOP,
+            Self::TopCenter => Align2::CENTER_TOP,
+            Self::TopRight => Align2::RIGHT_TOP,
+            Self::BottomLeft => Align2::LEFT_BOTTOM,
+            Self::BottomCenter => Align2::CENTER_BOTTOM,
+            Self::BottomRight => Align2::RIGHT_BOTTOM,
         }
     }
 
@@ -108,12 +108,12 @@ impl ToastPosition {
         let y_offset = (toast_height + TOAST_SPACING) * index as f32;
 
         match self {
-            ToastPosition::TopLeft => vec2(TOAST_MARGIN, TOAST_MARGIN + y_offset),
-            ToastPosition::TopCenter => vec2(0.0, TOAST_MARGIN + y_offset),
-            ToastPosition::TopRight => vec2(-TOAST_MARGIN, TOAST_MARGIN + y_offset),
-            ToastPosition::BottomLeft => vec2(TOAST_MARGIN, -TOAST_MARGIN - y_offset),
-            ToastPosition::BottomCenter => vec2(0.0, -TOAST_MARGIN - y_offset),
-            ToastPosition::BottomRight => vec2(-TOAST_MARGIN, -TOAST_MARGIN - y_offset),
+            Self::TopLeft => vec2(TOAST_MARGIN, TOAST_MARGIN + y_offset),
+            Self::TopCenter => vec2(0.0, TOAST_MARGIN + y_offset),
+            Self::TopRight => vec2(-TOAST_MARGIN, TOAST_MARGIN + y_offset),
+            Self::BottomLeft => vec2(TOAST_MARGIN, -TOAST_MARGIN - y_offset),
+            Self::BottomCenter => vec2(0.0, -TOAST_MARGIN - y_offset),
+            Self::BottomRight => vec2(-TOAST_MARGIN, -TOAST_MARGIN - y_offset),
         }
     }
 }
@@ -159,13 +159,13 @@ impl Toast {
     }
 
     #[allow(dead_code)]
-    fn with_duration_secs(mut self, duration_secs: f32) -> Self {
+    const fn with_duration_secs(mut self, duration_secs: f32) -> Self {
         self.duration_secs = duration_secs;
         self
     }
 
     #[allow(dead_code)]
-    fn with_dismissible(mut self, dismissible: bool) -> Self {
+    const fn with_dismissible(mut self, dismissible: bool) -> Self {
         self.dismissible = dismissible;
         self
     }
@@ -194,7 +194,8 @@ pub struct ToastManager {
 
 impl ToastManager {
     /// Create a new toast manager
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             toasts: VecDeque::new(),
             position: ToastPosition::BottomRight, // shadcn default
@@ -203,13 +204,15 @@ impl ToastManager {
     }
 
     /// Set the position where toasts appear
-    pub fn position(mut self, position: ToastPosition) -> Self {
+    #[must_use] 
+    pub const fn position(mut self, position: ToastPosition) -> Self {
         self.position = position;
         self
     }
 
     /// Set the maximum number of toasts to show at once
-    pub fn max_toasts(mut self, max: usize) -> Self {
+    #[must_use] 
+    pub const fn max_toasts(mut self, max: usize) -> Self {
         self.max_toasts = max;
         self
     }
@@ -235,7 +238,7 @@ impl ToastManager {
     }
 
     /// Add a custom toast with builder pattern
-    pub fn custom(&mut self) -> ToastBuilder<'_> {
+    pub const fn custom(&mut self) -> ToastBuilder<'_> {
         ToastBuilder {
             manager: self,
             toast: None,
@@ -248,7 +251,7 @@ impl ToastManager {
         let current_time = ctx.input(|i| i.time);
 
         // Fix newly created toasts (created_at == 0.0)
-        for toast in self.toasts.iter_mut() {
+        for toast in &mut self.toasts {
             if toast.created_at == 0.0 {
                 toast.created_at = current_time;
             }
@@ -267,7 +270,7 @@ impl ToastManager {
 
         // Update animations first
         let dt = ctx.input(|i| i.unstable_dt);
-        for toast in self.toasts.iter_mut() {
+        for toast in &mut self.toasts {
             toast.slide_animation.update(dt);
             if !toast.slide_animation.is_settled(0.001, 0.001) {
                 ctx.request_repaint();
@@ -435,7 +438,7 @@ pub struct ToastBuilder<'a> {
     toast: Option<Toast>,
 }
 
-impl<'a> ToastBuilder<'a> {
+impl ToastBuilder<'_> {
     /// Set the toast message
     pub fn message(mut self, message: impl Into<String>) -> Self {
         if let Some(toast) = &mut self.toast {
@@ -455,6 +458,7 @@ impl<'a> ToastBuilder<'a> {
     }
 
     /// Set the toast variant
+    #[must_use] 
     pub fn variant(mut self, variant: ToastVariant) -> Self {
         if let Some(toast) = &mut self.toast {
             toast.variant = variant;
@@ -465,6 +469,7 @@ impl<'a> ToastBuilder<'a> {
     }
 
     /// Make this a destructive toast
+    #[must_use] 
     pub fn destructive(mut self) -> Self {
         if let Some(toast) = &mut self.toast {
             toast.variant = ToastVariant::Destructive;
@@ -475,7 +480,8 @@ impl<'a> ToastBuilder<'a> {
     }
 
     /// Set custom color (overrides variant)
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         if let Some(toast) = &mut self.toast {
             toast.custom_color = Some(color);
         }
@@ -483,7 +489,8 @@ impl<'a> ToastBuilder<'a> {
     }
 
     /// Set the display duration
-    pub fn duration(mut self, duration: std::time::Duration) -> Self {
+    #[must_use] 
+    pub const fn duration(mut self, duration: std::time::Duration) -> Self {
         if let Some(toast) = &mut self.toast {
             toast.duration_secs = duration.as_secs_f32();
         }
@@ -491,7 +498,8 @@ impl<'a> ToastBuilder<'a> {
     }
 
     /// Set whether the toast can be manually dismissed
-    pub fn dismissible(mut self, dismissible: bool) -> Self {
+    #[must_use] 
+    pub const fn dismissible(mut self, dismissible: bool) -> Self {
         if let Some(toast) = &mut self.toast {
             toast.dismissible = dismissible;
         }

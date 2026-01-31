@@ -49,13 +49,14 @@ impl Accordion {
     pub fn new(id: impl Into<egui::Id>, titles: Vec<impl Into<String>>) -> Self {
         Self {
             id: id.into(),
-            titles: titles.into_iter().map(|t| t.into()).collect(),
+            titles: titles.into_iter().map(std::convert::Into::into).collect(),
             allow_multiple: false,
         }
     }
 
     /// Allow multiple sections to be open simultaneously
-    pub fn allow_multiple(mut self, allow: bool) -> Self {
+    #[must_use] 
+    pub const fn allow_multiple(mut self, allow: bool) -> Self {
         self.allow_multiple = allow;
         self
     }

@@ -36,7 +36,7 @@ impl Kbd {
     /// Show the keyboard shortcut
     pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
         // Check if this is a key combination
-        let parts: Vec<&str> = self.text.split('+').map(|s| s.trim()).collect();
+        let parts: Vec<&str> = self.text.split('+').map(str::trim).collect();
 
         if parts.len() > 1 {
             // Multiple keys - render as group
@@ -66,7 +66,7 @@ fn render_key(ui: &mut Ui, text: &str, theme: &Theme) -> Response {
     // Calculate text size
     let galley = ui
         .painter()
-        .layout_no_wrap(text.to_string(), font_id.clone(), text_color);
+        .layout_no_wrap(text.to_string(), font_id, text_color);
 
     let text_size = galley.size();
     let padding_x = 8.0;

@@ -26,7 +26,8 @@ pub struct WobbleCard {
 
 impl WobbleCard {
     /// Create a new wobble card
-    pub fn new(width: f32, height: f32) -> Self {
+    #[must_use] 
+    pub const fn new(width: f32, height: f32) -> Self {
         Self {
             width,
             height,
@@ -42,31 +43,36 @@ impl WobbleCard {
     }
 
     /// Set background color
-    pub fn background(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn background(mut self, color: Color32) -> Self {
         self.background = color;
         self
     }
 
     /// Set border color
-    pub fn border(mut self, color: Option<Color32>) -> Self {
+    #[must_use] 
+    pub const fn border(mut self, color: Option<Color32>) -> Self {
         self.border = color;
         self
     }
 
     /// Set corner radius
-    pub fn corner_radius(mut self, radius: f32) -> Self {
+    #[must_use] 
+    pub const fn corner_radius(mut self, radius: f32) -> Self {
         self.corner_radius = radius;
         self
     }
 
     /// Set wobble intensity (default: 1.0)
-    pub fn wobble_intensity(mut self, intensity: f32) -> Self {
+    #[must_use] 
+    pub const fn wobble_intensity(mut self, intensity: f32) -> Self {
         self.wobble_intensity = intensity.max(0.0);
         self
     }
 
     /// Set wobble speed (default: 8.0)
-    pub fn wobble_speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn wobble_speed(mut self, speed: f32) -> Self {
         self.wobble_speed = speed.max(0.1);
         self
     }

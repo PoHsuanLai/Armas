@@ -29,7 +29,8 @@ pub struct TextRevealCard {
 
 impl TextRevealCard {
     /// Create a new text reveal card
-    pub fn new(width: f32, height: f32, static_text: String, reveal_text: String) -> Self {
+    #[must_use] 
+    pub const fn new(width: f32, height: f32, static_text: String, reveal_text: String) -> Self {
         Self {
             width,
             height,
@@ -46,25 +47,29 @@ impl TextRevealCard {
     }
 
     /// Set the background color
-    pub fn background_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn background_color(mut self, color: Color32) -> Self {
         self.background_color = color;
         self
     }
 
     /// Set the border color
-    pub fn border_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn border_color(mut self, color: Color32) -> Self {
         self.border_color = color;
         self
     }
 
     /// Set the text color
-    pub fn text_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn text_color(mut self, color: Color32) -> Self {
         self.text_color = color;
         self
     }
 
     /// Set the reveal text color
-    pub fn reveal_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn reveal_color(mut self, color: Color32) -> Self {
         self.reveal_color = color;
         self
     }

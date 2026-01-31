@@ -46,7 +46,8 @@ pub struct IconButton<'a> {
 
 impl<'a> IconButton<'a> {
     /// Create a new icon button
-    pub fn new(icon_data: &'a IconData) -> Self {
+    #[must_use] 
+    pub const fn new(icon_data: &'a IconData) -> Self {
         Self {
             icon_data,
             variant: ButtonVariant::Default,
@@ -59,37 +60,43 @@ impl<'a> IconButton<'a> {
     }
 
     /// Set the button variant
-    pub fn variant(mut self, variant: ButtonVariant) -> Self {
+    #[must_use] 
+    pub const fn variant(mut self, variant: ButtonVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set the icon size
-    pub fn size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set the padding around the icon
-    pub fn padding(mut self, padding: f32) -> Self {
+    #[must_use] 
+    pub const fn padding(mut self, padding: f32) -> Self {
         self.padding = padding;
         self
     }
 
     /// Set enabled state
-    pub fn enabled(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
     /// Set custom icon color (overrides default)
-    pub fn icon_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn icon_color(mut self, color: Color32) -> Self {
         self.icon_color = Some(color);
         self
     }
 
     /// Set custom hover icon color (overrides default)
-    pub fn hover_icon_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn hover_icon_color(mut self, color: Color32) -> Self {
         self.hover_icon_color = Some(color);
         self
     }
@@ -177,10 +184,10 @@ impl<'a> IconButton<'a> {
                     ButtonVariant::Default | ButtonVariant::Secondary => total_size.x / 2.0, // Circular
                     _ => 6.0, // rounded-md
                 };
-                let final_bg = if !self.enabled {
-                    bg.linear_multiply(0.5)
-                } else {
+                let final_bg = if self.enabled {
                     bg
+                } else {
+                    bg.linear_multiply(0.5)
                 };
                 ui.painter().rect_filled(rect, rounding, final_bg);
             }

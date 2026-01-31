@@ -34,11 +34,11 @@ pub enum BadgeVariant {
 #[allow(non_upper_case_globals)]
 impl BadgeVariant {
     /// Alias for Default (backwards compatibility)
-    pub const Filled: BadgeVariant = BadgeVariant::Default;
+    pub const Filled: Self = Self::Default;
     /// Alias for Outline (backwards compatibility)
-    pub const Outlined: BadgeVariant = BadgeVariant::Outline;
+    pub const Outlined: Self = Self::Outline;
     /// Alias for Secondary (backwards compatibility)
-    pub const Soft: BadgeVariant = BadgeVariant::Secondary;
+    pub const Soft: Self = Self::Secondary;
 }
 
 /// Small status indicator badge styled like shadcn/ui
@@ -97,67 +97,78 @@ impl Badge {
     }
 
     /// Set badge variant
-    pub fn variant(mut self, variant: BadgeVariant) -> Self {
+    #[must_use] 
+    pub const fn variant(mut self, variant: BadgeVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set custom color (overrides variant colors)
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.custom_color = Some(color);
         self
     }
 
     /// Make this a destructive badge (shorthand)
-    pub fn destructive(mut self) -> Self {
+    #[must_use] 
+    pub const fn destructive(mut self) -> Self {
         self.variant = BadgeVariant::Destructive;
         self
     }
 
     /// Show dot indicator
-    pub fn dot(mut self) -> Self {
+    #[must_use] 
+    pub const fn dot(mut self) -> Self {
         self.show_dot = true;
         self
     }
 
     /// Set text size
-    pub fn size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: f32) -> Self {
         self.custom_font_size = Some(size);
         self
     }
 
     /// Make badge removable
-    pub fn removable(mut self) -> Self {
+    #[must_use] 
+    pub const fn removable(mut self) -> Self {
         self.removable = true;
         self
     }
 
     /// Set corner radius
-    pub fn corner_radius(mut self, radius: f32) -> Self {
+    #[must_use] 
+    pub const fn corner_radius(mut self, radius: f32) -> Self {
         self.custom_corner_radius = Some(radius);
         self
     }
 
     /// Set vertical padding
-    pub fn vertical_padding(mut self, padding: f32) -> Self {
+    #[must_use] 
+    pub const fn vertical_padding(mut self, padding: f32) -> Self {
         self.custom_vertical_padding = Some(padding);
         self
     }
 
     /// Set explicit height (overrides computed height)
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.custom_height = Some(height);
         self
     }
 
     /// Set minimum width
-    pub fn min_width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn min_width(mut self, width: f32) -> Self {
         self.min_width = Some(width);
         self
     }
 
     /// Set selected state (for interactive badge use)
-    pub fn selected(mut self, selected: bool) -> Self {
+    #[must_use] 
+    pub const fn selected(mut self, selected: bool) -> Self {
         self.is_selected = selected;
         self
     }
@@ -286,7 +297,7 @@ impl Badge {
     }
 
     /// Get colors based on variant (shadcn/ui style)
-    fn get_colors(&self, theme: &Theme) -> (Color32, Color32, Color32) {
+    const fn get_colors(&self, theme: &Theme) -> (Color32, Color32, Color32) {
         // Custom color overrides everything
         if let Some(color) = self.custom_color {
             return (color, theme.primary_foreground(), color);
@@ -346,7 +357,8 @@ pub struct NotificationBadge {
 impl NotificationBadge {
     /// Create a new notification badge with count
     /// Color defaults to theme destructive color
-    pub fn new(count: usize) -> Self {
+    #[must_use] 
+    pub const fn new(count: usize) -> Self {
         Self {
             count,
             max_count: Some(99),
@@ -356,19 +368,22 @@ impl NotificationBadge {
     }
 
     /// Set maximum count display
-    pub fn max_count(mut self, max: usize) -> Self {
+    #[must_use] 
+    pub const fn max_count(mut self, max: usize) -> Self {
         self.max_count = Some(max);
         self
     }
 
     /// Set badge color (overrides theme)
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set badge size
-    pub fn size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
@@ -379,7 +394,7 @@ impl NotificationBadge {
 
         let text = if let Some(max) = self.max_count {
             if self.count > max {
-                format!("{}+", max)
+                format!("{max}+")
             } else {
                 self.count.to_string()
             }

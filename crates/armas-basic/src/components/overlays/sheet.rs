@@ -80,14 +80,14 @@ pub enum SheetSize {
 }
 
 impl SheetSize {
-    fn to_pixels(self) -> f32 {
+    const fn to_pixels(self) -> f32 {
         match self {
-            SheetSize::Small => SHEET_WIDTH_SM,
-            SheetSize::Medium => SHEET_WIDTH_MD,
-            SheetSize::Large => SHEET_WIDTH_LG,
-            SheetSize::XLarge => SHEET_WIDTH_XL,
-            SheetSize::Full => 0.0, // Calculated at runtime
-            SheetSize::Custom(px) => px,
+            Self::Small => SHEET_WIDTH_SM,
+            Self::Medium => SHEET_WIDTH_MD,
+            Self::Large => SHEET_WIDTH_LG,
+            Self::XLarge => SHEET_WIDTH_XL,
+            Self::Full => 0.0, // Calculated at runtime
+            Self::Custom(px) => px,
         }
     }
 }
@@ -123,43 +123,48 @@ impl Sheet {
     }
 
     /// Set which side the sheet slides from
-    pub fn side(mut self, side: SheetSide) -> Self {
+    #[must_use] 
+    pub const fn side(mut self, side: SheetSide) -> Self {
         self.side = side;
         self
     }
 
     /// Set the sheet size
-    pub fn size(mut self, size: SheetSize) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: SheetSize) -> Self {
         self.size = size;
         self
     }
 
     /// Set the sheet open state
-    pub fn open(mut self, open: bool) -> Self {
+    #[must_use] 
+    pub const fn open(mut self, open: bool) -> Self {
         self.is_open = open;
         self
     }
 
-    /// Set the title (SheetTitle equivalent)
+    /// Set the title (`SheetTitle` equivalent)
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
-    /// Set the description (SheetDescription equivalent)
+    /// Set the description (`SheetDescription` equivalent)
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
     }
 
     /// Show or hide the close button (default: true)
-    pub fn show_close_button(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_close_button(mut self, show: bool) -> Self {
         self.show_close_button = show;
         self
     }
 
     /// Show or hide the backdrop overlay (default: true)
-    pub fn show_backdrop(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_backdrop(mut self, show: bool) -> Self {
         self.show_backdrop = show;
         self
     }
@@ -392,7 +397,8 @@ pub struct SheetResponse {
 
 impl SheetResponse {
     /// Check if the sheet was closed
-    pub fn closed(&self) -> bool {
+    #[must_use] 
+    pub const fn closed(&self) -> bool {
         self.closed
     }
 }

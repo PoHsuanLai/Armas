@@ -110,7 +110,7 @@ pub struct MidiController<'a> {
 
 impl<'a> MidiController<'a> {
     /// Create a new MIDI controller
-    pub fn new(state: &'a mut MidiControllerState) -> Self {
+    pub const fn new(state: &'a mut MidiControllerState) -> Self {
         Self {
             state,
             wheel_size: WheelSize::Default,

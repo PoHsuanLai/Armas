@@ -51,6 +51,7 @@ pub enum WindowIcon {
 
 impl WindowIcon {
     /// Get the icon data for this window icon
+    #[must_use] 
     pub fn data(self) -> &'static IconData {
         match self {
             Self::Close => &CLOSE,
@@ -64,8 +65,9 @@ impl WindowIcon {
         }
     }
 
-    /// Create a WindowIconWidget from this WindowIcon
-    pub fn widget(self) -> WindowIconWidget {
+    /// Create a `WindowIconWidget` from this `WindowIcon`
+    #[must_use] 
+    pub const fn widget(self) -> WindowIconWidget {
         WindowIconWidget::new(self)
     }
 }
@@ -81,7 +83,8 @@ pub struct WindowIconWidget {
 
 impl WindowIconWidget {
     /// Create a new window icon widget
-    pub fn new(icon: WindowIcon) -> Self {
+    #[must_use] 
+    pub const fn new(icon: WindowIcon) -> Self {
         Self {
             icon,
             size: 12.0,
@@ -90,13 +93,15 @@ impl WindowIconWidget {
     }
 
     /// Set the icon size (width and height will be equal)
-    pub fn size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set the icon color
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = color;
         self
     }

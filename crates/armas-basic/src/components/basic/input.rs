@@ -28,7 +28,7 @@ pub struct InputResponse {
 }
 
 /// Input validation state
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum InputState {
     /// Normal state
     #[default]
@@ -42,7 +42,7 @@ pub enum InputState {
 }
 
 /// Input field variant (for backwards compatibility)
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum InputVariant {
     /// Default input style (standard shadcn input)
     #[default]
@@ -97,13 +97,15 @@ impl Input {
     }
 
     /// Set the variant (for backwards compatibility)
-    pub fn variant(mut self, variant: InputVariant) -> Self {
+    #[must_use] 
+    pub const fn variant(mut self, variant: InputVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set the validation state
-    pub fn state(mut self, state: InputState) -> Self {
+    #[must_use] 
+    pub const fn state(mut self, state: InputState) -> Self {
         self.state = state;
         self
     }
@@ -139,37 +141,43 @@ impl Input {
     }
 
     /// Set width
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set explicit height (overrides variant-based height)
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.custom_height = Some(height);
         self
     }
 
     /// Set as password field
-    pub fn password(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn password(mut self, enabled: bool) -> Self {
         self.password = enabled;
         self
     }
 
     /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
+    #[must_use] 
+    pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
 
     /// Backwards compatibility aliases
-    pub fn font_size(self, _size: f32) -> Self {
+    #[must_use] 
+    pub const fn font_size(self, _size: f32) -> Self {
         // Ignored - use consistent sizing
         self
     }
 
     /// Set text color (currently ignored - uses theme colors)
-    pub fn text_color(self, _color: Color32) -> Self {
+    #[must_use] 
+    pub const fn text_color(self, _color: Color32) -> Self {
         // Ignored - use theme colors
         self
     }
@@ -416,6 +424,7 @@ pub struct SearchInput {
 
 impl SearchInput {
     /// Create a new search input
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             id: None,
@@ -437,7 +446,8 @@ impl SearchInput {
     }
 
     /// Set width
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }

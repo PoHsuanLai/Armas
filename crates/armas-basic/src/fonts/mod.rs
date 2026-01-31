@@ -48,32 +48,36 @@ use std::sync::Arc;
 pub struct FontWeight;
 
 impl FontWeight {
-    /// Get FontId for regular weight (400)
+    /// Get `FontId` for regular weight (400)
+    #[must_use] 
     pub fn regular(family_name: &str, size: f32) -> FontId {
         FontId::new(size, FontFamily::Name(family_name.into()))
     }
 
-    /// Get FontId for medium weight (500)
+    /// Get `FontId` for medium weight (500)
+    #[must_use] 
     pub fn medium(family_name: &str, size: f32) -> FontId {
         FontId::new(
             size,
-            FontFamily::Name(format!("{}Medium", family_name).into()),
+            FontFamily::Name(format!("{family_name}Medium").into()),
         )
     }
 
-    /// Get FontId for semibold weight (600)
+    /// Get `FontId` for semibold weight (600)
+    #[must_use] 
     pub fn semibold(family_name: &str, size: f32) -> FontId {
         FontId::new(
             size,
-            FontFamily::Name(format!("{}SemiBold", family_name).into()),
+            FontFamily::Name(format!("{family_name}SemiBold").into()),
         )
     }
 
-    /// Get FontId for bold weight (700)
+    /// Get `FontId` for bold weight (700)
+    #[must_use] 
     pub fn bold(family_name: &str, size: f32) -> FontId {
         FontId::new(
             size,
-            FontFamily::Name(format!("{}Bold", family_name).into()),
+            FontFamily::Name(format!("{family_name}Bold").into()),
         )
     }
 }
@@ -113,6 +117,7 @@ pub struct FontFamilyBuilder {
 
 impl FontFamilyBuilder {
     /// Create a new font family builder
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             font_data: HashMap::new(),
@@ -127,9 +132,9 @@ impl FontFamilyBuilder {
     ///
     /// Fonts are registered with the following names:
     /// - Regular: `{family_name}` (e.g., "Inter")
-    /// - Medium: `{family_name}Medium` (e.g., "InterMedium")
-    /// - SemiBold: `{family_name}SemiBold` (e.g., "InterSemiBold")
-    /// - Bold: `{family_name}Bold` (e.g., "InterBold")
+    /// - Medium: `{family_name}Medium` (e.g., "`InterMedium`")
+    /// - `SemiBold`: `{family_name}SemiBold` (e.g., "`InterSemiBold`")
+    /// - Bold: `{family_name}Bold` (e.g., "`InterBold`")
     pub fn add_family(
         &mut self,
         family_name: &str,
@@ -148,7 +153,7 @@ impl FontFamilyBuilder {
         // Create regular family
         self.families.insert(
             FontFamily::Name(family_name.into()),
-            vec![regular_key.clone()],
+            vec![regular_key],
         );
 
         // Load medium weight if provided
@@ -160,7 +165,7 @@ impl FontFamilyBuilder {
             );
 
             self.families.insert(
-                FontFamily::Name(format!("{}Medium", family_name).into()),
+                FontFamily::Name(format!("{family_name}Medium").into()),
                 vec![medium_key],
             );
         }
@@ -174,7 +179,7 @@ impl FontFamilyBuilder {
             );
 
             self.families.insert(
-                FontFamily::Name(format!("{}SemiBold", family_name).into()),
+                FontFamily::Name(format!("{family_name}SemiBold").into()),
                 vec![semibold_key],
             );
         }
@@ -186,7 +191,7 @@ impl FontFamilyBuilder {
                 .insert(bold_key.clone(), Arc::new(FontData::from_static(bold_data)));
 
             self.families.insert(
-                FontFamily::Name(format!("{}Bold", family_name).into()),
+                FontFamily::Name(format!("{family_name}Bold").into()),
                 vec![bold_key],
             );
         }
@@ -206,7 +211,7 @@ impl FontFamilyBuilder {
     ///
     /// # Arguments
     ///
-    /// * `ctx` - The egui context (use from CreationContext or before first frame)
+    /// * `ctx` - The egui context (use from `CreationContext` or before first frame)
     /// * `set_as_default` - If true, sets the first added family as default proportional font
     pub fn install(self, ctx: &Context, set_as_default: bool) {
         let mut fonts = FontDefinitions::default();
@@ -234,9 +239,10 @@ impl FontFamilyBuilder {
         ctx.set_fonts(fonts);
     }
 
-    /// Build FontDefinitions without installing to context
+    /// Build `FontDefinitions` without installing to context
     ///
     /// Useful if you want to customize further before applying.
+    #[must_use] 
     pub fn build(self) -> FontDefinitions {
         let mut fonts = FontDefinitions::default();
 
@@ -271,9 +277,9 @@ impl Default for FontFamilyBuilder {
 /// ## Geist
 /// - **Use case**: Modern tech UIs
 /// - **Download**: <https://vercel.com/font>
-/// - **Weights**: Regular, Medium, SemiBold, Bold
+/// - **Weights**: Regular, Medium, `SemiBold`, Bold
 ///
-/// ## JetBrains Mono
+/// ## `JetBrains` Mono
 /// - **Use case**: Code, monospace needs
 /// - **Download**: <https://www.jetbrains.com/lp/mono/>
 /// - **Weights**: 100-800

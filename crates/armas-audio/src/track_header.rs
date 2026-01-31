@@ -126,7 +126,7 @@ impl TrackHeader {
 
     /// Set whether this is a folder track
     #[must_use]
-    pub const fn is_folder(mut self, is_folder: bool) -> Self {
+    pub const fn folder(mut self, is_folder: bool) -> Self {
         self.is_folder = is_folder;
         self
     }

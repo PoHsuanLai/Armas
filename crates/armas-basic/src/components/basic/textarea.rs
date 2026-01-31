@@ -68,13 +68,15 @@ impl Textarea {
     }
 
     /// Set the textarea variant (for backwards compatibility)
-    pub fn variant(mut self, variant: InputVariant) -> Self {
+    #[must_use] 
+    pub const fn variant(mut self, variant: InputVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set the validation state
-    pub fn state(mut self, state: InputState) -> Self {
+    #[must_use] 
+    pub const fn state(mut self, state: InputState) -> Self {
         self.state = state;
         self
     }
@@ -98,31 +100,36 @@ impl Textarea {
     }
 
     /// Set fixed width
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set number of visible rows
+    #[must_use] 
     pub fn rows(mut self, rows: usize) -> Self {
         self.rows = rows.max(1);
         self
     }
 
     /// Set maximum character count
-    pub fn max_chars(mut self, max: usize) -> Self {
+    #[must_use] 
+    pub const fn max_chars(mut self, max: usize) -> Self {
         self.max_chars = Some(max);
         self
     }
 
     /// Set whether the textarea is resizable
-    pub fn resizable(mut self, resizable: bool) -> Self {
+    #[must_use] 
+    pub const fn resizable(mut self, resizable: bool) -> Self {
         self.resizable = resizable;
         self
     }
 
     /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
+    #[must_use] 
+    pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }

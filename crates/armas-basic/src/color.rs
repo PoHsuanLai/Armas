@@ -18,7 +18,8 @@ pub struct ColorStop {
 
 impl ColorStop {
     /// Create a new color stop
-    pub fn new(position: f32, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn new(position: f32, color: Color32) -> Self {
         Self { position, color }
     }
 }
@@ -30,11 +31,13 @@ pub struct Gradient {
 
 impl Gradient {
     /// Create a new gradient with stops
-    pub fn new(stops: Vec<ColorStop>) -> Self {
+    #[must_use] 
+    pub const fn new(stops: Vec<ColorStop>) -> Self {
         Self { stops }
     }
 
     /// Create a simple two-color gradient
+    #[must_use] 
     pub fn linear(from: Color32, to: Color32) -> Self {
         Self {
             stops: vec![ColorStop::new(0.0, from), ColorStop::new(1.0, to)],
@@ -42,6 +45,7 @@ impl Gradient {
     }
 
     /// Sample color at position t (0.0-1.0)
+    #[must_use] 
     pub fn sample(&self, t: f32) -> Color32 {
         let t = t.clamp(0.0, 1.0);
 
@@ -78,6 +82,7 @@ impl Gradient {
     /// Generate a radial gradient mesh
     ///
     /// Creates a circular gradient emanating from a center point
+    #[must_use] 
     pub fn radial_mesh(&self, center: Pos2, radius: f32, segments: usize) -> Mesh {
         let mut mesh = Mesh::default();
 
@@ -130,6 +135,7 @@ impl Gradient {
     /// Generate a conic (angular) gradient mesh
     ///
     /// Creates a gradient that rotates around a center point
+    #[must_use] 
     pub fn conic_mesh(
         &self,
         center: Pos2,
@@ -163,6 +169,7 @@ impl Gradient {
     }
 
     /// Generate a rectangular gradient mesh (corner-to-corner)
+    #[must_use] 
     pub fn rect_mesh(&self, rect: Rect, horizontal: bool) -> Mesh {
         let mut mesh = Mesh::default();
 
@@ -200,41 +207,44 @@ impl Gradient {
 }
 
 /// Interpolate between two colors
+#[must_use] 
 pub fn lerp_color(a: Color32, b: Color32, t: f32) -> Color32 {
     let t = t.clamp(0.0, 1.0);
     Color32::from_rgba_unmultiplied(
-        (a.r() as f32 + (b.r() as f32 - a.r() as f32) * t) as u8,
-        (a.g() as f32 + (b.g() as f32 - a.g() as f32) * t) as u8,
-        (a.b() as f32 + (b.b() as f32 - a.b() as f32) * t) as u8,
-        (a.a() as f32 + (b.a() as f32 - a.a() as f32) * t) as u8,
+        (f32::from(a.r()) + (f32::from(b.r()) - f32::from(a.r())) * t) as u8,
+        (f32::from(a.g()) + (f32::from(b.g()) - f32::from(a.g())) * t) as u8,
+        (f32::from(a.b()) + (f32::from(b.b()) - f32::from(a.b())) * t) as u8,
+        (f32::from(a.a()) + (f32::from(b.a()) - f32::from(a.a())) * t) as u8,
     )
 }
 
 /// Add alpha to a color
+#[must_use] 
 pub fn with_alpha(color: Color32, alpha: u8) -> Color32 {
     Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha)
 }
 
 /// Blend two colors using different modes
+#[must_use] 
 pub fn blend(a: Color32, b: Color32, t: f32, mode: BlendMode) -> Color32 {
     match mode {
         BlendMode::Normal => lerp_color(a, b, t),
         BlendMode::Multiply => {
-            let r = ((a.r() as f32 / 255.0) * (b.r() as f32 / 255.0) * 255.0) as u8;
-            let g = ((a.g() as f32 / 255.0) * (b.g() as f32 / 255.0) * 255.0) as u8;
-            let b_val = ((a.b() as f32 / 255.0) * (b.b() as f32 / 255.0) * 255.0) as u8;
+            let r = ((f32::from(a.r()) / 255.0) * (f32::from(b.r()) / 255.0) * 255.0) as u8;
+            let g = ((f32::from(a.g()) / 255.0) * (f32::from(b.g()) / 255.0) * 255.0) as u8;
+            let b_val = ((f32::from(a.b()) / 255.0) * (f32::from(b.b()) / 255.0) * 255.0) as u8;
             Color32::from_rgb(r, g, b_val)
         }
         BlendMode::Screen => {
-            let r = (255.0 - (255.0 - a.r() as f32) * (255.0 - b.r() as f32) / 255.0) as u8;
-            let g = (255.0 - (255.0 - a.g() as f32) * (255.0 - b.g() as f32) / 255.0) as u8;
-            let b_val = (255.0 - (255.0 - a.b() as f32) * (255.0 - b.b() as f32) / 255.0) as u8;
+            let r = (255.0 - (255.0 - f32::from(a.r())) * (255.0 - f32::from(b.r())) / 255.0) as u8;
+            let g = (255.0 - (255.0 - f32::from(a.g())) * (255.0 - f32::from(b.g())) / 255.0) as u8;
+            let b_val = (255.0 - (255.0 - f32::from(a.b())) * (255.0 - f32::from(b.b())) / 255.0) as u8;
             Color32::from_rgb(r, g, b_val)
         }
         BlendMode::Overlay => {
             let overlay_channel = |base: u8, blend: u8| -> u8 {
-                let base_f = base as f32 / 255.0;
-                let blend_f = blend as f32 / 255.0;
+                let base_f = f32::from(base) / 255.0;
+                let blend_f = f32::from(blend) / 255.0;
                 let result = if base_f < 0.5 {
                     2.0 * base_f * blend_f
                 } else {
@@ -265,10 +275,11 @@ pub enum BlendMode {
 }
 
 /// Saturate/desaturate a color
+#[must_use] 
 pub fn saturate(color: Color32, amount: f32) -> Color32 {
-    let r = color.r() as f32 / 255.0;
-    let g = color.g() as f32 / 255.0;
-    let b = color.b() as f32 / 255.0;
+    let r = f32::from(color.r()) / 255.0;
+    let g = f32::from(color.g()) / 255.0;
+    let b = f32::from(color.b()) / 255.0;
 
     let gray = 0.299 * r + 0.587 * g + 0.114 * b;
 
@@ -284,6 +295,7 @@ pub struct NeonPalette;
 
 impl NeonPalette {
     /// Cyberpunk neon palette (blues, purples, pinks)
+    #[must_use] 
     pub fn cyberpunk() -> Vec<Color32> {
         vec![
             Color32::from_rgb(0, 255, 255),  // Cyan
@@ -295,6 +307,7 @@ impl NeonPalette {
     }
 
     /// Synthwave palette (purples, pinks, oranges)
+    #[must_use] 
     pub fn synthwave() -> Vec<Color32> {
         vec![
             Color32::from_rgb(251, 86, 7),   // Orange
@@ -306,6 +319,7 @@ impl NeonPalette {
     }
 
     /// Aurora palette (blues, greens, purples)
+    #[must_use] 
     pub fn aurora() -> Vec<Color32> {
         vec![
             Color32::from_rgb(0, 255, 127),   // Spring Green
@@ -317,6 +331,7 @@ impl NeonPalette {
     }
 
     /// Neon rainbow (full spectrum, saturated)
+    #[must_use] 
     pub fn rainbow() -> Vec<Color32> {
         vec![
             Color32::from_rgb(255, 0, 0),   // Red
@@ -330,6 +345,7 @@ impl NeonPalette {
     }
 
     /// Electric blue palette
+    #[must_use] 
     pub fn electric() -> Vec<Color32> {
         vec![
             Color32::from_rgb(59, 130, 246),  // Blue 500
@@ -340,6 +356,7 @@ impl NeonPalette {
     }
 
     /// Hot gradient (red to yellow)
+    #[must_use] 
     pub fn hot() -> Vec<Color32> {
         vec![
             Color32::from_rgb(139, 0, 0),   // Dark Red
@@ -351,6 +368,7 @@ impl NeonPalette {
     }
 
     /// Cool gradient (cyan to blue to purple)
+    #[must_use] 
     pub fn cool() -> Vec<Color32> {
         vec![
             Color32::from_rgb(0, 255, 255),  // Cyan
@@ -361,6 +379,7 @@ impl NeonPalette {
     }
 
     /// Premium gold gradient
+    #[must_use] 
     pub fn gold() -> Vec<Color32> {
         vec![
             Color32::from_rgb(255, 215, 0),  // Gold

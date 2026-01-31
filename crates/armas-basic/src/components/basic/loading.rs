@@ -3,9 +3,9 @@
 //! Loading indicators styled for consistent UX.
 //! Includes:
 //! - Spinner: Classic rotating bar spinner
-//! - LoadingDots: Pulsing dots animation
+//! - `LoadingDots`: Pulsing dots animation
 //! - Skeleton: Content placeholder with shimmer
-//! - CircularProgress: Rotating arc spinner
+//! - `CircularProgress`: Rotating arc spinner
 
 use egui::{Color32, Pos2, Rect, Response, Ui, Vec2};
 use std::f32::consts::PI;
@@ -66,6 +66,7 @@ impl Default for Spinner {
 impl Spinner {
     /// Create a new spinner with default settings
     /// Color defaults to theme primary color
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             size: SPINNER_SIZE,
@@ -78,24 +79,28 @@ impl Spinner {
     }
 
     /// Set the spinner size
-    pub fn size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set the spinner color (overrides theme)
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set the rotation speed (in radians per second)
-    pub fn speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn speed(mut self, speed: f32) -> Self {
         self.speed = speed;
         self
     }
 
     /// Set the number of bars
+    #[must_use] 
     pub fn bar_count(mut self, count: usize) -> Self {
         self.bar_count = count.max(3);
         self
@@ -198,7 +203,8 @@ impl Default for LoadingDots {
 impl LoadingDots {
     /// Create new loading dots with default settings
     /// Color defaults to theme primary color
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             dot_size: DOTS_SIZE,
             spacing: DOTS_SPACING,
@@ -210,30 +216,35 @@ impl LoadingDots {
     }
 
     /// Set the dot size
-    pub fn dot_size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn dot_size(mut self, size: f32) -> Self {
         self.dot_size = size;
         self
     }
 
     /// Set the dot color (overrides theme)
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set the spacing between dots
-    pub fn spacing(mut self, spacing: f32) -> Self {
+    #[must_use] 
+    pub const fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
         self
     }
 
     /// Set the animation speed
-    pub fn speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn speed(mut self, speed: f32) -> Self {
         self.speed = speed;
         self
     }
 
     /// Set the number of dots
+    #[must_use] 
     pub fn dot_count(mut self, count: usize) -> Self {
         self.dot_count = count.max(2);
         self
@@ -313,7 +324,7 @@ pub struct Skeleton {
     pub width: f32,
     /// Height of the skeleton
     pub height: f32,
-    /// Base color of the skeleton (None = use theme surface_variant)
+    /// Base color of the skeleton (None = use theme `surface_variant`)
     base_color: Option<Color32>,
     /// Highlight color for the shimmer (None = use theme surface)
     highlight_color: Option<Color32>,
@@ -329,8 +340,9 @@ pub struct Skeleton {
 
 impl Skeleton {
     /// Create a new skeleton loader
-    /// Colors default to theme surface_variant and surface
-    pub fn new(width: f32, height: f32) -> Self {
+    /// Colors default to theme `surface_variant` and surface
+    #[must_use] 
+    pub const fn new(width: f32, height: f32) -> Self {
         Self {
             width,
             height,
@@ -344,31 +356,36 @@ impl Skeleton {
     }
 
     /// Set the base color (overrides theme)
-    pub fn base_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn base_color(mut self, color: Color32) -> Self {
         self.base_color = Some(color);
         self
     }
 
     /// Set the highlight color (overrides theme)
-    pub fn highlight_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn highlight_color(mut self, color: Color32) -> Self {
         self.highlight_color = Some(color);
         self
     }
 
     /// Set the animation speed
-    pub fn speed(mut self, speed: f32) -> Self {
+    #[must_use] 
+    pub const fn speed(mut self, speed: f32) -> Self {
         self.speed = speed;
         self
     }
 
     /// Set the corner radius (overrides theme)
-    pub fn corner_radius(mut self, radius: f32) -> Self {
+    #[must_use] 
+    pub const fn corner_radius(mut self, radius: f32) -> Self {
         self.corner_radius = Some(radius);
         self
     }
 
     /// Set the shimmer width (as a fraction of total width)
-    pub fn shimmer_width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn shimmer_width(mut self, width: f32) -> Self {
         self.shimmer_width = width.clamp(0.1, 1.0);
         self
     }
@@ -417,7 +434,7 @@ impl Skeleton {
             // Only draw if within bounds
             if x >= rect.min.x && x < rect.max.x {
                 let alpha_multiplier = 1.0 - offset_from_center.abs();
-                let alpha = (highlight_color.a() as f32 * alpha_multiplier) as u8;
+                let alpha = (f32::from(highlight_color.a()) * alpha_multiplier) as u8;
 
                 let shimmer_color = Color32::from_rgba_unmultiplied(
                     highlight_color.r(),
@@ -484,7 +501,8 @@ impl Default for CircularProgress {
 impl CircularProgress {
     /// Create a new circular progress indicator with default settings
     /// Color defaults to theme primary color
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             size: CIRCULAR_SIZE,
             color: None, // Will use theme.primary()
@@ -496,19 +514,22 @@ impl CircularProgress {
     }
 
     /// Set the size
-    pub fn size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set the color (overrides theme)
-    pub fn color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set the stroke width
-    pub fn stroke_width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn stroke_width(mut self, width: f32) -> Self {
         self.stroke_width = width;
         self
     }

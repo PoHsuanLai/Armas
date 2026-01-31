@@ -11,6 +11,7 @@ use lyon_tessellation::{
     StrokeOptions, StrokeTessellator, StrokeVertex, VertexBuffers,
 };
 use std::env;
+use std::fmt::Write as FmtWrite;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -48,13 +49,13 @@ fn main() {
                 match parse_svg(&path) {
                     Ok((vertices, indices, width, height)) => {
                         writeln!(output, "#[allow(missing_docs)]").unwrap();
-                        writeln!(output, "pub static {}: IconData = IconData {{", const_name)
+                        writeln!(output, "pub static {const_name}: IconData = IconData {{")
                             .unwrap();
-                        writeln!(output, "    name: \"{}\",", file_name).unwrap();
-                        writeln!(output, "    vertices: &[{}],", vertices).unwrap();
-                        writeln!(output, "    indices: &[{}],", indices).unwrap();
-                        writeln!(output, "    viewbox_width: {:.1},", width).unwrap();
-                        writeln!(output, "    viewbox_height: {:.1},", height).unwrap();
+                        writeln!(output, "    name: \"{file_name}\",").unwrap();
+                        writeln!(output, "    vertices: &[{vertices}],").unwrap();
+                        writeln!(output, "    indices: &[{indices}],").unwrap();
+                        writeln!(output, "    viewbox_width: {width:.1},").unwrap();
+                        writeln!(output, "    viewbox_height: {height:.1},").unwrap();
                         writeln!(output, "}};\n").unwrap();
                     }
                     Err(e) => {
@@ -97,7 +98,7 @@ fn parse_svg(path: &Path) -> Result<(String, String, f32, f32), Box<dyn std::err
         if i > 0 {
             vertices_code.push_str(", ");
         }
-        vertices_code.push_str(&format!("({:.2}, {:.2})", vertex[0], vertex[1]));
+        let _ = write!(vertices_code, "({:.2}, {:.2})", vertex[0], vertex[1]);
     }
 
     // Generate Rust code for indices
@@ -106,7 +107,7 @@ fn parse_svg(path: &Path) -> Result<(String, String, f32, f32), Box<dyn std::err
         if i > 0 {
             indices_code.push_str(", ");
         }
-        indices_code.push_str(&format!("{}", index));
+        let _ = write!(indices_code, "{index}");
     }
 
     Ok((vertices_code, indices_code, width, height))
@@ -144,7 +145,7 @@ fn extract_viewbox(svg_data: &str) -> Option<(f32, f32)> {
 }
 
 fn extract_dimension(svg_data: &str, attr: &str) -> Option<f32> {
-    let pattern = format!("{}=\"", attr);
+    let pattern = format!("{attr}=\"");
     if let Some(start) = svg_data.find(&pattern) {
         let value_str = &svg_data[start + pattern.len()..];
         if let Some(end) = value_str.find('"') {

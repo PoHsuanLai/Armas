@@ -46,7 +46,7 @@ pub struct Animation<T: Interpolate> {
 
 impl<T: Interpolate> Animation<T> {
     /// Create a new animation from start to end over duration
-    pub fn new(start: T, end: T, duration: f32) -> Self {
+    pub const fn new(start: T, end: T, duration: f32) -> Self {
         Self {
             start,
             end,
@@ -58,13 +58,14 @@ impl<T: Interpolate> Animation<T> {
     }
 
     /// Set the easing function
-    pub fn easing(mut self, easing: EasingFunction) -> Self {
+    #[must_use]
+    pub const fn easing(mut self, easing: EasingFunction) -> Self {
         self.easing = easing;
         self
     }
 
     /// Start the animation
-    pub fn start(&mut self) {
+    pub const fn start(&mut self) {
         self.state = AnimationState::Running;
         self.elapsed = 0.0;
     }
@@ -84,7 +85,7 @@ impl<T: Interpolate> Animation<T> {
     }
 
     /// Reset the animation to the beginning
-    pub fn reset(&mut self) {
+    pub const fn reset(&mut self) {
         self.elapsed = 0.0;
         self.state = AnimationState::NotStarted;
     }
@@ -154,7 +155,8 @@ pub struct SpringAnimation {
 
 impl SpringAnimation {
     /// Create a new spring animation
-    pub fn new(initial: f32, target: f32) -> Self {
+    #[must_use] 
+    pub const fn new(initial: f32, target: f32) -> Self {
         Self {
             value: initial,
             velocity: 0.0,
@@ -165,7 +167,8 @@ impl SpringAnimation {
     }
 
     /// Set spring parameters
-    pub fn params(mut self, stiffness: f32, damping: f32) -> Self {
+    #[must_use] 
+    pub const fn params(mut self, stiffness: f32, damping: f32) -> Self {
         self.stiffness = stiffness;
         self.damping = damping;
         self
@@ -188,11 +191,12 @@ impl SpringAnimation {
     }
 
     /// Set a new target value
-    pub fn set_target(&mut self, target: f32) {
+    pub const fn set_target(&mut self, target: f32) {
         self.target = target;
     }
 
     /// Check if the spring has approximately settled at the target
+    #[must_use] 
     pub fn is_settled(&self, position_threshold: f32, velocity_threshold: f32) -> bool {
         let position_error = (self.value - self.target).abs();
         let velocity_mag = self.velocity.abs();
@@ -201,7 +205,7 @@ impl SpringAnimation {
     }
 
     /// Reset the spring to a new position with zero velocity
-    pub fn reset(&mut self, value: f32, target: f32) {
+    pub const fn reset(&mut self, value: f32, target: f32) {
         self.value = value;
         self.target = target;
         self.velocity = 0.0;

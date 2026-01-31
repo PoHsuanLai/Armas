@@ -41,7 +41,8 @@ pub struct RangeSlider {
 
 impl RangeSlider {
     /// Create a new range slider
-    pub fn new(range_min: f32, range_max: f32) -> Self {
+    #[must_use] 
+    pub const fn new(range_min: f32, range_max: f32) -> Self {
         Self {
             id: None,
             range_min,
@@ -64,19 +65,22 @@ impl RangeSlider {
     }
 
     /// Set the slider width
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
     }
 
     /// Set the slider height
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Show or hide the value label
-    pub fn show_value(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_value(mut self, show: bool) -> Self {
         self.show_value = show;
         self
     }
@@ -94,19 +98,22 @@ impl RangeSlider {
     }
 
     /// Set a step value for snapping
-    pub fn step(mut self, step: f32) -> Self {
+    #[must_use] 
+    pub const fn step(mut self, step: f32) -> Self {
         self.step = Some(step);
         self
     }
 
     /// Set minimum gap between min and max thumbs
-    pub fn min_gap(mut self, gap: f32) -> Self {
+    #[must_use] 
+    pub const fn min_gap(mut self, gap: f32) -> Self {
         self.min_gap = gap;
         self
     }
 
     /// Allow dragging the filled region to move both thumbs together
-    pub fn allow_range_drag(mut self, allow: bool) -> Self {
+    #[must_use] 
+    pub const fn allow_range_drag(mut self, allow: bool) -> Self {
         self.allow_range_drag = allow;
         self
     }
@@ -259,9 +266,9 @@ impl RangeSlider {
 
     fn format_value(&self, value: f32) -> String {
         if let Some(suffix) = &self.suffix {
-            format!("{:.1}{}", value, suffix)
+            format!("{value:.1}{suffix}")
         } else {
-            format!("{:.1}", value)
+            format!("{value:.1}")
         }
     }
 

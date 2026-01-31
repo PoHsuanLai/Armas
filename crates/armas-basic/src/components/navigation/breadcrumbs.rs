@@ -52,12 +52,14 @@ pub struct Breadcrumbs {
 
 impl Breadcrumbs {
     /// Create a new breadcrumbs component
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self { spacing: ITEM_GAP }
     }
 
     /// Set spacing between items (default: 6.0)
-    pub fn spacing(mut self, spacing: f32) -> Self {
+    #[must_use] 
+    pub const fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
         self
     }
@@ -101,7 +103,7 @@ pub struct BreadcrumbsBuilder<'a> {
     clicked: &'a mut Option<usize>,
 }
 
-impl<'a> BreadcrumbsBuilder<'a> {
+impl BreadcrumbsBuilder<'_> {
     /// Add a breadcrumb item with optional icon
     pub fn item(&mut self, label: &str, icon: Option<&str>) -> ItemBuilder<'_> {
         let theme = self.ui.ctx().armas_theme();
@@ -146,7 +148,7 @@ impl<'a> BreadcrumbsBuilder<'a> {
         let item_builder = ItemBuilder {
             ui: self.ui,
             label: label.to_string(),
-            icon: icon.map(|s| s.to_string()),
+            icon: icon.map(std::string::ToString::to_string),
             is_current: false,
             item_index: self.item_index,
             clicked: self.clicked,
@@ -169,9 +171,10 @@ pub struct ItemBuilder<'a> {
     rendered: bool,
 }
 
-impl<'a> ItemBuilder<'a> {
+impl ItemBuilder<'_> {
     /// Mark this item as the current/active item (non-clickable)
-    pub fn current(mut self) -> Self {
+    #[must_use] 
+    pub const fn current(mut self) -> Self {
         self.is_current = true;
         self
     }
@@ -232,7 +235,7 @@ impl<'a> ItemBuilder<'a> {
     }
 }
 
-impl<'a> Drop for ItemBuilder<'a> {
+impl Drop for ItemBuilder<'_> {
     fn drop(&mut self) {
         self.render();
     }

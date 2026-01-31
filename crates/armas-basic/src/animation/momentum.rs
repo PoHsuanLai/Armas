@@ -43,7 +43,8 @@ impl Default for ContinuousWithMomentum {
 
 impl ContinuousWithMomentum {
     /// Create a new continuous momentum behavior
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             velocity: 0.0,
             damping: 0.92,
@@ -54,6 +55,7 @@ impl ContinuousWithMomentum {
     /// Set the friction that damps movement
     ///
     /// Typical values are 0.05-0.15. Higher = more friction = stops faster.
+    #[must_use] 
     pub fn friction(mut self, friction: f64) -> Self {
         self.damping = 1.0 - friction.clamp(0.0, 0.99);
         self
@@ -62,13 +64,15 @@ impl ContinuousWithMomentum {
     /// Set the minimum velocity threshold
     ///
     /// When velocity drops below this, animation stops. Default is 0.05.
-    pub fn minimum_velocity(mut self, min_vel: f64) -> Self {
+    #[must_use] 
+    pub const fn minimum_velocity(mut self, min_vel: f64) -> Self {
         self.minimum_velocity = min_vel.abs();
         self
     }
 
     /// Get the current velocity
-    pub fn velocity(&self) -> f64 {
+    #[must_use] 
+    pub const fn velocity(&self) -> f64 {
         self.velocity
     }
 }
@@ -117,7 +121,8 @@ impl Default for SnapToPageBoundaries {
 
 impl SnapToPageBoundaries {
     /// Create a new snap-to-page behavior
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             target_position: 0.0,
             snap_speed: 10.0,
@@ -127,13 +132,15 @@ impl SnapToPageBoundaries {
     /// Set the speed at which it snaps to the target
     ///
     /// Higher values = faster snapping. Default is 10.0.
-    pub fn snap_speed(mut self, speed: f64) -> Self {
+    #[must_use] 
+    pub const fn snap_speed(mut self, speed: f64) -> Self {
         self.snap_speed = speed.max(1.0);
         self
     }
 
     /// Get the target snap position
-    pub fn target(&self) -> f64 {
+    #[must_use] 
+    pub const fn target(&self) -> f64 {
         self.target_position
     }
 }
@@ -212,7 +219,7 @@ pub struct MomentumPosition<B: MomentumBehavior> {
 
 impl<B: MomentumBehavior> MomentumPosition<B> {
     /// Create a new momentum position with the given behavior
-    pub fn new(behavior: B) -> Self {
+    pub const fn new(behavior: B) -> Self {
         Self {
             position: 0.0,
             grabbed_position: 0.0,
@@ -227,35 +234,35 @@ impl<B: MomentumBehavior> MomentumPosition<B> {
     }
 
     /// Set the position limits
-    pub fn set_limits(&mut self, min: f64, max: f64) {
+    pub const fn set_limits(&mut self, min: f64, max: f64) {
         self.limits = (min, max);
         self.position = self.position.clamp(min, max);
     }
 
     /// Get current position
-    pub fn position(&self) -> f64 {
+    pub const fn position(&self) -> f64 {
         self.position
     }
 
     /// Set position directly (stops any animation)
-    pub fn set_position(&mut self, position: f64) {
+    pub const fn set_position(&mut self, position: f64) {
         self.position = position.clamp(self.limits.0, self.limits.1);
         self.is_animating = false;
         self.is_dragging = false;
     }
 
     /// Check if currently being dragged
-    pub fn is_dragging(&self) -> bool {
+    pub const fn is_dragging(&self) -> bool {
         self.is_dragging
     }
 
     /// Check if momentum animation is active
-    pub fn is_animating(&self) -> bool {
+    pub const fn is_animating(&self) -> bool {
         self.is_animating
     }
 
     /// Begin a drag operation
-    pub fn begin_drag(&mut self) {
+    pub const fn begin_drag(&mut self) {
         self.grabbed_position = self.position;
         self.release_velocity = 0.0;
         self.last_drag_time = 0.0;
@@ -267,7 +274,7 @@ impl<B: MomentumBehavior> MomentumPosition<B> {
     /// Update position during drag
     ///
     /// `delta` is the total offset from where the drag started
-    /// `elapsed_since_last` is time since last drag() call (for velocity calculation)
+    /// `elapsed_since_last` is time since last `drag()` call (for velocity calculation)
     pub fn drag(&mut self, delta: f64, elapsed_since_last: f64) {
         let new_position = (self.grabbed_position + delta).clamp(self.limits.0, self.limits.1);
 

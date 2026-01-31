@@ -108,7 +108,7 @@ pub struct AudioMeter {
 impl AudioMeter {
     /// Create a new audio meter with default green-to-red gradient
     #[must_use]
-    pub fn new(level: f32) -> Self {
+    pub const fn new(level: f32) -> Self {
         let clamped_level = level.clamp(0.0, 1.0);
         Self {
             target_level: clamped_level,
@@ -242,7 +242,7 @@ impl AudioMeter {
     }
 
     /// Update the target level (call this when audio level changes)
-    pub fn set_level(&mut self, level: f32) {
+    pub const fn set_level(&mut self, level: f32) {
         self.target_level = level.clamp(0.0, 1.0);
     }
 

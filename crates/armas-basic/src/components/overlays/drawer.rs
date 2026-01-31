@@ -67,11 +67,12 @@ pub enum DrawerSnapPoint {
 impl DrawerSnapPoint {
     /// Convert snap point to ratio (0.0-1.0)
     #[allow(dead_code)]
-    pub fn to_ratio(&self) -> f32 {
+    #[must_use] 
+    pub const fn to_ratio(&self) -> f32 {
         match self {
-            DrawerSnapPoint::Closed => 0.0,
-            DrawerSnapPoint::Partial(ratio) => ratio.clamp(0.0, 1.0),
-            DrawerSnapPoint::Full => 1.0,
+            Self::Closed => 0.0,
+            Self::Partial(ratio) => ratio.clamp(0.0, 1.0),
+            Self::Full => 1.0,
         }
     }
 }
@@ -107,43 +108,48 @@ impl Drawer {
     }
 
     /// Set the drawer open state
-    pub fn open(mut self, open: bool) -> Self {
+    #[must_use] 
+    pub const fn open(mut self, open: bool) -> Self {
         self.is_open = open;
         self
     }
 
-    /// Set the title (DrawerTitle equivalent)
+    /// Set the title (`DrawerTitle` equivalent)
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
-    /// Set the description (DrawerDescription equivalent)
+    /// Set the description (`DrawerDescription` equivalent)
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
     }
 
     /// Show or hide the drag handle (default: true)
-    pub fn show_handle(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_handle(mut self, show: bool) -> Self {
         self.show_handle = show;
         self
     }
 
     /// Show or hide the backdrop overlay (default: true)
-    pub fn show_backdrop(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_backdrop(mut self, show: bool) -> Self {
         self.show_backdrop = show;
         self
     }
 
     /// Set snap points for partial open states
+    #[must_use] 
     pub fn snap_points(mut self, points: Vec<DrawerSnapPoint>) -> Self {
         self.snap_points = points;
         self
     }
 
     /// Set a fixed height for the drawer
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = Some(height);
         self
     }
@@ -367,7 +373,8 @@ pub struct DrawerResponse {
 
 impl DrawerResponse {
     /// Check if the drawer was closed
-    pub fn closed(&self) -> bool {
+    #[must_use] 
+    pub const fn closed(&self) -> bool {
         self.closed
     }
 }

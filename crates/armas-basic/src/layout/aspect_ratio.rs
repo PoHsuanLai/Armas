@@ -3,7 +3,7 @@ use egui::{Response, Ui, Vec2};
 /// Maintain aspect ratio wrapper
 ///
 /// Constrains content to a specific aspect ratio.
-/// Inspired by SwiftUI's aspectRatio modifier.
+/// Inspired by `SwiftUI`'s aspectRatio modifier.
 ///
 /// # Example
 ///
@@ -41,7 +41,8 @@ pub enum ContentMode {
 
 impl AspectRatio {
     /// Create aspect ratio constraint (width / height)
-    pub fn new(ratio: f32) -> Self {
+    #[must_use] 
+    pub const fn new(ratio: f32) -> Self {
         Self {
             ratio,
             content_mode: ContentMode::Fit,
@@ -49,22 +50,26 @@ impl AspectRatio {
     }
 
     /// Create a square aspect ratio (1:1)
-    pub fn square() -> Self {
+    #[must_use] 
+    pub const fn square() -> Self {
         Self::new(1.0)
     }
 
     /// Create 16:9 aspect ratio (widescreen)
+    #[must_use] 
     pub fn widescreen() -> Self {
         Self::new(16.0 / 9.0)
     }
 
     /// Create 4:3 aspect ratio (standard)
+    #[must_use] 
     pub fn standard() -> Self {
         Self::new(4.0 / 3.0)
     }
 
     /// Set content mode (fill or fit)
-    pub fn content_mode(mut self, mode: ContentMode) -> Self {
+    #[must_use] 
+    pub const fn content_mode(mut self, mode: ContentMode) -> Self {
         self.content_mode = mode;
         self
     }

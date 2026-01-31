@@ -14,7 +14,7 @@ const FONT_SIZE: f32 = 12.0; // text-xs
 const ARROW_SIZE: f32 = 5.0; // size-2.5 (10px / 2 for triangle)
 
 /// Tooltip position relative to the target
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TooltipPosition {
     /// Above the target
     Top,
@@ -60,25 +60,29 @@ impl Tooltip {
     }
 
     /// Set the tooltip position (default: auto-detect)
-    pub fn position(mut self, position: TooltipPosition) -> Self {
+    #[must_use] 
+    pub const fn position(mut self, position: TooltipPosition) -> Self {
         self.position = Some(position);
         self
     }
 
     /// Set maximum width for text wrapping
-    pub fn max_width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn max_width(mut self, width: f32) -> Self {
         self.max_width = width;
         self
     }
 
     /// Set hover delay in milliseconds before showing tooltip
-    pub fn delay(mut self, delay_ms: u64) -> Self {
+    #[must_use] 
+    pub const fn delay(mut self, delay_ms: u64) -> Self {
         self.delay_ms = delay_ms;
         self
     }
 
     /// Show or hide the arrow pointer
-    pub fn arrow(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn arrow(mut self, show: bool) -> Self {
         self.show_arrow = show;
         self
     }

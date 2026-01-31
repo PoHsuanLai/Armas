@@ -59,7 +59,7 @@ pub trait PainterExt {
 impl PainterExt for Painter {
     fn blur_rect(&self, rect: Rect, blur_radius: f32, color: Color32) {
         let layers = 5;
-        let base_alpha = color.a() as f32 / layers as f32;
+        let base_alpha = f32::from(color.a()) / layers as f32;
 
         for i in 0..layers {
             let expand = (i as f32 / layers as f32) * blur_radius;
@@ -112,7 +112,7 @@ impl PainterExt for Painter {
         for i in 0..layers {
             let t = i as f32 / layers as f32;
             let expansion = blur_radius * t;
-            let alpha = ((1.0 - t) * color.a() as f32) as u8;
+            let alpha = ((1.0 - t) * f32::from(color.a())) as u8;
 
             let shadow_color =
                 Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
@@ -234,7 +234,7 @@ impl PainterExt for Painter {
         for i in 0..layers {
             let t = i as f32 / layers as f32;
             let layer_radius = radius * (1.0 - t.powf(falloff));
-            let alpha = ((1.0 - t) * color.a() as f32) as u8;
+            let alpha = ((1.0 - t) * f32::from(color.a())) as u8;
 
             let glow_color =
                 Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
@@ -248,10 +248,10 @@ impl PainterExt for Painter {
 fn lerp_color(a: Color32, b: Color32, t: f32) -> Color32 {
     let t = t.clamp(0.0, 1.0);
     Color32::from_rgba_unmultiplied(
-        (a.r() as f32 + (b.r() as f32 - a.r() as f32) * t) as u8,
-        (a.g() as f32 + (b.g() as f32 - a.g() as f32) * t) as u8,
-        (a.b() as f32 + (b.b() as f32 - a.b() as f32) * t) as u8,
-        (a.a() as f32 + (b.a() as f32 - a.a() as f32) * t) as u8,
+        (f32::from(a.r()) + (f32::from(b.r()) - f32::from(a.r())) * t) as u8,
+        (f32::from(a.g()) + (f32::from(b.g()) - f32::from(a.g())) * t) as u8,
+        (f32::from(a.b()) + (f32::from(b.b()) - f32::from(a.b())) * t) as u8,
+        (f32::from(a.a()) + (f32::from(b.a()) - f32::from(a.a())) * t) as u8,
     )
 }
 

@@ -20,7 +20,7 @@ pub enum RegionVariant {
 impl RegionVariant {
     /// Get default color for the variant
     #[must_use]
-    pub fn default_color(&self, theme: &Theme) -> Color32 {
+    pub const fn default_color(&self, theme: &Theme) -> Color32 {
         match self {
             Self::Selection => Color32::from_rgb(150, 150, 150), // Neutral gray
             Self::Loop => theme.secondary(),

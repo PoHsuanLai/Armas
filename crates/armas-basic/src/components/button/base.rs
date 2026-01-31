@@ -13,7 +13,7 @@ use egui::{Color32, Response, Sense, Ui, Vec2};
 const CORNER_RADIUS: f32 = 6.0; // rounded-md
 
 /// Button style variant following shadcn/ui
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ButtonVariant {
     /// Default button - primary background, highest emphasis
     #[default]
@@ -29,7 +29,7 @@ pub enum ButtonVariant {
 }
 
 /// Button size following shadcn/ui
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ButtonSize {
     /// Extra small - h-5.5 (22px), px-1.5
     Xs,
@@ -43,27 +43,27 @@ pub enum ButtonSize {
 }
 
 impl ButtonSize {
-    fn height(&self) -> f32 {
+    const fn height(&self) -> f32 {
         match self {
-            ButtonSize::Xs => 22.0,
-            ButtonSize::Small => 32.0,
-            ButtonSize::Default => 36.0,
-            ButtonSize::Large => 40.0,
+            Self::Xs => 22.0,
+            Self::Small => 32.0,
+            Self::Default => 36.0,
+            Self::Large => 40.0,
         }
     }
 
-    fn padding_x(&self) -> f32 {
+    const fn padding_x(&self) -> f32 {
         match self {
-            ButtonSize::Xs => 6.0,
-            ButtonSize::Small => 12.0,   // px-3
-            ButtonSize::Default => 16.0, // px-4
-            ButtonSize::Large => 24.0,   // px-6
+            Self::Xs => 6.0,
+            Self::Small => 12.0,   // px-3
+            Self::Default => 16.0, // px-4
+            Self::Large => 24.0,   // px-6
         }
     }
 
-    fn font_size(&self) -> f32 {
+    const fn font_size(&self) -> f32 {
         match self {
-            ButtonSize::Xs => 11.0,
+            Self::Xs => 11.0,
             _ => 14.0, // text-sm
         }
     }
@@ -95,37 +95,43 @@ impl Button {
     }
 
     /// Set the button variant
-    pub fn variant(mut self, variant: ButtonVariant) -> Self {
+    #[must_use] 
+    pub const fn variant(mut self, variant: ButtonVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set the button size
-    pub fn size(mut self, size: ButtonSize) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: ButtonSize) -> Self {
         self.size = size;
         self
     }
 
     /// Set enabled state
-    pub fn enabled(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
     /// Make button take full width of container
-    pub fn full_width(mut self, full: bool) -> Self {
+    #[must_use] 
+    pub const fn full_width(mut self, full: bool) -> Self {
         self.full_width = full;
         self
     }
 
     /// Set minimum width for the button
-    pub fn min_width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn min_width(mut self, width: f32) -> Self {
         self.min_width = Some(width);
         self
     }
 
     /// Set explicit height (overrides size-based height)
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.custom_height = Some(height);
         self
     }
@@ -146,7 +152,7 @@ impl Button {
         let font_id = egui::FontId::proportional(self.size.font_size());
         let text_galley =
             ui.painter()
-                .layout_no_wrap(self.text.clone(), font_id.clone(), Color32::PLACEHOLDER);
+                .layout_no_wrap(self.text.clone(), font_id, Color32::PLACEHOLDER);
         let galley_size = text_galley.rect.size();
         let text_width = galley_size.x;
 
@@ -170,14 +176,7 @@ impl Button {
             let hovered = response.hovered() && self.enabled;
 
             // Get colors based on variant and state
-            let (bg_color, text_color, border_color) = if !self.enabled {
-                // Disabled: opacity-50
-                (
-                    theme.primary().gamma_multiply(0.5),
-                    theme.primary_foreground().gamma_multiply(0.5),
-                    Color32::TRANSPARENT,
-                )
-            } else {
+            let (bg_color, text_color, border_color) = if self.enabled {
                 match self.variant {
                     ButtonVariant::Default => {
                         let bg = if hovered {
@@ -225,6 +224,13 @@ impl Button {
                         (Color32::TRANSPARENT, theme.primary(), Color32::TRANSPARENT)
                     }
                 }
+            } else {
+                // Disabled: opacity-50
+                (
+                    theme.primary().gamma_multiply(0.5),
+                    theme.primary_foreground().gamma_multiply(0.5),
+                    Color32::TRANSPARENT,
+                )
             };
 
             // Draw background
@@ -271,13 +277,13 @@ pub use ButtonVariant as Variant;
 #[allow(non_upper_case_globals)]
 impl ButtonVariant {
     /// Alias for Default (was Filled)
-    pub const Filled: ButtonVariant = ButtonVariant::Default;
+    pub const Filled: Self = Self::Default;
     /// Alias for Outline (was Outlined)
-    pub const Outlined: ButtonVariant = ButtonVariant::Outline;
+    pub const Outlined: Self = Self::Outline;
     /// Alias for Ghost (was Text)
-    pub const Text: ButtonVariant = ButtonVariant::Ghost;
-    /// Alias for Secondary (was FilledTonal)
-    pub const FilledTonal: ButtonVariant = ButtonVariant::Secondary;
+    pub const Text: Self = Self::Ghost;
+    /// Alias for Secondary (was `FilledTonal`)
+    pub const FilledTonal: Self = Self::Secondary;
     /// Elevated is now Secondary
-    pub const Elevated: ButtonVariant = ButtonVariant::Secondary;
+    pub const Elevated: Self = Self::Secondary;
 }

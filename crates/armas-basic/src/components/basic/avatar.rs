@@ -26,14 +26,14 @@ pub enum AvatarSize {
 }
 
 impl AvatarSize {
-    fn to_pixels(self) -> f32 {
+    const fn to_pixels(self) -> f32 {
         match self {
-            AvatarSize::XSmall => 24.0,
-            AvatarSize::Small => 32.0,
-            AvatarSize::Medium => 40.0,
-            AvatarSize::Large => 48.0,
-            AvatarSize::XLarge => 64.0,
-            AvatarSize::Custom(size) => size,
+            Self::XSmall => 24.0,
+            Self::Small => 32.0,
+            Self::Medium => 40.0,
+            Self::Large => 48.0,
+            Self::XLarge => 64.0,
+            Self::Custom(size) => size,
         }
     }
 }
@@ -85,19 +85,22 @@ impl Avatar {
     }
 
     /// Set the avatar size in pixels
-    pub fn size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set the avatar size using a preset
-    pub fn size_preset(mut self, size: AvatarSize) -> Self {
+    #[must_use] 
+    pub const fn size_preset(mut self, size: AvatarSize) -> Self {
         self.size = size.to_pixels();
         self
     }
 
     /// Set the avatar shape
-    pub fn shape(mut self, shape: AvatarShape) -> Self {
+    #[must_use] 
+    pub const fn shape(mut self, shape: AvatarShape) -> Self {
         self.shape = shape;
         self
     }

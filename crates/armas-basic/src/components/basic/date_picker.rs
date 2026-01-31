@@ -1,4 +1,4 @@
-//! DatePicker Component
+//! `DatePicker` Component
 //!
 //! Calendar date selection styled like shadcn/ui.
 //! Combines a Button trigger with a Calendar popover.
@@ -46,6 +46,7 @@ pub struct Date {
 
 impl Date {
     /// Create a new date
+    #[must_use] 
     pub fn new(year: i32, month: u32, day: u32) -> Option<Self> {
         if !(1..=12).contains(&month) {
             return None;
@@ -58,6 +59,7 @@ impl Date {
     }
 
     /// Get today's date (using chrono)
+    #[must_use] 
     pub fn today() -> Self {
         use chrono::Datelike;
         let now = chrono::Local::now().date_naive();
@@ -69,12 +71,14 @@ impl Date {
     }
 
     /// Check if a year is a leap year
-    pub fn is_leap_year(year: i32) -> bool {
+    #[must_use] 
+    pub const fn is_leap_year(year: i32) -> bool {
         (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
     }
 
     /// Get the number of days in a month
-    pub fn days_in_month(year: i32, month: u32) -> u32 {
+    #[must_use] 
+    pub const fn days_in_month(year: i32, month: u32) -> u32 {
         match month {
             1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
             4 | 6 | 9 | 11 => 30,
@@ -90,7 +94,8 @@ impl Date {
     }
 
     /// Get the day of week (0 = Sunday, 6 = Saturday)
-    pub fn day_of_week(&self) -> u32 {
+    #[must_use] 
+    pub const fn day_of_week(&self) -> u32 {
         // Zeller's congruence algorithm
         let mut m = self.month as i32;
         let mut y = self.year;
@@ -108,16 +113,19 @@ impl Date {
     }
 
     /// Format as human-readable (e.g., "January 15, 2024")
+    #[must_use] 
     pub fn format_display(&self) -> String {
         format!("{} {}, {}", self.month_name(), self.day, self.year)
     }
 
     /// Format as YYYY-MM-DD
+    #[must_use] 
     pub fn format(&self) -> String {
         format!("{:04}-{:02}-{:02}", self.year, self.month, self.day)
     }
 
     /// Parse from YYYY-MM-DD format
+    #[must_use] 
     pub fn parse(s: &str) -> Option<Self> {
         let parts: Vec<&str> = s.split('-').collect();
         if parts.len() != 3 {
@@ -132,7 +140,8 @@ impl Date {
     }
 
     /// Get month name
-    pub fn month_name(&self) -> &'static str {
+    #[must_use] 
+    pub const fn month_name(&self) -> &'static str {
         match self.month {
             1 => "January",
             2 => "February",
@@ -151,7 +160,7 @@ impl Date {
     }
 }
 
-/// DatePicker component styled like shadcn/ui
+/// `DatePicker` component styled like shadcn/ui
 ///
 /// # Example
 ///
@@ -208,13 +217,15 @@ impl DatePicker {
     }
 
     /// Show Today/Clear footer buttons
-    pub fn show_footer(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_footer(mut self, show: bool) -> Self {
         self.show_footer = show;
         self
     }
 
     /// Set trigger button width
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
     }

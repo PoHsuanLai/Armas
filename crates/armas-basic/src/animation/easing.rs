@@ -54,17 +54,15 @@ pub enum EasingFunction {
 
 impl EasingFunction {
     /// Apply the easing function to a time value (0.0 to 1.0)
+    #[must_use] 
     pub fn apply(&self, t: f32) -> f32 {
         let t = t.clamp(0.0, 1.0);
 
         match self {
             Self::Linear => t,
-            Self::EaseIn => quad_in(t),
-            Self::EaseOut => quad_out(t),
-            Self::EaseInOut => quad_in_out(t),
-            Self::QuadIn => quad_in(t),
-            Self::QuadOut => quad_out(t),
-            Self::QuadInOut => quad_in_out(t),
+            Self::EaseIn | Self::QuadIn => quad_in(t),
+            Self::EaseOut | Self::QuadOut => quad_out(t),
+            Self::EaseInOut | Self::QuadInOut => quad_in_out(t),
             Self::CubicIn => cubic_in(t),
             Self::CubicOut => cubic_out(t),
             Self::CubicInOut => cubic_in_out(t),
@@ -183,7 +181,7 @@ fn bounce_out(t: f32) -> f32 {
         7.5625 * t * t + 0.9375
     } else {
         let t = t - 2.625 / 2.75;
-        7.5625 * t * t + 0.984375
+        7.5625 * t * t + 0.984_375
     }
 }
 
@@ -214,7 +212,7 @@ fn cubic_bezier(t: f32, x1: f32, y1: f32, x2: f32, y2: f32) -> f32 {
 
         // Calculate derivative
         let slope = cubic_bezier_x_derivative(guess, x1, x2);
-        if slope.abs() < 0.000001 {
+        if slope.abs() < 0.000_001 {
             break;
         }
 

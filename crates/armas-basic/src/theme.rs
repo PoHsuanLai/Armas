@@ -139,7 +139,8 @@ impl Default for Theme {
 
 impl Theme {
     /// Dark theme using Zinc color palette (shadcn default)
-    pub fn dark() -> Self {
+    #[must_use] 
+    pub const fn dark() -> Self {
         Self {
             colors: ColorPalette {
                 background: [9, 9, 11],      // zinc-950
@@ -207,7 +208,8 @@ impl Theme {
     }
 
     /// Light theme using Zinc color palette
-    pub fn light() -> Self {
+    #[must_use] 
+    pub const fn light() -> Self {
         Self {
             colors: ColorPalette {
                 background: [255, 255, 255], // white
@@ -279,157 +281,183 @@ impl Theme {
     // =========================================================================
 
     /// Background color
-    pub fn background(&self) -> Color32 {
+    #[must_use] 
+    pub const fn background(&self) -> Color32 {
         let [r, g, b] = self.colors.background;
         Color32::from_rgb(r, g, b)
     }
 
     /// Foreground/text color
-    pub fn foreground(&self) -> Color32 {
+    #[must_use] 
+    pub const fn foreground(&self) -> Color32 {
         let [r, g, b] = self.colors.foreground;
         Color32::from_rgb(r, g, b)
     }
 
     /// Card background color
-    pub fn card(&self) -> Color32 {
+    #[must_use] 
+    pub const fn card(&self) -> Color32 {
         let [r, g, b] = self.colors.card;
         Color32::from_rgb(r, g, b)
     }
 
     /// Card foreground color
-    pub fn card_foreground(&self) -> Color32 {
+    #[must_use] 
+    pub const fn card_foreground(&self) -> Color32 {
         let [r, g, b] = self.colors.card_foreground;
         Color32::from_rgb(r, g, b)
     }
 
     /// Popover background color
-    pub fn popover(&self) -> Color32 {
+    #[must_use] 
+    pub const fn popover(&self) -> Color32 {
         let [r, g, b] = self.colors.popover;
         Color32::from_rgb(r, g, b)
     }
 
     /// Popover foreground color
-    pub fn popover_foreground(&self) -> Color32 {
+    #[must_use] 
+    pub const fn popover_foreground(&self) -> Color32 {
         let [r, g, b] = self.colors.popover_foreground;
         Color32::from_rgb(r, g, b)
     }
 
     /// Primary brand color
-    pub fn primary(&self) -> Color32 {
+    #[must_use] 
+    pub const fn primary(&self) -> Color32 {
         let [r, g, b] = self.colors.primary;
         Color32::from_rgb(r, g, b)
     }
 
     /// Primary foreground color
-    pub fn primary_foreground(&self) -> Color32 {
+    #[must_use] 
+    pub const fn primary_foreground(&self) -> Color32 {
         let [r, g, b] = self.colors.primary_foreground;
         Color32::from_rgb(r, g, b)
     }
 
     /// Secondary color
-    pub fn secondary(&self) -> Color32 {
+    #[must_use] 
+    pub const fn secondary(&self) -> Color32 {
         let [r, g, b] = self.colors.secondary;
         Color32::from_rgb(r, g, b)
     }
 
     /// Secondary foreground color
-    pub fn secondary_foreground(&self) -> Color32 {
+    #[must_use] 
+    pub const fn secondary_foreground(&self) -> Color32 {
         let [r, g, b] = self.colors.secondary_foreground;
         Color32::from_rgb(r, g, b)
     }
 
     /// Muted color (subtle backgrounds)
-    pub fn muted(&self) -> Color32 {
+    #[must_use] 
+    pub const fn muted(&self) -> Color32 {
         let [r, g, b] = self.colors.muted;
         Color32::from_rgb(r, g, b)
     }
 
     /// Muted foreground color
-    pub fn muted_foreground(&self) -> Color32 {
+    #[must_use] 
+    pub const fn muted_foreground(&self) -> Color32 {
         let [r, g, b] = self.colors.muted_foreground;
         Color32::from_rgb(r, g, b)
     }
 
     /// Accent color
-    pub fn accent(&self) -> Color32 {
+    #[must_use] 
+    pub const fn accent(&self) -> Color32 {
         let [r, g, b] = self.colors.accent;
         Color32::from_rgb(r, g, b)
     }
 
     /// Accent foreground color
-    pub fn accent_foreground(&self) -> Color32 {
+    #[must_use] 
+    pub const fn accent_foreground(&self) -> Color32 {
         let [r, g, b] = self.colors.accent_foreground;
         Color32::from_rgb(r, g, b)
     }
 
     /// Destructive/error color
-    pub fn destructive(&self) -> Color32 {
+    #[must_use] 
+    pub const fn destructive(&self) -> Color32 {
         let [r, g, b] = self.colors.destructive;
         Color32::from_rgb(r, g, b)
     }
 
     /// Destructive foreground color
-    pub fn destructive_foreground(&self) -> Color32 {
+    #[must_use] 
+    pub const fn destructive_foreground(&self) -> Color32 {
         let [r, g, b] = self.colors.destructive_foreground;
         Color32::from_rgb(r, g, b)
     }
 
     /// Border color
-    pub fn border(&self) -> Color32 {
+    #[must_use] 
+    pub const fn border(&self) -> Color32 {
         let [r, g, b] = self.colors.border;
         Color32::from_rgb(r, g, b)
     }
 
     /// Input border color
-    pub fn input(&self) -> Color32 {
+    #[must_use] 
+    pub const fn input(&self) -> Color32 {
         let [r, g, b] = self.colors.input;
         Color32::from_rgb(r, g, b)
     }
 
     /// Focus ring color
-    pub fn ring(&self) -> Color32 {
+    #[must_use] 
+    pub const fn ring(&self) -> Color32 {
         let [r, g, b] = self.colors.ring;
         Color32::from_rgb(r, g, b)
     }
 
     /// Chart color 1 (blue)
-    pub fn chart_1(&self) -> Color32 {
+    #[must_use] 
+    pub const fn chart_1(&self) -> Color32 {
         let [r, g, b] = self.colors.chart_1;
         Color32::from_rgb(r, g, b)
     }
 
     /// Chart color 2 (green) - also used for success
-    pub fn chart_2(&self) -> Color32 {
+    #[must_use] 
+    pub const fn chart_2(&self) -> Color32 {
         let [r, g, b] = self.colors.chart_2;
         Color32::from_rgb(r, g, b)
     }
 
     /// Chart color 3 (yellow) - also used for warning
-    pub fn chart_3(&self) -> Color32 {
+    #[must_use] 
+    pub const fn chart_3(&self) -> Color32 {
         let [r, g, b] = self.colors.chart_3;
         Color32::from_rgb(r, g, b)
     }
 
     /// Chart color 4 (purple) - also used for info
-    pub fn chart_4(&self) -> Color32 {
+    #[must_use] 
+    pub const fn chart_4(&self) -> Color32 {
         let [r, g, b] = self.colors.chart_4;
         Color32::from_rgb(r, g, b)
     }
 
     /// Chart color 5 (orange)
-    pub fn chart_5(&self) -> Color32 {
+    #[must_use] 
+    pub const fn chart_5(&self) -> Color32 {
         let [r, g, b] = self.colors.chart_5;
         Color32::from_rgb(r, g, b)
     }
 
     /// Hover state color
-    pub fn hover(&self) -> Color32 {
+    #[must_use] 
+    pub const fn hover(&self) -> Color32 {
         let [r, g, b] = self.colors.hover;
         Color32::from_rgb(r, g, b)
     }
 
     /// Focus state color
-    pub fn focus(&self) -> Color32 {
+    #[must_use] 
+    pub const fn focus(&self) -> Color32 {
         let [r, g, b] = self.colors.focus;
         Color32::from_rgb(r, g, b)
     }
@@ -439,49 +467,57 @@ impl Theme {
     // =========================================================================
 
     /// Sidebar background color
-    pub fn sidebar(&self) -> Color32 {
+    #[must_use] 
+    pub const fn sidebar(&self) -> Color32 {
         let [r, g, b] = self.colors.sidebar;
         Color32::from_rgb(r, g, b)
     }
 
     /// Sidebar foreground/text color
-    pub fn sidebar_foreground(&self) -> Color32 {
+    #[must_use] 
+    pub const fn sidebar_foreground(&self) -> Color32 {
         let [r, g, b] = self.colors.sidebar_foreground;
         Color32::from_rgb(r, g, b)
     }
 
     /// Sidebar primary color
-    pub fn sidebar_primary(&self) -> Color32 {
+    #[must_use] 
+    pub const fn sidebar_primary(&self) -> Color32 {
         let [r, g, b] = self.colors.sidebar_primary;
         Color32::from_rgb(r, g, b)
     }
 
     /// Sidebar primary foreground color
-    pub fn sidebar_primary_foreground(&self) -> Color32 {
+    #[must_use] 
+    pub const fn sidebar_primary_foreground(&self) -> Color32 {
         let [r, g, b] = self.colors.sidebar_primary_foreground;
         Color32::from_rgb(r, g, b)
     }
 
     /// Sidebar accent color (hover/active background)
-    pub fn sidebar_accent(&self) -> Color32 {
+    #[must_use] 
+    pub const fn sidebar_accent(&self) -> Color32 {
         let [r, g, b] = self.colors.sidebar_accent;
         Color32::from_rgb(r, g, b)
     }
 
     /// Sidebar accent foreground color
-    pub fn sidebar_accent_foreground(&self) -> Color32 {
+    #[must_use] 
+    pub const fn sidebar_accent_foreground(&self) -> Color32 {
         let [r, g, b] = self.colors.sidebar_accent_foreground;
         Color32::from_rgb(r, g, b)
     }
 
     /// Sidebar border color
-    pub fn sidebar_border(&self) -> Color32 {
+    #[must_use] 
+    pub const fn sidebar_border(&self) -> Color32 {
         let [r, g, b] = self.colors.sidebar_border;
         Color32::from_rgb(r, g, b)
     }
 
     /// Sidebar focus ring color
-    pub fn sidebar_ring(&self) -> Color32 {
+    #[must_use] 
+    pub const fn sidebar_ring(&self) -> Color32 {
         let [r, g, b] = self.colors.sidebar_ring;
         Color32::from_rgb(r, g, b)
     }

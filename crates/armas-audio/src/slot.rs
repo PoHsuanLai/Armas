@@ -7,7 +7,6 @@
 //! Colors are automatically assigned based on effect type (reverb, EQ, compressor, etc.).
 
 use armas_basic::theme::Theme;
-use egui;
 
 /// Response from the slot component
 #[derive(Debug, Clone)]
@@ -122,9 +121,9 @@ impl<'a> Slot<'a> {
                     effect_color.gamma_multiply(1.3)
                 };
                 // Use luminance to pick contrasting text color
-                let lum = 0.299 * effect_color.r() as f32
-                    + 0.587 * effect_color.g() as f32
-                    + 0.114 * effect_color.b() as f32;
+                let lum = 0.299 * f32::from(effect_color.r())
+                    + 0.587 * f32::from(effect_color.g())
+                    + 0.114 * f32::from(effect_color.b());
                 let text = if lum > 140.0 {
                     egui::Color32::from_gray(20)
                 } else {

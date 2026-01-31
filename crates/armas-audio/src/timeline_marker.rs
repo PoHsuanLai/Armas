@@ -25,7 +25,7 @@ pub enum MarkerVariant {
 impl MarkerVariant {
     /// Get default color for the variant
     #[must_use]
-    pub fn default_color(&self, theme: &Theme) -> Color32 {
+    pub const fn default_color(&self, theme: &Theme) -> Color32 {
         match self {
             Self::Cue(_) => theme.primary(),
             Self::Tempo(_) => Color32::from_rgb(50, 200, 150), // Teal

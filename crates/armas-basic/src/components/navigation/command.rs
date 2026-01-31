@@ -58,7 +58,7 @@ pub struct CommandItemBuilder<'a> {
     index: usize,
 }
 
-impl<'a> CommandItemBuilder<'a> {
+impl CommandItemBuilder<'_> {
     /// Set command icon
     pub fn icon(self, icon: impl Into<String>) -> Self {
         if let Some(CommandItem::Action {
@@ -88,7 +88,7 @@ pub struct CommandBuilder<'a> {
     items: &'a mut Vec<CommandItem>,
 }
 
-impl<'a> CommandBuilder<'a> {
+impl CommandBuilder<'_> {
     /// Add a command item
     pub fn item(&mut self, id: &str, label: &str) -> CommandItemBuilder<'_> {
         self.items.push(CommandItem::Action {
@@ -142,6 +142,7 @@ pub struct Command {
 
 impl Command {
     /// Create a new command palette
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             id: None,
@@ -168,7 +169,8 @@ impl Command {
     }
 
     /// Set the keyboard shortcut to trigger the command palette
-    pub fn trigger(mut self, key: Key, modifiers: Modifiers) -> Self {
+    #[must_use] 
+    pub const fn trigger(mut self, key: Key, modifiers: Modifiers) -> Self {
         self.trigger_key = key;
         self.trigger_modifiers = modifiers;
         self
@@ -264,7 +266,7 @@ impl Command {
                     self.selected,
                     self.animation.clone(),
                 ),
-            )
+            );
         });
     }
 

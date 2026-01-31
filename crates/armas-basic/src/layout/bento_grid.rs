@@ -6,7 +6,7 @@ use crate::Theme;
 use egui::{Color32, Pos2, Rect, Sense, Stroke, Ui, Vec2};
 
 /// Grid item span configuration
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GridSpan {
     /// Single cell (1x1)
     Single,
@@ -19,21 +19,21 @@ pub enum GridSpan {
 }
 
 impl GridSpan {
-    fn columns(&self) -> usize {
+    const fn columns(&self) -> usize {
         match self {
-            GridSpan::Single => 1,
-            GridSpan::Wide => 2,
-            GridSpan::Tall => 1,
-            GridSpan::Large => 2,
+            Self::Single => 1,
+            Self::Wide => 2,
+            Self::Tall => 1,
+            Self::Large => 2,
         }
     }
 
-    fn rows(&self) -> usize {
+    const fn rows(&self) -> usize {
         match self {
-            GridSpan::Single => 1,
-            GridSpan::Wide => 1,
-            GridSpan::Tall => 2,
-            GridSpan::Large => 2,
+            Self::Single => 1,
+            Self::Wide => 1,
+            Self::Tall => 2,
+            Self::Large => 2,
         }
     }
 }
@@ -55,7 +55,8 @@ impl Default for BentoGrid {
 
 impl BentoGrid {
     /// Create a new bento grid layout
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             columns: 3,
             cell_size: 120.0,
@@ -66,31 +67,36 @@ impl BentoGrid {
     }
 
     /// Set the number of columns
+    #[must_use] 
     pub fn columns(mut self, columns: usize) -> Self {
         self.columns = columns.max(1);
         self
     }
 
     /// Set the base cell size
-    pub fn cell_size(mut self, size: f32) -> Self {
+    #[must_use] 
+    pub const fn cell_size(mut self, size: f32) -> Self {
         self.cell_size = size.max(50.0);
         self
     }
 
     /// Set the gap between cells
-    pub fn gap(mut self, gap: f32) -> Self {
+    #[must_use] 
+    pub const fn gap(mut self, gap: f32) -> Self {
         self.gap = gap;
         self
     }
 
     /// Set the corner radius for cells
-    pub fn corner_radius(mut self, radius: f32) -> Self {
+    #[must_use] 
+    pub const fn corner_radius(mut self, radius: f32) -> Self {
         self.corner_radius = radius;
         self
     }
 
     /// Set the padding around the grid
-    pub fn padding(mut self, padding: f32) -> Self {
+    #[must_use] 
+    pub const fn padding(mut self, padding: f32) -> Self {
         self.padding = padding;
         self
     }
@@ -154,7 +160,7 @@ pub struct GridBuilder<'a> {
     occupied: Vec<Vec<usize>>,
 }
 
-impl<'a> GridBuilder<'a> {
+impl GridBuilder<'_> {
     /// Check if a cell is occupied
     fn is_occupied(&self, row: usize, col: usize) -> bool {
         if row >= self.occupied.len() {

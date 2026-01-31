@@ -34,36 +34,42 @@ impl Default for VelocityDragConfig {
 
 impl VelocityDragConfig {
     /// Create a new velocity drag configuration
+    #[must_use] 
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Set sensitivity (higher = more responsive to mouse speed)
-    pub fn sensitivity(mut self, sensitivity: f64) -> Self {
+    #[must_use] 
+    pub const fn sensitivity(mut self, sensitivity: f64) -> Self {
         self.sensitivity = sensitivity.max(0.1);
         self
     }
 
     /// Set the minimum pixel threshold for drag detection
+    #[must_use] 
     pub fn threshold(mut self, threshold: i32) -> Self {
         self.threshold = threshold.max(1);
         self
     }
 
     /// Set the velocity offset (minimum speed)
-    pub fn offset(mut self, offset: f64) -> Self {
+    #[must_use] 
+    pub const fn offset(mut self, offset: f64) -> Self {
         self.offset = offset.max(0.0);
         self
     }
 
     /// Enable/disable modifier key toggle for velocity mode
-    pub fn allow_modifier_toggle(mut self, allow: bool) -> Self {
+    #[must_use] 
+    pub const fn allow_modifier_toggle(mut self, allow: bool) -> Self {
         self.allow_modifier_toggle = allow;
         self
     }
 
     /// Set which modifier keys toggle velocity mode
-    pub fn toggle_modifiers(mut self, modifiers: Modifiers) -> Self {
+    #[must_use] 
+    pub const fn toggle_modifiers(mut self, modifiers: Modifiers) -> Self {
         self.toggle_modifiers = modifiers;
         self
     }
@@ -114,7 +120,8 @@ pub struct VelocityDrag {
 
 impl VelocityDrag {
     /// Create a new velocity drag helper with the given configuration
-    pub fn new(config: VelocityDragConfig) -> Self {
+    #[must_use] 
+    pub const fn new(config: VelocityDragConfig) -> Self {
         Self {
             config,
             mode: DragMode::None,
@@ -126,26 +133,31 @@ impl VelocityDrag {
     }
 
     /// Create with default configuration
+    #[must_use] 
     pub fn with_defaults() -> Self {
         Self::new(VelocityDragConfig::default())
     }
 
     /// Get the current drag mode
-    pub fn mode(&self) -> DragMode {
+    #[must_use] 
+    pub const fn mode(&self) -> DragMode {
         self.mode
     }
 
     /// Check if a drag is in progress
+    #[must_use] 
     pub fn is_dragging(&self) -> bool {
         self.mode != DragMode::None
     }
 
     /// Check if velocity mode is active
+    #[must_use] 
     pub fn is_velocity_mode(&self) -> bool {
         self.mode == DragMode::Velocity
     }
 
     /// Check if absolute mode is active
+    #[must_use] 
     pub fn is_absolute_mode(&self) -> bool {
         self.mode == DragMode::Absolute
     }
@@ -155,7 +167,7 @@ impl VelocityDrag {
     /// - `current_value`: The current parameter value
     /// - `mouse_pos`: Current mouse position (typically Y for vertical, X for horizontal)
     /// - `use_velocity_mode`: Whether to use velocity mode (can be toggled by modifier)
-    pub fn begin(&mut self, current_value: f64, mouse_pos: f64, use_velocity_mode: bool) {
+    pub const fn begin(&mut self, current_value: f64, mouse_pos: f64, use_velocity_mode: bool) {
         self.start_value = current_value;
         self.start_pos = mouse_pos;
         self.last_pos = mouse_pos;
@@ -206,7 +218,7 @@ impl VelocityDrag {
         self.last_pos = mouse_pos;
 
         // Check threshold
-        if pixel_delta.abs() < self.config.threshold as f64 {
+        if pixel_delta.abs() < f64::from(self.config.threshold) {
             return 0.0;
         }
 
@@ -244,17 +256,19 @@ impl VelocityDrag {
     }
 
     /// End the drag operation
-    pub fn end(&mut self) {
+    pub const fn end(&mut self) {
         self.mode = DragMode::None;
     }
 
     /// Get the start value when drag began
-    pub fn start_value(&self) -> f64 {
+    #[must_use] 
+    pub const fn start_value(&self) -> f64 {
         self.start_value
     }
 
     /// Get the total accumulated delta since drag began
-    pub fn accumulated_delta(&self) -> f64 {
+    #[must_use] 
+    pub const fn accumulated_delta(&self) -> f64 {
         self.accumulated_delta
     }
 }
@@ -274,7 +288,8 @@ pub struct DoubleClickReset {
 
 impl DoubleClickReset {
     /// Create a new double-click reset helper
-    pub fn new(default_value: f64) -> Self {
+    #[must_use] 
+    pub const fn new(default_value: f64) -> Self {
         Self {
             enabled: true,
             default_value,
@@ -284,19 +299,22 @@ impl DoubleClickReset {
     }
 
     /// Enable or disable the feature
-    pub fn enabled(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
     /// Set the default value to reset to
-    pub fn default_value(mut self, value: f64) -> Self {
+    #[must_use] 
+    pub const fn default_value(mut self, value: f64) -> Self {
         self.default_value = value;
         self
     }
 
     /// Set the double-click time window
-    pub fn double_click_time(mut self, seconds: f64) -> Self {
+    #[must_use] 
+    pub const fn double_click_time(mut self, seconds: f64) -> Self {
         self.double_click_time = seconds.max(0.1);
         self
     }
@@ -315,7 +333,8 @@ impl DoubleClickReset {
     }
 
     /// Get the value to reset to
-    pub fn reset_value(&self) -> f64 {
+    #[must_use] 
+    pub const fn reset_value(&self) -> f64 {
         self.default_value
     }
 }

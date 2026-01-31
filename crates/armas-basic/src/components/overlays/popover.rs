@@ -111,54 +111,62 @@ impl Popover {
     }
 
     /// Set the popover to be open (for external control)
-    pub fn open(mut self, is_open: bool) -> Self {
+    #[must_use] 
+    pub const fn open(mut self, is_open: bool) -> Self {
         self.external_is_open = Some(is_open);
         self
     }
 
     /// Set the open state (mutable version)
-    pub fn set_open(&mut self, is_open: bool) {
+    pub const fn set_open(&mut self, is_open: bool) {
         self.external_is_open = Some(is_open);
     }
 
     /// Set the popover position relative to anchor
-    pub fn position(mut self, position: PopoverPosition) -> Self {
+    #[must_use] 
+    pub const fn position(mut self, position: PopoverPosition) -> Self {
         self.position = position;
         self
     }
 
     /// Set the popover visual style
-    pub fn style(mut self, style: PopoverStyle) -> Self {
+    #[must_use] 
+    pub const fn style(mut self, style: PopoverStyle) -> Self {
         self.style = style;
         self
     }
 
     /// Set the popover color theme
-    pub fn color(mut self, color: PopoverColor) -> Self {
+    #[must_use] 
+    pub const fn color(mut self, color: PopoverColor) -> Self {
         self.color = color;
         self
     }
 
     /// Set the offset from the anchor
-    pub fn offset(mut self, offset: Vec2) -> Self {
+    #[must_use] 
+    pub const fn offset(mut self, offset: Vec2) -> Self {
         self.offset = offset;
         self
     }
 
     /// Set a fixed width
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set maximum width
-    pub fn max_width(mut self, max_width: f32) -> Self {
+    #[must_use] 
+    pub const fn max_width(mut self, max_width: f32) -> Self {
         self.max_width = max_width;
         self
     }
 
     /// Set custom inner padding (overrides style default)
-    pub fn padding(mut self, padding: f32) -> Self {
+    #[must_use] 
+    pub const fn padding(mut self, padding: f32) -> Self {
         self.padding = Some(padding);
         self
     }
@@ -275,20 +283,20 @@ impl Popover {
 
     fn get_style_params(&self, theme: &Theme) -> (f32, f32, f32) {
         let (stroke_width, rounding, default_padding) = match self.style {
-            PopoverStyle::Default => (1.0, theme.spacing.corner_radius as f32, theme.spacing.md),
+            PopoverStyle::Default => (1.0, f32::from(theme.spacing.corner_radius), theme.spacing.md),
             PopoverStyle::Elevated => (
                 0.5,
-                theme.spacing.corner_radius_large as f32,
+                f32::from(theme.spacing.corner_radius_large),
                 theme.spacing.lg,
             ),
             PopoverStyle::Bordered => (
                 2.0,
-                theme.spacing.corner_radius_small as f32,
+                f32::from(theme.spacing.corner_radius_small),
                 theme.spacing.md,
             ),
             PopoverStyle::Flat => (
                 0.0,
-                theme.spacing.corner_radius_small as f32,
+                f32::from(theme.spacing.corner_radius_small),
                 theme.spacing.md,
             ),
         };
@@ -378,9 +386,9 @@ impl Popover {
 
 fn blend_with_card(theme: &Theme, base: Color32) -> (Color32, Color32) {
     let blended = Color32::from_rgba_premultiplied(
-        ((theme.card().r() as f32) * 0.85 + (base.r() as f32) * 0.15) as u8,
-        ((theme.card().g() as f32) * 0.85 + (base.g() as f32) * 0.15) as u8,
-        ((theme.card().b() as f32) * 0.85 + (base.b() as f32) * 0.15) as u8,
+        (f32::from(theme.card().r()) * 0.85 + f32::from(base.r()) * 0.15) as u8,
+        (f32::from(theme.card().g()) * 0.85 + f32::from(base.g()) * 0.15) as u8,
+        (f32::from(theme.card().b()) * 0.85 + f32::from(base.b()) * 0.15) as u8,
         255,
     );
     (blended, base)

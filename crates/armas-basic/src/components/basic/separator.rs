@@ -39,7 +39,8 @@ pub struct Separator {
 
 impl Separator {
     /// Create a new horizontal separator
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             orientation: SeparatorOrientation::Horizontal,
             length: None,
@@ -47,19 +48,22 @@ impl Separator {
     }
 
     /// Set horizontal orientation
-    pub fn horizontal(mut self) -> Self {
+    #[must_use] 
+    pub const fn horizontal(mut self) -> Self {
         self.orientation = SeparatorOrientation::Horizontal;
         self
     }
 
     /// Set vertical orientation
-    pub fn vertical(mut self) -> Self {
+    #[must_use] 
+    pub const fn vertical(mut self) -> Self {
         self.orientation = SeparatorOrientation::Vertical;
         self
     }
 
     /// Set custom length (width for horizontal, height for vertical)
-    pub fn length(mut self, length: f32) -> Self {
+    #[must_use] 
+    pub const fn length(mut self, length: f32) -> Self {
         self.length = Some(length);
         self
     }

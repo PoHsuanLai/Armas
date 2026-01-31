@@ -26,33 +26,36 @@ impl ShimmerButton {
     /// Linear interpolation between two colors
     fn lerp_color(a: Color32, b: Color32, t: f32) -> Color32 {
         Color32::from_rgb(
-            (a.r() as f32 + t * (b.r() as f32 - a.r() as f32)) as u8,
-            (a.g() as f32 + t * (b.g() as f32 - a.g() as f32)) as u8,
-            (a.b() as f32 + t * (b.b() as f32 - a.b() as f32)) as u8,
+            (f32::from(a.r()) + t * (f32::from(b.r()) - f32::from(a.r()))) as u8,
+            (f32::from(a.g()) + t * (f32::from(b.g()) - f32::from(a.g()))) as u8,
+            (f32::from(a.b()) + t * (f32::from(b.b()) - f32::from(a.b()))) as u8,
         )
     }
 
     /// Set minimum size
-    pub fn min_size(mut self, size: Vec2) -> Self {
+    #[must_use] 
+    pub const fn min_size(mut self, size: Vec2) -> Self {
         self.min_size = size;
         self
     }
 
     /// Set maximum width (text will be truncated with ellipsis if it exceeds this)
-    pub fn max_width(mut self, max_width: f32) -> Self {
+    #[must_use] 
+    pub const fn max_width(mut self, max_width: f32) -> Self {
         self.max_width = Some(max_width);
         self
     }
 
     /// Set enabled state
-    pub fn enabled(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
     /// Show the button
     pub fn show(self, ui: &mut Ui, _theme: &crate::Theme) -> Response {
-        let ShimmerButton {
+        let Self {
             text,
             min_size,
             max_width,
@@ -167,7 +170,7 @@ impl ShimmerButton {
             let final_galley = if text_width > available_text_width {
                 // Text is too long, truncate with ellipsis
                 ui.painter()
-                    .layout(text, font_id.clone(), text_color, available_text_width)
+                    .layout(text, font_id, text_color, available_text_width)
             } else {
                 // Text fits, use normal layout
                 text_galley

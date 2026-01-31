@@ -18,7 +18,7 @@ pub struct StackCard {
     pub color: Color32,
 }
 
-/// Internal state for CardStack (stored in egui memory)
+/// Internal state for `CardStack` (stored in egui memory)
 #[derive(Clone)]
 struct CardStackState {
     active_index: usize,
@@ -62,6 +62,7 @@ pub struct CardStack {
 
 impl CardStack {
     /// Create a new card stack
+    #[must_use] 
     pub fn new(width: f32, height: f32) -> Self {
         Self {
             rotation_interval: 5.0,
@@ -80,25 +81,28 @@ impl CardStack {
     }
 
     /// Set rotation interval (seconds)
-    pub fn rotation_interval(mut self, interval: f32) -> Self {
+    #[must_use] 
+    pub const fn rotation_interval(mut self, interval: f32) -> Self {
         self.rotation_interval = interval;
         self
     }
 
     /// Enable/disable auto-rotation
-    pub fn auto_rotate(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn auto_rotate(mut self, enabled: bool) -> Self {
         self.auto_rotate = enabled;
         self
     }
 
     /// Set transition duration
-    pub fn transition_duration(mut self, duration: f32) -> Self {
+    #[must_use] 
+    pub const fn transition_duration(mut self, duration: f32) -> Self {
         self.transition_duration = duration;
         self
     }
 
     /// Manually advance to next card
-    fn next(state: &mut CardStackState, time: f32, num_cards: usize) {
+    const fn next(state: &mut CardStackState, time: f32, num_cards: usize) {
         if num_cards > 0 {
             state.active_index = (state.active_index + 1) % num_cards;
             state.last_rotation_time = time;
@@ -309,8 +313,9 @@ pub struct CardStackCardBuilder<'a> {
     card_index: usize,
 }
 
-impl<'a> CardStackCardBuilder<'a> {
+impl CardStackCardBuilder<'_> {
     /// Set the card color
+    #[must_use] 
     pub fn color(self, color: Color32) -> Self {
         if let Some(card) = self.cards.get_mut(self.card_index) {
             card.color = color;

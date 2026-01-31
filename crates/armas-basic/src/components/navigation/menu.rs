@@ -128,7 +128,7 @@ struct MenuItemData {
 }
 
 impl MenuItemData {
-    fn is_selectable(&self) -> bool {
+    const fn is_selectable(&self) -> bool {
         !self.disabled && !matches!(self.kind, MenuItemKind::Separator)
     }
 }
@@ -143,7 +143,7 @@ pub struct MenuBuilder {
 }
 
 impl MenuBuilder {
-    fn new() -> Self {
+    const fn new() -> Self {
         Self { items: Vec::new() }
     }
 
@@ -218,9 +218,9 @@ impl MenuBuilder {
     pub fn submenu(
         &mut self,
         label: impl Into<String>,
-        content: impl FnOnce(&mut MenuBuilder),
+        content: impl FnOnce(&mut Self),
     ) -> MenuItemBuilder<'_> {
-        let mut sub_builder = MenuBuilder::new();
+        let mut sub_builder = Self::new();
         content(&mut sub_builder);
 
         self.items.push(MenuItemData {
@@ -270,6 +270,7 @@ impl MenuItemBuilder<'_> {
     }
 
     /// Set disabled state
+    #[must_use] 
     pub fn disabled(mut self, disabled: bool) -> Self {
         if let Some(item) = self.current() {
             item.disabled = disabled;
@@ -278,6 +279,7 @@ impl MenuItemBuilder<'_> {
     }
 
     /// Set inset (extra left padding for alignment with icon items)
+    #[must_use] 
     pub fn inset(mut self) -> Self {
         if let Some(item) = self.current() {
             item.inset = true;
@@ -286,6 +288,7 @@ impl MenuItemBuilder<'_> {
     }
 
     /// Make this a destructive item (red text, for delete actions)
+    #[must_use] 
     pub fn destructive(mut self) -> Self {
         if let Some(item) = self.current() {
             if let MenuItemKind::Item { destructive } = &mut item.kind {
@@ -307,9 +310,9 @@ pub struct MenuResponse {
     pub selected: Option<usize>,
     /// Whether the user clicked outside the menu
     pub clicked_outside: bool,
-    /// Checkbox that was toggled: (index, new_checked_state)
+    /// Checkbox that was toggled: (index, `new_checked_state`)
     pub checkbox_toggled: Option<(usize, bool)>,
-    /// Radio item that was selected: (group_name, value)
+    /// Radio item that was selected: (`group_name`, value)
     pub radio_selected: Option<(String, String)>,
     /// Whether the menu is currently open
     pub is_open: bool,
@@ -317,6 +320,7 @@ pub struct MenuResponse {
 
 impl MenuResponse {
     /// Check if a specific item index was selected
+    #[must_use] 
     pub fn is_selected(&self, index: usize) -> bool {
         self.selected == Some(index)
     }
@@ -351,19 +355,22 @@ impl Menu {
     }
 
     /// Set the menu to be open (for external control)
-    pub fn open(mut self, is_open: bool) -> Self {
+    #[must_use] 
+    pub const fn open(mut self, is_open: bool) -> Self {
         self.is_open = Some(is_open);
         self
     }
 
     /// Set the menu position
-    pub fn position(mut self, position: PopoverPosition) -> Self {
+    #[must_use] 
+    pub const fn position(mut self, position: PopoverPosition) -> Self {
         self.popover = self.popover.position(position);
         self
     }
 
     /// Set the menu width
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = width.max(CONTENT_MIN_WIDTH);
         self
     }
@@ -608,7 +615,7 @@ fn render_separator(ui: &mut Ui, theme: &crate::Theme) {
     ui.add_space(SEPARATOR_MARGIN_Y);
 }
 
-/// Renders a menu item and returns (clicked_index, is_hovered)
+/// Renders a menu item and returns (`clicked_index`, `is_hovered`)
 fn render_item_with_hover(
     ui: &mut Ui,
     theme: &crate::Theme,
@@ -791,7 +798,7 @@ struct SubmenuParams<'a> {
     sub_items: &'a [MenuItemData],
 }
 
-/// Parameters for render_submenu function
+/// Parameters for `render_submenu` function
 struct RenderSubmenuParams<'a> {
     menu_id: Id,
     menu_width: f32,
@@ -1015,10 +1022,10 @@ enum ItemVariant {
 }
 
 impl ItemVariant {
-    fn is_checked(&self) -> Option<bool> {
+    const fn is_checked(&self) -> Option<bool> {
         match self {
-            ItemVariant::Normal => None,
-            ItemVariant::Checkbox(checked) | ItemVariant::Radio(checked) => Some(*checked),
+            Self::Normal => None,
+            Self::Checkbox(checked) | Self::Radio(checked) => Some(*checked),
         }
     }
 }
@@ -1111,13 +1118,15 @@ impl MenuItem {
     }
 
     /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
+    #[must_use] 
+    pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
 
     /// Make this a destructive item
-    pub fn destructive(mut self) -> Self {
+    #[must_use] 
+    pub const fn destructive(mut self) -> Self {
         self.destructive = true;
         self
     }

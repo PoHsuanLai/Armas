@@ -33,7 +33,7 @@ impl PianoKey {
 
     /// Get the note name (e.g., "C4", "A#3")
     #[must_use]
-    pub fn note_name(&self) -> String {
+    pub fn note_name(self) -> String {
         const NOTE_NAMES: [&str; 12] = [
             "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
         ];

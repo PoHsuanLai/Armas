@@ -24,26 +24,29 @@ impl BrutalButton {
     }
 
     /// Set minimum size
-    pub fn min_size(mut self, size: Vec2) -> Self {
+    #[must_use] 
+    pub const fn min_size(mut self, size: Vec2) -> Self {
         self.min_size = size;
         self
     }
 
     /// Set enabled state
-    pub fn enabled(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
     /// Set maximum width
-    pub fn max_width(mut self, max_width: f32) -> Self {
+    #[must_use] 
+    pub const fn max_width(mut self, max_width: f32) -> Self {
         self.max_width = Some(max_width);
         self
     }
 
     /// Show the button
     pub fn show(self, ui: &mut Ui, _theme: &crate::Theme) -> Response {
-        let BrutalButton {
+        let Self {
             text,
             min_size,
             enabled,
@@ -55,7 +58,7 @@ impl BrutalButton {
         let font_id = egui::FontId::new(13.0, egui::FontFamily::Name("Inter".into()));
         let text_galley = ui.painter().layout_no_wrap(
             display_text.clone(),
-            font_id.clone(),
+            font_id,
             Color32::PLACEHOLDER,
         );
         let text_width = text_galley.rect.width();

@@ -42,12 +42,14 @@ impl TestimonialItem {
     }
 
     /// Set avatar color
-    pub fn avatar_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn avatar_color(mut self, color: Color32) -> Self {
         self.avatar_color = Some(color);
         self
     }
 
     /// Set star rating (0-5)
+    #[must_use] 
     pub fn rating(mut self, stars: u8) -> Self {
         self.rating = Some(stars.min(5));
         self
@@ -93,7 +95,8 @@ pub struct TestimonialCard {
 
 impl TestimonialCard {
     /// Create a new testimonial card
-    pub fn new(item: TestimonialItem) -> Self {
+    #[must_use] 
+    pub const fn new(item: TestimonialItem) -> Self {
         Self {
             item,
             width: None,
@@ -105,31 +108,36 @@ impl TestimonialCard {
     }
 
     /// Set card width
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set card height
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = Some(height);
         self
     }
 
     /// Enable or disable quote marks
-    pub fn show_quotes(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_quotes(mut self, show: bool) -> Self {
         self.show_quotes = show;
         self
     }
 
     /// Enable or disable hover effect
-    pub fn hover_effect(mut self, hover: bool) -> Self {
+    #[must_use] 
+    pub const fn hover_effect(mut self, hover: bool) -> Self {
         self.hover_effect = hover;
         self
     }
 
     /// Enable or disable border
-    pub fn show_border(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_border(mut self, show: bool) -> Self {
         self.show_border = show;
         self
     }
@@ -281,7 +289,8 @@ pub struct TestimonialGrid {
 
 impl TestimonialGrid {
     /// Create a new testimonial grid
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             columns: None,
             gap: 20.0,
@@ -291,25 +300,29 @@ impl TestimonialGrid {
     }
 
     /// Set number of columns
+    #[must_use] 
     pub fn columns(mut self, columns: usize) -> Self {
         self.columns = Some(columns.max(1));
         self
     }
 
     /// Set gap between cards
-    pub fn gap(mut self, gap: f32) -> Self {
+    #[must_use] 
+    pub const fn gap(mut self, gap: f32) -> Self {
         self.gap = gap;
         self
     }
 
     /// Enable or disable quote marks
-    pub fn show_quotes(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_quotes(mut self, show: bool) -> Self {
         self.show_quotes = show;
         self
     }
 
     /// Enable or disable hover effect
-    pub fn hover_effect(mut self, hover: bool) -> Self {
+    #[must_use] 
+    pub const fn hover_effect(mut self, hover: bool) -> Self {
         self.hover_effect = hover;
         self
     }
@@ -341,7 +354,7 @@ impl TestimonialGrid {
         for (row_idx, row) in chunks.iter().enumerate() {
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = self.gap;
-                for item in row.iter() {
+                for item in *row {
                     TestimonialCard::new(item.clone())
                         .width(card_width)
                         .show_quotes(self.show_quotes)
@@ -403,8 +416,9 @@ pub struct TestimonialItemBuilder<'a> {
     item_index: usize,
 }
 
-impl<'a> TestimonialItemBuilder<'a> {
+impl TestimonialItemBuilder<'_> {
     /// Set avatar text (emoji or initials)
+    #[must_use] 
     pub fn avatar(self, avatar: &str) -> Self {
         if let Some(item) = self.items.get_mut(self.item_index) {
             item.avatar = Some(avatar.to_string());
@@ -413,6 +427,7 @@ impl<'a> TestimonialItemBuilder<'a> {
     }
 
     /// Set avatar color
+    #[must_use] 
     pub fn avatar_color(self, color: Color32) -> Self {
         if let Some(item) = self.items.get_mut(self.item_index) {
             item.avatar_color = Some(color);
@@ -421,6 +436,7 @@ impl<'a> TestimonialItemBuilder<'a> {
     }
 
     /// Set star rating (0-5)
+    #[must_use] 
     pub fn rating(self, stars: u8) -> Self {
         if let Some(item) = self.items.get_mut(self.item_index) {
             item.rating = Some(stars.min(5));

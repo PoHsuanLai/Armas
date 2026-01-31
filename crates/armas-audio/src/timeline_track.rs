@@ -504,7 +504,7 @@ pub struct TimelineTrack {
     track_color: Option<Color32>,
     /// Background color
     background_color: Option<Color32>,
-    /// Region height as a ratio of track height (0.0-1.0), used when region_height is None
+    /// Region height as a ratio of track height (0.0-1.0), used when `region_height` is None
     region_height_ratio: f32,
 }
 

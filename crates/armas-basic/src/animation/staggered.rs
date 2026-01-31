@@ -30,7 +30,7 @@ pub struct StaggeredAnimation<T: Interpolate> {
 
 impl<T: Interpolate> StaggeredAnimation<T> {
     /// Create a new staggered animation
-    pub fn new(start: T, end: T, item_count: usize, stagger_delay: f32, duration: f32) -> Self {
+    pub const fn new(start: T, end: T, item_count: usize, stagger_delay: f32, duration: f32) -> Self {
         Self {
             base_delay: 0.0,
             stagger_delay,
@@ -44,13 +44,15 @@ impl<T: Interpolate> StaggeredAnimation<T> {
     }
 
     /// Set the base delay before first item
-    pub fn base_delay(mut self, delay: f32) -> Self {
+    #[must_use]
+    pub const fn base_delay(mut self, delay: f32) -> Self {
         self.base_delay = delay;
         self
     }
 
     /// Set the easing function
-    pub fn easing(mut self, easing: EasingFunction) -> Self {
+    #[must_use]
+    pub const fn easing(mut self, easing: EasingFunction) -> Self {
         self.easing = easing;
         self
     }
@@ -61,7 +63,7 @@ impl<T: Interpolate> StaggeredAnimation<T> {
     }
 
     /// Reset the animation
-    pub fn reset(&mut self) {
+    pub const fn reset(&mut self) {
         self.elapsed = 0.0;
     }
 
@@ -143,7 +145,8 @@ struct SequenceStep<T: Interpolate> {
 
 impl<T: Interpolate> AnimationSequence<T> {
     /// Create a new empty sequence
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             animations: Vec::new(),
             current_step: 0,
@@ -152,6 +155,7 @@ impl<T: Interpolate> AnimationSequence<T> {
     }
 
     /// Add an animation step with optional delay
+    #[must_use]
     pub fn then(mut self, animation: Animation<T>, delay: f32) -> Self {
         self.animations.push(SequenceStep { delay, animation });
         self
@@ -183,6 +187,7 @@ impl<T: Interpolate> AnimationSequence<T> {
     }
 
     /// Get the current value
+    #[must_use] 
     pub fn value(&self) -> T {
         if self.current_step >= self.animations.len() {
             // Return the last animation's end value
@@ -191,15 +196,15 @@ impl<T: Interpolate> AnimationSequence<T> {
             }
         }
 
-        if let Some(step) = self.animations.get(self.current_step) {
-            step.animation.value()
-        } else {
-            self.animations[0].animation.start.clone()
-        }
+        self.animations.get(self.current_step).map_or_else(
+            || self.animations[0].animation.start.clone(),
+            |step| step.animation.value(),
+        )
     }
 
     /// Check if the entire sequence is complete
-    pub fn is_complete(&self) -> bool {
+    #[must_use] 
+    pub const fn is_complete(&self) -> bool {
         self.current_step >= self.animations.len()
     }
 
@@ -240,7 +245,7 @@ pub struct LoopingAnimation<T: Interpolate> {
 
 impl<T: Interpolate> LoopingAnimation<T> {
     /// Create a new looping animation
-    pub fn new(start: T, end: T, duration: f32, mode: LoopMode) -> Self {
+    pub const fn new(start: T, end: T, duration: f32, mode: LoopMode) -> Self {
         Self {
             animation: Animation::new(start, end, duration),
             mode,
@@ -249,7 +254,8 @@ impl<T: Interpolate> LoopingAnimation<T> {
     }
 
     /// Set easing function
-    pub fn easing(mut self, easing: EasingFunction) -> Self {
+    #[must_use]
+    pub const fn easing(mut self, easing: EasingFunction) -> Self {
         self.animation.easing = easing;
         self
     }
@@ -292,7 +298,7 @@ impl<T: Interpolate> LoopingAnimation<T> {
     }
 
     /// Reset the animation
-    pub fn reset(&mut self) {
+    pub const fn reset(&mut self) {
         self.animation.reset();
         self.forward = true;
     }

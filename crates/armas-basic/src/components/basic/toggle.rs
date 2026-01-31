@@ -18,7 +18,7 @@ const SWITCH_HEIGHT: f32 = 24.0; // h-6
 const SWITCH_THUMB_SIZE: f32 = 20.0; // h-5 w-5
 
 /// Toggle switch variant
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ToggleVariant {
     /// Standard toggle switch
     Switch,
@@ -27,7 +27,7 @@ pub enum ToggleVariant {
 }
 
 /// Toggle size
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ToggleSize {
     /// Small toggle
     Small,
@@ -38,17 +38,17 @@ pub enum ToggleSize {
 }
 
 impl ToggleSize {
-    fn dimensions(&self, variant: ToggleVariant) -> (f32, f32) {
+    const fn dimensions(&self, variant: ToggleVariant) -> (f32, f32) {
         match variant {
             ToggleVariant::Switch => match self {
-                ToggleSize::Small => (36.0, 20.0),
-                ToggleSize::Medium => (SWITCH_WIDTH, SWITCH_HEIGHT), // shadcn default
-                ToggleSize::Large => (52.0, 28.0),
+                Self::Small => (36.0, 20.0),
+                Self::Medium => (SWITCH_WIDTH, SWITCH_HEIGHT), // shadcn default
+                Self::Large => (52.0, 28.0),
             },
             ToggleVariant::Checkbox => match self {
-                ToggleSize::Small => (16.0, 16.0),
-                ToggleSize::Medium => (20.0, 20.0),
-                ToggleSize::Large => (24.0, 24.0),
+                Self::Small => (16.0, 16.0),
+                Self::Medium => (20.0, 20.0),
+                Self::Large => (24.0, 24.0),
             },
         }
     }
@@ -68,7 +68,8 @@ pub struct Toggle {
 
 impl Toggle {
     /// Create a new toggle
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             id: None,
             variant: ToggleVariant::Switch,
@@ -88,13 +89,15 @@ impl Toggle {
     }
 
     /// Set the variant
-    pub fn variant(mut self, variant: ToggleVariant) -> Self {
+    #[must_use] 
+    pub const fn variant(mut self, variant: ToggleVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set the size
-    pub fn size(mut self, size: ToggleSize) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: ToggleSize) -> Self {
         self.size = size;
         self
     }
@@ -112,7 +115,8 @@ impl Toggle {
     }
 
     /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
+    #[must_use] 
+    pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
@@ -374,9 +378,9 @@ pub struct ToggleResponse {
 // NEW CLOSURE-BASED API FOR TOGGLE GROUP
 // ============================================================================
 
-/// External state for ToggleGroup
+/// External state for `ToggleGroup`
 ///
-/// Must be stored by the user and passed to ToggleGroup::new().
+/// Must be stored by the user and passed to `ToggleGroup::new()`.
 /// This is necessary because toggle states must persist across frames
 /// and be accessible outside the closure.
 #[derive(Default, Clone)]
@@ -386,11 +390,13 @@ pub struct ToggleGroupState {
 
 impl ToggleGroupState {
     /// Create a new toggle group state
+    #[must_use] 
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Check if a toggle is checked
+    #[must_use] 
     pub fn is_checked(&self, id: &str) -> bool {
         self.checked.get(id).copied().unwrap_or(false)
     }
@@ -401,6 +407,7 @@ impl ToggleGroupState {
     }
 
     /// Get all toggle states
+    #[must_use] 
     pub fn get_all(&self) -> Vec<(String, bool)> {
         self.checked.iter().map(|(k, v)| (k.clone(), *v)).collect()
     }
@@ -434,7 +441,7 @@ pub struct ToggleGroupBuilder<'a> {
     changed: &'a mut Vec<(String, bool)>,
 }
 
-impl<'a> ToggleGroupBuilder<'a> {
+impl ToggleGroupBuilder<'_> {
     /// Add a toggle to the group
     pub fn toggle(&mut self, id: &str, label: &str) -> ToggleBuilder {
         let builder = ToggleBuilder::new(id.to_string(), label.to_string());
@@ -464,7 +471,7 @@ impl<'a> ToggleGroupBuilder<'a> {
 
 /// Response from toggle group
 pub struct ToggleGroupResponse {
-    /// List of toggles that changed: (id, new_state)
+    /// List of toggles that changed: (id, `new_state`)
     pub changed: Vec<(String, bool)>,
 }
 
@@ -489,7 +496,7 @@ pub struct ToggleGroup<'a> {
 
 impl<'a> ToggleGroup<'a> {
     /// Create a new toggle group with external state
-    pub fn new(state: &'a mut ToggleGroupState) -> Self {
+    pub const fn new(state: &'a mut ToggleGroupState) -> Self {
         Self { state, label: None }
     }
 

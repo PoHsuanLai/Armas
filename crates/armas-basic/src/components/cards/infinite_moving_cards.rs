@@ -6,7 +6,7 @@ use crate::ext::ArmasContextExt;
 use egui::{Color32, Direction, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Speed of the scroll animation
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ScrollSpeed {
     /// Slow scroll (80 pixels per second)
     Slow,
@@ -17,11 +17,11 @@ pub enum ScrollSpeed {
 }
 
 impl ScrollSpeed {
-    fn pixels_per_second(&self) -> f32 {
+    const fn pixels_per_second(&self) -> f32 {
         match self {
-            ScrollSpeed::Slow => 80.0,
-            ScrollSpeed::Normal => 120.0,
-            ScrollSpeed::Fast => 200.0,
+            Self::Slow => 80.0,
+            Self::Normal => 120.0,
+            Self::Fast => 200.0,
         }
     }
 }
@@ -60,13 +60,15 @@ impl MovingCard {
     }
 
     /// Set the background color
-    pub fn background_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn background_color(mut self, color: Color32) -> Self {
         self.background_color = color;
         self
     }
 
     /// Set the text color
-    pub fn text_color(mut self, color: Color32) -> Self {
+    #[must_use] 
+    pub const fn text_color(mut self, color: Color32) -> Self {
         self.text_color = color;
         self
     }
@@ -75,7 +77,7 @@ impl MovingCard {
 /// Infinite moving cards component
 ///
 /// Creates a continuous horizontal scrolling carousel of cards.
-/// Uses automatic animation loop - no LoopingAnimation needed since
+/// Uses automatic animation loop - no `LoopingAnimation` needed since
 /// we're doing direct offset calculation.
 ///
 /// # Example
@@ -104,7 +106,8 @@ pub struct InfiniteMovingCards {
 
 impl InfiniteMovingCards {
     /// Create a new infinite moving cards component
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             card_width: 350.0,
             card_height: 200.0,
@@ -116,32 +119,37 @@ impl InfiniteMovingCards {
     }
 
     /// Set the card dimensions
-    pub fn card_size(mut self, width: f32, height: f32) -> Self {
+    #[must_use] 
+    pub const fn card_size(mut self, width: f32, height: f32) -> Self {
         self.card_width = width;
         self.card_height = height;
         self
     }
 
     /// Set the spacing between cards
-    pub fn spacing(mut self, spacing: f32) -> Self {
+    #[must_use] 
+    pub const fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
         self
     }
 
     /// Set the scroll direction
-    pub fn direction(mut self, direction: Direction) -> Self {
+    #[must_use] 
+    pub const fn direction(mut self, direction: Direction) -> Self {
         self.direction = direction;
         self
     }
 
     /// Set the scroll speed
-    pub fn speed(mut self, speed: ScrollSpeed) -> Self {
+    #[must_use] 
+    pub const fn speed(mut self, speed: ScrollSpeed) -> Self {
         self.speed = speed;
         self
     }
 
     /// Set whether to pause on hover
-    pub fn pause_on_hover(mut self, pause: bool) -> Self {
+    #[must_use] 
+    pub const fn pause_on_hover(mut self, pause: bool) -> Self {
         self.pause_on_hover = pause;
         self
     }
@@ -172,7 +180,9 @@ impl InfiniteMovingCards {
         let is_paused = self.pause_on_hover && response.hovered();
 
         // Calculate scroll offset from absolute time
-        let scroll_offset = if !is_paused {
+        let scroll_offset = if is_paused {
+            0.0
+        } else {
             let direction_multiplier = match self.direction {
                 Direction::LeftToRight => 1.0,
                 Direction::RightToLeft => -1.0,
@@ -181,8 +191,6 @@ impl InfiniteMovingCards {
             };
 
             time * self.speed.pixels_per_second() * direction_multiplier
-        } else {
-            0.0
         };
 
         // Calculate total width of all cards
@@ -334,8 +342,9 @@ pub struct MovingCardBuilder<'a> {
     card_index: usize,
 }
 
-impl<'a> MovingCardBuilder<'a> {
+impl MovingCardBuilder<'_> {
     /// Set the author/source
+    #[must_use] 
     pub fn author(self, author: &str) -> Self {
         if let Some(card) = self.cards.get_mut(self.card_index) {
             card.author = Some(author.to_string());
@@ -344,6 +353,7 @@ impl<'a> MovingCardBuilder<'a> {
     }
 
     /// Set the background color
+    #[must_use] 
     pub fn background_color(self, color: Color32) -> Self {
         if let Some(card) = self.cards.get_mut(self.card_index) {
             card.background_color = color;
@@ -352,6 +362,7 @@ impl<'a> MovingCardBuilder<'a> {
     }
 
     /// Set the text color
+    #[must_use] 
     pub fn text_color(self, color: Color32) -> Self {
         if let Some(card) = self.cards.get_mut(self.card_index) {
             card.text_color = color;

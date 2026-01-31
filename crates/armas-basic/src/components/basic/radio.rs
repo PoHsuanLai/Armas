@@ -1,6 +1,6 @@
 //! Radio Button Components
 //!
-//! Radio buttons styled like shadcn/ui RadioGroup.
+//! Radio buttons styled like shadcn/ui `RadioGroup`.
 //! For single selection from a group of options.
 //!
 //! # Example
@@ -40,7 +40,7 @@ const LABEL_FONT_SIZE: f32 = 14.0; // text-sm
 const DESCRIPTION_FONT_SIZE: f32 = 12.0; // text-xs
 
 /// Radio button size
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RadioSize {
     /// Small radio button
     Small,
@@ -51,11 +51,11 @@ pub enum RadioSize {
 }
 
 impl RadioSize {
-    fn diameter(&self) -> f32 {
+    const fn diameter(&self) -> f32 {
         match self {
-            RadioSize::Small => RADIO_SIZE_SM,
-            RadioSize::Medium => RADIO_SIZE,
-            RadioSize::Large => RADIO_SIZE_LG,
+            Self::Small => RADIO_SIZE_SM,
+            Self::Medium => RADIO_SIZE,
+            Self::Large => RADIO_SIZE_LG,
         }
     }
 }
@@ -71,7 +71,8 @@ pub struct Radio {
 
 impl Radio {
     /// Create a new radio button
-    pub fn new() -> Self {
+    #[must_use] 
+    pub const fn new() -> Self {
         Self {
             id: None,
             size: RadioSize::Medium,
@@ -88,7 +89,8 @@ impl Radio {
     }
 
     /// Set the size
-    pub fn size(mut self, size: RadioSize) -> Self {
+    #[must_use] 
+    pub const fn size(mut self, size: RadioSize) -> Self {
         self.size = size;
         self
     }
@@ -106,7 +108,8 @@ impl Radio {
     }
 
     /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
+    #[must_use] 
+    pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
@@ -242,7 +245,7 @@ pub struct RadioGroupBuilder<'a> {
     disabled: bool,
 }
 
-impl<'a> RadioGroupBuilder<'a> {
+impl RadioGroupBuilder<'_> {
     /// Add a radio option to the group
     pub fn option(&mut self, value: &str, label: &str) -> RadioOptionBuilder {
         let builder = RadioOptionBuilder::new(value.to_string(), label.to_string());
@@ -251,8 +254,7 @@ impl<'a> RadioGroupBuilder<'a> {
         let is_selected = self
             .selected_value
             .as_ref()
-            .map(|v| v == value)
-            .unwrap_or(false);
+            .is_some_and(|v| v == value);
 
         // Create radio and show it
         let mut radio = Radio::new().label(&builder.label).disabled(self.disabled);
@@ -312,7 +314,7 @@ impl<'a> RadioGroup<'a> {
     ///
     /// # Arguments
     /// * `selected_value` - Mutable reference to the currently selected value
-    pub fn new(selected_value: &'a mut Option<String>) -> Self {
+    pub const fn new(selected_value: &'a mut Option<String>) -> Self {
         Self {
             selected_value,
             label: None,
@@ -327,7 +329,8 @@ impl<'a> RadioGroup<'a> {
     }
 
     /// Set disabled state for all radios in the group
-    pub fn disabled(mut self, disabled: bool) -> Self {
+    #[must_use] 
+    pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }

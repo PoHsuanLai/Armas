@@ -48,7 +48,8 @@ pub struct Slider {
 
 impl Slider {
     /// Create a new slider
-    pub fn new(min: f32, max: f32) -> Self {
+    #[must_use] 
+    pub const fn new(min: f32, max: f32) -> Self {
         Self {
             id: None,
             min,
@@ -72,19 +73,22 @@ impl Slider {
     }
 
     /// Set the slider width
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
     }
 
     /// Set the slider height
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Show or hide the value label
-    pub fn show_value(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_value(mut self, show: bool) -> Self {
         self.show_value = show;
         self
     }
@@ -102,13 +106,15 @@ impl Slider {
     }
 
     /// Set a step value for snapping
-    pub fn step(mut self, step: f32) -> Self {
+    #[must_use] 
+    pub const fn step(mut self, step: f32) -> Self {
         self.step = Some(step);
         self
     }
 
     /// Set a default value for double-click reset
-    pub fn default_value(mut self, value: f32) -> Self {
+    #[must_use] 
+    pub const fn default_value(mut self, value: f32) -> Self {
         self.default_value = Some(value);
         self
     }
@@ -118,7 +124,8 @@ impl Slider {
     /// When enabled, holding Ctrl/Cmd while dragging uses velocity mode
     /// where faster mouse movement = larger value changes.
     /// This allows for fine-grained control.
-    pub fn velocity_mode(mut self, enabled: bool) -> Self {
+    #[must_use] 
+    pub const fn velocity_mode(mut self, enabled: bool) -> Self {
         self.velocity_mode = enabled;
         self
     }
@@ -126,7 +133,8 @@ impl Slider {
     /// Set the sensitivity for velocity mode (default: 1.0)
     ///
     /// Higher values = more responsive to mouse speed
-    pub fn sensitivity(mut self, sensitivity: f64) -> Self {
+    #[must_use] 
+    pub const fn sensitivity(mut self, sensitivity: f64) -> Self {
         self.sensitivity = sensitivity;
         self
     }
@@ -163,9 +171,9 @@ impl Slider {
                         ui.allocate_space(ui.available_size());
 
                         let value_text = if let Some(suffix) = &self.suffix {
-                            format!("{:.1}{}", value, suffix)
+                            format!("{value:.1}{suffix}")
                         } else {
-                            format!("{:.1}", value)
+                            format!("{value:.1}")
                         };
                         ui.label(value_text);
                     }
@@ -200,7 +208,7 @@ impl Slider {
                         self.velocity_mode && ui.input(|i| i.modifiers.command || i.modifiers.ctrl);
                     drag_state
                         .drag
-                        .begin(*value as f64, pos.x as f64, use_velocity);
+                        .begin(f64::from(*value), f64::from(pos.x), use_velocity);
                 }
 
                 ui.ctx()
@@ -211,14 +219,14 @@ impl Slider {
                         .ctx()
                         .data_mut(|d| d.get_temp(drag_state_id).unwrap_or_default());
 
-                    let range = (self.max - self.min) as f64;
+                    let range = f64::from(self.max - self.min);
 
                     if drag_state.drag.mode() == DragMode::Velocity {
                         // Velocity mode: use drag helper
                         let delta = drag_state.drag.update_tracked(
-                            pos.x as f64,
+                            f64::from(pos.x),
                             range,
-                            rect.width() as f64,
+                            f64::from(rect.width()),
                         );
                         let mut new_value = drag_state.drag_start_value + delta as f32;
 

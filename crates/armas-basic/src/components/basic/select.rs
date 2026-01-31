@@ -69,7 +69,8 @@ impl SelectOption {
     }
 
     /// Set whether this option is disabled
-    pub fn disabled(mut self, disabled: bool) -> Self {
+    #[must_use] 
+    pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
@@ -98,6 +99,7 @@ pub struct Select {
 
 impl Select {
     /// Create a new Select component with the given options
+    #[must_use] 
     pub fn new(options: Vec<SelectOption>) -> Self {
         let filtered_indices: Vec<usize> = (0..options.len()).collect();
         Self {
@@ -151,30 +153,35 @@ impl Select {
     }
 
     /// Set the width of the select component
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set the trigger height (overrides default 36px)
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.custom_height = Some(height);
         self
     }
 
     /// Set the maximum height of the dropdown menu
-    pub fn max_height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn max_height(mut self, height: f32) -> Self {
         self.max_height = height;
         self
     }
 
     /// Enable or disable search functionality
-    pub fn searchable(mut self, searchable: bool) -> Self {
+    #[must_use] 
+    pub const fn searchable(mut self, searchable: bool) -> Self {
         self.searchable = searchable;
         self
     }
 
     /// Get the currently selected value
+    #[must_use] 
     pub fn selected_value(&self) -> Option<&str> {
         self.selected_value.as_deref()
     }
@@ -395,8 +402,7 @@ impl Select {
             self.options
                 .iter()
                 .find(|opt| opt.value == *selected)
-                .map(|opt| opt.label.as_str())
-                .unwrap_or(&self.placeholder)
+                .map_or(&self.placeholder, |opt| opt.label.as_str())
         } else {
             &self.placeholder
         }
@@ -742,8 +748,7 @@ impl Select {
                         || opt
                             .description
                             .as_ref()
-                            .map(|d| d.to_lowercase().contains(&search_lower))
-                            .unwrap_or(false)
+                            .is_some_and(|d| d.to_lowercase().contains(&search_lower))
                 })
                 .map(|(idx, _)| idx)
                 .collect();
@@ -809,8 +814,9 @@ pub struct SelectOptionBuilder<'a> {
     option_index: usize,
 }
 
-impl<'a> SelectOptionBuilder<'a> {
+impl SelectOptionBuilder<'_> {
     /// Set an icon for this option
+    #[must_use] 
     pub fn icon(self, icon: &str) -> Self {
         if let Some(opt) = self.options.get_mut(self.option_index) {
             opt.icon = Some(icon.to_string());
@@ -819,6 +825,7 @@ impl<'a> SelectOptionBuilder<'a> {
     }
 
     /// Set a description for this option
+    #[must_use] 
     pub fn description(self, description: &str) -> Self {
         if let Some(opt) = self.options.get_mut(self.option_index) {
             opt.description = Some(description.to_string());
@@ -827,6 +834,7 @@ impl<'a> SelectOptionBuilder<'a> {
     }
 
     /// Set whether this option is disabled
+    #[must_use] 
     pub fn disabled(self, disabled: bool) -> Self {
         if let Some(opt) = self.options.get_mut(self.option_index) {
             opt.disabled = disabled;

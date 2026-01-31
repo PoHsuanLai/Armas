@@ -78,7 +78,7 @@ pub struct TreeViewResponse {
 // Parameter Structs
 // ============================================================================
 
-/// Parameters for show_level function
+/// Parameters for `show_level` function
 struct ShowLevelParams<'a> {
     parent: Option<&'a PathBuf>,
     width: f32,
@@ -88,7 +88,7 @@ struct ShowLevelParams<'a> {
     toggled: &'a mut Option<PathBuf>,
 }
 
-/// Parameters for show_item function
+/// Parameters for `show_item` function
 struct ShowItemParams<'a> {
     item: &'a TreeItem,
     width: f32,
@@ -150,6 +150,7 @@ pub struct TreeView {
 
 impl TreeView {
     /// Create a new tree view
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             root_path: "/".to_string(),
@@ -158,18 +159,21 @@ impl TreeView {
     }
 
     /// Set width (0 = fill available)
-    pub fn width(mut self, width: f32) -> Self {
+    #[must_use] 
+    pub const fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
     }
 
     /// Set height (0 = fill available)
-    pub fn height(mut self, height: f32) -> Self {
+    #[must_use] 
+    pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Set items
+    #[must_use] 
     pub fn items(mut self, items: Vec<TreeItem>) -> Self {
         self.items = items;
         self
@@ -182,17 +186,20 @@ impl TreeView {
     }
 
     /// Show tree connection lines
-    pub fn show_lines(mut self, show: bool) -> Self {
+    #[must_use] 
+    pub const fn show_lines(mut self, show: bool) -> Self {
         self.show_lines = show;
         self
     }
 
     /// Get selected item
-    pub fn selected(&self) -> Option<&PathBuf> {
+    #[must_use] 
+    pub const fn selected(&self) -> Option<&PathBuf> {
         self.selected.as_ref()
     }
 
     /// Check if branch is expanded
+    #[must_use] 
     pub fn is_expanded(&self, path: &Path) -> bool {
         self.expanded.contains(&path.to_string_lossy().to_string())
     }
