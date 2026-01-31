@@ -6,7 +6,7 @@
 //! Features an activity meter showing processing level and a bypass indicator.
 //! Colors are automatically assigned based on effect type (reverb, EQ, compressor, etc.).
 
-use armas::theme::Theme;
+use armas_basic::theme::Theme;
 use egui;
 
 /// Response from the slot component
@@ -26,9 +26,9 @@ pub struct SlotResponse {
 ///
 /// # Example
 ///
-/// ```rust,no_run
+/// ```rust,ignore
 /// use armas_audio::Slot;
-/// use armas::Theme;
+/// use armas_basic::Theme;
 ///
 /// fn ui(ui: &mut egui::Ui, theme: &Theme) {
 ///     Slot::new()
@@ -129,7 +129,7 @@ impl<'a> Slot<'a> {
     }
 
     /// Show the slot component
-    pub fn show(self, ui: &mut egui::Ui, theme: &armas::Theme) -> SlotResponse {
+    pub fn show(self, ui: &mut egui::Ui, theme: &armas_basic::Theme) -> SlotResponse {
         let font_size = (self.height * 0.55).max(8.0);
         let (rect, response) =
             ui.allocate_exact_size(egui::vec2(self.width, self.height), egui::Sense::click());

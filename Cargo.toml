@@ -2,7 +2,7 @@
 resolver = "2"
 members = [
     "crates/armas",
-    "crates/armas-animated",
+    "crates/armas-basic",
     "crates/armas-audio",
     "crates/armas-icon",
     "crates/armas-showcase-macros",

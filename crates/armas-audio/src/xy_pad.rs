@@ -8,8 +8,8 @@
 //! - Velocity mode (Ctrl/Cmd + drag): Fine control based on mouse speed
 //! - Double-click to reset to default values
 
-use armas::animation::{VelocityDrag, VelocityDragConfig};
-use armas::theme::Theme;
+use armas_basic::animation::{VelocityDrag, VelocityDragConfig};
+use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// State for XY pad drag interaction (stored in egui temp data)
@@ -77,7 +77,7 @@ pub enum XYPadVariant {
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # use armas::Theme;
+/// # use armas_basic::Theme;
 /// # fn example(ui: &mut Ui, theme: &Theme) {
 /// use armas_audio::XYPad;
 ///

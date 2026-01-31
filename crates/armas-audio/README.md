@@ -113,7 +113,7 @@ if response.stop_clicked {
 **Timeline**: Timeline, TimelineTrack, TimelineMarker, TimelineRegion, PianoRoll, WaveformDisplay, Playhead, TimeRuler
 **Sequencers**: DrumSequencer, StepSequencer
 **Automation**: AutomationEditor, AutomationCanvas, PointHandle
-**Utilities**: Transport, ZoomControl, SnapGrid, TrackHeader
+**Utilities**: Transport, SnapGrid, TrackHeader
 
 ## MPE Support
 

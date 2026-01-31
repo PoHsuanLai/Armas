@@ -7,7 +7,7 @@
 //! - Optional scrollable viewport with momentum physics
 //! - Smooth inertia-based scrolling for navigating octaves
 
-use armas::theme::Theme;
+use armas_basic::theme::Theme;
 use egui::{self, Color32, CornerRadius, Pos2, Rect, Response, Sense, Vec2};
 use std::collections::HashSet;
 

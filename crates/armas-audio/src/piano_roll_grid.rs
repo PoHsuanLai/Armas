@@ -3,7 +3,7 @@
 //! Background grid for piano roll editor that aligns with piano keys.
 //! Provides horizontal lines for each note and vertical lines for time divisions.
 
-use armas::theme::Theme;
+use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 
 /// Time division for vertical grid lines

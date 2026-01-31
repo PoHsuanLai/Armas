@@ -1,6 +1,6 @@
 //! Tests for `XYPad` component using `egui_kittest`
 
-use armas::ArmasContextExt;
+use armas_basic::ArmasContextExt;
 use armas_audio::xy_pad::{XYPad, XYPadVariant};
 use egui_kittest::Harness;
 

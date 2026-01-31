@@ -40,25 +40,25 @@ main(args) {
     echo "armas-icon done"
     echo ""
 
-    // 2. armas (depends on armas-icon)
-    echo "=== Publishing armas ==="
+    // 2. armas-basic (depends on armas-icon)
+    echo "=== Publishing armas-basic ==="
     if dry_run == "dry-run" {
-        $ cargo publish --package armas --dry-run $ failed {
-            echo "Dry run failed for armas"
+        $ cargo publish --package armas-basic --dry-run $ failed {
+            echo "Dry run failed for armas-basic"
             fail 1
         }
     } else {
-        $ cargo publish --package armas $ failed {
-            echo "Publish failed for armas"
+        $ cargo publish --package armas-basic $ failed {
+            echo "Publish failed for armas-basic"
             fail 1
         }
         echo "Waiting 30s for crates.io indexing..."
         trust $ sleep 30 $
     }
-    echo "armas done"
+    echo "armas-basic done"
     echo ""
 
-    // 3. armas-audio (depends on armas, armas-icon)
+    // 3. armas-audio (depends on armas-basic, armas-icon)
     echo "=== Publishing armas-audio ==="
     if dry_run == "dry-run" {
         $ cargo publish --package armas-audio --dry-run $ failed {
@@ -76,20 +76,20 @@ main(args) {
     echo "armas-audio done"
     echo ""
 
-    // 4. armas-animated (depends on armas)
-    echo "=== Publishing armas-animated ==="
+    // 4. armas (umbrella, depends on armas-basic, armas-audio, armas-icon)
+    echo "=== Publishing armas ==="
     if dry_run == "dry-run" {
-        $ cargo publish --package armas-animated --dry-run $ failed {
-            echo "Dry run failed for armas-animated"
+        $ cargo publish --package armas --dry-run $ failed {
+            echo "Dry run failed for armas"
             fail 1
         }
     } else {
-        $ cargo publish --package armas-animated $ failed {
-            echo "Publish failed for armas-animated"
+        $ cargo publish --package armas $ failed {
+            echo "Publish failed for armas"
             fail 1
         }
     }
-    echo "armas-animated done"
+    echo "armas done"
     echo ""
 
     echo "All crates published for version {cargo_version}"

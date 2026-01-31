@@ -10,18 +10,16 @@ description = "UI component library for egui following shadcn/ui design patterns
 keywords = ["egui", "ui", "theme", "components", "material-design"]
 categories = ["gui"]
 
+[features]
+default = ["basic", "icon"]
+basic = ["dep:armas-basic"]
+audio = ["dep:armas-audio", "basic"]
+icon = ["dep:armas-icon"]
+
 [dependencies]
-egui = "0.33"
-egui-theme = "0.1"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-chrono = { version = "0.4", features = ["clock", "wasmbind"] }
-armas-icon = { version = "0.1.2", path = "../armas-icon" }
+armas-basic = { version = "0.1.2", path = "../armas-basic", optional = true }
+armas-audio = { version = "0.1.2", path = "../armas-audio", optional = true }
+armas-icon = { version = "0.1.2", path = "../armas-icon", optional = true }
 
-[dev-dependencies]
-eframe = "0.33"
-egui_kittest = { version = "0.33", features = ["wgpu", "snapshot"] }
-
-[build-dependencies]
-usvg = "0.46"
-lyon_tessellation = "1.0"
+[lints]
+workspace = true

@@ -14,16 +14,18 @@ echo ""
 # Update workspace version in root Cargo.toml
 sed -i '' 's/^version = "[0-9.]*"/version = "'${ver_1}'"/' Cargo.toml
 echo "Updated Cargo.toml (workspace)"
-# Update armas/Cargo.toml: armas-icon version
+# Update armas-basic/Cargo.toml: armas-icon version
+sed -i '' 's/armas-icon = { version = "[0-9.]*"/armas-icon = { version = "'${ver_1}'"/' crates/armas-basic/Cargo.toml
+echo "Updated crates/armas-basic/Cargo.toml"
+# Update armas/Cargo.toml (umbrella): armas-basic, armas-audio, armas-icon versions
+sed -i '' 's/armas-basic = { version = "[0-9.]*"/armas-basic = { version = "'${ver_1}'"/' crates/armas/Cargo.toml
+sed -i '' 's/armas-audio = { version = "[0-9.]*"/armas-audio = { version = "'${ver_1}'"/' crates/armas/Cargo.toml
 sed -i '' 's/armas-icon = { version = "[0-9.]*"/armas-icon = { version = "'${ver_1}'"/' crates/armas/Cargo.toml
 echo "Updated crates/armas/Cargo.toml"
-# Update armas-audio/Cargo.toml: armas and armas-icon versions
-sed -i '' 's/armas = { version = "[0-9.]*"/armas = { version = "'${ver_1}'"/' crates/armas-audio/Cargo.toml
+# Update armas-audio/Cargo.toml: armas-basic and armas-icon versions
+sed -i '' 's/armas-basic = { version = "[0-9.]*"/armas-basic = { version = "'${ver_1}'"/' crates/armas-audio/Cargo.toml
 sed -i '' 's/armas-icon = { version = "[0-9.]*"/armas-icon = { version = "'${ver_1}'"/' crates/armas-audio/Cargo.toml
 echo "Updated crates/armas-audio/Cargo.toml"
-# Update armas-animated/Cargo.toml: armas version
-sed -i '' 's/armas = { version = "[0-9.]*"/armas = { version = "'${ver_1}'"/' crates/armas-animated/Cargo.toml
-echo "Updated crates/armas-animated/Cargo.toml"
 echo ""
 echo "All versions bumped to ${ver_1}"
 echo ""

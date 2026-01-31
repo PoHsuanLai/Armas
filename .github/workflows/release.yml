@@ -104,7 +104,7 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
           CHANGELOG=""
-          for crate_dir in crates/armas-icon crates/armas crates/armas-audio crates/armas-animated; do
+          for crate_dir in crates/armas-icon crates/armas-basic crates/armas-audio crates/armas; do
             CRATE_NAME=$(basename "$crate_dir")
             if [ -f "$crate_dir/CHANGELOG.md" ]; then
               SECTION=$(sed -n "/^## \[${VERSION}\]/,/^## \[/p" "$crate_dir/CHANGELOG.md" | sed '$d')

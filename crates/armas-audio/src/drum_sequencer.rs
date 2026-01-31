@@ -8,7 +8,7 @@
 //! - Optional viewport scrolling with momentum physics
 //! - Smooth inertia-based scrolling that continues after mouse release
 
-use armas::theme::Theme;
+use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 use std::collections::HashMap;
 
@@ -123,7 +123,7 @@ pub struct DrumSequencerResponse {
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # use armas::Theme;
+/// # use armas_basic::Theme;
 /// # use armas_audio::{DrumSequencer, DrumRow, DrumStep};
 /// # fn example(ui: &mut Ui, theme: &Theme) {
 /// let mut rows = vec![

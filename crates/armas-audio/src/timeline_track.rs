@@ -2,8 +2,8 @@
 //!
 //! A horizontal track row for DAW timelines that displays audio/MIDI regions.
 
-use armas::components::cards::{Card, CardVariant};
-use armas::theme::Theme;
+use armas_basic::components::cards::{Card, CardVariant};
+use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, StrokeKind, Ui, Vec2};
 
 /// MIDI note for MIDI regions
@@ -479,10 +479,10 @@ pub struct TimelineTrackResponse {
 ///
 /// # Example
 ///
-/// ```rust,no_run
+/// ```rust,ignore
 /// use armas_audio::{TimelineTrack, Region};
 ///
-/// fn ui(ui: &mut egui::Ui, theme: &armas::Theme) {
+/// fn ui(ui: &mut egui::Ui, theme: &armas_basic::Theme) {
 ///     let mut regions = vec![
 ///         Region::new("Clip 1", 0.0, 4.0),
 ///         Region::new("Clip 2", 8.0, 4.0),

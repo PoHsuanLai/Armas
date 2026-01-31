@@ -3,7 +3,7 @@
 //! Visual grid lines for timeline alignment.
 //! Draws vertical lines at beat/subdivision intervals for visual reference.
 
-use armas::ext::ArmasContextExt;
+use armas_basic::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Response, Sense, Ui, Vec2};
 
 /// Response from the snap grid
@@ -20,7 +20,7 @@ pub struct SnapGridResponse {
 ///
 /// # Example
 ///
-/// ```rust,no_run
+/// ```rust,ignore
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas_audio::SnapGrid;

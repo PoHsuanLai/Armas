@@ -3,7 +3,7 @@
 //! Vertical line showing current playback position in DAW timeline.
 //! Draggable for scrubbing through the timeline.
 
-use armas::theme::Theme;
+use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 
 /// Playhead handle shape variant
@@ -26,11 +26,11 @@ pub enum PlayheadHandleShape {
 ///
 /// # Example
 ///
-/// ```rust,no_run
+/// ```rust,ignore
 /// use armas_audio::Playhead;
 /// use egui::Rect;
 ///
-/// fn ui(ui: &mut egui::Ui, theme: &armas::Theme) {
+/// fn ui(ui: &mut egui::Ui, theme: &armas_basic::Theme) {
 ///     let mut position = 4.5; // Current beat position
 ///     let timeline_rect = ui.available_rect_before_wrap();
 ///

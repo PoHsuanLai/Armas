@@ -5,8 +5,8 @@
 //!
 //! Supports velocity-based dragging for fine control (hold Ctrl/Cmd).
 
-use armas::animation::{DragMode, VelocityDrag, VelocityDragConfig};
-use armas::theme::Theme;
+use armas_basic::animation::{DragMode, VelocityDrag, VelocityDragConfig};
+use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Response, Sense, Stroke, Ui, Vec2};
 
 /// Persisted drag state for knob

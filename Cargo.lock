@@ -224,9 +224,18 @@ dependencies = [
 name = "armas"
 version = "0.1.2"
 dependencies = [
+ "armas-audio",
+ "armas-basic",
+ "armas-icon",
+]
+
+[[package]]
+name = "armas-audio"
+version = "0.1.2"
+dependencies = [
+ "armas-basic",
  "armas-icon",
  "chrono",
- "eframe",
  "egui 0.33.3",
  "egui-theme",
  "egui_kittest",
@@ -237,20 +246,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "armas-animated"
+name = "armas-basic"
 version = "0.1.2"
 dependencies = [
- "armas",
- "egui 0.33.3",
-]
-
-[[package]]
-name = "armas-audio"
-version = "0.1.2"
-dependencies = [
- "armas",
  "armas-icon",
  "chrono",
+ "eframe",
  "egui 0.33.3",
  "egui-theme",
  "egui_kittest",
@@ -285,7 +286,6 @@ name = "armas-web"
 version = "0.1.2"
 dependencies = [
  "armas",
- "armas-animated",
  "armas-audio",
  "armas-icon",
  "armas-showcase-macros",

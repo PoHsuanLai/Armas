@@ -4,8 +4,8 @@
 //! Renders as a 3D cylinder visible through a recessed slot, with scrolling
 //! grip ridges that simulate rotation as the value changes.
 
-use armas::animation::{VelocityDrag, VelocityDragConfig};
-use armas::theme::Theme;
+use armas_basic::animation::{VelocityDrag, VelocityDragConfig};
+use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Type of wheel controller
@@ -65,7 +65,7 @@ struct ModWheelDragState {
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # use armas::Theme;
+/// # use armas_basic::Theme;
 /// # fn example(ui: &mut Ui, theme: &Theme) {
 /// use armas_audio::{ModWheel, WheelType};
 ///
@@ -190,7 +190,7 @@ impl<'a> ModWheel<'a> {
     }
 
     /// Show the mod wheel
-    pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> Response {
+    pub fn show(self, ui: &mut Ui, theme: &armas_basic::Theme) -> Response {
         // Load previous state if ID is set
         if let Some(id) = self.id {
             let state_id = id.with("mod_wheel_state");

@@ -3,7 +3,7 @@
 //! Unified component for timeline markers (cue points, tempo, time signature).
 //! Shows a vertical line with a badge displaying marker-specific information.
 
-use armas::theme::Theme;
+use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Timeline marker variant type
@@ -74,7 +74,7 @@ impl MarkerVariant {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas_audio::{TimelineMarker, MarkerVariant};
-/// use armas::ext::ArmasContextExt;
+/// use armas_basic::ext::ArmasContextExt;
 ///
 /// let theme = ui.ctx().armas_theme();
 /// let mut position = 16.0; // beats
@@ -233,7 +233,7 @@ impl<'a> TimelineMarker<'a> {
     }
 
     /// Show the timeline marker
-    pub fn show(mut self, ui: &mut Ui, theme: &armas::Theme) -> TimelineMarkerResponse {
+    pub fn show(mut self, ui: &mut Ui, theme: &armas_basic::Theme) -> TimelineMarkerResponse {
         let total_beats = self.measures * self.beats_per_measure;
         let timeline_width = total_beats as f32 * self.beat_width;
 

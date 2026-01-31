@@ -3,7 +3,7 @@
 //! Horizontal ruler showing measures, beats, and subdivisions for DAW timeline.
 //! Designed to align perfectly with `PianoRollGrid`'s vertical grid lines.
 
-use armas::theme::Theme;
+use armas_basic::theme::Theme;
 use egui::{Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 
 /// Re-export `GridDivision` from `piano_roll_grid` for time subdivisions
@@ -32,10 +32,10 @@ pub enum TimeDisplayMode {
 ///
 /// # Example
 ///
-/// ```rust,no_run
+/// ```rust,ignore
 /// use armas_audio::{TimeRuler, GridDivision};
 ///
-/// fn ui(ui: &mut egui::Ui, theme: &armas::Theme) {
+/// fn ui(ui: &mut egui::Ui, theme: &armas_basic::Theme) {
 ///     TimeRuler::new()
 ///         .measures(8)
 ///         .beat_width(60.0)

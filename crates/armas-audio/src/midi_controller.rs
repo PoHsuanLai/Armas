@@ -7,14 +7,14 @@ use crate::{
     MidiPad, MidiPadResponse, ModWheel, PadColorScheme, PadConfig, PadState, Piano,
     PianoOrientation, PianoResponse, StepSequencer, WheelType, WheelSize, XYPad,
 };
-use armas::components::cards::{Card, CardVariant};
+use armas_basic::components::cards::{Card, CardVariant};
 use egui::{Response, ScrollArea, Ui};
 use std::collections::{HashMap, HashSet};
 
 /// Draw a section panel with a subtle background
 fn section_panel(
     ui: &mut Ui,
-    theme: &armas::Theme,
+    theme: &armas_basic::Theme,
     add_contents: impl FnOnce(&mut Ui),
 ) {
     let corner_radius = f32::from(theme.spacing.corner_radius);
@@ -86,7 +86,7 @@ pub struct MidiControllerResponse {
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # use armas::Theme;
+/// # use armas_basic::Theme;
 /// # fn example(ui: &mut Ui, theme: &Theme) {
 /// use armas_audio::{MidiController, MidiControllerState};
 ///
@@ -133,7 +133,7 @@ impl<'a> MidiController<'a> {
     }
 
     /// Show the MIDI controller
-    pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> MidiControllerResponse {
+    pub fn show(self, ui: &mut Ui, theme: &armas_basic::Theme) -> MidiControllerResponse {
         let mut piano_response = None;
         let mut drum_pad_response = None;
         let mut mod_wheel_changed = false;

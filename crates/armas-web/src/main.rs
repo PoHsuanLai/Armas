@@ -150,10 +150,10 @@ impl ShowcaseApp {
         font_builder
             .add_family(
                 "Inter",
-                include_bytes!("../../armas/fonts/Inter-Regular.otf"),
-                Some(include_bytes!("../../armas/fonts/Inter-Medium.otf")),
-                Some(include_bytes!("../../armas/fonts/Inter-SemiBold.otf")),
-                Some(include_bytes!("../../armas/fonts/Inter-Bold.otf")),
+                include_bytes!("../../armas-basic/fonts/Inter-Regular.otf"),
+                Some(include_bytes!("../../armas-basic/fonts/Inter-Medium.otf")),
+                Some(include_bytes!("../../armas-basic/fonts/Inter-SemiBold.otf")),
+                Some(include_bytes!("../../armas-basic/fonts/Inter-Bold.otf")),
             )
             .set_default("Inter");
 

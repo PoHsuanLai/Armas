@@ -6,7 +6,7 @@
 //!
 //! Supports velocity-based dragging for fine control (hold Ctrl/Cmd).
 
-use armas::animation::{DragMode, VelocityDrag, VelocityDragConfig};
+use armas_basic::animation::{DragMode, VelocityDrag, VelocityDragConfig};
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Persisted drag state for fader
@@ -206,7 +206,7 @@ impl Fader {
     }
 
     /// Show the fader and return the response
-    pub fn show(mut self, ui: &mut Ui, theme: &armas::Theme) -> FaderResponse {
+    pub fn show(mut self, ui: &mut Ui, theme: &armas_basic::Theme) -> FaderResponse {
         let mut changed = false;
 
         // Generate stable ID for drag state
@@ -404,7 +404,7 @@ impl Fader {
         scale_x: f32,
         _scale_y: f32,
         scale: f32,
-        theme: &armas::Theme,
+        theme: &armas_basic::Theme,
     ) {
         let track_rect = fader_rect;
 
@@ -449,7 +449,7 @@ impl Fader {
         scale_x: f32,
         scale_y: f32,
         scale: f32,
-        theme: &armas::Theme,
+        theme: &armas_basic::Theme,
     ) {
         let thumb_height = THUMB_HEIGHT * scale_y;
         let thumb_width = THUMB_WIDTH * scale_x;
@@ -480,13 +480,13 @@ impl Fader {
         ui: &mut Ui,
         fader_rect: Rect,
         full_rect: Rect,
-        theme: &armas::Theme,
+        theme: &armas_basic::Theme,
     ) {
         self.draw_scale(ui, fader_rect, full_rect, theme);
     }
 
     /// Draw dB scale markings for fader
-    fn draw_scale(&self, ui: &mut Ui, fader_rect: Rect, full_rect: Rect, theme: &armas::Theme) {
+    fn draw_scale(&self, ui: &mut Ui, fader_rect: Rect, full_rect: Rect, theme: &armas_basic::Theme) {
         let painter = ui.painter();
         let text_color = theme.muted_foreground();
 
@@ -539,7 +539,7 @@ impl Fader {
         width: f32,
         height: f32,
         scale: f32,
-        theme: &armas::theme::Theme,
+        theme: &armas_basic::theme::Theme,
     ) {
         let rect = Rect::from_min_size(pos, Vec2::new(width, height));
 
@@ -729,7 +729,7 @@ impl FaderStrip {
     }
 
     /// Show the fader strip and return the new value
-    pub fn show(mut self, ui: &mut Ui, theme: &armas::Theme) -> (Response, f32) {
+    pub fn show(mut self, ui: &mut Ui, theme: &armas_basic::Theme) -> (Response, f32) {
         let desired_size = Vec2::new(self.width, self.height);
         let (rect, response) = ui.allocate_exact_size(desired_size, Sense::hover());
 

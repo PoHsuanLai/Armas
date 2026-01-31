@@ -4,9 +4,9 @@
 //! mute/solo, meter, and fader.
 
 use crate::{AudioMeter, Fader, Knob, Slot};
-use armas::components::basic::{Badge, Select, SelectOption};
-use armas::components::button::{Button, ButtonSize, ButtonVariant};
-use armas::components::cards::{Card, CardVariant};
+use armas_basic::components::basic::{Badge, Select, SelectOption};
+use armas_basic::components::button::{Button, ButtonSize, ButtonVariant};
+use armas_basic::components::cards::{Card, CardVariant};
 use egui::{Color32, Id, Response, Ui, Vec2};
 
 /// Mixer channel strip component
@@ -17,7 +17,7 @@ use egui::{Color32, Id, Response, Ui, Vec2};
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # use armas::Theme;
+/// # use armas_basic::Theme;
 /// # fn example(ui: &mut Ui, theme: &Theme) {
 /// use armas_audio::MixerStrip;
 ///
@@ -588,7 +588,7 @@ impl MixerStrip {
     fn render_sends_section(
         &self,
         ui: &mut Ui,
-        theme: &armas::Theme,
+        theme: &armas_basic::Theme,
         layout: &ResolvedLayout,
         button_width_full: f32,
     ) -> bool {
@@ -659,7 +659,7 @@ impl MixerStrip {
     fn render_routing_section(
         &mut self,
         ui: &mut Ui,
-        theme: &armas::Theme,
+        theme: &armas_basic::Theme,
         layout: &ResolvedLayout,
         button_width_full: f32,
     ) -> (bool, bool) {
@@ -705,7 +705,7 @@ impl MixerStrip {
     fn render_inserts(
         &self,
         ui: &mut Ui,
-        theme: &armas::Theme,
+        theme: &armas_basic::Theme,
         layout: &ResolvedLayout,
         button_width_full: f32,
     ) {
@@ -747,7 +747,7 @@ impl MixerStrip {
     fn render_pan_knob(
         &mut self,
         ui: &mut Ui,
-        theme: &armas::Theme,
+        theme: &armas_basic::Theme,
         knob_diameter: f32,
     ) {
         // Load pan state
@@ -778,7 +778,7 @@ impl MixerStrip {
     fn render_control_buttons(
         &mut self,
         ui: &mut Ui,
-        theme: &armas::Theme,
+        theme: &armas_basic::Theme,
         layout: &ResolvedLayout,
         button_width_full: f32,
     ) {
@@ -846,7 +846,7 @@ impl MixerStrip {
     fn render_meter_fader(
         &mut self,
         ui: &mut Ui,
-        theme: &armas::Theme,
+        theme: &armas_basic::Theme,
         meter_width: f32,
         fader_width: f32,
         meter_fader_height: f32,
@@ -871,7 +871,7 @@ impl MixerStrip {
     }
 
     /// Render gain display (dB value)
-    fn render_gain_display(&self, ui: &mut Ui, theme: &armas::Theme) {
+    fn render_gain_display(&self, ui: &mut Ui, theme: &armas_basic::Theme) {
         // Load current fader level from state
         let current_fader_level = {
             let state_id = self.id.with("fader").with("fader_state");
@@ -884,7 +884,7 @@ impl MixerStrip {
     }
 
     /// Show the mixer strip
-    pub fn show(&mut self, ui: &mut Ui, theme: &armas::Theme) -> MixerStripResponse {
+    pub fn show(&mut self, ui: &mut Ui, theme: &armas_basic::Theme) -> MixerStripResponse {
         let scale = self.scale;
 
         // Resolve display mode

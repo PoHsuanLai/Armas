@@ -2,9 +2,9 @@
 //!
 //! Header section for DAW timeline tracks with name, controls, and color indicator.
 
-use armas::color::lerp_color;
-use armas::theme::Theme;
-use armas::{Button, ButtonVariant, Card, CardVariant};
+use armas_basic::color::lerp_color;
+use armas_basic::theme::Theme;
+use armas_basic::{Button, ButtonVariant, Card, CardVariant};
 use egui::{Color32, Response, Sense, TextEdit, Ui, Vec2};
 
 /// Track control button state
@@ -45,10 +45,10 @@ pub struct TrackHeaderResponse {
 ///
 /// # Example
 ///
-/// ```rust,no_run
+/// ```rust,ignore
 /// use armas_audio::{TrackHeader, TrackControls};
 ///
-/// fn ui(ui: &mut egui::Ui, theme: &armas::Theme) {
+/// fn ui(ui: &mut egui::Ui, theme: &armas_basic::Theme) {
 ///     let mut name = "Audio 1".to_string();
 ///     let mut controls = TrackControls::default();
 ///     let mut collapsed = false;

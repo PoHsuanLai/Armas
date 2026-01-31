@@ -4,7 +4,7 @@
 //! Supports clicking to place notes, dragging to resize, and beautiful glassmorphic styling.
 
 use crate::{GridDivision, Piano, PianoOrientation};
-use armas::theme::Theme;
+use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Stroke, Ui, Vec2};
 
 /// Momentum scroll state stored in egui temp data

@@ -3,7 +3,7 @@
 //! DAW-style audio level meter with peak hold
 //! and customizable color gradients.
 
-use armas::color::{lerp_color, with_alpha, ColorStop, Gradient};
+use armas_basic::color::{lerp_color, with_alpha, ColorStop, Gradient};
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Response from the audio meter
@@ -46,7 +46,7 @@ pub enum ScalePosition {
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # use armas::Theme;
+/// # use armas_basic::Theme;
 /// # fn example(ui: &mut Ui, theme: &Theme) {
 /// use armas_audio::{AudioMeter, MeterStyle};
 ///
@@ -167,7 +167,7 @@ impl AudioMeter {
 
     /// Preset: Traditional VU meter colors (green -> yellow -> red)
     #[must_use]
-    pub fn vu_colors(mut self, theme: &armas::Theme) -> Self {
+    pub fn vu_colors(mut self, theme: &armas_basic::Theme) -> Self {
         self.gradient = Some(Gradient::new(vec![
             ColorStop::new(0.0, theme.chart_2()),
             ColorStop::new(0.7, theme.chart_3()),
@@ -247,7 +247,7 @@ impl AudioMeter {
     }
 
     /// Show the meter and return the response
-    pub fn show(mut self, ui: &mut Ui, theme: &armas::Theme) -> MeterResponse {
+    pub fn show(mut self, ui: &mut Ui, theme: &armas_basic::Theme) -> MeterResponse {
         // Width only controls the meter tube, scale is additional space
         let scale_width = if self.scale_position == ScalePosition::None {
             0.0
@@ -513,7 +513,7 @@ impl AudioMeter {
     /// Draw dB scale markings
     /// `full_rect`: the entire allocated space including scale area
     /// `meter_rect`: just the meter bar area (for positioning scale relative to meter)
-    fn draw_scale(&self, ui: &mut Ui, full_rect: Rect, meter_rect: Rect, theme: &armas::Theme) {
+    fn draw_scale(&self, ui: &mut Ui, full_rect: Rect, meter_rect: Rect, theme: &armas_basic::Theme) {
         let painter = ui.painter();
         let text_color = theme.muted_foreground();
 

@@ -3,7 +3,7 @@
 //! Grid-based drum pad controller with velocity-sensitive visual feedback.
 //! Designed for drum machines, samplers, and MPC-style controllers.
 
-use armas::theme::Theme;
+use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Visual style variant for MIDI pads
@@ -100,7 +100,7 @@ impl PadState {
 ///
 /// ```rust,no_run
 /// # use egui::Ui;
-/// # use armas::Theme;
+/// # use armas_basic::Theme;
 /// # fn example(ui: &mut Ui, theme: &Theme) {
 /// use armas_audio::{MidiPad, PadConfig, PadState, PadVariant};
 /// use std::collections::HashMap;
@@ -239,7 +239,7 @@ impl MidiPad {
     }
 
     /// Show the MIDI pad grid
-    pub fn show(self, ui: &mut Ui, theme: &armas::Theme) -> MidiPadResponse {
+    pub fn show(self, ui: &mut Ui, theme: &armas_basic::Theme) -> MidiPadResponse {
         // Calculate total size
         let total_width =
             (self.cols as f32).mul_add(self.pad_size, (self.cols - 1) as f32 * self.gap);

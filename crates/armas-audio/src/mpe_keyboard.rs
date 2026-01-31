@@ -12,7 +12,7 @@
 //! - Same glassmorphic key styling as the standard Piano component
 //! - Optional scrollable viewport with momentum physics
 
-use armas::theme::Theme;
+use armas_basic::theme::Theme;
 use egui::{self, Color32, CornerRadius, Pos2, Rect, Response, Sense, Vec2};
 use std::collections::HashMap;
 

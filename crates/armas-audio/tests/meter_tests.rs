@@ -1,6 +1,6 @@
 //! Tests for `AudioMeter` component using `egui_kittest`
 
-use armas::ArmasContextExt;
+use armas_basic::ArmasContextExt;
 use armas_audio::meter::{AudioMeter, MeterStyle, ScalePosition};
 use egui::Color32;
 use egui_kittest::Harness;

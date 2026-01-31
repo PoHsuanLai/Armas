@@ -43,29 +43,29 @@ else
 fi
 echo "armas-icon done"
 echo ""
-# 2. armas (depends on armas-icon)
-echo "=== Publishing armas ==="
+# 2. armas-basic (depends on armas-icon)
+echo "=== Publishing armas-basic ==="
 if [ "$([ "_${dry_run_2}" != "_dry-run" ]; echo $?)" != 0 ]; then
-    cargo publish --package armas --dry-run
+    cargo publish --package armas-basic --dry-run
     __status=$?
     if [ "${__status}" != 0 ]; then
-        echo "Dry run failed for armas"
+        echo "Dry run failed for armas-basic"
         exit 1
     fi
 else
-    cargo publish --package armas
+    cargo publish --package armas-basic
     __status=$?
     if [ "${__status}" != 0 ]; then
-        echo "Publish failed for armas"
+        echo "Publish failed for armas-basic"
         exit 1
     fi
     echo "Waiting 30s for crates.io indexing..."
     sleep 30
     __status=$?
 fi
-echo "armas done"
+echo "armas-basic done"
 echo ""
-# 3. armas-audio (depends on armas, armas-icon)
+# 3. armas-audio (depends on armas-basic, armas-icon)
 echo "=== Publishing armas-audio ==="
 if [ "$([ "_${dry_run_2}" != "_dry-run" ]; echo $?)" != 0 ]; then
     cargo publish --package armas-audio --dry-run
@@ -87,23 +87,23 @@ else
 fi
 echo "armas-audio done"
 echo ""
-# 4. armas-animated (depends on armas)
-echo "=== Publishing armas-animated ==="
+# 4. armas (umbrella, depends on armas-basic, armas-audio, armas-icon)
+echo "=== Publishing armas ==="
 if [ "$([ "_${dry_run_2}" != "_dry-run" ]; echo $?)" != 0 ]; then
-    cargo publish --package armas-animated --dry-run
+    cargo publish --package armas --dry-run
     __status=$?
     if [ "${__status}" != 0 ]; then
-        echo "Dry run failed for armas-animated"
+        echo "Dry run failed for armas"
         exit 1
     fi
 else
-    cargo publish --package armas-animated
+    cargo publish --package armas
     __status=$?
     if [ "${__status}" != 0 ]; then
-        echo "Publish failed for armas-animated"
+        echo "Publish failed for armas"
         exit 1
     fi
 fi
-echo "armas-animated done"
+echo "armas done"
 echo ""
 echo "All crates published for version ${cargo_version_3}"

@@ -61,74 +61,6 @@ SimpleButton::new("Large Simple")
     .show(ui, &theme);
 ```
 
-## Sketch Button
-
-Hand-drawn sketch style with rough edges.
-
-```demo
-SketchButton::new("Sketch")
-    .show(ui, &theme);
-```
-
-### Custom Size
-
-```demo
-SketchButton::new("Large Sketch")
-    .min_size(egui::vec2(130.0, 52.0))
-    .show(ui, &theme);
-```
-
-## Invert Button
-
-Button with color inversion effect on hover.
-
-```demo
-InvertButton::new("Invert")
-    .show(ui, &theme);
-```
-
-### Custom Size
-
-```demo
-InvertButton::new("Large Invert")
-    .min_size(egui::vec2(140.0, 50.0))
-    .show(ui, &theme);
-```
-
-## Figma Button
-
-Figma-inspired button style.
-
-```demo
-FigmaButton::new("Figma")
-    .show(ui, &theme);
-```
-
-### Custom Size
-
-```demo
-FigmaButton::new("Large Figma")
-    .min_size(egui::vec2(140.0, 50.0))
-    .show(ui, &theme);
-```
-
-## Spotify Button
-
-Spotify-inspired button with brand styling.
-
-```demo
-SpotifyButton::new("Spotify")
-    .show(ui, &theme);
-```
-
-### Custom Size
-
-```demo
-SpotifyButton::new("Large Spotify")
-    .min_size(egui::vec2(140.0, 50.0))
-    .show(ui, &theme);
-```
-
 ## All Variants Comparison
 
 ```demo
@@ -138,10 +70,6 @@ ui.vertical(|ui| {
     ShimmerButton::new("Shimmer Button").show(ui, &theme);
     BrutalButton::new("Brutal Button").show(ui, &theme);
     SimpleButton::new("Simple Button").show(ui, &theme);
-    SketchButton::new("Sketch Button").show(ui, &theme);
-    InvertButton::new("Invert Button").show(ui, &theme);
-    FigmaButton::new("Figma Button").show(ui, &theme);
-    SpotifyButton::new("Spotify Button").show(ui, &theme);
 });
 ```
 
@@ -163,10 +91,6 @@ All specialty buttons share a similar API:
 - **ShimmerButton**: 100x48
 - **BrutalButton**: 80x32
 - **SimpleButton**: 80x32
-- **SketchButton**: 80x32
-- **InvertButton**: 80x32
-- **FigmaButton**: 80x32
-- **SpotifyButton**: 80x32
 
 ## Usage Examples
 
@@ -226,4 +150,3 @@ ui.horizontal(|ui| {
 
 - `egui = "0.33"`
 - No additional theme dependencies
-- Minimum version: `armas 0.2.0`

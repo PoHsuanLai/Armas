@@ -6,7 +6,7 @@ use crate::{
     MarkerVariant, Playhead, Region, RegionVariant, SnapGrid, TimeRuler, TimelineMarker,
     TimelineRegion, TimelineTrack, TrackControls, TrackHeader,
 };
-use armas::theme::Theme;
+use armas_basic::theme::Theme;
 use egui::{pos2, vec2, Color32, Rect, Response, Sense, Ui, Vec2};
 
 // Track ID calculation constants
@@ -249,7 +249,7 @@ pub struct TimelineResponse {
 /// ```rust,no_run
 /// use armas_audio::{Timeline, Track, Region};
 ///
-/// fn ui(ui: &mut egui::Ui, theme: &armas::Theme) {
+/// fn ui(ui: &mut egui::Ui, theme: &armas_basic::Theme) {
 ///     let mut tracks = vec![
 ///         Track::new("Vocals", egui::Color32::from_rgb(255, 100, 100))
 ///             .region(Region::new("Verse", 0.0, 4.0))

@@ -14,18 +14,20 @@ main(args) {
     trust $ sed -i '' 's/^version = "[0-9.]*"/version = "'{ver}'"/' Cargo.toml $
     echo "Updated Cargo.toml (workspace)"
 
-    // Update armas/Cargo.toml: armas-icon version
+    // Update armas-basic/Cargo.toml: armas-icon version
+    trust $ sed -i '' 's/armas-icon = \{ version = "[0-9.]*"/armas-icon = \{ version = "'{ver}'"/' crates/armas-basic/Cargo.toml $
+    echo "Updated crates/armas-basic/Cargo.toml"
+
+    // Update armas/Cargo.toml (umbrella): armas-basic, armas-audio, armas-icon versions
+    trust $ sed -i '' 's/armas-basic = \{ version = "[0-9.]*"/armas-basic = \{ version = "'{ver}'"/' crates/armas/Cargo.toml $
+    trust $ sed -i '' 's/armas-audio = \{ version = "[0-9.]*"/armas-audio = \{ version = "'{ver}'"/' crates/armas/Cargo.toml $
     trust $ sed -i '' 's/armas-icon = \{ version = "[0-9.]*"/armas-icon = \{ version = "'{ver}'"/' crates/armas/Cargo.toml $
     echo "Updated crates/armas/Cargo.toml"
 
-    // Update armas-audio/Cargo.toml: armas and armas-icon versions
-    trust $ sed -i '' 's/armas = \{ version = "[0-9.]*"/armas = \{ version = "'{ver}'"/' crates/armas-audio/Cargo.toml $
+    // Update armas-audio/Cargo.toml: armas-basic and armas-icon versions
+    trust $ sed -i '' 's/armas-basic = \{ version = "[0-9.]*"/armas-basic = \{ version = "'{ver}'"/' crates/armas-audio/Cargo.toml $
     trust $ sed -i '' 's/armas-icon = \{ version = "[0-9.]*"/armas-icon = \{ version = "'{ver}'"/' crates/armas-audio/Cargo.toml $
     echo "Updated crates/armas-audio/Cargo.toml"
-
-    // Update armas-animated/Cargo.toml: armas version
-    trust $ sed -i '' 's/armas = \{ version = "[0-9.]*"/armas = \{ version = "'{ver}'"/' crates/armas-animated/Cargo.toml $
-    echo "Updated crates/armas-animated/Cargo.toml"
 
     echo ""
     echo "All versions bumped to {ver}"

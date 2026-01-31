@@ -12,7 +12,6 @@ path = "src/main.rs"
 
 [dependencies]
 armas = { path = "../armas" }
-armas-animated = { path = "../armas-animated" }
 armas-audio = { path = "../armas-audio" }
 armas-showcase-macros = { path = "../armas-showcase-macros" }
 eframe = { workspace = true, features = ["default", "wgpu"] }

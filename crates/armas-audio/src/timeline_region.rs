@@ -3,7 +3,7 @@
 //! Unified component for timeline regions with draggable handles.
 //! Supports multiple region types: Selection, Loop, and Punch.
 
-use armas::theme::Theme;
+use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 /// Timeline region variant type
@@ -58,7 +58,7 @@ impl RegionVariant {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas_audio::{TimelineRegion, RegionVariant};
-/// use armas::ext::ArmasContextExt;
+/// use armas_basic::ext::ArmasContextExt;
 ///
 /// let theme = ui.ctx().armas_theme();
 /// let mut start = 4.0;  // beats
@@ -237,7 +237,7 @@ impl<'a> TimelineRegion<'a> {
     }
 
     /// Show the timeline region
-    pub fn show(mut self, ui: &mut Ui, theme: &armas::Theme) -> TimelineRegionResponse {
+    pub fn show(mut self, ui: &mut Ui, theme: &armas_basic::Theme) -> TimelineRegionResponse {
         let total_beats = self.measures * self.beats_per_measure;
         let timeline_width = total_beats as f32 * self.beat_width;
 
