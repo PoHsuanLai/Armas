@@ -9,6 +9,7 @@ if [ "${__status}" != 0 ]; then
     exit 1
 fi
 echo "WASM build succeeded"
+cd ../..
 touch dist/.nojekyll
 __status=$?
 if [ "${__status}" != 0 ]; then
