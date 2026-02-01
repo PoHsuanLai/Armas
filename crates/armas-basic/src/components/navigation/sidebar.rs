@@ -75,7 +75,7 @@ impl Default for SidebarState {
 
 impl SidebarState {
     /// Create new sidebar state
-    #[must_use] 
+    #[must_use]
     pub fn new(open: bool) -> Self {
         let target = if open {
             SIDEBAR_WIDTH
@@ -116,19 +116,19 @@ impl SidebarState {
     }
 
     /// Check if sidebar is expanded
-    #[must_use] 
+    #[must_use]
     pub const fn is_open(&self) -> bool {
         self.open
     }
 
     /// Get current animated width
-    #[must_use] 
+    #[must_use]
     pub const fn width(&self) -> f32 {
         self.width_spring.value
     }
 
     /// Check if animation is still running
-    #[must_use] 
+    #[must_use]
     pub fn is_animating(&self) -> bool {
         !self.width_spring.is_settled(0.5, 0.5)
     }
@@ -189,7 +189,7 @@ pub struct SidebarItemBuilder<'a> {
 
 impl SidebarItemBuilder<'_> {
     /// Mark this item as active
-    #[must_use] 
+    #[must_use]
     pub const fn active(self, active: bool) -> Self {
         self.item.active = active;
         self
@@ -399,7 +399,7 @@ impl SidebarLayout {
 
 impl<'a> Sidebar<'a> {
     /// Create a new sidebar with shadcn defaults
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             external_state: None,
@@ -422,42 +422,42 @@ impl<'a> Sidebar<'a> {
     }
 
     /// Set whether the sidebar starts collapsed (uncontrolled mode only)
-    #[must_use] 
+    #[must_use]
     pub const fn collapsed(mut self, collapsed: bool) -> Self {
         self.initial_open = !collapsed;
         self
     }
 
     /// Set the collapsed width (default: 48px / 3rem)
-    #[must_use] 
+    #[must_use]
     pub const fn collapsed_width(mut self, width: f32) -> Self {
         self.collapsed_width = Some(width);
         self
     }
 
     /// Set the expanded width (default: 256px / 16rem)
-    #[must_use] 
+    #[must_use]
     pub const fn expanded_width(mut self, width: f32) -> Self {
         self.expanded_width = Some(width);
         self
     }
 
     /// Set the collapsible mode
-    #[must_use] 
+    #[must_use]
     pub const fn collapsible(mut self, mode: CollapsibleMode) -> Self {
         self.collapsible = mode;
         self
     }
 
     /// Set whether to show icons
-    #[must_use] 
+    #[must_use]
     pub const fn show_icons(mut self, show_icons: bool) -> Self {
         self.show_icons = show_icons;
         self
     }
 
     /// Set the visual variant
-    #[must_use] 
+    #[must_use]
     pub const fn variant(mut self, variant: SidebarVariant) -> Self {
         self.variant = variant;
         self
@@ -564,13 +564,19 @@ impl<'a> Sidebar<'a> {
             // Draw toggle button if collapsible
             let mut current_y = content_rect.top() + GROUP_PADDING;
             if self.collapsible != CollapsibleMode::None {
-                current_y =
-                    render_toggle_button(ui, &theme, &layout, state, current_y);
+                current_y = render_toggle_button(ui, &theme, &layout, state, current_y);
             }
 
             // Draw all items
-            (clicked_id, hovered_index) =
-                render_items(ui, &theme, self.show_icons, &layout, state, &items, current_y);
+            (clicked_id, hovered_index) = render_items(
+                ui,
+                &theme,
+                self.show_icons,
+                &layout,
+                state,
+                &items,
+                current_y,
+            );
         }
 
         // Request repaint if animating
@@ -761,7 +767,10 @@ fn render_items(
         };
 
         let item_rect = Rect::from_min_size(
-            Pos2::new(layout.content_rect.left() + ITEM_PADDING + indent, current_y),
+            Pos2::new(
+                layout.content_rect.left() + ITEM_PADDING + indent,
+                current_y,
+            ),
             Vec2::new(
                 layout.content_width - ITEM_PADDING * 2.0 - indent,
                 item_height,
@@ -843,8 +852,7 @@ fn render_items(
         };
 
         if layout.expansion_ratio > 0.3 {
-            let label_opacity =
-                ((layout.expansion_ratio - 0.3) / 0.7).clamp(0.0, 1.0);
+            let label_opacity = ((layout.expansion_ratio - 0.3) / 0.7).clamp(0.0, 1.0);
             let label_color = Color32::from_rgba_unmultiplied(
                 text_color.r(),
                 text_color.g(),
@@ -880,10 +888,7 @@ fn render_items(
                     .unwrap_or(false);
                 let chevron = if is_group_expanded { "▼" } else { "▶" };
                 painter.text(
-                    Pos2::new(
-                        item_rect.right() - ITEM_PADDING - 8.0,
-                        item_rect.center().y,
-                    ),
+                    Pos2::new(item_rect.right() - ITEM_PADDING - 8.0, item_rect.center().y),
                     egui::Align2::CENTER_CENTER,
                     chevron,
                     egui::FontId::proportional(10.0),
@@ -926,8 +931,9 @@ fn draw_group_label(
     widths: &AnimationWidths,
     label: &str,
 ) {
-    let expansion_ratio =
-        ((widths.current - widths.collapsed) / (widths.expanded - widths.collapsed)).clamp(0.0, 1.0);
+    let expansion_ratio = ((widths.current - widths.collapsed)
+        / (widths.expanded - widths.collapsed))
+        .clamp(0.0, 1.0);
 
     if expansion_ratio > 0.5 {
         let opacity = ((expansion_ratio - 0.5) / 0.5).clamp(0.0, 1.0);

@@ -79,7 +79,7 @@ pub struct ThreeValueSlider {
 
 impl ThreeValueSlider {
     /// Create a new three value slider
-    #[must_use] 
+    #[must_use]
     pub const fn new(range_min: f32, range_max: f32) -> Self {
         Self {
             id: None,
@@ -104,21 +104,21 @@ impl ThreeValueSlider {
     }
 
     /// Set the slider width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
     }
 
     /// Set the slider height
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Show or hide the value labels
-    #[must_use] 
+    #[must_use]
     pub const fn show_value(mut self, show: bool) -> Self {
         self.show_value = show;
         self
@@ -139,21 +139,21 @@ impl ThreeValueSlider {
     }
 
     /// Set a step value for snapping
-    #[must_use] 
+    #[must_use]
     pub const fn step(mut self, step: f32) -> Self {
         self.step = Some(step);
         self
     }
 
     /// Set minimum gap between adjacent thumbs
-    #[must_use] 
+    #[must_use]
     pub const fn min_gap(mut self, gap: f32) -> Self {
         self.min_gap = gap;
         self
     }
 
     /// Set the style for the center value thumb
-    #[must_use] 
+    #[must_use]
     pub const fn value_thumb_style(mut self, style: ValueThumbStyle) -> Self {
         self.value_thumb_style = style;
         self
@@ -230,13 +230,8 @@ impl ThreeValueSlider {
                 max_bound,
                 changed: &mut changed,
             };
-            let drag_state = self.handle_interaction(
-                ui,
-                &response,
-                drag_state_id,
-                &geometry,
-                &mut values,
-            );
+            let drag_state =
+                self.handle_interaction(ui, &response, drag_state_id, &geometry, &mut values);
 
             // Determine which thumb is hovered (for per-thumb hover effect)
             let hovered_thumb = if response.hovered() {
@@ -439,8 +434,10 @@ impl ThreeValueSlider {
                 }
             }
             DragTarget::Value => {
-                let clamped = new_value
-                    .clamp(*values.min_bound + self.min_gap, *values.max_bound - self.min_gap);
+                let clamped = new_value.clamp(
+                    *values.min_bound + self.min_gap,
+                    *values.max_bound - self.min_gap,
+                );
                 if (clamped - *values.value).abs() > 0.001 {
                     *values.value = clamped;
                     *values.changed = true;
@@ -491,7 +488,14 @@ impl ThreeValueSlider {
         painter.rect_filled(value_fill_rect, track_height / 2.0, theme.primary());
 
         // Draw bound thumbs (min and max)
-        self.draw_bound_thumbs(painter, response, geometry, drag_state, hovered_thumb, theme);
+        self.draw_bound_thumbs(
+            painter,
+            response,
+            geometry,
+            drag_state,
+            hovered_thumb,
+            theme,
+        );
 
         // Draw value thumb (center)
         let params = ThumbDrawParams {

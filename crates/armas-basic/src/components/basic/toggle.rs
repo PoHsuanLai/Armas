@@ -69,7 +69,7 @@ pub struct Toggle {
 
 impl Toggle {
     /// Create a new toggle
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             id: None,
@@ -98,7 +98,7 @@ impl Toggle {
     }
 
     /// Set the size
-    #[must_use] 
+    #[must_use]
     pub const fn size(mut self, size: ToggleSize) -> Self {
         self.size = size;
         self
@@ -394,13 +394,13 @@ pub struct ToggleGroupState {
 
 impl ToggleGroupState {
     /// Create a new toggle group state
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Check if a toggle is checked
-    #[must_use] 
+    #[must_use]
     pub fn is_checked(&self, id: &str) -> bool {
         self.checked.get(id).copied().unwrap_or(false)
     }
@@ -411,7 +411,7 @@ impl ToggleGroupState {
     }
 
     /// Get all toggle states
-    #[must_use] 
+    #[must_use]
     pub fn get_all(&self) -> Vec<(String, bool)> {
         self.checked.iter().map(|(k, v)| (k.clone(), *v)).collect()
     }

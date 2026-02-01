@@ -513,7 +513,13 @@ impl AudioMeter {
     /// Draw dB scale markings
     /// `full_rect`: the entire allocated space including scale area
     /// `meter_rect`: just the meter bar area (for positioning scale relative to meter)
-    fn draw_scale(&self, ui: &mut Ui, full_rect: Rect, meter_rect: Rect, theme: &armas_basic::Theme) {
+    fn draw_scale(
+        &self,
+        ui: &mut Ui,
+        full_rect: Rect,
+        meter_rect: Rect,
+        theme: &armas_basic::Theme,
+    ) {
         let painter = ui.painter();
         let text_color = theme.muted_foreground();
 

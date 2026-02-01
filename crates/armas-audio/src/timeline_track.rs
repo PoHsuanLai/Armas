@@ -604,10 +604,8 @@ impl TimelineTrack {
             .fill(self.background_color.unwrap_or(Color32::TRANSPARENT));
 
         let card_response = card.show(ui, theme, |ui| {
-            let (rect, response) = ui.allocate_exact_size(
-                Vec2::new(total_width, content_height),
-                Sense::click(),
-            );
+            let (rect, response) =
+                ui.allocate_exact_size(Vec2::new(total_width, content_height), Sense::click());
 
             if ui.is_rect_visible(rect) {
                 let painter = ui.painter();

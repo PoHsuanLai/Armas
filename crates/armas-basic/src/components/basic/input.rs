@@ -105,7 +105,7 @@ impl Input {
     }
 
     /// Set the validation state
-    #[must_use] 
+    #[must_use]
     pub const fn state(mut self, state: InputState) -> Self {
         self.state = state;
         self
@@ -147,42 +147,42 @@ impl Input {
     }
 
     /// Set width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set explicit height (overrides variant-based height)
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.custom_height = Some(height);
         self
     }
 
     /// Set as password field
-    #[must_use] 
+    #[must_use]
     pub const fn password(mut self, enabled: bool) -> Self {
         self.password = enabled;
         self
     }
 
     /// Set disabled state
-    #[must_use] 
+    #[must_use]
     pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
 
     /// Backwards compatibility aliases
-    #[must_use] 
+    #[must_use]
     pub const fn font_size(self, _size: f32) -> Self {
         // Ignored - use consistent sizing
         self
     }
 
     /// Set text color (currently ignored - uses theme colors)
-    #[must_use] 
+    #[must_use]
     pub const fn text_color(self, _color: Color32) -> Self {
         // Ignored - use theme colors
         self
@@ -430,7 +430,7 @@ pub struct SearchInput {
 
 impl SearchInput {
     /// Create a new search input
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self {
             id: None,

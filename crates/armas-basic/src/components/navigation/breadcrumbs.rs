@@ -52,13 +52,13 @@ pub struct Breadcrumbs {
 
 impl Breadcrumbs {
     /// Create a new breadcrumbs component
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self { spacing: ITEM_GAP }
     }
 
     /// Set spacing between items (default: 6.0)
-    #[must_use] 
+    #[must_use]
     pub const fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
         self
@@ -173,7 +173,7 @@ pub struct ItemBuilder<'a> {
 
 impl ItemBuilder<'_> {
     /// Mark this item as the current/active item (non-clickable)
-    #[must_use] 
+    #[must_use]
     pub const fn current(mut self) -> Self {
         self.is_current = true;
         self

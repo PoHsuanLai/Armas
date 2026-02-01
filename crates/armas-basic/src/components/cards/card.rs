@@ -75,7 +75,7 @@ pub struct Card<'a> {
 
 impl<'a> Card<'a> {
     /// Create a new card with default Filled variant
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             title: None,
@@ -94,56 +94,56 @@ impl<'a> Card<'a> {
     }
 
     /// Set the card title
-    #[must_use] 
+    #[must_use]
     pub const fn title(mut self, title: &'a str) -> Self {
         self.title = Some(title);
         self
     }
 
     /// Set custom height (forces exact height regardless of content)
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.height = Some(height);
         self
     }
 
     /// Set minimum height
-    #[must_use] 
+    #[must_use]
     pub const fn min_height(mut self, height: f32) -> Self {
         self.min_height = Some(height);
         self
     }
 
     /// Set maximum height
-    #[must_use] 
+    #[must_use]
     pub const fn max_height(mut self, height: f32) -> Self {
         self.max_height = Some(height);
         self
     }
 
     /// Set the Material Design 3 card variant
-    #[must_use] 
+    #[must_use]
     pub const fn variant(mut self, variant: CardVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Make the card clickable (adds hover effect)
-    #[must_use] 
+    #[must_use]
     pub const fn clickable(mut self, clickable: bool) -> Self {
         self.clickable = clickable;
         self
     }
 
     /// Set custom width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set custom inner margin (overrides theme default)
-    #[must_use] 
+    #[must_use]
     pub const fn inner_margin(mut self, margin: f32) -> Self {
         self.inner_margin = Some(margin);
         self
@@ -151,42 +151,42 @@ impl<'a> Card<'a> {
 
     /// Set custom asymmetric margin (overrides `inner_margin`)
     /// Use this for different padding on each side
-    #[must_use] 
+    #[must_use]
     pub const fn margin(mut self, margin: egui::Margin) -> Self {
         self.margin = Some(margin);
         self
     }
 
     /// Set custom fill/background color (overrides theme default)
-    #[must_use] 
+    #[must_use]
     pub const fn fill(mut self, color: Color32) -> Self {
         self.fill_color = Some(color);
         self
     }
 
     /// Set custom stroke/border color (overrides theme default)
-    #[must_use] 
+    #[must_use]
     pub const fn stroke(mut self, color: Color32) -> Self {
         self.stroke_color = Some(color);
         self
     }
 
     /// Set custom corner radius (overrides theme default)
-    #[must_use] 
+    #[must_use]
     pub const fn corner_radius(mut self, radius: f32) -> Self {
         self.corner_radius = Some(radius);
         self
     }
 
     /// Alias for `corner_radius` for backwards compatibility
-    #[must_use] 
+    #[must_use]
     pub const fn rounding(mut self, radius: f32) -> Self {
         self.corner_radius = Some(radius);
         self
     }
 
     /// Enable hover effect (same as clickable)
-    #[must_use] 
+    #[must_use]
     pub const fn hover_effect(mut self, enable: bool) -> Self {
         self.clickable = enable;
         self

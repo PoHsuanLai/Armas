@@ -71,7 +71,7 @@ impl SelectOption {
     }
 
     /// Set whether this option is disabled
-    #[must_use] 
+    #[must_use]
     pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -101,7 +101,7 @@ pub struct Select {
 
 impl Select {
     /// Create a new Select component with the given options
-    #[must_use] 
+    #[must_use]
     pub fn new(options: Vec<SelectOption>) -> Self {
         let filtered_indices: Vec<usize> = (0..options.len()).collect();
         Self {
@@ -159,35 +159,35 @@ impl Select {
     }
 
     /// Set the width of the select component
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set the trigger height (overrides default 36px)
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.custom_height = Some(height);
         self
     }
 
     /// Set the maximum height of the dropdown menu
-    #[must_use] 
+    #[must_use]
     pub const fn max_height(mut self, height: f32) -> Self {
         self.max_height = height;
         self
     }
 
     /// Enable or disable search functionality
-    #[must_use] 
+    #[must_use]
     pub const fn searchable(mut self, searchable: bool) -> Self {
         self.searchable = searchable;
         self
     }
 
     /// Get the currently selected value
-    #[must_use] 
+    #[must_use]
     pub fn selected_value(&self) -> Option<&str> {
         self.selected_value.as_deref()
     }
@@ -306,7 +306,14 @@ impl Select {
         (rect, response)
     }
 
-    fn paint_trigger(&self, painter: &Painter, rect: Rect, response: &Response, theme: &Theme, height: f32) {
+    fn paint_trigger(
+        &self,
+        painter: &Painter,
+        rect: Rect,
+        response: &Response,
+        theme: &Theme,
+        height: f32,
+    ) {
         let hovered = response.hovered();
         let is_focused = self.is_open;
         let corner_radius = CornerRadius::same(CORNER_RADIUS);
@@ -540,11 +547,16 @@ impl Select {
 
     fn item_font_size(&self) -> f32 {
         let h = self.item_height();
-        if h < 30.0 { (h * 0.55).max(8.0) } else { 14.0 }
+        if h < 30.0 {
+            (h * 0.55).max(8.0)
+        } else {
+            14.0
+        }
     }
 
     fn show_disabled_option(&self, ui: &mut Ui, option: &SelectOption, theme: &Theme, width: f32) {
-        let (rect, _) = ui.allocate_exact_size(vec2(width - 16.0, self.item_height()), Sense::hover());
+        let (rect, _) =
+            ui.allocate_exact_size(vec2(width - 16.0, self.item_height()), Sense::hover());
 
         if !ui.is_rect_visible(rect) {
             return;
@@ -645,7 +657,11 @@ impl Select {
                 text_color,
             );
         }
-        let label_x = if option.icon.is_some() { ICON_WIDTH } else { 0.0 };
+        let label_x = if option.icon.is_some() {
+            ICON_WIDTH
+        } else {
+            0.0
+        };
 
         // Label and description
         if let Some(description) = &option.description {
@@ -673,7 +689,6 @@ impl Select {
                 text_color,
             );
         }
-
     }
 
     // ========================================================================
@@ -821,7 +836,7 @@ pub struct SelectOptionBuilder<'a> {
 
 impl SelectOptionBuilder<'_> {
     /// Set an icon for this option
-    #[must_use] 
+    #[must_use]
     pub fn icon(self, icon: &str) -> Self {
         if let Some(opt) = self.options.get_mut(self.option_index) {
             opt.icon = Some(icon.to_string());
@@ -830,7 +845,7 @@ impl SelectOptionBuilder<'_> {
     }
 
     /// Set a description for this option
-    #[must_use] 
+    #[must_use]
     pub fn description(self, description: &str) -> Self {
         if let Some(opt) = self.options.get_mut(self.option_index) {
             opt.description = Some(description.to_string());
@@ -839,7 +854,7 @@ impl SelectOptionBuilder<'_> {
     }
 
     /// Set whether this option is disabled
-    #[must_use] 
+    #[must_use]
     pub fn disabled(self, disabled: bool) -> Self {
         if let Some(opt) = self.options.get_mut(self.option_index) {
             opt.disabled = disabled;

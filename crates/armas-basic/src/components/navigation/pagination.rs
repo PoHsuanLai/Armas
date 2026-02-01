@@ -58,7 +58,7 @@ impl Pagination {
     /// # Arguments
     /// * `initial_page` - Initial/current page (1-indexed)
     /// * `total_pages` - Total number of pages
-    #[must_use] 
+    #[must_use]
     pub fn new(initial_page: usize, total_pages: usize) -> Self {
         Self {
             id: None,
@@ -77,14 +77,14 @@ impl Pagination {
     }
 
     /// Set the number of sibling pages to show on each side of current page
-    #[must_use] 
+    #[must_use]
     pub const fn sibling_count(mut self, count: usize) -> Self {
         self.sibling_count = count;
         self
     }
 
     /// Show or hide previous/next buttons
-    #[must_use] 
+    #[must_use]
     pub const fn show_prev_next(mut self, show: bool) -> Self {
         self.show_prev_next = show;
         self

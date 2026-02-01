@@ -51,7 +51,7 @@ impl Default for BentoGrid {
 
 impl BentoGrid {
     /// Create a new bento grid layout
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             columns: 3,
@@ -63,35 +63,35 @@ impl BentoGrid {
     }
 
     /// Set the number of columns
-    #[must_use] 
+    #[must_use]
     pub fn columns(mut self, columns: usize) -> Self {
         self.columns = columns.max(1);
         self
     }
 
     /// Set the base cell size
-    #[must_use] 
+    #[must_use]
     pub const fn cell_size(mut self, size: f32) -> Self {
         self.cell_size = size.max(50.0);
         self
     }
 
     /// Set the gap between cells
-    #[must_use] 
+    #[must_use]
     pub const fn gap(mut self, gap: f32) -> Self {
         self.gap = gap;
         self
     }
 
     /// Set the corner radius for cells
-    #[must_use] 
+    #[must_use]
     pub const fn corner_radius(mut self, radius: f32) -> Self {
         self.corner_radius = radius;
         self
     }
 
     /// Set the padding around the grid
-    #[must_use] 
+    #[must_use]
     pub const fn padding(mut self, padding: f32) -> Self {
         self.padding = padding;
         self

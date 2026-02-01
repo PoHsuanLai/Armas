@@ -46,7 +46,7 @@ pub struct IconButton<'a> {
 
 impl<'a> IconButton<'a> {
     /// Create a new icon button
-    #[must_use] 
+    #[must_use]
     pub const fn new(icon_data: &'a IconData) -> Self {
         Self {
             icon_data,
@@ -60,42 +60,42 @@ impl<'a> IconButton<'a> {
     }
 
     /// Set the button variant
-    #[must_use] 
+    #[must_use]
     pub const fn variant(mut self, variant: ButtonVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set the icon size
-    #[must_use] 
+    #[must_use]
     pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set the padding around the icon
-    #[must_use] 
+    #[must_use]
     pub const fn padding(mut self, padding: f32) -> Self {
         self.padding = padding;
         self
     }
 
     /// Set enabled state
-    #[must_use] 
+    #[must_use]
     pub const fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
     /// Set custom icon color (overrides default)
-    #[must_use] 
+    #[must_use]
     pub const fn icon_color(mut self, color: Color32) -> Self {
         self.icon_color = Some(color);
         self
     }
 
     /// Set custom hover icon color (overrides default)
-    #[must_use] 
+    #[must_use]
     pub const fn hover_icon_color(mut self, color: Color32) -> Self {
         self.hover_icon_color = Some(color);
         self

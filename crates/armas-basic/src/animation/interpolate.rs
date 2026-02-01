@@ -108,14 +108,14 @@ pub fn lerp<T: Interpolate>(a: &T, b: &T, t: f32) -> T {
 }
 
 /// Smooth step interpolation (S-curve)
-#[must_use] 
+#[must_use]
 pub fn smooth_step(t: f32) -> f32 {
     let t = t.clamp(0.0, 1.0);
     t * t * (3.0 - 2.0 * t)
 }
 
 /// Smoother step interpolation (smoother S-curve)
-#[must_use] 
+#[must_use]
 pub fn smoother_step(t: f32) -> f32 {
     let t = t.clamp(0.0, 1.0);
     t * t * t * (t * (t * 6.0 - 15.0) + 10.0)

@@ -176,10 +176,7 @@ mod tests {
 
     #[test]
     fn test_snap_grid_builder() {
-        let grid = SnapGrid::new()
-            .beat_width(80.0)
-            .measures(32)
-            .subdivision(8);
+        let grid = SnapGrid::new().beat_width(80.0).measures(32).subdivision(8);
 
         assert_eq!(grid.beat_width, 80.0);
         assert_eq!(grid.measures, 32);

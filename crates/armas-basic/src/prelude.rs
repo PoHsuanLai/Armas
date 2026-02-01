@@ -37,9 +37,7 @@ pub use crate::components::{
 };
 
 // Display components
-pub use crate::components::{
-    Alert, Avatar, AvatarShape, Kbd, Separator, Skeleton, Spinner,
-};
+pub use crate::components::{Alert, Avatar, AvatarShape, Kbd, Separator, Skeleton, Spinner};
 
 // Navigation components
 pub use crate::components::{Breadcrumbs, Menu, Pagination, Tabs};

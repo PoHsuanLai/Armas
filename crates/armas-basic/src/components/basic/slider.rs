@@ -48,7 +48,7 @@ pub struct Slider {
 
 impl Slider {
     /// Create a new slider
-    #[must_use] 
+    #[must_use]
     pub const fn new(min: f32, max: f32) -> Self {
         Self {
             id: None,
@@ -74,21 +74,21 @@ impl Slider {
     }
 
     /// Set the slider width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
     }
 
     /// Set the slider height
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Show or hide the value label
-    #[must_use] 
+    #[must_use]
     pub const fn show_value(mut self, show: bool) -> Self {
         self.show_value = show;
         self
@@ -109,14 +109,14 @@ impl Slider {
     }
 
     /// Set a step value for snapping
-    #[must_use] 
+    #[must_use]
     pub const fn step(mut self, step: f32) -> Self {
         self.step = Some(step);
         self
     }
 
     /// Set a default value for double-click reset
-    #[must_use] 
+    #[must_use]
     pub const fn default_value(mut self, value: f32) -> Self {
         self.default_value = Some(value);
         self
@@ -127,7 +127,7 @@ impl Slider {
     /// When enabled, holding Ctrl/Cmd while dragging uses velocity mode
     /// where faster mouse movement = larger value changes.
     /// This allows for fine-grained control.
-    #[must_use] 
+    #[must_use]
     pub const fn velocity_mode(mut self, enabled: bool) -> Self {
         self.velocity_mode = enabled;
         self
@@ -136,7 +136,7 @@ impl Slider {
     /// Set the sensitivity for velocity mode (default: 1.0)
     ///
     /// Higher values = more responsive to mouse speed
-    #[must_use] 
+    #[must_use]
     pub const fn sensitivity(mut self, sensitivity: f64) -> Self {
         self.sensitivity = sensitivity;
         self

@@ -56,7 +56,7 @@ impl Default for Spinner {
 impl Spinner {
     /// Create a new spinner with default settings
     /// Color defaults to theme primary color
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self {
             size: SPINNER_SIZE,
@@ -69,28 +69,28 @@ impl Spinner {
     }
 
     /// Set the spinner size
-    #[must_use] 
+    #[must_use]
     pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set the spinner color (overrides theme)
-    #[must_use] 
+    #[must_use]
     pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set the rotation speed (in radians per second)
-    #[must_use] 
+    #[must_use]
     pub const fn speed(mut self, speed: f32) -> Self {
         self.speed = speed;
         self
     }
 
     /// Set the number of bars
-    #[must_use] 
+    #[must_use]
     pub fn bar_count(mut self, count: usize) -> Self {
         self.bar_count = count.max(3);
         self
@@ -192,7 +192,7 @@ pub struct Skeleton {
 impl Skeleton {
     /// Create a new skeleton loader
     /// Colors default to theme `surface_variant` and surface
-    #[must_use] 
+    #[must_use]
     pub const fn new(width: f32, height: f32) -> Self {
         Self {
             width,
@@ -207,35 +207,35 @@ impl Skeleton {
     }
 
     /// Set the base color (overrides theme)
-    #[must_use] 
+    #[must_use]
     pub const fn base_color(mut self, color: Color32) -> Self {
         self.base_color = Some(color);
         self
     }
 
     /// Set the highlight color (overrides theme)
-    #[must_use] 
+    #[must_use]
     pub const fn highlight_color(mut self, color: Color32) -> Self {
         self.highlight_color = Some(color);
         self
     }
 
     /// Set the animation speed
-    #[must_use] 
+    #[must_use]
     pub const fn speed(mut self, speed: f32) -> Self {
         self.speed = speed;
         self
     }
 
     /// Set the corner radius (overrides theme)
-    #[must_use] 
+    #[must_use]
     pub const fn corner_radius(mut self, radius: f32) -> Self {
         self.corner_radius = Some(radius);
         self
     }
 
     /// Set the shimmer width (as a fraction of total width)
-    #[must_use] 
+    #[must_use]
     pub const fn shimmer_width(mut self, width: f32) -> Self {
         self.shimmer_width = width.clamp(0.1, 1.0);
         self
@@ -311,4 +311,3 @@ impl Default for Skeleton {
         Self::new(200.0, 20.0)
     }
 }
-

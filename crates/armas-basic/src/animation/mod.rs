@@ -155,7 +155,7 @@ pub struct SpringAnimation {
 
 impl SpringAnimation {
     /// Create a new spring animation
-    #[must_use] 
+    #[must_use]
     pub const fn new(initial: f32, target: f32) -> Self {
         Self {
             value: initial,
@@ -167,7 +167,7 @@ impl SpringAnimation {
     }
 
     /// Set spring parameters
-    #[must_use] 
+    #[must_use]
     pub const fn params(mut self, stiffness: f32, damping: f32) -> Self {
         self.stiffness = stiffness;
         self.damping = damping;
@@ -196,7 +196,7 @@ impl SpringAnimation {
     }
 
     /// Check if the spring has approximately settled at the target
-    #[must_use] 
+    #[must_use]
     pub fn is_settled(&self, position_threshold: f32, velocity_threshold: f32) -> bool {
         let position_error = (self.value - self.target).abs();
         let velocity_mag = self.velocity.abs();

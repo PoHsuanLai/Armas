@@ -269,10 +269,8 @@ impl TrackHeader {
                     ui.vertical(|ui| {
                         // Track name - editable text
                         let card_bg = theme.muted();
-                        let used_width = horizontal_padding * 2.0
-                            + indent_pixels
-                            + color_bar_width
-                            + 6.0;
+                        let used_width =
+                            horizontal_padding * 2.0 + indent_pixels + color_bar_width + 6.0;
                         let available_width = (self.width - used_width).max(50.0);
 
                         let mut text_edit = TextEdit::singleline(name)

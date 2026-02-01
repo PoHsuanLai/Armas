@@ -71,7 +71,7 @@ pub struct Radio {
 
 impl Radio {
     /// Create a new radio button
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             id: None,
@@ -111,7 +111,7 @@ impl Radio {
     }
 
     /// Set disabled state
-    #[must_use] 
+    #[must_use]
     pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -255,10 +255,7 @@ impl RadioGroupBuilder<'_> {
         let builder = RadioOptionBuilder::new(value.to_string(), label.to_string());
 
         // Check if this option is currently selected
-        let is_selected = self
-            .selected_value
-            .as_ref()
-            .is_some_and(|v| v == value);
+        let is_selected = self.selected_value.as_ref().is_some_and(|v| v == value);
 
         // Create radio and show it
         let mut radio = Radio::new().label(&builder.label).disabled(self.disabled);
@@ -334,7 +331,7 @@ impl<'a> RadioGroup<'a> {
     }
 
     /// Set disabled state for all radios in the group
-    #[must_use] 
+    #[must_use]
     pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self

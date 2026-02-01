@@ -3,9 +3,9 @@
 //! Note: `MixerStrip` contains `AudioMeter` which has spring animation,
 //! so we use `harness.step()` instead of `harness.run()` for rendering tests.
 
-use armas_basic::ArmasContextExt;
-use armas_basic::components::basic::SelectOption;
 use armas_audio::mixer_strip::{Insert, MixerStrip, MixerStripMode, Route, Send};
+use armas_basic::components::basic::SelectOption;
+use armas_basic::ArmasContextExt;
 use egui::Color32;
 use egui_kittest::Harness;
 
@@ -264,7 +264,10 @@ fn test_mixer_strip_custom_input_route() {
         let theme = ui.ctx().armas_theme();
         let mut strip = MixerStrip::new("Channel 1").input_route(
             "mic_1",
-            vec![SelectOption::new("mic_1", "Mic 1"), SelectOption::new("line_1", "Line 1")],
+            vec![
+                SelectOption::new("mic_1", "Mic 1"),
+                SelectOption::new("line_1", "Line 1"),
+            ],
         );
         strip.show(ui, &theme);
     });
@@ -279,7 +282,10 @@ fn test_mixer_strip_custom_output_route() {
         let theme = ui.ctx().armas_theme();
         let mut strip = MixerStrip::new("Channel 1").output_route(
             "bus_a",
-            vec![SelectOption::new("main", "Main"), SelectOption::new("bus_a", "Bus A")],
+            vec![
+                SelectOption::new("main", "Main"),
+                SelectOption::new("bus_a", "Bus A"),
+            ],
         );
         strip.show(ui, &theme);
     });

@@ -73,7 +73,7 @@ impl Dialog {
     }
 
     /// Set the dialog to be open (for external control)
-    #[must_use] 
+    #[must_use]
     pub const fn open(mut self, is_open: bool) -> Self {
         self.is_open = Some(is_open);
         self
@@ -94,14 +94,14 @@ impl Dialog {
     }
 
     /// Set the dialog size
-    #[must_use] 
+    #[must_use]
     pub const fn size(mut self, size: DialogSize) -> Self {
         self.size = size;
         self
     }
 
     /// Set whether the dialog can be closed with ESC or backdrop click
-    #[must_use] 
+    #[must_use]
     pub const fn closable(mut self, closable: bool) -> Self {
         self.closable = closable;
         self

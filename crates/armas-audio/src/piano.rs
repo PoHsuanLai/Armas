@@ -181,13 +181,7 @@ impl Piano {
 
         let layout = self.compute_layout();
 
-        self.render_keys(
-            ui,
-            theme,
-            &layout,
-            &mut clicked_keys,
-            &mut released_keys,
-        );
+        self.render_keys(ui, theme, &layout, &mut clicked_keys, &mut released_keys);
 
         PianoResponse {
             clicked_keys,
@@ -745,10 +739,7 @@ mod tests {
 
     #[test]
     fn test_piano_builder() {
-        let piano = Piano::new()
-            .start_note(48)
-            .octaves(3)
-            .white_key_width(50.0);
+        let piano = Piano::new().start_note(48).octaves(3).white_key_width(50.0);
 
         assert_eq!(piano.start_note, 48);
         assert_eq!(piano.octaves, 3);

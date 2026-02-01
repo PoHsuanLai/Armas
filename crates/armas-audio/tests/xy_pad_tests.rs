@@ -1,7 +1,7 @@
 //! Tests for `XYPad` component using `egui_kittest`
 
-use armas_basic::ArmasContextExt;
 use armas_audio::xy_pad::{XYPad, XYPadVariant};
+use armas_basic::ArmasContextExt;
 use egui_kittest::Harness;
 
 /// Test that `XYPad` renders without panicking

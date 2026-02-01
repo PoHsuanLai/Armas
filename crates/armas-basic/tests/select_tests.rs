@@ -180,7 +180,8 @@ fn test_select_builder_api() {
     let mut select = Select::build(|s| {
         let _ = s.option("apple", "Apple").icon("🍎");
         let _ = s.option("banana", "Banana").icon("🍌");
-        let _ = s.option("cherry", "Cherry")
+        let _ = s
+            .option("cherry", "Cherry")
             .icon("🍒")
             .description("Sweet red fruit");
     })

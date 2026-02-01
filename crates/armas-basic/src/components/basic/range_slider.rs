@@ -49,7 +49,7 @@ pub struct RangeSlider {
 
 impl RangeSlider {
     /// Create a new range slider
-    #[must_use] 
+    #[must_use]
     pub const fn new(range_min: f32, range_max: f32) -> Self {
         Self {
             id: None,
@@ -74,21 +74,21 @@ impl RangeSlider {
     }
 
     /// Set the slider width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
     }
 
     /// Set the slider height
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Show or hide the value label
-    #[must_use] 
+    #[must_use]
     pub const fn show_value(mut self, show: bool) -> Self {
         self.show_value = show;
         self
@@ -109,21 +109,21 @@ impl RangeSlider {
     }
 
     /// Set a step value for snapping
-    #[must_use] 
+    #[must_use]
     pub const fn step(mut self, step: f32) -> Self {
         self.step = Some(step);
         self
     }
 
     /// Set minimum gap between min and max thumbs
-    #[must_use] 
+    #[must_use]
     pub const fn min_gap(mut self, gap: f32) -> Self {
         self.min_gap = gap;
         self
     }
 
     /// Allow dragging the filled region to move both thumbs together
-    #[must_use] 
+    #[must_use]
     pub const fn allow_range_drag(mut self, allow: bool) -> Self {
         self.allow_range_drag = allow;
         self
@@ -337,7 +337,12 @@ impl RangeSlider {
         // Handle drag start
         if response.drag_started() {
             if let Some(pos) = response.interact_pointer_pos() {
-                drag_state.target = self.determine_target(pos.x, geometry.min_x, geometry.max_x, geometry.thumb_radius);
+                drag_state.target = self.determine_target(
+                    pos.x,
+                    geometry.min_x,
+                    geometry.max_x,
+                    geometry.thumb_radius,
+                );
                 drag_state.drag_start_min = *min_value;
                 drag_state.drag_start_max = *max_value;
                 drag_state.drag_start_x = pos.x;
@@ -349,7 +354,12 @@ impl RangeSlider {
             if let Some(pos) = response.interact_pointer_pos() {
                 // Fallback if target wasn't set
                 if drag_state.target == DragTarget::None {
-                    drag_state.target = self.determine_target(pos.x, geometry.min_x, geometry.max_x, geometry.thumb_radius);
+                    drag_state.target = self.determine_target(
+                        pos.x,
+                        geometry.min_x,
+                        geometry.max_x,
+                        geometry.thumb_radius,
+                    );
                     drag_state.drag_start_min = *min_value;
                     drag_state.drag_start_max = *max_value;
                     drag_state.drag_start_x = pos.x;
@@ -501,7 +511,11 @@ impl RangeSlider {
             };
 
             painter.circle_filled(center, geometry.thumb_radius, handle_color);
-            painter.circle_stroke(center, geometry.thumb_radius, Stroke::new(1.0, theme.primary()));
+            painter.circle_stroke(
+                center,
+                geometry.thumb_radius,
+                Stroke::new(1.0, theme.primary()),
+            );
         }
     }
 }

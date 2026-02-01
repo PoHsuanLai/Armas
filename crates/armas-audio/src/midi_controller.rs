@@ -5,18 +5,14 @@
 
 use crate::{
     MidiPad, MidiPadResponse, ModWheel, PadColorScheme, PadConfig, PadState, Piano,
-    PianoOrientation, PianoResponse, StepSequencer, WheelType, WheelSize, XYPad,
+    PianoOrientation, PianoResponse, StepSequencer, WheelSize, WheelType, XYPad,
 };
 use armas_basic::components::cards::{Card, CardVariant};
 use egui::{Response, ScrollArea, Ui};
 use std::collections::{HashMap, HashSet};
 
 /// Draw a section panel with a subtle background
-fn section_panel(
-    ui: &mut Ui,
-    theme: &armas_basic::Theme,
-    add_contents: impl FnOnce(&mut Ui),
-) {
+fn section_panel(ui: &mut Ui, theme: &armas_basic::Theme, add_contents: impl FnOnce(&mut Ui)) {
     let corner_radius = f32::from(theme.spacing.corner_radius);
     egui::Frame::NONE
         .fill(theme.background().gamma_multiply(0.5))
@@ -176,13 +172,12 @@ impl<'a> MidiController<'a> {
                         });
 
                         // XY Pad
-                        let xy_response =
-                            XYPad::new(&mut self.state.xy_x, &mut self.state.xy_y)
-                                .size(180.0)
-                                .x_label("X")
-                                .y_label("Y")
-                                .id(xy_pad_id)
-                                .show(ui, theme);
+                        let xy_response = XYPad::new(&mut self.state.xy_x, &mut self.state.xy_y)
+                            .size(180.0)
+                            .x_label("X")
+                            .y_label("Y")
+                            .id(xy_pad_id)
+                            .show(ui, theme);
                         xy_pad_changed = xy_response.changed;
 
                         // Drum pads
@@ -191,10 +186,7 @@ impl<'a> MidiController<'a> {
                             let mut pad_configs = Vec::new();
 
                             let drum_notes = [
-                                36, 37, 38, 39,
-                                40, 41, 42, 43,
-                                44, 45, 46, 47,
-                                48, 49, 50, 51,
+                                36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
                             ];
 
                             for i in 0..pad_count {
@@ -234,9 +226,7 @@ impl<'a> MidiController<'a> {
                     ui.spacing_mut().item_spacing.y = theme.spacing.sm;
                     ui.add_space(theme.spacing.xs);
 
-                    self.state
-                        .sequencer_steps
-                        .resize(16, false);
+                    self.state.sequencer_steps.resize(16, false);
 
                     let seq_response = StepSequencer::new(&mut self.state.sequencer_steps)
                         .steps(16)

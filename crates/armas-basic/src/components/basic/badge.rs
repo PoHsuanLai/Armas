@@ -97,77 +97,77 @@ impl Badge {
     }
 
     /// Set badge variant
-    #[must_use] 
+    #[must_use]
     pub const fn variant(mut self, variant: BadgeVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set custom color (overrides variant colors)
-    #[must_use] 
+    #[must_use]
     pub const fn color(mut self, color: Color32) -> Self {
         self.custom_color = Some(color);
         self
     }
 
     /// Make this a destructive badge (shorthand)
-    #[must_use] 
+    #[must_use]
     pub const fn destructive(mut self) -> Self {
         self.variant = BadgeVariant::Destructive;
         self
     }
 
     /// Show dot indicator
-    #[must_use] 
+    #[must_use]
     pub const fn dot(mut self) -> Self {
         self.show_dot = true;
         self
     }
 
     /// Set text size
-    #[must_use] 
+    #[must_use]
     pub const fn size(mut self, size: f32) -> Self {
         self.custom_font_size = Some(size);
         self
     }
 
     /// Make badge removable
-    #[must_use] 
+    #[must_use]
     pub const fn removable(mut self) -> Self {
         self.removable = true;
         self
     }
 
     /// Set corner radius
-    #[must_use] 
+    #[must_use]
     pub const fn corner_radius(mut self, radius: f32) -> Self {
         self.custom_corner_radius = Some(radius);
         self
     }
 
     /// Set vertical padding
-    #[must_use] 
+    #[must_use]
     pub const fn vertical_padding(mut self, padding: f32) -> Self {
         self.custom_vertical_padding = Some(padding);
         self
     }
 
     /// Set explicit height (overrides computed height)
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.custom_height = Some(height);
         self
     }
 
     /// Set minimum width
-    #[must_use] 
+    #[must_use]
     pub const fn min_width(mut self, width: f32) -> Self {
         self.min_width = Some(width);
         self
     }
 
     /// Set selected state (for interactive badge use)
-    #[must_use] 
+    #[must_use]
     pub const fn selected(mut self, selected: bool) -> Self {
         self.is_selected = selected;
         self
@@ -193,7 +193,9 @@ impl Badge {
         let remove_space = if self.removable { 16.0 } else { 0.0 };
 
         let content_width = text_width + dot_space + remove_space + PADDING_X * 2.0;
-        let width = self.min_width.map_or(content_width, |min_w| content_width.max(min_w));
+        let width = self
+            .min_width
+            .map_or(content_width, |min_w| content_width.max(min_w));
         let height = self
             .custom_height
             .unwrap_or(font_size + padding_y * 2.0 + 4.0);
@@ -353,7 +355,7 @@ pub struct NotificationBadge {
 impl NotificationBadge {
     /// Create a new notification badge with count
     /// Color defaults to theme destructive color
-    #[must_use] 
+    #[must_use]
     pub const fn new(count: usize) -> Self {
         Self {
             count,
@@ -364,21 +366,21 @@ impl NotificationBadge {
     }
 
     /// Set maximum count display
-    #[must_use] 
+    #[must_use]
     pub const fn max_count(mut self, max: usize) -> Self {
         self.max_count = Some(max);
         self
     }
 
     /// Set badge color (overrides theme)
-    #[must_use] 
+    #[must_use]
     pub const fn color(mut self, color: Color32) -> Self {
         self.color = Some(color);
         self
     }
 
     /// Set badge size
-    #[must_use] 
+    #[must_use]
     pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self

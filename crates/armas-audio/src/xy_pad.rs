@@ -346,10 +346,7 @@ impl<'a> XYPad<'a> {
             .data_mut(|d| d.insert_temp(drag_state_id, drag_state));
 
         // Update trail state
-        let trail_id = self
-            .id
-            .unwrap_or(response.id)
-            .with("xy_pad_trail");
+        let trail_id = self.id.unwrap_or(response.id).with("xy_pad_trail");
         let mut trail_state: XYPadTrailState = ui
             .ctx()
             .data_mut(|d| d.get_temp(trail_id).unwrap_or_default());
@@ -394,7 +391,15 @@ impl<'a> XYPad<'a> {
             self.draw_handle(painter, theme, handle_pos, is_active);
 
             if is_active {
-                Self::draw_coordinate_readout(painter, theme, rect, handle_pos, *self.x, *self.y, self.handle_size);
+                Self::draw_coordinate_readout(
+                    painter,
+                    theme,
+                    rect,
+                    handle_pos,
+                    *self.x,
+                    *self.y,
+                    self.handle_size,
+                );
             }
 
             self.draw_labels(painter, theme, rect);
@@ -452,21 +457,33 @@ impl<'a> XYPad<'a> {
 
             let tx = rect.min.x + t * rect.width();
             painter.line_segment(
-                [Pos2::new(tx, rect.max.y), Pos2::new(tx, rect.max.y - tick_len)],
+                [
+                    Pos2::new(tx, rect.max.y),
+                    Pos2::new(tx, rect.max.y - tick_len),
+                ],
                 stroke,
             );
             painter.line_segment(
-                [Pos2::new(tx, rect.min.y), Pos2::new(tx, rect.min.y + tick_len)],
+                [
+                    Pos2::new(tx, rect.min.y),
+                    Pos2::new(tx, rect.min.y + tick_len),
+                ],
                 stroke,
             );
 
             let ty = rect.min.y + t * rect.height();
             painter.line_segment(
-                [Pos2::new(rect.min.x, ty), Pos2::new(rect.min.x + tick_len, ty)],
+                [
+                    Pos2::new(rect.min.x, ty),
+                    Pos2::new(rect.min.x + tick_len, ty),
+                ],
                 stroke,
             );
             painter.line_segment(
-                [Pos2::new(rect.max.x, ty), Pos2::new(rect.max.x - tick_len, ty)],
+                [
+                    Pos2::new(rect.max.x, ty),
+                    Pos2::new(rect.max.x - tick_len, ty),
+                ],
                 stroke,
             );
         }
@@ -509,21 +526,22 @@ impl<'a> XYPad<'a> {
     }
 
     /// Draw crosshair lines through the handle position
-    fn draw_crosshair_lines(
-        painter: &egui::Painter,
-        theme: &Theme,
-        rect: Rect,
-        handle_pos: Pos2,
-    ) {
+    fn draw_crosshair_lines(painter: &egui::Painter, theme: &Theme, rect: Rect, handle_pos: Pos2) {
         let color = theme.muted_foreground().gamma_multiply(0.3);
         let stroke = egui::Stroke::new(1.0, color);
 
         painter.line_segment(
-            [Pos2::new(rect.min.x, handle_pos.y), Pos2::new(rect.max.x, handle_pos.y)],
+            [
+                Pos2::new(rect.min.x, handle_pos.y),
+                Pos2::new(rect.max.x, handle_pos.y),
+            ],
             stroke,
         );
         painter.line_segment(
-            [Pos2::new(handle_pos.x, rect.min.y), Pos2::new(handle_pos.x, rect.max.y)],
+            [
+                Pos2::new(handle_pos.x, rect.min.y),
+                Pos2::new(handle_pos.x, rect.max.y),
+            ],
             stroke,
         );
     }

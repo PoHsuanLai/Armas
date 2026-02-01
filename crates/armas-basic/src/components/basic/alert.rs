@@ -111,42 +111,42 @@ impl Alert {
     }
 
     /// Set the variant
-    #[must_use] 
+    #[must_use]
     pub const fn variant(mut self, variant: AlertVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Make this a destructive alert
-    #[must_use] 
+    #[must_use]
     pub const fn destructive(mut self) -> Self {
         self.variant = AlertVariant::Destructive;
         self
     }
 
     /// Set custom color (overrides variant color)
-    #[must_use] 
+    #[must_use]
     pub const fn color(mut self, color: Color32) -> Self {
         self.custom_color = Some(color);
         self
     }
 
     /// Make the alert dismissible
-    #[must_use] 
+    #[must_use]
     pub const fn dismissible(mut self, dismissible: bool) -> Self {
         self.dismissible = dismissible;
         self
     }
 
     /// Set a fixed width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Show or hide the icon
-    #[must_use] 
+    #[must_use]
     pub const fn show_icon(mut self, show: bool) -> Self {
         self.show_icon = show;
         self

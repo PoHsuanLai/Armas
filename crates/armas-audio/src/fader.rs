@@ -486,7 +486,13 @@ impl Fader {
     }
 
     /// Draw dB scale markings for fader
-    fn draw_scale(&self, ui: &mut Ui, fader_rect: Rect, full_rect: Rect, theme: &armas_basic::Theme) {
+    fn draw_scale(
+        &self,
+        ui: &mut Ui,
+        fader_rect: Rect,
+        full_rect: Rect,
+        theme: &armas_basic::Theme,
+    ) {
         let painter = ui.painter();
         let text_color = theme.muted_foreground();
 

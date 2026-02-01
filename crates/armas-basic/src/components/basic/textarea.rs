@@ -76,7 +76,7 @@ impl Textarea {
     }
 
     /// Set the validation state
-    #[must_use] 
+    #[must_use]
     pub const fn state(mut self, state: InputState) -> Self {
         self.state = state;
         self
@@ -104,35 +104,35 @@ impl Textarea {
     }
 
     /// Set fixed width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set number of visible rows
-    #[must_use] 
+    #[must_use]
     pub fn rows(mut self, rows: usize) -> Self {
         self.rows = rows.max(1);
         self
     }
 
     /// Set maximum character count
-    #[must_use] 
+    #[must_use]
     pub const fn max_chars(mut self, max: usize) -> Self {
         self.max_chars = Some(max);
         self
     }
 
     /// Set whether the textarea is resizable
-    #[must_use] 
+    #[must_use]
     pub const fn resizable(mut self, resizable: bool) -> Self {
         self.resizable = resizable;
         self
     }
 
     /// Set disabled state
-    #[must_use] 
+    #[must_use]
     pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self

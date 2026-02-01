@@ -46,7 +46,7 @@ pub struct Date {
 
 impl Date {
     /// Create a new date
-    #[must_use] 
+    #[must_use]
     pub fn new(year: i32, month: u32, day: u32) -> Option<Self> {
         if !(1..=12).contains(&month) {
             return None;
@@ -59,7 +59,7 @@ impl Date {
     }
 
     /// Get today's date (using chrono)
-    #[must_use] 
+    #[must_use]
     pub fn today() -> Self {
         use chrono::Datelike;
         let now = chrono::Local::now().date_naive();
@@ -71,13 +71,13 @@ impl Date {
     }
 
     /// Check if a year is a leap year
-    #[must_use] 
+    #[must_use]
     pub const fn is_leap_year(year: i32) -> bool {
         (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
     }
 
     /// Get the number of days in a month
-    #[must_use] 
+    #[must_use]
     pub const fn days_in_month(year: i32, month: u32) -> u32 {
         match month {
             1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
@@ -114,19 +114,19 @@ impl Date {
     }
 
     /// Format as human-readable (e.g., "January 15, 2024")
-    #[must_use] 
+    #[must_use]
     pub fn format_display(&self) -> String {
         format!("{} {}, {}", self.month_name(), self.day, self.year)
     }
 
     /// Format as YYYY-MM-DD
-    #[must_use] 
+    #[must_use]
     pub fn format(&self) -> String {
         format!("{:04}-{:02}-{:02}", self.year, self.month, self.day)
     }
 
     /// Parse from YYYY-MM-DD format
-    #[must_use] 
+    #[must_use]
     pub fn parse(s: &str) -> Option<Self> {
         let parts: Vec<&str> = s.split('-').collect();
         if parts.len() != 3 {
@@ -141,7 +141,7 @@ impl Date {
     }
 
     /// Get month name
-    #[must_use] 
+    #[must_use]
     pub const fn month_name(&self) -> &'static str {
         match self.month {
             1 => "January",
@@ -220,14 +220,14 @@ impl DatePicker {
     }
 
     /// Show Today/Clear footer buttons
-    #[must_use] 
+    #[must_use]
     pub const fn show_footer(mut self, show: bool) -> Self {
         self.show_footer = show;
         self
     }
 
     /// Set trigger button width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
@@ -279,11 +279,19 @@ impl DatePicker {
         }
 
         // Trigger button
-        let trigger_rect =
-            Self::render_trigger(ui, theme, selected_date.as_ref(), &self.placeholder, self.width);
+        let trigger_rect = Self::render_trigger(
+            ui,
+            theme,
+            selected_date.as_ref(),
+            &self.placeholder,
+            self.width,
+        );
 
         // Toggle popover on click
-        if ui.interact(trigger_rect, self.id.with("trigger"), Sense::click()).clicked() {
+        if ui
+            .interact(trigger_rect, self.id.with("trigger"), Sense::click())
+            .clicked()
+        {
             is_open = !is_open;
             if is_open {
                 if let Some(date) = selected_date {
@@ -440,10 +448,7 @@ impl DatePicker {
             );
 
             // Text (date or placeholder)
-            let text = selected_date.map_or_else(
-                || placeholder.to_string(),
-                Date::format_display,
-            );
+            let text = selected_date.map_or_else(|| placeholder.to_string(), Date::format_display);
 
             let text_color = if has_value {
                 theme.foreground()
@@ -711,8 +716,7 @@ fn render_footer(ui: &mut Ui, theme: &Theme, action: &mut CalendarAction) {
 
         // Today button (ghost variant)
         let today_btn_size = vec2(60.0, 32.0);
-        let (today_rect, today_response) =
-            ui.allocate_exact_size(today_btn_size, Sense::click());
+        let (today_rect, today_response) = ui.allocate_exact_size(today_btn_size, Sense::click());
 
         if ui.is_rect_visible(today_rect) {
             if today_response.hovered() {
@@ -738,8 +742,7 @@ fn render_footer(ui: &mut Ui, theme: &Theme, action: &mut CalendarAction) {
 
         // Clear button (ghost destructive variant)
         let clear_btn_size = vec2(60.0, 32.0);
-        let (clear_rect, clear_response) =
-            ui.allocate_exact_size(clear_btn_size, Sense::click());
+        let (clear_rect, clear_response) = ui.allocate_exact_size(clear_btn_size, Sense::click());
 
         if ui.is_rect_visible(clear_rect) {
             if clear_response.hovered() {

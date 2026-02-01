@@ -49,13 +49,13 @@ pub struct FontWeight;
 
 impl FontWeight {
     /// Get `FontId` for regular weight (400)
-    #[must_use] 
+    #[must_use]
     pub fn regular(family_name: &str, size: f32) -> FontId {
         FontId::new(size, FontFamily::Name(family_name.into()))
     }
 
     /// Get `FontId` for medium weight (500)
-    #[must_use] 
+    #[must_use]
     pub fn medium(family_name: &str, size: f32) -> FontId {
         FontId::new(
             size,
@@ -64,7 +64,7 @@ impl FontWeight {
     }
 
     /// Get `FontId` for semibold weight (600)
-    #[must_use] 
+    #[must_use]
     pub fn semibold(family_name: &str, size: f32) -> FontId {
         FontId::new(
             size,
@@ -73,12 +73,9 @@ impl FontWeight {
     }
 
     /// Get `FontId` for bold weight (700)
-    #[must_use] 
+    #[must_use]
     pub fn bold(family_name: &str, size: f32) -> FontId {
-        FontId::new(
-            size,
-            FontFamily::Name(format!("{family_name}Bold").into()),
-        )
+        FontId::new(size, FontFamily::Name(format!("{family_name}Bold").into()))
     }
 }
 
@@ -117,7 +114,7 @@ pub struct FontFamilyBuilder {
 
 impl FontFamilyBuilder {
     /// Create a new font family builder
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self {
             font_data: HashMap::new(),
@@ -151,10 +148,8 @@ impl FontFamilyBuilder {
         );
 
         // Create regular family
-        self.families.insert(
-            FontFamily::Name(family_name.into()),
-            vec![regular_key],
-        );
+        self.families
+            .insert(FontFamily::Name(family_name.into()), vec![regular_key]);
 
         // Load medium weight if provided
         if let Some(medium_data) = medium {
@@ -242,7 +237,7 @@ impl FontFamilyBuilder {
     /// Build `FontDefinitions` without installing to context
     ///
     /// Useful if you want to customize further before applying.
-    #[must_use] 
+    #[must_use]
     pub fn build(self) -> FontDefinitions {
         let mut fonts = FontDefinitions::default();
 

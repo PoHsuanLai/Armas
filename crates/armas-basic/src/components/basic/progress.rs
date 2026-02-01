@@ -48,7 +48,7 @@ impl Progress {
     ///
     /// # Arguments
     /// * `value` - Progress value from 0 to 100
-    #[must_use] 
+    #[must_use]
     pub const fn new(value: f32) -> Self {
         Self {
             value: value.clamp(0.0, 100.0),
@@ -58,14 +58,14 @@ impl Progress {
     }
 
     /// Set the width of the progress bar
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set the height of the progress bar
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
@@ -150,7 +150,7 @@ impl CircularProgressBar {
     ///
     /// # Arguments
     /// * `value` - Progress value from 0 to 100
-    #[must_use] 
+    #[must_use]
     pub const fn new(value: f32) -> Self {
         Self {
             value: Some(value.clamp(0.0, 100.0)),
@@ -162,7 +162,7 @@ impl CircularProgressBar {
     }
 
     /// Create an indeterminate circular progress (loading spinner)
-    #[must_use] 
+    #[must_use]
     pub const fn indeterminate() -> Self {
         Self {
             value: None,
@@ -174,21 +174,21 @@ impl CircularProgressBar {
     }
 
     /// Set circle size (diameter)
-    #[must_use] 
+    #[must_use]
     pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set stroke width
-    #[must_use] 
+    #[must_use]
     pub const fn stroke_width(mut self, width: f32) -> Self {
         self.stroke_width = width;
         self
     }
 
     /// Show percentage in center (only for determinate mode)
-    #[must_use] 
+    #[must_use]
     pub const fn show_percentage(mut self, show: bool) -> Self {
         self.show_percentage = show;
         self
@@ -280,4 +280,3 @@ impl CircularProgressBar {
         }
     }
 }
-

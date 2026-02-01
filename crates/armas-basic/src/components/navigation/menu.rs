@@ -272,7 +272,7 @@ impl MenuItemBuilder<'_> {
     }
 
     /// Set disabled state
-    #[must_use] 
+    #[must_use]
     pub fn disabled(mut self, disabled: bool) -> Self {
         if let Some(item) = self.current() {
             item.disabled = disabled;
@@ -281,7 +281,7 @@ impl MenuItemBuilder<'_> {
     }
 
     /// Set inset (extra left padding for alignment with icon items)
-    #[must_use] 
+    #[must_use]
     pub fn inset(mut self) -> Self {
         if let Some(item) = self.current() {
             item.inset = true;
@@ -290,7 +290,7 @@ impl MenuItemBuilder<'_> {
     }
 
     /// Make this a destructive item (red text, for delete actions)
-    #[must_use] 
+    #[must_use]
     pub fn destructive(mut self) -> Self {
         if let Some(item) = self.current() {
             if let MenuItemKind::Item { destructive } = &mut item.kind {
@@ -322,7 +322,7 @@ pub struct MenuResponse {
 
 impl MenuResponse {
     /// Check if a specific item index was selected
-    #[must_use] 
+    #[must_use]
     pub fn is_selected(&self, index: usize) -> bool {
         self.selected == Some(index)
     }
@@ -357,21 +357,21 @@ impl Menu {
     }
 
     /// Set the menu to be open (for external control)
-    #[must_use] 
+    #[must_use]
     pub const fn open(mut self, is_open: bool) -> Self {
         self.is_open = Some(is_open);
         self
     }
 
     /// Set the menu position
-    #[must_use] 
+    #[must_use]
     pub const fn position(mut self, position: PopoverPosition) -> Self {
         self.popover = self.popover.position(position);
         self
     }
 
     /// Set the menu width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = width.max(CONTENT_MIN_WIDTH);
         self
@@ -921,10 +921,7 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
     }
 }
 
-fn add_item_to_builder(
-    builder: &mut MenuBuilder,
-    item: &MenuItemData,
-) {
+fn add_item_to_builder(builder: &mut MenuBuilder, item: &MenuItemData) {
     match &item.kind {
         MenuItemKind::Separator => builder.separator(),
         MenuItemKind::Item { destructive } => {
@@ -1122,14 +1119,14 @@ impl MenuItem {
     }
 
     /// Set disabled state
-    #[must_use] 
+    #[must_use]
     pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
 
     /// Make this a destructive item
-    #[must_use] 
+    #[must_use]
     pub const fn destructive(mut self) -> Self {
         self.destructive = true;
         self

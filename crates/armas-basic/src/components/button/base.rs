@@ -95,42 +95,42 @@ impl Button {
     }
 
     /// Set the button variant
-    #[must_use] 
+    #[must_use]
     pub const fn variant(mut self, variant: ButtonVariant) -> Self {
         self.variant = variant;
         self
     }
 
     /// Set the button size
-    #[must_use] 
+    #[must_use]
     pub const fn size(mut self, size: ButtonSize) -> Self {
         self.size = size;
         self
     }
 
     /// Set enabled state
-    #[must_use] 
+    #[must_use]
     pub const fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
         self
     }
 
     /// Make button take full width of container
-    #[must_use] 
+    #[must_use]
     pub const fn full_width(mut self, full: bool) -> Self {
         self.full_width = full;
         self
     }
 
     /// Set minimum width for the button
-    #[must_use] 
+    #[must_use]
     pub const fn min_width(mut self, width: f32) -> Self {
         self.min_width = Some(width);
         self
     }
 
     /// Set explicit height (overrides size-based height)
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.custom_height = Some(height);
         self

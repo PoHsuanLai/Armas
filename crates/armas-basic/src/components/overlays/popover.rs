@@ -120,7 +120,7 @@ impl Popover {
     }
 
     /// Set the popover to be open (for external control)
-    #[must_use] 
+    #[must_use]
     pub const fn open(mut self, is_open: bool) -> Self {
         self.external_is_open = Some(is_open);
         self
@@ -132,49 +132,49 @@ impl Popover {
     }
 
     /// Set the popover position relative to anchor
-    #[must_use] 
+    #[must_use]
     pub const fn position(mut self, position: PopoverPosition) -> Self {
         self.position = position;
         self
     }
 
     /// Set the popover visual style
-    #[must_use] 
+    #[must_use]
     pub const fn style(mut self, style: PopoverStyle) -> Self {
         self.style = style;
         self
     }
 
     /// Set the popover color theme
-    #[must_use] 
+    #[must_use]
     pub const fn color(mut self, color: PopoverColor) -> Self {
         self.color = color;
         self
     }
 
     /// Set the offset from the anchor
-    #[must_use] 
+    #[must_use]
     pub const fn offset(mut self, offset: Vec2) -> Self {
         self.offset = offset;
         self
     }
 
     /// Set a fixed width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self
     }
 
     /// Set maximum width
-    #[must_use] 
+    #[must_use]
     pub const fn max_width(mut self, max_width: f32) -> Self {
         self.max_width = max_width;
         self
     }
 
     /// Set custom inner padding (overrides style default)
-    #[must_use] 
+    #[must_use]
     pub const fn padding(mut self, padding: f32) -> Self {
         self.padding = Some(padding);
         self
@@ -214,13 +214,7 @@ impl Popover {
         };
 
         // Render the popover
-        let area_response = self.render_popover(
-            ctx,
-            theme,
-            popover_pos,
-            &style,
-            content,
-        );
+        let area_response = self.render_popover(ctx, theme, popover_pos, &style, content);
 
         // Handle click outside
         response = self.check_click_outside(ctx, &area_response.response.rect, anchor_rect);
@@ -296,7 +290,11 @@ impl Popover {
 
     fn get_style_params(&self, theme: &Theme) -> (f32, f32, f32) {
         let (stroke_width, rounding, default_padding) = match self.style {
-            PopoverStyle::Default => (1.0, f32::from(theme.spacing.corner_radius), theme.spacing.md),
+            PopoverStyle::Default => (
+                1.0,
+                f32::from(theme.spacing.corner_radius),
+                theme.spacing.md,
+            ),
             PopoverStyle::Elevated => (
                 0.5,
                 f32::from(theme.spacing.corner_radius_large),

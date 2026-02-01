@@ -187,7 +187,9 @@ impl ResolvedLayout {
                 knob_diameter: 22.0 * scale,
                 meter_fader_height: 120.0 * scale,
             },
-            MixerStripMode::Auto => unreachable!("Auto should be resolved before calling from_mode"),
+            MixerStripMode::Auto => {
+                unreachable!("Auto should be resolved before calling from_mode")
+            }
         }
     }
 }
@@ -744,12 +746,7 @@ impl MixerStrip {
     }
 
     /// Render pan knob (without label)
-    fn render_pan_knob(
-        &mut self,
-        ui: &mut Ui,
-        theme: &armas_basic::Theme,
-        knob_diameter: f32,
-    ) {
+    fn render_pan_knob(&mut self, ui: &mut Ui, theme: &armas_basic::Theme, knob_diameter: f32) {
         // Load pan state
         let pan_state_id = self.id.with("pan_state");
         let current_pan = ui
@@ -782,8 +779,7 @@ impl MixerStrip {
         layout: &ResolvedLayout,
         button_width_full: f32,
     ) {
-        let button_width_grid =
-            (button_width_full - 1.0) / 2.0;
+        let button_width_grid = (button_width_full - 1.0) / 2.0;
 
         // First row: Mute and Solo
         ui.horizontal(|ui| {
@@ -944,8 +940,12 @@ impl MixerStrip {
                         .corner_radius(section_radius)
                         .inner_margin(section_margin)
                         .show(ui, |ui| {
-                            send_add_clicked =
-                                self.render_sends_section(ui, theme, &layout, section_content_width);
+                            send_add_clicked = self.render_sends_section(
+                                ui,
+                                theme,
+                                &layout,
+                                section_content_width,
+                            );
                         });
 
                     // Routing selects
@@ -954,8 +954,12 @@ impl MixerStrip {
                         .corner_radius(section_radius)
                         .inner_margin(section_margin)
                         .show(ui, |ui| {
-                            let (input_changed, output_changed) =
-                                self.render_routing_section(ui, theme, &layout, section_content_width);
+                            let (input_changed, output_changed) = self.render_routing_section(
+                                ui,
+                                theme,
+                                &layout,
+                                section_content_width,
+                            );
                             input_route_changed = input_changed;
                             output_route_changed = output_changed;
                         });
@@ -975,10 +979,7 @@ impl MixerStrip {
 
                     // Pan label
                     if layout.show_pan_label {
-                        ui.colored_label(
-                            theme.muted_foreground(),
-                            Self::format_pan(self.pan),
-                        );
+                        ui.colored_label(theme.muted_foreground(), Self::format_pan(self.pan));
                     }
 
                     // M/S/R/I buttons

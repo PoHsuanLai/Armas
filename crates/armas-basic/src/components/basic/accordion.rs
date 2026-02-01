@@ -55,7 +55,7 @@ impl Accordion {
     }
 
     /// Allow multiple sections to be open simultaneously
-    #[must_use] 
+    #[must_use]
     pub const fn allow_multiple(mut self, allow: bool) -> Self {
         self.allow_multiple = allow;
         self

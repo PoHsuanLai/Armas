@@ -54,7 +54,7 @@ pub enum EasingFunction {
 
 impl EasingFunction {
     /// Apply the easing function to a time value (0.0 to 1.0)
-    #[must_use] 
+    #[must_use]
     pub fn apply(&self, t: f32) -> f32 {
         let t = t.clamp(0.0, 1.0);
 

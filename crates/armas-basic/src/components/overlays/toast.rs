@@ -194,7 +194,7 @@ pub struct ToastManager {
 
 impl ToastManager {
     /// Create a new toast manager
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             toasts: VecDeque::new(),
@@ -204,14 +204,14 @@ impl ToastManager {
     }
 
     /// Set the position where toasts appear
-    #[must_use] 
+    #[must_use]
     pub const fn position(mut self, position: ToastPosition) -> Self {
         self.position = position;
         self
     }
 
     /// Set the maximum number of toasts to show at once
-    #[must_use] 
+    #[must_use]
     pub const fn max_toasts(mut self, max: usize) -> Self {
         self.max_toasts = max;
         self
@@ -460,7 +460,7 @@ impl ToastBuilder<'_> {
     }
 
     /// Set the toast variant
-    #[must_use] 
+    #[must_use]
     pub fn variant(mut self, variant: ToastVariant) -> Self {
         if let Some(toast) = &mut self.toast {
             toast.variant = variant;
@@ -471,7 +471,7 @@ impl ToastBuilder<'_> {
     }
 
     /// Make this a destructive toast
-    #[must_use] 
+    #[must_use]
     pub fn destructive(mut self) -> Self {
         if let Some(toast) = &mut self.toast {
             toast.variant = ToastVariant::Destructive;
@@ -482,7 +482,7 @@ impl ToastBuilder<'_> {
     }
 
     /// Set custom color (overrides variant)
-    #[must_use] 
+    #[must_use]
     pub const fn color(mut self, color: Color32) -> Self {
         if let Some(toast) = &mut self.toast {
             toast.custom_color = Some(color);
@@ -491,7 +491,7 @@ impl ToastBuilder<'_> {
     }
 
     /// Set the display duration
-    #[must_use] 
+    #[must_use]
     pub const fn duration(mut self, duration: std::time::Duration) -> Self {
         if let Some(toast) = &mut self.toast {
             toast.duration_secs = duration.as_secs_f32();
@@ -500,7 +500,7 @@ impl ToastBuilder<'_> {
     }
 
     /// Set whether the toast can be manually dismissed
-    #[must_use] 
+    #[must_use]
     pub const fn dismissible(mut self, dismissible: bool) -> Self {
         if let Some(toast) = &mut self.toast {
             toast.dismissible = dismissible;

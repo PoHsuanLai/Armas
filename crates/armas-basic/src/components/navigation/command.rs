@@ -144,7 +144,7 @@ pub struct Command {
 
 impl Command {
     /// Create a new command palette
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self {
             id: None,
@@ -173,7 +173,7 @@ impl Command {
     }
 
     /// Set the keyboard shortcut to trigger the command palette
-    #[must_use] 
+    #[must_use]
     pub const fn trigger(mut self, key: Key, modifiers: Modifiers) -> Self {
         self.trigger_key = key;
         self.trigger_modifiers = modifiers;

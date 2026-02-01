@@ -67,7 +67,7 @@ pub enum DrawerSnapPoint {
 impl DrawerSnapPoint {
     /// Convert snap point to ratio (0.0-1.0)
     #[allow(dead_code)]
-    #[must_use] 
+    #[must_use]
     pub const fn to_ratio(&self) -> f32 {
         match self {
             Self::Closed => 0.0,
@@ -108,7 +108,7 @@ impl Drawer {
     }
 
     /// Set the drawer open state
-    #[must_use] 
+    #[must_use]
     pub const fn open(mut self, open: bool) -> Self {
         self.is_open = open;
         self
@@ -129,28 +129,28 @@ impl Drawer {
     }
 
     /// Show or hide the drag handle (default: true)
-    #[must_use] 
+    #[must_use]
     pub const fn show_handle(mut self, show: bool) -> Self {
         self.show_handle = show;
         self
     }
 
     /// Show or hide the backdrop overlay (default: true)
-    #[must_use] 
+    #[must_use]
     pub const fn show_backdrop(mut self, show: bool) -> Self {
         self.show_backdrop = show;
         self
     }
 
     /// Set snap points for partial open states
-    #[must_use] 
+    #[must_use]
     pub fn snap_points(mut self, points: Vec<DrawerSnapPoint>) -> Self {
         self.snap_points = points;
         self
     }
 
     /// Set a fixed height for the drawer
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.height = Some(height);
         self
@@ -374,7 +374,7 @@ pub struct DrawerResponse {
 
 impl DrawerResponse {
     /// Check if the drawer was closed
-    #[must_use] 
+    #[must_use]
     pub const fn closed(&self) -> bool {
         self.closed
     }

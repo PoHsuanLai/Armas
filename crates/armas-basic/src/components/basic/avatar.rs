@@ -85,21 +85,21 @@ impl Avatar {
     }
 
     /// Set the avatar size in pixels
-    #[must_use] 
+    #[must_use]
     pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
     /// Set the avatar size using a preset
-    #[must_use] 
+    #[must_use]
     pub const fn size_preset(mut self, size: AvatarSize) -> Self {
         self.size = size.to_pixels();
         self
     }
 
     /// Set the avatar shape
-    #[must_use] 
+    #[must_use]
     pub const fn shape(mut self, shape: AvatarShape) -> Self {
         self.shape = shape;
         self

@@ -43,7 +43,7 @@ impl Default for ContinuousWithMomentum {
 
 impl ContinuousWithMomentum {
     /// Create a new continuous momentum behavior
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             velocity: 0.0,
@@ -55,7 +55,7 @@ impl ContinuousWithMomentum {
     /// Set the friction that damps movement
     ///
     /// Typical values are 0.05-0.15. Higher = more friction = stops faster.
-    #[must_use] 
+    #[must_use]
     pub fn friction(mut self, friction: f64) -> Self {
         self.damping = 1.0 - friction.clamp(0.0, 0.99);
         self
@@ -64,14 +64,14 @@ impl ContinuousWithMomentum {
     /// Set the minimum velocity threshold
     ///
     /// When velocity drops below this, animation stops. Default is 0.05.
-    #[must_use] 
+    #[must_use]
     pub const fn minimum_velocity(mut self, min_vel: f64) -> Self {
         self.minimum_velocity = min_vel.abs();
         self
     }
 
     /// Get the current velocity
-    #[must_use] 
+    #[must_use]
     pub const fn velocity(&self) -> f64 {
         self.velocity
     }
@@ -121,7 +121,7 @@ impl Default for SnapToPageBoundaries {
 
 impl SnapToPageBoundaries {
     /// Create a new snap-to-page behavior
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             target_position: 0.0,
@@ -132,14 +132,14 @@ impl SnapToPageBoundaries {
     /// Set the speed at which it snaps to the target
     ///
     /// Higher values = faster snapping. Default is 10.0.
-    #[must_use] 
+    #[must_use]
     pub const fn snap_speed(mut self, speed: f64) -> Self {
         self.snap_speed = speed.max(1.0);
         self
     }
 
     /// Get the target snap position
-    #[must_use] 
+    #[must_use]
     pub const fn target(&self) -> f64 {
         self.target_position
     }

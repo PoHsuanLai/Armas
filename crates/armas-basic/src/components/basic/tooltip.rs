@@ -60,28 +60,28 @@ impl Tooltip {
     }
 
     /// Set the tooltip position (default: auto-detect)
-    #[must_use] 
+    #[must_use]
     pub const fn position(mut self, position: TooltipPosition) -> Self {
         self.position = Some(position);
         self
     }
 
     /// Set maximum width for text wrapping
-    #[must_use] 
+    #[must_use]
     pub const fn max_width(mut self, width: f32) -> Self {
         self.max_width = width;
         self
     }
 
     /// Set hover delay in milliseconds before showing tooltip
-    #[must_use] 
+    #[must_use]
     pub const fn delay(mut self, delay_ms: u64) -> Self {
         self.delay_ms = delay_ms;
         self
     }
 
     /// Show or hide the arrow pointer
-    #[must_use] 
+    #[must_use]
     pub const fn arrow(mut self, show: bool) -> Self {
         self.show_arrow = show;
         self

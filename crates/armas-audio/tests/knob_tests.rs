@@ -1,7 +1,7 @@
 //! Tests for Knob component using `egui_kittest`
 
-use armas_basic::ArmasContextExt;
 use armas_audio::knob::{Knob, KnobCurve};
+use armas_basic::ArmasContextExt;
 use egui_kittest::Harness;
 
 /// Test that Knob renders without panicking

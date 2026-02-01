@@ -30,7 +30,13 @@ pub struct StaggeredAnimation<T: Interpolate> {
 
 impl<T: Interpolate> StaggeredAnimation<T> {
     /// Create a new staggered animation
-    pub const fn new(start: T, end: T, item_count: usize, stagger_delay: f32, duration: f32) -> Self {
+    pub const fn new(
+        start: T,
+        end: T,
+        item_count: usize,
+        stagger_delay: f32,
+        duration: f32,
+    ) -> Self {
         Self {
             base_delay: 0.0,
             stagger_delay,
@@ -145,7 +151,7 @@ struct SequenceStep<T: Interpolate> {
 
 impl<T: Interpolate> AnimationSequence<T> {
     /// Create a new empty sequence
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             animations: Vec::new(),
@@ -187,7 +193,7 @@ impl<T: Interpolate> AnimationSequence<T> {
     }
 
     /// Get the current value
-    #[must_use] 
+    #[must_use]
     pub fn value(&self) -> T {
         if self.current_step >= self.animations.len() {
             // Return the last animation's end value
@@ -203,7 +209,7 @@ impl<T: Interpolate> AnimationSequence<T> {
     }
 
     /// Check if the entire sequence is complete
-    #[must_use] 
+    #[must_use]
     pub const fn is_complete(&self) -> bool {
         self.current_step >= self.animations.len()
     }

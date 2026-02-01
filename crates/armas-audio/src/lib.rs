@@ -39,6 +39,7 @@ pub use drum_sequencer::{
     DrumStep,
 };
 pub use fader::{Fader, FaderScalePosition, FaderStrip};
+pub use icons::TransportIcon;
 pub use knob::Knob;
 pub use meter::{AudioMeter, MeterStyle, ScalePosition};
 pub use midi_controller::{MidiController, MidiControllerResponse, MidiControllerState};
@@ -54,7 +55,6 @@ pub use timeline::{
 };
 pub use timeline_marker::{MarkerVariant, TimelineMarker, TimelineMarkerResponse};
 pub use timeline_region::{RegionVariant, TimelineRegion, TimelineRegionResponse};
-pub use icons::TransportIcon;
 pub use xy_pad::{XYPad, XYPadVariant};
 
 // Types from internal modules that are exposed through public API structs

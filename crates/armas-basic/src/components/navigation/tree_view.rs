@@ -150,7 +150,7 @@ pub struct TreeView {
 
 impl TreeView {
     /// Create a new tree view
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self {
             root_path: "/".to_string(),
@@ -159,21 +159,21 @@ impl TreeView {
     }
 
     /// Set width (0 = fill available)
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = width;
         self
     }
 
     /// Set height (0 = fill available)
-    #[must_use] 
+    #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
         self
     }
 
     /// Set items
-    #[must_use] 
+    #[must_use]
     pub fn items(mut self, items: Vec<TreeItem>) -> Self {
         self.items = items;
         self
@@ -187,20 +187,20 @@ impl TreeView {
     }
 
     /// Show tree connection lines
-    #[must_use] 
+    #[must_use]
     pub const fn show_lines(mut self, show: bool) -> Self {
         self.show_lines = show;
         self
     }
 
     /// Get selected item
-    #[must_use] 
+    #[must_use]
     pub const fn selected(&self) -> Option<&PathBuf> {
         self.selected.as_ref()
     }
 
     /// Check if branch is expanded
-    #[must_use] 
+    #[must_use]
     pub fn is_expanded(&self, path: &Path) -> bool {
         self.expanded.contains(&path.to_string_lossy().to_string())
     }

@@ -123,21 +123,21 @@ impl Sheet {
     }
 
     /// Set which side the sheet slides from
-    #[must_use] 
+    #[must_use]
     pub const fn side(mut self, side: SheetSide) -> Self {
         self.side = side;
         self
     }
 
     /// Set the sheet size
-    #[must_use] 
+    #[must_use]
     pub const fn size(mut self, size: SheetSize) -> Self {
         self.size = size;
         self
     }
 
     /// Set the sheet open state
-    #[must_use] 
+    #[must_use]
     pub const fn open(mut self, open: bool) -> Self {
         self.is_open = open;
         self
@@ -158,14 +158,14 @@ impl Sheet {
     }
 
     /// Show or hide the close button (default: true)
-    #[must_use] 
+    #[must_use]
     pub const fn show_close_button(mut self, show: bool) -> Self {
         self.show_close_button = show;
         self
     }
 
     /// Show or hide the backdrop overlay (default: true)
-    #[must_use] 
+    #[must_use]
     pub const fn show_backdrop(mut self, show: bool) -> Self {
         self.show_backdrop = show;
         self
@@ -399,7 +399,7 @@ pub struct SheetResponse {
 
 impl SheetResponse {
     /// Check if the sheet was closed
-    #[must_use] 
+    #[must_use]
     pub const fn closed(&self) -> bool {
         self.closed
     }

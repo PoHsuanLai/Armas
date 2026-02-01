@@ -482,10 +482,7 @@ impl<'a> ModWheel<'a> {
                     Pos2::new(cx + offset as f32, rect.min.y + 6.0),
                     Pos2::new(cx + offset as f32, rect.max.y - 6.0),
                 ],
-                egui::Stroke::new(
-                    1.0,
-                    Color32::from_rgba_unmultiplied(255, 255, 255, alpha),
-                ),
+                egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(255, 255, 255, alpha)),
             );
         }
 
@@ -497,7 +494,6 @@ impl<'a> ModWheel<'a> {
             egui::StrokeKind::Inside,
         );
     }
-
 }
 
 #[cfg(test)]
