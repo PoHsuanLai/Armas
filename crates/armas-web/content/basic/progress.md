@@ -40,12 +40,3 @@ ui.horizontal(|ui| {
 });
 ```
 
-## Ring
-
-```demo
-ui.horizontal(|ui| {
-    ui.spacing_mut().item_spacing.x = 24.0;
-    RingProgress::new(75.0).size(100.0).show(ui, &theme);
-    RingProgress::new(42.0).size(100.0).label("Complete").show(ui, &theme);
-});
-```

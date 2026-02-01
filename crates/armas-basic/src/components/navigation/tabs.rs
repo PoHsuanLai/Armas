@@ -240,16 +240,3 @@ impl Tabs {
     }
 }
 
-// Backwards compatibility alias
-#[doc(hidden)]
-pub type AnimatedTabs = Tabs;
-
-// Keep TabStyle for backwards compatibility but mark as deprecated
-#[doc(hidden)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum TabStyle {
-    #[default]
-    Underline,
-    Pill,
-    Segment,
-}

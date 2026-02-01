@@ -6,12 +6,6 @@ Loading indicators and animated placeholders.
 Spinner::new().size(40.0).show(ui, &theme);
 ```
 
-## Loading Dots
-
-```demo
-LoadingDots::new().show(ui, &theme);
-```
-
 ## Skeleton
 
 ```demo

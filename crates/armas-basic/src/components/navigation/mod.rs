@@ -17,10 +17,6 @@ pub use menu::{Menu, MenuResponse};
 pub use pagination::Pagination;
 pub use sidebar::{CollapsibleMode, Sidebar, SidebarResponse, SidebarState, SidebarVariant};
 pub use tabs::Tabs;
-
-// Backwards compatibility
-#[doc(hidden)]
-pub use tabs::{AnimatedTabs, TabStyle};
 pub use tree_view::{TreeItem, TreeView, TreeViewResponse};
 
 // Backwards compatibility aliases
