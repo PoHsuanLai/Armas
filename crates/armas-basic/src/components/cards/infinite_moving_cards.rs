@@ -17,7 +17,7 @@ pub enum ScrollSpeed {
 }
 
 impl ScrollSpeed {
-    const fn pixels_per_second(&self) -> f32 {
+    const fn pixels_per_second(self) -> f32 {
         match self {
             Self::Slow => 80.0,
             Self::Normal => 120.0,
@@ -54,6 +54,7 @@ impl MovingCard {
     }
 
     /// Set the author/source
+    #[must_use]
     pub fn author(mut self, author: impl Into<String>) -> Self {
         self.author = Some(author.into());
         self

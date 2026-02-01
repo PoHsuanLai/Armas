@@ -36,6 +36,7 @@ impl TestimonialItem {
     }
 
     /// Set avatar text (emoji or initials)
+    #[must_use]
     pub fn avatar(mut self, avatar: impl Into<String>) -> Self {
         self.avatar = Some(avatar.into());
         self
@@ -202,7 +203,7 @@ impl TestimonialCard {
         if let Some(avatar_text) = &self.item.avatar {
             // Draw avatar circle
             let avatar_center = Pos2::new(author_x + avatar_size / 2.0, y + avatar_size / 2.0);
-            let avatar_color = self.item.avatar_color.unwrap_or(theme.primary());
+            let avatar_color = self.item.avatar_color.unwrap_or_else(|| theme.primary());
 
             ui.painter()
                 .circle_filled(avatar_center, avatar_size / 2.0, avatar_color);

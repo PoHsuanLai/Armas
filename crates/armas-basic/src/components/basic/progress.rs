@@ -78,7 +78,7 @@ impl Progress {
 
     /// Show the progress bar
     pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> egui::Response {
-        let desired_width = self.width.unwrap_or(ui.available_width());
+        let desired_width = self.width.unwrap_or_else(|| ui.available_width());
         let corner_radius = PROGRESS_CORNER_RADIUS.min(self.height / 2.0);
 
         let (rect, response) =
@@ -346,6 +346,7 @@ impl RingProgress {
     }
 
     /// Set label text displayed below percentage
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self

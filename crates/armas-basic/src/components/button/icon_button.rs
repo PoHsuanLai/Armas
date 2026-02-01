@@ -136,20 +136,7 @@ impl<'a> IconButton<'a> {
                     };
                     (Some(bg), theme.secondary_foreground())
                 }
-                ButtonVariant::Outline => {
-                    let bg = if response.hovered() {
-                        Some(theme.accent())
-                    } else {
-                        None
-                    };
-                    let icon = if response.hovered() {
-                        theme.accent_foreground()
-                    } else {
-                        theme.foreground()
-                    };
-                    (bg, icon)
-                }
-                ButtonVariant::Ghost | ButtonVariant::Link => {
+                ButtonVariant::Outline | ButtonVariant::Ghost | ButtonVariant::Link => {
                     let bg = if response.hovered() {
                         Some(theme.accent())
                     } else {

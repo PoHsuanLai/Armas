@@ -1,4 +1,4 @@
-//! Tests for Command component using egui_kittest
+//! Tests for Command component using `egui_kittest`
 
 use armas_basic::components::navigation::Command;
 use armas_basic::ArmasContextExt;
@@ -59,9 +59,9 @@ fn test_command_icons() {
         let _theme = ui.ctx().armas_theme();
         let mut menu = Command::new();
         menu.show(ui, |cmd| {
-            cmd.item("new", "New File").icon("📄");
-            cmd.item("save", "Save").icon("💾");
-            cmd.item("settings", "Settings").icon("⚙️");
+            let _ = cmd.item("new", "New File").icon("📄");
+            let _ = cmd.item("save", "Save").icon("💾");
+            let _ = cmd.item("settings", "Settings").icon("⚙️");
         });
     });
 
@@ -75,9 +75,9 @@ fn test_command_shortcuts() {
         let _theme = ui.ctx().armas_theme();
         let mut menu = Command::new();
         menu.show(ui, |cmd| {
-            cmd.item("copy", "Copy").shortcut("⌘C");
-            cmd.item("paste", "Paste").shortcut("⌘V");
-            cmd.item("undo", "Undo").shortcut("⌘Z");
+            let _ = cmd.item("copy", "Copy").shortcut("⌘C");
+            let _ = cmd.item("paste", "Paste").shortcut("⌘V");
+            let _ = cmd.item("undo", "Undo").shortcut("⌘Z");
         });
     });
 
@@ -92,15 +92,15 @@ fn test_command_full_config() {
         let mut menu = Command::new();
         menu.show(ui, |cmd| {
             cmd.group("File Operations");
-            cmd.item("new", "New File").icon("📄").shortcut("⌘N");
-            cmd.item("open", "Open File").icon("📂").shortcut("⌘O");
-            cmd.item("save", "Save").icon("💾").shortcut("⌘S");
+            let _ = cmd.item("new", "New File").icon("📄").shortcut("⌘N");
+            let _ = cmd.item("open", "Open File").icon("📂").shortcut("⌘O");
+            let _ = cmd.item("save", "Save").icon("💾").shortcut("⌘S");
 
             cmd.separator();
 
             cmd.group("Edit");
-            cmd.item("undo", "Undo").icon("↩️").shortcut("⌘Z");
-            cmd.item("redo", "Redo").icon("↪️").shortcut("⌘⇧Z");
+            let _ = cmd.item("undo", "Undo").icon("↩️").shortcut("⌘Z");
+            let _ = cmd.item("redo", "Redo").icon("↪️").shortcut("⌘⇧Z");
         });
     });
 
@@ -146,7 +146,7 @@ fn test_command_many_items() {
         let mut menu = Command::new();
         menu.show(ui, |cmd| {
             for i in 1..=20 {
-                cmd.item(&format!("cmd_{}", i), &format!("Command {}", i));
+                cmd.item(&format!("cmd_{i}"), &format!("Command {i}"));
             }
         });
     });

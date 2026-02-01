@@ -38,7 +38,7 @@ pub enum ToggleSize {
 }
 
 impl ToggleSize {
-    const fn dimensions(&self, variant: ToggleVariant) -> (f32, f32) {
+    const fn dimensions(self, variant: ToggleVariant) -> (f32, f32) {
         match variant {
             ToggleVariant::Switch => match self {
                 Self::Small => (36.0, 20.0),
@@ -55,6 +55,7 @@ impl ToggleSize {
 }
 
 /// Animated toggle switch component
+#[allow(clippy::struct_field_names)]
 pub struct Toggle {
     id: Option<egui::Id>,
     variant: ToggleVariant,
@@ -83,13 +84,14 @@ impl Toggle {
     }
 
     /// Set ID for state persistence (useful for demos where toggle is recreated each frame)
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
     }
 
     /// Set the variant
-    #[must_use] 
+    #[must_use]
     pub const fn variant(mut self, variant: ToggleVariant) -> Self {
         self.variant = variant;
         self
@@ -103,19 +105,21 @@ impl Toggle {
     }
 
     /// Set a label
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
     }
 
     /// Set a description
+    #[must_use]
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
     }
 
     /// Set disabled state
-    #[must_use] 
+    #[must_use]
     pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -428,6 +432,7 @@ impl ToggleBuilder {
     }
 
     /// Set toggle description
+    #[must_use]
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
@@ -501,6 +506,7 @@ impl<'a> ToggleGroup<'a> {
     }
 
     /// Set a label for the group
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self

@@ -51,7 +51,7 @@ pub enum RadioSize {
 }
 
 impl RadioSize {
-    const fn diameter(&self) -> f32 {
+    const fn diameter(self) -> f32 {
         match self {
             Self::Small => RADIO_SIZE_SM,
             Self::Medium => RADIO_SIZE,
@@ -83,25 +83,28 @@ impl Radio {
     }
 
     /// Set ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
     }
 
     /// Set the size
-    #[must_use] 
+    #[must_use]
     pub const fn size(mut self, size: RadioSize) -> Self {
         self.size = size;
         self
     }
 
     /// Set a label
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
     }
 
     /// Set a description
+    #[must_use]
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
@@ -231,6 +234,7 @@ impl RadioOptionBuilder {
     }
 
     /// Set option description
+    #[must_use]
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
@@ -323,6 +327,7 @@ impl<'a> RadioGroup<'a> {
     }
 
     /// Set a label for the group
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self

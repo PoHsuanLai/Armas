@@ -67,6 +67,7 @@ impl Slider {
     }
 
     /// Set ID for state persistence (useful for demos where slider is recreated each frame)
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -94,12 +95,14 @@ impl Slider {
     }
 
     /// Set a label for the slider
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
     }
 
     /// Set a suffix for the value (e.g., "%", "ms", "dB")
+    #[must_use]
     pub fn suffix(mut self, suffix: impl Into<String>) -> Self {
         self.suffix = Some(suffix.into());
         self
@@ -170,11 +173,10 @@ impl Slider {
                     if self.show_value {
                         ui.allocate_space(ui.available_size());
 
-                        let value_text = if let Some(suffix) = &self.suffix {
-                            format!("{value:.1}{suffix}")
-                        } else {
-                            format!("{value:.1}")
-                        };
+                        let value_text = self.suffix.as_ref().map_or_else(
+                            || format!("{value:.1}"),
+                            |suffix| format!("{value:.1}{suffix}"),
+                        );
                         ui.label(value_text);
                     }
                 });

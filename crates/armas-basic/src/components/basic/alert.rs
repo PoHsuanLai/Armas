@@ -24,28 +24,28 @@ pub enum AlertVariant {
 }
 
 impl AlertVariant {
-    const fn icon(&self) -> WindowIcon {
+    const fn icon(self) -> WindowIcon {
         match self {
             Self::Info => WindowIcon::Info,
             Self::Destructive => WindowIcon::Error,
         }
     }
 
-    const fn color(&self, theme: &Theme) -> Color32 {
+    const fn color(self, theme: &Theme) -> Color32 {
         match self {
             Self::Info => theme.foreground(),
             Self::Destructive => theme.destructive(),
         }
     }
 
-    fn background_color(&self, theme: &Theme) -> Color32 {
+    fn background_color(self, theme: &Theme) -> Color32 {
         match self {
             Self::Info => theme.muted(),
             Self::Destructive => theme.destructive().linear_multiply(0.08),
         }
     }
 
-    const fn border_color(&self, theme: &Theme) -> Color32 {
+    const fn border_color(self, theme: &Theme) -> Color32 {
         match self {
             Self::Info => theme.border(),
             Self::Destructive => theme.destructive(),
@@ -104,6 +104,7 @@ impl Alert {
     }
 
     /// Set the alert title
+    #[must_use]
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self

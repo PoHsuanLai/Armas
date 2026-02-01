@@ -196,6 +196,7 @@ impl SidebarItemBuilder<'_> {
     }
 
     /// Set badge text (e.g., notification count)
+    #[must_use]
     pub fn badge(self, badge: impl Into<String>) -> Self {
         self.item.badge = Some(badge.into());
         self
@@ -346,6 +347,56 @@ pub struct Sidebar<'a> {
     variant: SidebarVariant,
 }
 
+/// Pre-computed layout values shared across sidebar rendering helpers.
+struct SidebarLayout {
+    /// The animated content width
+    content_width: f32,
+    /// Width when collapsed
+    collapsed_width: f32,
+    /// Width when expanded
+    expanded_width: f32,
+    /// Expansion ratio 0.0 (collapsed) to 1.0 (expanded)
+    expansion_ratio: f32,
+    /// Base x-coordinate for icon placement (animated between centered and left-aligned)
+    icon_x_base: f32,
+    /// The rect where sidebar content is drawn (inside floating padding)
+    content_rect: Rect,
+}
+
+impl SidebarLayout {
+    /// Compute layout from current animation width and content rect.
+    fn compute(
+        current_width: f32,
+        collapsed_width: f32,
+        expanded_width: f32,
+        content_rect: Rect,
+    ) -> Self {
+        let content_width = current_width;
+        let expansion_ratio = ((content_width - collapsed_width)
+            / (expanded_width - collapsed_width))
+            .clamp(0.0, 1.0);
+
+        let icon_left_aligned_x =
+            content_rect.left() + ITEM_PADDING + ITEM_PADDING + ICON_SIZE / 2.0;
+        let icon_centered_x = content_rect.left() + content_width / 2.0;
+        let icon_x_base = if expansion_ratio < 0.5 {
+            icon_centered_x
+        } else {
+            let t = (expansion_ratio - 0.5) * 2.0;
+            icon_centered_x + (icon_left_aligned_x - icon_centered_x) * t
+        };
+
+        Self {
+            content_width,
+            collapsed_width,
+            expanded_width,
+            expansion_ratio,
+            icon_x_base,
+            content_rect,
+        }
+    }
+}
+
 impl<'a> Sidebar<'a> {
     /// Create a new sidebar with shadcn defaults
     #[must_use] 
@@ -364,6 +415,7 @@ impl<'a> Sidebar<'a> {
     /// Use external state for controlled mode
     ///
     /// This allows you to control the sidebar from outside and persist state.
+    #[must_use]
     pub const fn state(mut self, state: &'a mut SidebarState) -> Self {
         self.external_state = Some(state);
         self
@@ -448,11 +500,10 @@ impl<'a> Sidebar<'a> {
         };
 
         // Get mutable reference to the actual state we're using
-        let state = if let Some(ref mut ext) = self.external_state {
-            ext
-        } else {
-            &mut internal_state
-        };
+        let state = self
+            .external_state
+            .as_deref_mut()
+            .map_or(&mut internal_state, |ext| ext);
 
         // Update spring animation
         state.width_spring.update(dt);
@@ -480,24 +531,7 @@ impl<'a> Sidebar<'a> {
             0.0
         };
 
-        // Calculate sidebar height based on content
-        let mut total_height = GROUP_PADDING;
-
-        if self.collapsible != CollapsibleMode::None {
-            total_height += ITEM_HEIGHT + ITEM_GAP;
-        }
-
-        for item in &items {
-            if item.is_group_label {
-                total_height += ITEM_HEIGHT + ITEM_GAP;
-            } else if item.depth > 0 {
-                total_height += ITEM_HEIGHT_SM + ITEM_GAP;
-            } else {
-                total_height += ITEM_HEIGHT + ITEM_GAP;
-            }
-        }
-
-        total_height += GROUP_PADDING;
+        let total_height = calculate_content_height(&items, self.collapsible);
 
         // Add padding to outer rect for floating variants
         let outer_width = current_width + floating_padding * 2.0;
@@ -510,8 +544,6 @@ impl<'a> Sidebar<'a> {
         let mut hovered_index: Option<usize> = None;
 
         if ui.is_rect_visible(rect) {
-            let painter = ui.painter();
-
             // Content rect is where items are drawn
             let content_rect = if floating_padding > 0.0 {
                 rect.shrink(floating_padding)
@@ -519,269 +551,26 @@ impl<'a> Sidebar<'a> {
                 rect
             };
 
-            // Draw sidebar background based on variant
-            match self.variant {
-                SidebarVariant::Sidebar => {
-                    painter.rect_filled(rect, 0.0, theme.sidebar());
-                    painter.line_segment(
-                        [rect.right_top(), rect.right_bottom()],
-                        Stroke::new(1.0, theme.border()),
-                    );
-                }
-                SidebarVariant::Floating | SidebarVariant::Inset => {
-                    // Shadow
-                    painter.rect_filled(
-                        content_rect.translate(Vec2::new(0.0, 2.0)),
-                        CORNER_RADIUS + 2.0,
-                        Color32::from_black_alpha(20),
-                    );
-                    // Background
-                    painter.rect_filled(content_rect, CORNER_RADIUS + 2.0, theme.sidebar());
-                    // Border
-                    painter.rect_stroke(
-                        content_rect,
-                        CORNER_RADIUS + 2.0,
-                        Stroke::new(1.0, theme.sidebar_border()),
-                        egui::StrokeKind::Inside,
-                    );
-                }
-            }
+            let layout = SidebarLayout::compute(
+                current_width,
+                collapsed_width,
+                expanded_width,
+                content_rect,
+            );
 
-            // Use current_width for item sizing (the animated content width)
-            let content_width = current_width;
-
-            // Calculate expansion ratio once for consistent icon positioning
-            let expansion_ratio = ((content_width - collapsed_width)
-                / (expanded_width - collapsed_width))
-                .clamp(0.0, 1.0);
-
-            // Calculate icon position based on expansion
-            // When collapsed: center in available width
-            // When expanded: left-align with padding
-            // Use smooth interpolation to avoid jumps
-            let icon_left_aligned_x =
-                content_rect.left() + ITEM_PADDING + ITEM_PADDING + ICON_SIZE / 2.0;
-            let icon_centered_x = content_rect.left() + content_width / 2.0;
-
-            // Smoothly interpolate between centered and left-aligned
-            let icon_x_base = if expansion_ratio < 0.5 {
-                // More collapsed than expanded - use centered position
-                icon_centered_x
-            } else {
-                // More expanded - interpolate from centered to left-aligned
-                let t = (expansion_ratio - 0.5) * 2.0; // 0 to 1 as expansion goes from 0.5 to 1.0
-                icon_centered_x + (icon_left_aligned_x - icon_centered_x) * t
-            };
-
-            let mut current_y = content_rect.top() + GROUP_PADDING;
+            // Draw sidebar background
+            render_background(ui, &theme, self.variant, rect, &layout);
 
             // Draw toggle button if collapsible
+            let mut current_y = content_rect.top() + GROUP_PADDING;
             if self.collapsible != CollapsibleMode::None {
-                let toggle_rect = Rect::from_min_size(
-                    Pos2::new(content_rect.left() + ITEM_PADDING, current_y),
-                    Vec2::new(content_width - ITEM_PADDING * 2.0, ITEM_HEIGHT),
-                );
-
-                let toggle_response = ui.interact(
-                    toggle_rect,
-                    ui.id().with("toggle"),
-                    Sense::click().union(Sense::hover()),
-                );
-
-                if toggle_response.clicked() {
-                    state.toggle();
-                }
-
-                if toggle_response.hovered() {
-                    painter.rect_filled(toggle_rect, CORNER_RADIUS, theme.sidebar_accent());
-                }
-
-                painter.text(
-                    Pos2::new(icon_x_base, toggle_rect.center().y),
-                    egui::Align2::CENTER_CENTER,
-                    "☰",
-                    egui::FontId::proportional(ICON_SIZE),
-                    if toggle_response.hovered() {
-                        theme.sidebar_accent_foreground()
-                    } else {
-                        theme.sidebar_foreground()
-                    },
-                );
-
-                current_y += ITEM_HEIGHT + ITEM_GAP;
+                current_y =
+                    render_toggle_button(ui, &theme, &layout, state, current_y);
             }
 
-            // Draw items
-            for (index, item) in items.iter().enumerate() {
-                let item_height = if item.is_group_label {
-                    ITEM_HEIGHT
-                } else if item.depth > 0 {
-                    ITEM_HEIGHT_SM
-                } else {
-                    ITEM_HEIGHT
-                };
-
-                // Group labels
-                if item.is_group_label {
-                    draw_group_label(
-                        painter,
-                        &theme,
-                        &content_rect,
-                        current_y,
-                        content_width,
-                        collapsed_width,
-                        expanded_width,
-                        &item.label,
-                    );
-                    current_y += item_height + ITEM_GAP;
-                    continue;
-                }
-
-                // Calculate indent for sub-items
-                let indent = if item.depth > 0 {
-                    14.0 + (item.depth - 1) as f32 * 12.0
-                } else {
-                    0.0
-                };
-
-                let item_rect = Rect::from_min_size(
-                    Pos2::new(content_rect.left() + ITEM_PADDING + indent, current_y),
-                    Vec2::new(content_width - ITEM_PADDING * 2.0 - indent, item_height),
-                );
-
-                // Draw left border for sub-items
-                if item.depth > 0 {
-                    let border_x = content_rect.left() + ITEM_PADDING + 14.0;
-                    painter.line_segment(
-                        [
-                            Pos2::new(border_x, current_y),
-                            Pos2::new(border_x, current_y + item_height),
-                        ],
-                        Stroke::new(1.0, theme.sidebar_border()),
-                    );
-                }
-
-                let item_response = ui.interact(
-                    item_rect,
-                    ui.id().with(&item.id),
-                    Sense::click().union(Sense::hover()),
-                );
-
-                if item_response.hovered() {
-                    hovered_index = Some(index);
-                }
-
-                if item_response.clicked() {
-                    if item.is_group_header {
-                        let was_expanded = state
-                            .expanded_groups
-                            .get(&item.id)
-                            .copied()
-                            .unwrap_or(false);
-                        state.expanded_groups.insert(item.id.clone(), !was_expanded);
-                    } else {
-                        clicked_id = Some(item.id.clone());
-                        state.active_index = Some(index);
-                    }
-                }
-
-                let is_active = item.active || state.active_index == Some(index);
-                let is_hovered = item_response.hovered();
-
-                if is_active || is_hovered {
-                    painter.rect_filled(item_rect, CORNER_RADIUS, theme.sidebar_accent());
-                }
-
-                let text_color = if is_active || is_hovered {
-                    theme.sidebar_accent_foreground()
-                } else {
-                    theme.sidebar_foreground()
-                };
-
-                // Draw icon using the same position as toggle for consistency
-                // Adjust for indent if this is a sub-item
-                let icon_center = if self.show_icons && !item.icon.is_empty() {
-                    // For sub-items, offset from base position
-                    let item_icon_x = if item.depth > 0 {
-                        // Sub-items: always left-aligned with indent
-                        item_rect.left() + ITEM_PADDING + ICON_SIZE / 2.0
-                    } else {
-                        // Top-level items: use same animated position as toggle
-                        icon_x_base
-                    };
-                    painter.text(
-                        Pos2::new(item_icon_x, item_rect.center().y),
-                        egui::Align2::CENTER_CENTER,
-                        &item.icon,
-                        egui::FontId::proportional(ICON_SIZE),
-                        text_color,
-                    );
-                    Some(Pos2::new(item_icon_x, item_rect.center().y))
-                } else {
-                    None
-                };
-
-                if expansion_ratio > 0.3 {
-                    let label_opacity = ((expansion_ratio - 0.3) / 0.7).clamp(0.0, 1.0);
-                    let label_color = Color32::from_rgba_unmultiplied(
-                        text_color.r(),
-                        text_color.g(),
-                        text_color.b(),
-                        (f32::from(text_color.a()) * label_opacity) as u8,
-                    );
-
-                    let label_x = if self.show_icons && !item.icon.is_empty() {
-                        item_rect.left() + ITEM_PADDING + ICON_SIZE + 8.0
-                    } else {
-                        item_rect.left() + ITEM_PADDING
-                    };
-
-                    let font = if is_active {
-                        egui::FontId::new(14.0, egui::FontFamily::Proportional)
-                    } else {
-                        egui::FontId::proportional(14.0)
-                    };
-
-                    painter.text(
-                        Pos2::new(label_x, item_rect.center().y),
-                        egui::Align2::LEFT_CENTER,
-                        &item.label,
-                        font,
-                        label_color,
-                    );
-
-                    if item.is_group_header {
-                        let is_group_expanded = state
-                            .expanded_groups
-                            .get(&item.id)
-                            .copied()
-                            .unwrap_or(false);
-                        let chevron = if is_group_expanded { "▼" } else { "▶" };
-                        painter.text(
-                            Pos2::new(item_rect.right() - ITEM_PADDING - 8.0, item_rect.center().y),
-                            egui::Align2::CENTER_CENTER,
-                            chevron,
-                            egui::FontId::proportional(10.0),
-                            label_color.gamma_multiply(0.7),
-                        );
-                    }
-
-                    if let Some(badge) = &item.badge {
-                        if !item.is_group_header {
-                            draw_badge(painter, &theme, &item_rect, badge, label_opacity);
-                        }
-                    }
-                } else if let Some(badge) = &item.badge {
-                    // When collapsed, show badge indicator on icon
-                    if !item.is_group_header {
-                        if let Some(icon_pos) = icon_center {
-                            draw_collapsed_badge(painter, &theme, icon_pos, badge);
-                        }
-                    }
-                }
-
-                current_y += item_height + ITEM_GAP;
-            }
+            // Draw all items
+            (clicked_id, hovered_index) =
+                render_items(ui, &theme, self.show_icons, &layout, state, &items, current_y);
         }
 
         // Request repaint if animating
@@ -816,22 +605,329 @@ impl Default for Sidebar<'_> {
 }
 
 // ============================================================================
-// STANDALONE DRAWING FUNCTIONS
+// STANDALONE DRAWING & LAYOUT FUNCTIONS
 // ============================================================================
 
-#[allow(clippy::too_many_arguments)]
+/// Calculate total content height for the sidebar based on its items.
+fn calculate_content_height(items: &[InternalSidebarItem], collapsible: CollapsibleMode) -> f32 {
+    let mut total_height = GROUP_PADDING;
+
+    if collapsible != CollapsibleMode::None {
+        total_height += ITEM_HEIGHT + ITEM_GAP;
+    }
+
+    for item in items {
+        if item.is_group_label {
+            total_height += ITEM_HEIGHT + ITEM_GAP;
+        } else if item.depth > 0 {
+            total_height += ITEM_HEIGHT_SM + ITEM_GAP;
+        } else {
+            total_height += ITEM_HEIGHT + ITEM_GAP;
+        }
+    }
+
+    total_height += GROUP_PADDING;
+    total_height
+}
+
+/// Paint the sidebar background, border, and optional shadow.
+fn render_background(
+    ui: &Ui,
+    theme: &crate::Theme,
+    variant: SidebarVariant,
+    rect: Rect,
+    layout: &SidebarLayout,
+) {
+    let painter = ui.painter();
+    match variant {
+        SidebarVariant::Sidebar => {
+            painter.rect_filled(rect, 0.0, theme.sidebar());
+            painter.line_segment(
+                [rect.right_top(), rect.right_bottom()],
+                Stroke::new(1.0, theme.border()),
+            );
+        }
+        SidebarVariant::Floating | SidebarVariant::Inset => {
+            // Shadow
+            painter.rect_filled(
+                layout.content_rect.translate(Vec2::new(0.0, 2.0)),
+                CORNER_RADIUS + 2.0,
+                Color32::from_black_alpha(20),
+            );
+            // Background
+            painter.rect_filled(layout.content_rect, CORNER_RADIUS + 2.0, theme.sidebar());
+            // Border
+            painter.rect_stroke(
+                layout.content_rect,
+                CORNER_RADIUS + 2.0,
+                Stroke::new(1.0, theme.sidebar_border()),
+                egui::StrokeKind::Inside,
+            );
+        }
+    }
+}
+
+/// Render the collapse/expand toggle button. Returns the new `current_y`
+/// after drawing the button (advanced by one item height + gap).
+fn render_toggle_button(
+    ui: &mut Ui,
+    theme: &crate::Theme,
+    layout: &SidebarLayout,
+    state: &mut SidebarState,
+    current_y: f32,
+) -> f32 {
+    let toggle_rect = Rect::from_min_size(
+        Pos2::new(layout.content_rect.left() + ITEM_PADDING, current_y),
+        Vec2::new(layout.content_width - ITEM_PADDING * 2.0, ITEM_HEIGHT),
+    );
+
+    let toggle_response = ui.interact(
+        toggle_rect,
+        ui.id().with("toggle"),
+        Sense::click().union(Sense::hover()),
+    );
+
+    if toggle_response.clicked() {
+        state.toggle();
+    }
+
+    let painter = ui.painter();
+
+    if toggle_response.hovered() {
+        painter.rect_filled(toggle_rect, CORNER_RADIUS, theme.sidebar_accent());
+    }
+
+    painter.text(
+        Pos2::new(layout.icon_x_base, toggle_rect.center().y),
+        egui::Align2::CENTER_CENTER,
+        "☰",
+        egui::FontId::proportional(ICON_SIZE),
+        if toggle_response.hovered() {
+            theme.sidebar_accent_foreground()
+        } else {
+            theme.sidebar_foreground()
+        },
+    );
+
+    current_y + ITEM_HEIGHT + ITEM_GAP
+}
+
+/// Render all sidebar items. Returns `(clicked_id, hovered_index)`.
+fn render_items(
+    ui: &mut Ui,
+    theme: &crate::Theme,
+    show_icons: bool,
+    layout: &SidebarLayout,
+    state: &mut SidebarState,
+    items: &[InternalSidebarItem],
+    mut current_y: f32,
+) -> (Option<String>, Option<usize>) {
+    let mut clicked_id: Option<String> = None;
+    let mut hovered_index: Option<usize> = None;
+
+    for (index, item) in items.iter().enumerate() {
+        let item_height = if item.is_group_label {
+            ITEM_HEIGHT
+        } else if item.depth > 0 {
+            ITEM_HEIGHT_SM
+        } else {
+            ITEM_HEIGHT
+        };
+
+        // Group labels
+        if item.is_group_label {
+            let widths = AnimationWidths {
+                current: layout.content_width,
+                collapsed: layout.collapsed_width,
+                expanded: layout.expanded_width,
+            };
+            draw_group_label(
+                ui.painter(),
+                theme,
+                &layout.content_rect,
+                current_y,
+                &widths,
+                &item.label,
+            );
+            current_y += item_height + ITEM_GAP;
+            continue;
+        }
+
+        // Calculate indent for sub-items
+        let indent = if item.depth > 0 {
+            14.0 + (item.depth - 1) as f32 * 12.0
+        } else {
+            0.0
+        };
+
+        let item_rect = Rect::from_min_size(
+            Pos2::new(layout.content_rect.left() + ITEM_PADDING + indent, current_y),
+            Vec2::new(
+                layout.content_width - ITEM_PADDING * 2.0 - indent,
+                item_height,
+            ),
+        );
+
+        // Draw left border for sub-items
+        if item.depth > 0 {
+            let border_x = layout.content_rect.left() + ITEM_PADDING + 14.0;
+            ui.painter().line_segment(
+                [
+                    Pos2::new(border_x, current_y),
+                    Pos2::new(border_x, current_y + item_height),
+                ],
+                Stroke::new(1.0, theme.sidebar_border()),
+            );
+        }
+
+        let item_response = ui.interact(
+            item_rect,
+            ui.id().with(&item.id),
+            Sense::click().union(Sense::hover()),
+        );
+
+        if item_response.hovered() {
+            hovered_index = Some(index);
+        }
+
+        if item_response.clicked() {
+            if item.is_group_header {
+                let was_expanded = state
+                    .expanded_groups
+                    .get(&item.id)
+                    .copied()
+                    .unwrap_or(false);
+                state.expanded_groups.insert(item.id.clone(), !was_expanded);
+            } else {
+                clicked_id = Some(item.id.clone());
+                state.active_index = Some(index);
+            }
+        }
+
+        let is_active = item.active || state.active_index == Some(index);
+        let is_hovered = item_response.hovered();
+
+        let painter = ui.painter();
+
+        if is_active || is_hovered {
+            painter.rect_filled(item_rect, CORNER_RADIUS, theme.sidebar_accent());
+        }
+
+        let text_color = if is_active || is_hovered {
+            theme.sidebar_accent_foreground()
+        } else {
+            theme.sidebar_foreground()
+        };
+
+        // Draw icon using the same position as toggle for consistency
+        // Adjust for indent if this is a sub-item
+        let icon_center = if show_icons && !item.icon.is_empty() {
+            // For sub-items, offset from base position
+            let item_icon_x = if item.depth > 0 {
+                // Sub-items: always left-aligned with indent
+                item_rect.left() + ITEM_PADDING + ICON_SIZE / 2.0
+            } else {
+                // Top-level items: use same animated position as toggle
+                layout.icon_x_base
+            };
+            painter.text(
+                Pos2::new(item_icon_x, item_rect.center().y),
+                egui::Align2::CENTER_CENTER,
+                &item.icon,
+                egui::FontId::proportional(ICON_SIZE),
+                text_color,
+            );
+            Some(Pos2::new(item_icon_x, item_rect.center().y))
+        } else {
+            None
+        };
+
+        if layout.expansion_ratio > 0.3 {
+            let label_opacity =
+                ((layout.expansion_ratio - 0.3) / 0.7).clamp(0.0, 1.0);
+            let label_color = Color32::from_rgba_unmultiplied(
+                text_color.r(),
+                text_color.g(),
+                text_color.b(),
+                (f32::from(text_color.a()) * label_opacity) as u8,
+            );
+
+            let label_x = if show_icons && !item.icon.is_empty() {
+                item_rect.left() + ITEM_PADDING + ICON_SIZE + 8.0
+            } else {
+                item_rect.left() + ITEM_PADDING
+            };
+
+            let font = if is_active {
+                egui::FontId::new(14.0, egui::FontFamily::Proportional)
+            } else {
+                egui::FontId::proportional(14.0)
+            };
+
+            painter.text(
+                Pos2::new(label_x, item_rect.center().y),
+                egui::Align2::LEFT_CENTER,
+                &item.label,
+                font,
+                label_color,
+            );
+
+            if item.is_group_header {
+                let is_group_expanded = state
+                    .expanded_groups
+                    .get(&item.id)
+                    .copied()
+                    .unwrap_or(false);
+                let chevron = if is_group_expanded { "▼" } else { "▶" };
+                painter.text(
+                    Pos2::new(
+                        item_rect.right() - ITEM_PADDING - 8.0,
+                        item_rect.center().y,
+                    ),
+                    egui::Align2::CENTER_CENTER,
+                    chevron,
+                    egui::FontId::proportional(10.0),
+                    label_color.gamma_multiply(0.7),
+                );
+            }
+
+            if let Some(badge) = &item.badge {
+                if !item.is_group_header {
+                    draw_badge(painter, theme, &item_rect, badge, label_opacity);
+                }
+            }
+        } else if let Some(badge) = &item.badge {
+            // When collapsed, show badge indicator on icon
+            if !item.is_group_header {
+                if let Some(icon_pos) = icon_center {
+                    draw_collapsed_badge(painter, theme, icon_pos, badge);
+                }
+            }
+        }
+
+        current_y += item_height + ITEM_GAP;
+    }
+
+    (clicked_id, hovered_index)
+}
+
+/// Width parameters for sidebar animation
+struct AnimationWidths {
+    current: f32,
+    collapsed: f32,
+    expanded: f32,
+}
+
 fn draw_group_label(
     painter: &egui::Painter,
     theme: &crate::Theme,
     content_rect: &Rect,
     y: f32,
-    current_width: f32,
-    collapsed_width: f32,
-    expanded_width: f32,
+    widths: &AnimationWidths,
     label: &str,
 ) {
     let expansion_ratio =
-        ((current_width - collapsed_width) / (expanded_width - collapsed_width)).clamp(0.0, 1.0);
+        ((widths.current - widths.collapsed) / (widths.expanded - widths.collapsed)).clamp(0.0, 1.0);
 
     if expansion_ratio > 0.5 {
         let opacity = ((expansion_ratio - 0.5) / 0.5).clamp(0.0, 1.0);

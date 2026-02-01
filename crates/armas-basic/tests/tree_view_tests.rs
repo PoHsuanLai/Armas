@@ -1,11 +1,11 @@
-//! Tests for TreeView component using egui_kittest
+//! Tests for `TreeView` component using `egui_kittest`
 
 use armas_basic::components::navigation::{TreeItem, TreeView};
 use armas_basic::ArmasContextExt;
 use egui_kittest::Harness;
 use std::path::PathBuf;
 
-/// Test that TreeView renders without panicking
+/// Test that `TreeView` renders without panicking
 #[test]
 fn test_tree_view_renders() {
     let mut harness = Harness::new_ui(|ui| {
@@ -17,7 +17,7 @@ fn test_tree_view_renders() {
     harness.run();
 }
 
-/// Test TreeView with fixed dimensions
+/// Test `TreeView` with fixed dimensions
 #[test]
 fn test_tree_view_fixed_dimensions() {
     let mut harness = Harness::new_ui(|ui| {
@@ -29,7 +29,7 @@ fn test_tree_view_fixed_dimensions() {
     harness.run();
 }
 
-/// Test TreeView with items
+/// Test `TreeView` with items
 #[test]
 fn test_tree_view_with_items() {
     let mut harness = Harness::new_ui(|ui| {
@@ -47,7 +47,7 @@ fn test_tree_view_with_items() {
     harness.run();
 }
 
-/// Test TreeView with nested folders
+/// Test `TreeView` with nested folders
 #[test]
 fn test_tree_view_nested_folders() {
     let mut harness = Harness::new_ui(|ui| {
@@ -66,7 +66,7 @@ fn test_tree_view_nested_folders() {
     harness.run();
 }
 
-/// Test TreeItem leaf creation
+/// Test `TreeItem` leaf creation
 #[test]
 fn test_tree_item_leaf() {
     let item = TreeItem::leaf("test.txt", "/path/to/test.txt");
@@ -75,7 +75,7 @@ fn test_tree_item_leaf() {
     assert!(!item.is_directory);
 }
 
-/// Test TreeItem branch creation
+/// Test `TreeItem` branch creation
 #[test]
 fn test_tree_item_branch() {
     let item = TreeItem::branch("docs", "/path/to/docs");
@@ -84,7 +84,7 @@ fn test_tree_item_branch() {
     assert!(item.is_directory);
 }
 
-/// Test TreeItem file alias
+/// Test `TreeItem` file alias
 #[test]
 fn test_tree_item_file() {
     let item = TreeItem::file("test.txt", "/path/to/test.txt");
@@ -92,7 +92,7 @@ fn test_tree_item_file() {
     assert!(!item.is_directory);
 }
 
-/// Test TreeItem folder alias
+/// Test `TreeItem` folder alias
 #[test]
 fn test_tree_item_folder() {
     let item = TreeItem::folder("docs", "/path/to/docs");
@@ -100,14 +100,14 @@ fn test_tree_item_folder() {
     assert!(item.is_directory);
 }
 
-/// Test TreeView getters
+/// Test `TreeView` getters
 #[test]
 fn test_tree_view_getters() {
     let tree = TreeView::new();
     assert!(tree.selected().is_none());
 }
 
-/// Test TreeView with empty items
+/// Test `TreeView` with empty items
 #[test]
 fn test_tree_view_empty_items() {
     let mut harness = Harness::new_ui(|ui| {
@@ -119,7 +119,7 @@ fn test_tree_view_empty_items() {
     harness.run();
 }
 
-/// Test TreeView with custom root path
+/// Test `TreeView` with custom root path
 #[test]
 fn test_tree_view_custom_root() {
     let mut harness = Harness::new_ui(|ui| {
@@ -140,7 +140,7 @@ fn test_tree_view_custom_root() {
     harness.run();
 }
 
-/// Test TreeView response
+/// Test `TreeView` response
 #[test]
 fn test_tree_view_response() {
     let mut harness = Harness::new_ui(|ui| {

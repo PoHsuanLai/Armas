@@ -94,6 +94,15 @@ pub struct Popover {
     external_is_open: Option<bool>,
 }
 
+/// Style parameters for popover rendering
+struct PopoverRenderStyle {
+    bg_color: Color32,
+    border_color: Color32,
+    rounding: f32,
+    padding: f32,
+    card_variant: CardVariant,
+}
+
 impl Popover {
     /// Create a new popover with the given ID
     pub fn new(id: impl Into<Id>) -> Self {
@@ -196,16 +205,20 @@ impl Popover {
         let (stroke_width, rounding, padding) = self.get_style_params(theme);
         let card_variant = self.get_card_variant(stroke_width);
 
-        // Render the popover
-        let area_response = self.render_popover(
-            ctx,
-            theme,
-            popover_pos,
+        let style = PopoverRenderStyle {
             bg_color,
             border_color,
             rounding,
             padding,
             card_variant,
+        };
+
+        // Render the popover
+        let area_response = self.render_popover(
+            ctx,
+            theme,
+            popover_pos,
+            &style,
             content,
         );
 
@@ -323,17 +336,12 @@ impl Popover {
     // Rendering
     // ========================================================================
 
-    #[allow(clippy::too_many_arguments)]
     fn render_popover(
         &self,
         ctx: &egui::Context,
         theme: &Theme,
         popover_pos: Pos2,
-        bg_color: Color32,
-        border_color: Color32,
-        rounding: f32,
-        padding: f32,
-        card_variant: CardVariant,
+        style: &PopoverRenderStyle,
         content: impl FnOnce(&mut Ui),
     ) -> egui::InnerResponse<()> {
         egui::Area::new(self.id)
@@ -347,11 +355,11 @@ impl Popover {
                 ui.set_max_width(content_width);
 
                 Card::new()
-                    .variant(card_variant)
-                    .fill(bg_color)
-                    .stroke(border_color)
-                    .corner_radius(rounding)
-                    .inner_margin(padding)
+                    .variant(style.card_variant)
+                    .fill(style.bg_color)
+                    .stroke(style.border_color)
+                    .corner_radius(style.rounding)
+                    .inner_margin(style.padding)
                     .width(content_width)
                     .show(ui, theme, |ui| {
                         content(ui);

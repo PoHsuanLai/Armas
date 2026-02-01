@@ -254,6 +254,7 @@ impl MenuItemBuilder<'_> {
     }
 
     /// Set an icon (emoji or symbol)
+    #[must_use]
     pub fn icon(mut self, icon: impl Into<String>) -> Self {
         if let Some(item) = self.current() {
             item.icon = Some(icon.into());
@@ -262,6 +263,7 @@ impl MenuItemBuilder<'_> {
     }
 
     /// Set a keyboard shortcut display string
+    #[must_use]
     pub fn shortcut(mut self, shortcut: impl Into<String>) -> Self {
         if let Some(item) = self.current() {
             item.shortcut = Some(shortcut.into());
@@ -663,7 +665,7 @@ fn render_item_with_hover(
         has_indicator,
         variant,
     };
-    render_item_content(ui, theme, params);
+    render_item_content(ui, theme, &params);
 
     let clicked = if item_response.clicked() && !item.disabled {
         Some(idx)
@@ -708,7 +710,7 @@ struct ItemContentParams<'a> {
     variant: ItemVariant,
 }
 
-fn render_item_content(ui: &mut Ui, theme: &crate::Theme, params: ItemContentParams) {
+fn render_item_content(ui: &mut Ui, theme: &crate::Theme, params: &ItemContentParams) {
     let (text_color, icon_color) = get_item_colors(
         theme,
         params.destructive,
@@ -808,6 +810,7 @@ struct RenderSubmenuParams<'a> {
     response: &'a mut MenuResponse,
 }
 
+#[allow(clippy::needless_pass_by_value)]
 fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams) {
     let is_selected = *params.selected_index == Some(params.submenu_params.idx);
     let is_submenu_open = params.submenu_state.is_open(params.submenu_params.idx);
@@ -902,7 +905,7 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
 
     let sub_response = submenu.show(ui.ctx(), submenu_anchor, |builder| {
         for sub_item in params.submenu_params.sub_items {
-            add_item_to_builder(builder, sub_item, params.menu_id, params.menu_width);
+            add_item_to_builder(builder, sub_item);
         }
     });
 
@@ -921,8 +924,6 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
 fn add_item_to_builder(
     builder: &mut MenuBuilder,
     item: &MenuItemData,
-    _menu_id: Id,
-    _menu_width: f32,
 ) {
     match &item.kind {
         MenuItemKind::Separator => builder.separator(),
@@ -941,7 +942,7 @@ fn add_item_to_builder(
                 b = b.inset();
             }
             if *destructive {
-                b.destructive();
+                let _ = b.destructive();
             }
         }
         MenuItemKind::Checkbox { checked } => {
@@ -950,7 +951,7 @@ fn add_item_to_builder(
                 b = b.icon(icon);
             }
             if item.disabled {
-                b.disabled(true);
+                let _ = b.disabled(true);
             }
         }
         MenuItemKind::Radio {
@@ -963,21 +964,21 @@ fn add_item_to_builder(
                 b = b.icon(icon);
             }
             if item.disabled {
-                b.disabled(true);
+                let _ = b.disabled(true);
             }
         }
         MenuItemKind::Submenu { items } => {
             let items_clone = items.clone();
             let mut b = builder.submenu(&item.label, |sub| {
                 for sub_item in &items_clone {
-                    add_item_to_builder(sub, sub_item, _menu_id, _menu_width);
+                    add_item_to_builder(sub, sub_item);
                 }
             });
             if let Some(icon) = &item.icon {
                 b = b.icon(icon);
             }
             if item.disabled {
-                b.disabled(true);
+                let _ = b.disabled(true);
             }
         }
     }
@@ -1022,10 +1023,10 @@ enum ItemVariant {
 }
 
 impl ItemVariant {
-    const fn is_checked(&self) -> Option<bool> {
+    const fn is_checked(self) -> Option<bool> {
         match self {
             Self::Normal => None,
-            Self::Checkbox(checked) | Self::Radio(checked) => Some(*checked),
+            Self::Checkbox(checked) | Self::Radio(checked) => Some(checked),
         }
     }
 }
@@ -1053,6 +1054,7 @@ fn navigate_down(selected_index: &mut Option<usize>, items: &[MenuItemData]) {
     }
 }
 
+#[allow(clippy::cast_possible_wrap)]
 fn navigate_up(selected_index: &mut Option<usize>, items: &[MenuItemData]) {
     let start_idx = selected_index.unwrap_or(items.len()) as isize - 1;
 
@@ -1106,12 +1108,14 @@ impl MenuItem {
     }
 
     /// Set an icon
+    #[must_use]
     pub fn icon(mut self, icon: impl Into<String>) -> Self {
         self.icon = Some(icon.into());
         self
     }
 
     /// Set a keyboard shortcut
+    #[must_use]
     pub fn shortcut(mut self, shortcut: impl Into<String>) -> Self {
         self.shortcut = Some(shortcut.into());
         self

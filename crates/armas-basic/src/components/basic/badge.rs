@@ -193,11 +193,7 @@ impl Badge {
         let remove_space = if self.removable { 16.0 } else { 0.0 };
 
         let content_width = text_width + dot_space + remove_space + PADDING_X * 2.0;
-        let width = if let Some(min_w) = self.min_width {
-            content_width.max(min_w)
-        } else {
-            content_width
-        };
+        let width = self.min_width.map_or(content_width, |min_w| content_width.max(min_w));
         let height = self
             .custom_height
             .unwrap_or(font_size + padding_y * 2.0 + 4.0);
@@ -392,15 +388,16 @@ impl NotificationBadge {
     pub fn show(&self, ui: &mut Ui, theme: &crate::Theme) -> Response {
         let color = self.color.unwrap_or_else(|| theme.destructive());
 
-        let text = if let Some(max) = self.max_count {
-            if self.count > max {
-                format!("{max}+")
-            } else {
-                self.count.to_string()
-            }
-        } else {
-            self.count.to_string()
-        };
+        let text = self.max_count.map_or_else(
+            || self.count.to_string(),
+            |max| {
+                if self.count > max {
+                    format!("{max}+")
+                } else {
+                    self.count.to_string()
+                }
+            },
+        );
 
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 

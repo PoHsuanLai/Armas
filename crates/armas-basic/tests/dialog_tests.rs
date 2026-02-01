@@ -1,4 +1,4 @@
-//! Tests for Dialog component using egui_kittest
+//! Tests for Dialog component using `egui_kittest`
 
 use armas_basic::components::overlays::{Dialog, DialogSize};
 use armas_basic::prelude::*;
@@ -128,7 +128,7 @@ fn test_dialog_no_title() {
     harness.step();
 }
 
-/// Test Dialog with closable=false (AlertDialog behavior)
+/// Test Dialog with `closable=false` (`AlertDialog` behavior)
 #[test]
 fn test_dialog_not_closable() {
     let theme = Theme::dark();

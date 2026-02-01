@@ -22,6 +22,23 @@ struct ThreeValueSliderDragState {
     drag_start_value: f32,
 }
 
+/// Geometry parameters for three-value slider layout
+struct SliderGeometry<'a> {
+    track_rect: &'a Rect,
+    thumb_radius: f32,
+    min_x: f32,
+    value_x: f32,
+    max_x: f32,
+}
+
+/// Mutable value parameters for slider interaction
+struct ValueParams<'a> {
+    min_bound: &'a mut f32,
+    value: &'a mut f32,
+    max_bound: &'a mut f32,
+    changed: &'a mut bool,
+}
+
 /// Parameters for drawing thumbs
 struct ThumbDrawParams<'a> {
     painter: &'a egui::Painter,
@@ -80,6 +97,7 @@ impl ThreeValueSlider {
     }
 
     /// Set ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -107,12 +125,14 @@ impl ThreeValueSlider {
     }
 
     /// Set a label for the slider
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
     }
 
     /// Set a suffix for the values
+    #[must_use]
     pub fn suffix(mut self, suffix: impl Into<String>) -> Self {
         self.suffix = Some(suffix.into());
         self
@@ -195,42 +215,48 @@ impl ThreeValueSlider {
             let value_x = self.value_to_x(*value, &track_rect);
             let max_x = self.value_to_x(*max_bound, &track_rect);
 
+            let geometry = SliderGeometry {
+                track_rect: &track_rect,
+                thumb_radius,
+                min_x,
+                value_x,
+                max_x,
+            };
+
             // Handle interactions
+            let mut values = ValueParams {
+                min_bound,
+                value,
+                max_bound,
+                changed: &mut changed,
+            };
             let drag_state = self.handle_interaction(
                 ui,
                 &response,
                 drag_state_id,
-                &track_rect,
-                min_x,
-                value_x,
-                max_x,
-                min_bound,
-                value,
-                max_bound,
-                &mut changed,
+                &geometry,
+                &mut values,
             );
 
             // Determine which thumb is hovered (for per-thumb hover effect)
             let hovered_thumb = if response.hovered() {
-                if let Some(pos) = response.hover_pos() {
-                    let dist_to_min = (pos.x - min_x).abs();
-                    let dist_to_value = (pos.x - value_x).abs();
-                    let dist_to_max = (pos.x - max_x).abs();
-                    if dist_to_value <= thumb_radius
+                response.hover_pos().and_then(|pos| {
+                    let dist_to_min = (pos.x - geometry.min_x).abs();
+                    let dist_to_value = (pos.x - geometry.value_x).abs();
+                    let dist_to_max = (pos.x - geometry.max_x).abs();
+                    if dist_to_value <= geometry.thumb_radius
                         && dist_to_value <= dist_to_min
                         && dist_to_value <= dist_to_max
                     {
                         Some(DragTarget::Value)
-                    } else if dist_to_min <= thumb_radius && dist_to_min <= dist_to_max {
+                    } else if dist_to_min <= geometry.thumb_radius && dist_to_min <= dist_to_max {
                         Some(DragTarget::Min)
-                    } else if dist_to_max <= thumb_radius {
+                    } else if dist_to_max <= geometry.thumb_radius {
                         Some(DragTarget::Max)
                     } else {
                         None
                     }
-                } else {
-                    None
-                }
+                })
             } else {
                 None
             };
@@ -239,12 +265,8 @@ impl ThreeValueSlider {
             self.draw(
                 ui,
                 &response,
-                &track_rect,
+                &geometry,
                 track_height,
-                thumb_radius,
-                min_x,
-                value_x,
-                max_x,
                 &drag_state,
                 hovered_thumb,
                 &theme,
@@ -305,19 +327,15 @@ impl ThreeValueSlider {
     }
 
     fn format_value(&self, value: f32) -> String {
-        if let Some(suffix) = &self.suffix {
-            format!("{value:.1}{suffix}")
-        } else {
-            format!("{value:.1}")
-        }
+        self.suffix.as_ref().map_or_else(
+            || format!("{value:.1}"),
+            |suffix| format!("{value:.1}{suffix}"),
+        )
     }
 
     fn apply_step(&self, value: f32) -> f32 {
-        if let Some(step) = self.step {
-            (value / step).round() * step
-        } else {
-            value
-        }
+        self.step
+            .map_or(value, |step| (value / step).round() * step)
     }
 
     fn value_to_x(&self, value: f32, track_rect: &Rect) -> f32 {
@@ -344,20 +362,13 @@ impl ThreeValueSlider {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn handle_interaction(
         &self,
         ui: &mut Ui,
         response: &Response,
         drag_state_id: egui::Id,
-        track_rect: &Rect,
-        min_x: f32,
-        value_x: f32,
-        max_x: f32,
-        min_bound: &mut f32,
-        value: &mut f32,
-        max_bound: &mut f32,
-        changed: &mut bool,
+        geometry: &SliderGeometry,
+        values: &mut ValueParams,
     ) -> ThreeValueSliderDragState {
         let mut drag_state: ThreeValueSliderDragState = ui
             .ctx()
@@ -366,12 +377,12 @@ impl ThreeValueSlider {
         // Handle drag start
         if response.drag_started() {
             if let Some(pos) = response.interact_pointer_pos() {
-                drag_state.target = self.determine_target(pos.x, min_x, value_x, max_x);
+                drag_state.target =
+                    self.determine_target(pos.x, geometry.min_x, geometry.value_x, geometry.max_x);
                 drag_state.drag_start_value = match drag_state.target {
-                    DragTarget::Min => *min_bound,
-                    DragTarget::Value => *value,
-                    DragTarget::Max => *max_bound,
-                    DragTarget::None => *value,
+                    DragTarget::Min => *values.min_bound,
+                    DragTarget::Value | DragTarget::None => *values.value,
+                    DragTarget::Max => *values.max_bound,
                 };
             }
         }
@@ -381,24 +392,20 @@ impl ThreeValueSlider {
             if let Some(pos) = response.interact_pointer_pos() {
                 // Fallback if target wasn't set
                 if drag_state.target == DragTarget::None {
-                    drag_state.target = self.determine_target(pos.x, min_x, value_x, max_x);
+                    drag_state.target = self.determine_target(
+                        pos.x,
+                        geometry.min_x,
+                        geometry.value_x,
+                        geometry.max_x,
+                    );
                     drag_state.drag_start_value = match drag_state.target {
-                        DragTarget::Min => *min_bound,
-                        DragTarget::Value => *value,
-                        DragTarget::Max => *max_bound,
-                        DragTarget::None => *value,
+                        DragTarget::Min => *values.min_bound,
+                        DragTarget::Value | DragTarget::None => *values.value,
+                        DragTarget::Max => *values.max_bound,
                     };
                 }
 
-                self.update_values_from_drag(
-                    pos.x,
-                    track_rect,
-                    &drag_state,
-                    min_bound,
-                    value,
-                    max_bound,
-                    changed,
-                );
+                self.update_values_from_drag(pos.x, geometry.track_rect, &drag_state, values);
             }
         }
 
@@ -414,56 +421,48 @@ impl ThreeValueSlider {
         drag_state
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn update_values_from_drag(
         &self,
         pos_x: f32,
         track_rect: &Rect,
         drag_state: &ThreeValueSliderDragState,
-        min_bound: &mut f32,
-        value: &mut f32,
-        max_bound: &mut f32,
-        changed: &mut bool,
+        values: &mut ValueParams,
     ) {
         let new_value = self.apply_step(self.x_to_value(pos_x, track_rect));
 
         match drag_state.target {
             DragTarget::Min => {
-                let clamped = new_value.clamp(self.range_min, *value - self.min_gap);
-                if (clamped - *min_bound).abs() > 0.001 {
-                    *min_bound = clamped;
-                    *changed = true;
+                let clamped = new_value.clamp(self.range_min, *values.value - self.min_gap);
+                if (clamped - *values.min_bound).abs() > 0.001 {
+                    *values.min_bound = clamped;
+                    *values.changed = true;
                 }
             }
             DragTarget::Value => {
-                let clamped = new_value.clamp(*min_bound + self.min_gap, *max_bound - self.min_gap);
-                if (clamped - *value).abs() > 0.001 {
-                    *value = clamped;
-                    *changed = true;
+                let clamped = new_value
+                    .clamp(*values.min_bound + self.min_gap, *values.max_bound - self.min_gap);
+                if (clamped - *values.value).abs() > 0.001 {
+                    *values.value = clamped;
+                    *values.changed = true;
                 }
             }
             DragTarget::Max => {
-                let clamped = new_value.clamp(*value + self.min_gap, self.range_max);
-                if (clamped - *max_bound).abs() > 0.001 {
-                    *max_bound = clamped;
-                    *changed = true;
+                let clamped = new_value.clamp(*values.value + self.min_gap, self.range_max);
+                if (clamped - *values.max_bound).abs() > 0.001 {
+                    *values.max_bound = clamped;
+                    *values.changed = true;
                 }
             }
             DragTarget::None => {}
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn draw(
         &self,
         ui: &Ui,
         response: &Response,
-        track_rect: &Rect,
+        geometry: &SliderGeometry,
         track_height: f32,
-        thumb_radius: f32,
-        min_x: f32,
-        value_x: f32,
-        max_x: f32,
         drag_state: &ThreeValueSliderDragState,
         hovered_thumb: Option<DragTarget>,
         theme: &crate::Theme,
@@ -471,12 +470,12 @@ impl ThreeValueSlider {
         let painter = ui.painter();
 
         // Background track
-        painter.rect_filled(*track_rect, track_height / 2.0, theme.muted());
+        painter.rect_filled(*geometry.track_rect, track_height / 2.0, theme.muted());
 
         // Filled region (min to max bounds)
         let fill_rect = Rect::from_min_max(
-            pos2(min_x, track_rect.top()),
-            pos2(max_x, track_rect.bottom()),
+            pos2(geometry.min_x, geometry.track_rect.top()),
+            pos2(geometry.max_x, geometry.track_rect.bottom()),
         );
         painter.rect_filled(
             fill_rect,
@@ -486,55 +485,41 @@ impl ThreeValueSlider {
 
         // Highlight region from min to current value
         let value_fill_rect = Rect::from_min_max(
-            pos2(min_x, track_rect.top()),
-            pos2(value_x, track_rect.bottom()),
+            pos2(geometry.min_x, geometry.track_rect.top()),
+            pos2(geometry.value_x, geometry.track_rect.bottom()),
         );
         painter.rect_filled(value_fill_rect, track_height / 2.0, theme.primary());
 
         // Draw bound thumbs (min and max)
-        self.draw_bound_thumbs(
-            painter,
-            response,
-            track_rect,
-            thumb_radius,
-            min_x,
-            max_x,
-            drag_state,
-            hovered_thumb,
-            theme,
-        );
+        self.draw_bound_thumbs(painter, response, geometry, drag_state, hovered_thumb, theme);
 
         // Draw value thumb (center)
         let params = ThumbDrawParams {
             painter,
             response,
-            track_rect,
-            thumb_radius,
+            track_rect: geometry.track_rect,
+            thumb_radius: geometry.thumb_radius,
             drag_state,
             hovered_thumb,
             theme,
         };
-        self.draw_value_thumb(&params, value_x);
+        self.draw_value_thumb(&params, geometry.value_x);
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn draw_bound_thumbs(
         &self,
         painter: &egui::Painter,
         response: &Response,
-        track_rect: &Rect,
-        thumb_radius: f32,
-        min_x: f32,
-        max_x: f32,
+        geometry: &SliderGeometry,
         drag_state: &ThreeValueSliderDragState,
         hovered_thumb: Option<DragTarget>,
         theme: &crate::Theme,
     ) {
         // Bound thumbs are slightly smaller
-        let bound_radius = thumb_radius * 0.8;
+        let bound_radius = geometry.thumb_radius * 0.8;
 
-        for (x, is_min) in [(min_x, true), (max_x, false)] {
-            let center = pos2(x, track_rect.center().y);
+        for (x, is_min) in [(geometry.min_x, true), (geometry.max_x, false)] {
+            let center = pos2(x, geometry.track_rect.center().y);
             let this_target = if is_min {
                 DragTarget::Min
             } else {

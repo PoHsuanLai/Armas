@@ -57,12 +57,14 @@ impl SelectOption {
     }
 
     /// Set an icon for this option
+    #[must_use]
     pub fn icon(mut self, icon: impl Into<String>) -> Self {
         self.icon = Some(icon.into());
         self
     }
 
     /// Set a description for this option
+    #[must_use]
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
@@ -129,24 +131,28 @@ impl Select {
     }
 
     /// Set a unique identifier for this select component
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
     }
 
     /// Set the initially selected value
+    #[must_use]
     pub fn selected(mut self, value: impl Into<String>) -> Self {
         self.selected_value = Some(value.into());
         self
     }
 
     /// Set a label for the select component
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
     }
 
     /// Set placeholder text shown when no option is selected
+    #[must_use]
     pub fn placeholder(mut self, placeholder: impl Into<String>) -> Self {
         self.placeholder = placeholder.into();
         self
@@ -629,8 +635,6 @@ impl Select {
     ) {
         let font_size = self.item_font_size();
         let content_rect = rect.shrink2(vec2(PADDING, 0.0));
-        let mut label_x = 0.0;
-
         // Icon
         if let Some(icon) = &option.icon {
             painter.text(
@@ -640,8 +644,8 @@ impl Select {
                 egui::FontId::proportional(font_size),
                 text_color,
             );
-            label_x = ICON_WIDTH;
         }
+        let label_x = if option.icon.is_some() { ICON_WIDTH } else { 0.0 };
 
         // Label and description
         if let Some(description) = &option.description {
@@ -702,6 +706,7 @@ impl Select {
         should_close
     }
 
+    #[allow(clippy::cast_possible_wrap)]
     fn move_highlight(&mut self, delta: i32) {
         let Some(current) = self.highlighted_index else {
             self.highlighted_index = self.filtered_indices.first().copied();

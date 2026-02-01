@@ -115,12 +115,14 @@ impl Drawer {
     }
 
     /// Set the title (`DrawerTitle` equivalent)
+    #[must_use]
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
     /// Set the description (`DrawerDescription` equivalent)
+    #[must_use]
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
@@ -229,8 +231,7 @@ impl Drawer {
                 );
 
                 // Drag handle
-                let mut handle_response = None;
-                if self.show_handle {
+                let handle_response = if self.show_handle {
                     let handle_rect = Rect::from_center_size(
                         Pos2::new(
                             drawer_rect.center().x,
@@ -252,8 +253,10 @@ impl Drawer {
                     ui.painter()
                         .rect_filled(handle_rect, HANDLE_ROUNDING, theme.muted());
 
-                    handle_response = Some(drag_response);
-                }
+                    Some(drag_response)
+                } else {
+                    None
+                };
 
                 // Handle dragging
                 if let Some(drag_resp) = handle_response {
@@ -272,11 +275,9 @@ impl Drawer {
 
                         if drag_ratio > DRAG_CLOSE_THRESHOLD || velocity > DRAG_VELOCITY_THRESHOLD {
                             response.closed = true;
-                            drag_offset = 0.0;
-                        } else {
-                            // Snap back to nearest snap point
-                            drag_offset = 0.0; // For now, just snap to full
                         }
+                        // Snap back to nearest snap point (or reset on close)
+                        drag_offset = 0.0;
                         last_drag_delta = 0.0;
                     }
                 }

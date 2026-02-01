@@ -144,12 +144,14 @@ impl Sheet {
     }
 
     /// Set the title (`SheetTitle` equivalent)
+    #[must_use]
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
     /// Set the description (`SheetDescription` equivalent)
+    #[must_use]
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self

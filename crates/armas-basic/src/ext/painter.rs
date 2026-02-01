@@ -143,16 +143,18 @@ impl PainterExt for Painter {
 
             let direction = segment / length;
             let pattern_length = dash_length + gap_length;
-            let mut current_pos = 0.0;
+            let num_dashes = (length / pattern_length).ceil() as usize;
 
-            while current_pos < length {
+            for i in 0..num_dashes {
+                let current_pos = i as f32 * pattern_length;
+                if current_pos >= length {
+                    break;
+                }
                 let dash_start = start + direction * current_pos;
                 let dash_end_pos = (current_pos + dash_length).min(length);
                 let dash_end = start + direction * dash_end_pos;
 
                 self.line_segment([dash_start, dash_end], stroke);
-
-                current_pos += pattern_length;
             }
         }
     }

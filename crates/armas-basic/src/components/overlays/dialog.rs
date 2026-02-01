@@ -34,7 +34,7 @@ pub enum DialogSize {
 }
 
 impl DialogSize {
-    fn max_width(&self, screen_width: f32) -> f32 {
+    fn max_width(self, screen_width: f32) -> f32 {
         let max = screen_width - 32.0; // max-w-[calc(100%-2rem)]
         match self {
             Self::Small => 384.0_f32.min(max),
@@ -80,12 +80,14 @@ impl Dialog {
     }
 
     /// Set the dialog title
+    #[must_use]
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
     /// Set the dialog description
+    #[must_use]
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
@@ -118,11 +120,9 @@ impl Dialog {
         };
 
         let state_id = self.id.with("dialog_state");
-        let mut is_open = if let Some(external_open) = self.is_open {
-            external_open
-        } else {
-            ctx.data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false))
-        };
+        let mut is_open = self
+            .is_open
+            .unwrap_or_else(|| ctx.data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(false)));
 
         if !is_open {
             self.fade_animation.reset();

@@ -24,6 +24,14 @@ struct RangeSliderDragState {
     drag_start_x: f32,
 }
 
+/// Geometry parameters for slider layout
+struct SliderGeometry<'a> {
+    track_rect: &'a Rect,
+    thumb_radius: f32,
+    min_x: f32,
+    max_x: f32,
+}
+
 /// Range slider with two thumbs for min/max selection
 pub struct RangeSlider {
     id: Option<egui::Id>,
@@ -59,6 +67,7 @@ impl RangeSlider {
     }
 
     /// Set ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -86,12 +95,14 @@ impl RangeSlider {
     }
 
     /// Set a label for the slider
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
     }
 
     /// Set a suffix for the values (e.g., "%", "ms", "Hz")
+    #[must_use]
     pub fn suffix(mut self, suffix: impl Into<String>) -> Self {
         self.suffix = Some(suffix.into());
         self
@@ -168,15 +179,19 @@ impl RangeSlider {
             let min_x = self.value_to_x(*min_value, &track_rect);
             let max_x = self.value_to_x(*max_value, &track_rect);
 
+            let geometry = SliderGeometry {
+                track_rect: &track_rect,
+                thumb_radius,
+                min_x,
+                max_x,
+            };
+
             // Handle interactions
             let drag_state = self.handle_interaction(
                 ui,
                 &response,
                 drag_state_id,
-                &track_rect,
-                thumb_radius,
-                min_x,
-                max_x,
+                &geometry,
                 min_value,
                 max_value,
                 &mut changed,
@@ -184,19 +199,17 @@ impl RangeSlider {
 
             // Determine which thumb is hovered (for per-thumb hover effect)
             let hovered_thumb = if response.hovered() {
-                if let Some(pos) = response.hover_pos() {
-                    let dist_to_min = (pos.x - min_x).abs();
-                    let dist_to_max = (pos.x - max_x).abs();
-                    if dist_to_min <= thumb_radius {
+                response.hover_pos().and_then(|pos| {
+                    let dist_to_min = (pos.x - geometry.min_x).abs();
+                    let dist_to_max = (pos.x - geometry.max_x).abs();
+                    if dist_to_min <= geometry.thumb_radius {
                         Some(DragTarget::Min)
-                    } else if dist_to_max <= thumb_radius {
+                    } else if dist_to_max <= geometry.thumb_radius {
                         Some(DragTarget::Max)
                     } else {
                         None
                     }
-                } else {
-                    None
-                }
+                })
             } else {
                 None
             };
@@ -205,11 +218,8 @@ impl RangeSlider {
             self.draw(
                 ui,
                 &response,
-                &track_rect,
+                &geometry,
                 track_height,
-                thumb_radius,
-                min_x,
-                max_x,
                 &drag_state,
                 hovered_thumb,
                 &theme,
@@ -265,19 +275,15 @@ impl RangeSlider {
     }
 
     fn format_value(&self, value: f32) -> String {
-        if let Some(suffix) = &self.suffix {
-            format!("{value:.1}{suffix}")
-        } else {
-            format!("{value:.1}")
-        }
+        self.suffix.as_ref().map_or_else(
+            || format!("{value:.1}"),
+            |suffix| format!("{value:.1}{suffix}"),
+        )
     }
 
     fn apply_step(&self, value: f32) -> f32 {
-        if let Some(step) = self.step {
-            (value / step).round() * step
-        } else {
-            value
-        }
+        self.step
+            .map_or(value, |step| (value / step).round() * step)
     }
 
     fn value_to_x(&self, value: f32, track_rect: &Rect) -> f32 {
@@ -314,16 +320,12 @@ impl RangeSlider {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn handle_interaction(
         &self,
         ui: &mut Ui,
         response: &Response,
         drag_state_id: egui::Id,
-        track_rect: &Rect,
-        handle_radius: f32,
-        min_x: f32,
-        max_x: f32,
+        geometry: &SliderGeometry,
         min_value: &mut f32,
         max_value: &mut f32,
         changed: &mut bool,
@@ -335,7 +337,7 @@ impl RangeSlider {
         // Handle drag start
         if response.drag_started() {
             if let Some(pos) = response.interact_pointer_pos() {
-                drag_state.target = self.determine_target(pos.x, min_x, max_x, handle_radius);
+                drag_state.target = self.determine_target(pos.x, geometry.min_x, geometry.max_x, geometry.thumb_radius);
                 drag_state.drag_start_min = *min_value;
                 drag_state.drag_start_max = *max_value;
                 drag_state.drag_start_x = pos.x;
@@ -347,7 +349,7 @@ impl RangeSlider {
             if let Some(pos) = response.interact_pointer_pos() {
                 // Fallback if target wasn't set
                 if drag_state.target == DragTarget::None {
-                    drag_state.target = self.determine_target(pos.x, min_x, max_x, handle_radius);
+                    drag_state.target = self.determine_target(pos.x, geometry.min_x, geometry.max_x, geometry.thumb_radius);
                     drag_state.drag_start_min = *min_value;
                     drag_state.drag_start_max = *max_value;
                     drag_state.drag_start_x = pos.x;
@@ -355,7 +357,7 @@ impl RangeSlider {
 
                 self.update_values_from_drag(
                     pos.x,
-                    track_rect,
+                    geometry.track_rect,
                     &drag_state,
                     min_value,
                     max_value,
@@ -414,6 +416,7 @@ impl RangeSlider {
 
                 let range_size = drag_state.drag_start_max - drag_state.drag_start_min;
                 let mut new_min = drag_state.drag_start_min + delta_value;
+                #[allow(clippy::useless_let_if_seq)]
                 let mut new_max = drag_state.drag_start_max + delta_value;
 
                 // Clamp to bounds while preserving range size
@@ -439,16 +442,12 @@ impl RangeSlider {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn draw(
         &self,
         ui: &Ui,
         response: &Response,
-        track_rect: &Rect,
+        geometry: &SliderGeometry,
         track_height: f32,
-        thumb_radius: f32,
-        min_x: f32,
-        max_x: f32,
         drag_state: &RangeSliderDragState,
         hovered_thumb: Option<DragTarget>,
         theme: &crate::Theme,
@@ -456,18 +455,18 @@ impl RangeSlider {
         let painter = ui.painter();
 
         // Background track
-        painter.rect_filled(*track_rect, track_height / 2.0, theme.muted());
+        painter.rect_filled(*geometry.track_rect, track_height / 2.0, theme.muted());
 
         // Filled region between thumbs
         let fill_rect = Rect::from_min_max(
-            pos2(min_x, track_rect.top()),
-            pos2(max_x, track_rect.bottom()),
+            pos2(geometry.min_x, geometry.track_rect.top()),
+            pos2(geometry.max_x, geometry.track_rect.bottom()),
         );
         painter.rect_filled(fill_rect, track_height / 2.0, theme.primary());
 
         // Draw thumbs
-        for (x, is_min) in [(min_x, true), (max_x, false)] {
-            let center = pos2(x, track_rect.center().y);
+        for (x, is_min) in [(geometry.min_x, true), (geometry.max_x, false)] {
+            let center = pos2(x, geometry.track_rect.center().y);
             let this_target = if is_min {
                 DragTarget::Min
             } else {
@@ -484,13 +483,13 @@ impl RangeSlider {
             // Hover ring effect (like shadcn ring-4 with ring-ring/50)
             if is_active || is_hovered {
                 let ring_color = theme.ring().gamma_multiply(0.5);
-                painter.circle_filled(center, thumb_radius + 4.0, ring_color);
+                painter.circle_filled(center, geometry.thumb_radius + 4.0, ring_color);
             }
 
             // Shadow
             painter.circle_filled(
                 center + vec2(0.0, 1.0),
-                thumb_radius,
+                geometry.thumb_radius,
                 Color32::from_black_alpha(40),
             );
 
@@ -501,8 +500,8 @@ impl RangeSlider {
                 theme.foreground()
             };
 
-            painter.circle_filled(center, thumb_radius, handle_color);
-            painter.circle_stroke(center, thumb_radius, Stroke::new(1.0, theme.primary()));
+            painter.circle_filled(center, geometry.thumb_radius, handle_color);
+            painter.circle_stroke(center, geometry.thumb_radius, Stroke::new(1.0, theme.primary()));
         }
     }
 }

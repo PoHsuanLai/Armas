@@ -1,4 +1,4 @@
-//! Tests for Breadcrumbs component using egui_kittest
+//! Tests for Breadcrumbs component using `egui_kittest`
 
 use armas_basic::components::navigation::Breadcrumbs;
 use armas_basic::ArmasContextExt;
@@ -40,7 +40,7 @@ fn test_breadcrumbs_with_current() {
         Breadcrumbs::new().show(ui, |bc| {
             bc.item("Home", None);
             bc.item("Products", None);
-            bc.item("Current Page", None).current();
+            let _ = bc.item("Current Page", None).current();
         });
     });
 
@@ -55,7 +55,7 @@ fn test_breadcrumbs_with_icons() {
         Breadcrumbs::new().show(ui, |bc| {
             bc.item("Home", Some("🏠"));
             bc.item("Settings", Some("⚙️"));
-            bc.item("Profile", Some("👤")).current();
+            let _ = bc.item("Profile", Some("👤")).current();
         });
     });
 
@@ -102,7 +102,7 @@ fn test_breadcrumbs_many_items() {
             bc.item("Level 2", None);
             bc.item("Level 3", None);
             bc.item("Level 4", None);
-            bc.item("Current", None).current();
+            let _ = bc.item("Current", None).current();
         });
     });
 
@@ -118,7 +118,7 @@ fn test_breadcrumbs_file_path() {
             bc.item("Users", Some("📁"));
             bc.item("john", Some("📁"));
             bc.item("Documents", Some("📁"));
-            bc.item("report.pdf", Some("📄")).current();
+            let _ = bc.item("report.pdf", Some("📄")).current();
         });
     });
 
@@ -135,7 +135,7 @@ fn test_breadcrumbs_website_nav() {
             bc.item("Shop", None);
             bc.item("Electronics", None);
             bc.item("Smartphones", None);
-            bc.item("iPhone 15", None).current();
+            let _ = bc.item("iPhone 15", None).current();
         });
     });
 
@@ -149,7 +149,7 @@ fn test_breadcrumbs_response() {
         let _theme = ui.ctx().armas_theme();
         let response = Breadcrumbs::new().show(ui, |bc| {
             bc.item("Home", None);
-            bc.item("Page", None).current();
+            let _ = bc.item("Page", None).current();
         });
 
         // Response should have clicked field (None since no click)

@@ -1,4 +1,4 @@
-//! Tests for DatePicker component using egui_kittest
+//! Tests for `DatePicker` component using `egui_kittest`
 
 use armas_basic::components::basic::{Date, DatePicker};
 use armas_basic::prelude::*;
@@ -114,7 +114,7 @@ fn test_date_day_of_week() {
     assert_eq!(date.day_of_week(), 6);
 }
 
-/// Test DatePicker renders
+/// Test `DatePicker` renders
 #[test]
 fn test_datepicker_renders() {
     let theme = Theme::dark();
@@ -130,7 +130,7 @@ fn test_datepicker_renders() {
     harness.run();
 }
 
-/// Test DatePicker with pre-selected date
+/// Test `DatePicker` with pre-selected date
 #[test]
 fn test_datepicker_with_selection() {
     let theme = Theme::dark();
@@ -146,7 +146,7 @@ fn test_datepicker_with_selection() {
     harness.run();
 }
 
-/// Test DatePicker with label
+/// Test `DatePicker` with label
 #[test]
 fn test_datepicker_with_label() {
     let theme = Theme::dark();
@@ -162,7 +162,7 @@ fn test_datepicker_with_label() {
     harness.run();
 }
 
-/// Test DatePicker with custom placeholder
+/// Test `DatePicker` with custom placeholder
 #[test]
 fn test_datepicker_with_placeholder() {
     let theme = Theme::dark();
@@ -178,7 +178,7 @@ fn test_datepicker_with_placeholder() {
     harness.run();
 }
 
-/// Test DatePicker with light theme
+/// Test `DatePicker` with light theme
 #[test]
 fn test_datepicker_light_theme() {
     let theme = Theme::light();
@@ -194,7 +194,7 @@ fn test_datepicker_light_theme() {
     harness.run();
 }
 
-/// Test DatePicker full configuration
+/// Test `DatePicker` full configuration
 #[test]
 fn test_datepicker_full_config() {
     let theme = Theme::dark();
@@ -212,7 +212,7 @@ fn test_datepicker_full_config() {
     harness.run();
 }
 
-/// Test multiple DatePickers
+/// Test multiple `DatePicker`s
 #[test]
 fn test_multiple_datepickers() {
     let theme = Theme::dark();

@@ -62,13 +62,14 @@ impl Textarea {
     }
 
     /// Set ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
     }
 
     /// Set the textarea variant (for backwards compatibility)
-    #[must_use] 
+    #[must_use]
     pub const fn variant(mut self, variant: InputVariant) -> Self {
         self.variant = variant;
         self
@@ -82,18 +83,21 @@ impl Textarea {
     }
 
     /// Set a label above the textarea
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
     }
 
     /// Set description/helper text below the textarea
+    #[must_use]
     pub fn description(mut self, text: impl Into<String>) -> Self {
         self.description = Some(text.into());
         self
     }
 
     /// Alias for description (backwards compatibility)
+    #[must_use]
     pub fn helper_text(mut self, text: impl Into<String>) -> Self {
         self.description = Some(text.into());
         self

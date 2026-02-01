@@ -1,4 +1,4 @@
-//! Tests for Sidebar component using egui_kittest
+//! Tests for Sidebar component using `egui_kittest`
 
 use armas_basic::components::navigation::{CollapsibleMode, Sidebar};
 use armas_basic::ArmasContextExt;
@@ -54,7 +54,7 @@ fn test_sidebar_active_item() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
-            sidebar.item("🏠", "Home").active(true);
+            let _ = sidebar.item("🏠", "Home").active(true);
             sidebar.item("📧", "Messages");
             sidebar.item("⚙️", "Settings");
         });
@@ -70,8 +70,8 @@ fn test_sidebar_with_badge() {
         let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
             sidebar.item("🏠", "Home");
-            sidebar.item("📧", "Messages").badge("5");
-            sidebar.item("🔔", "Notifications").badge("12");
+            let _ = sidebar.item("📧", "Messages").badge("5");
+            let _ = sidebar.item("🔔", "Notifications").badge("12");
         });
     });
 
@@ -85,7 +85,7 @@ fn test_sidebar_active_with_badge() {
         let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
             sidebar.item("🏠", "Home");
-            sidebar.item("📧", "Messages").active(true).badge("3");
+            let _ = sidebar.item("📧", "Messages").active(true).badge("3");
             sidebar.item("⚙️", "Settings");
         });
     });
@@ -99,7 +99,7 @@ fn test_sidebar_with_groups() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
-            sidebar.item("🏠", "Home").active(true);
+            let _ = sidebar.item("🏠", "Home").active(true);
 
             sidebar.group("⚙️", "Settings", |group| {
                 group.item("👤", "Profile");
@@ -198,8 +198,8 @@ fn test_sidebar_many_items() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
         Sidebar::new().show(ui, |sidebar| {
-            sidebar.item("🏠", "Home").active(true);
-            sidebar.item("📧", "Messages").badge("5");
+            let _ = sidebar.item("🏠", "Home").active(true);
+            let _ = sidebar.item("📧", "Messages").badge("5");
             sidebar.item("📅", "Calendar");
             sidebar.item("📊", "Analytics");
             sidebar.item("📁", "Files");
@@ -256,8 +256,8 @@ fn test_sidebar_full_config() {
             .collapsible(CollapsibleMode::Icon)
             .show_icons(true)
             .show(ui, |sidebar| {
-                sidebar.item("🏠", "Dashboard").active(true);
-                sidebar.item("📧", "Inbox").badge("12");
+                let _ = sidebar.item("🏠", "Dashboard").active(true);
+                let _ = sidebar.item("📧", "Inbox").badge("12");
 
                 sidebar.group("📁", "Projects", |group| {
                     group.item("📄", "Active");
@@ -281,13 +281,13 @@ fn test_sidebar_app_layout() {
             .expanded_width(240.0)
             .show(ui, |sidebar| {
                 // Main navigation
-                sidebar.item("🏠", "Home").active(true);
+                let _ = sidebar.item("🏠", "Home").active(true);
                 sidebar.item("🔍", "Search");
                 sidebar.item("📊", "Dashboard");
 
                 // Notifications
-                sidebar.item("🔔", "Notifications").badge("3");
-                sidebar.item("📧", "Messages").badge("7");
+                let _ = sidebar.item("🔔", "Notifications").badge("3");
+                let _ = sidebar.item("📧", "Messages").badge("7");
 
                 // Groups
                 sidebar.group("⚙️", "Settings", |settings| {

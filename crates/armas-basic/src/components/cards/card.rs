@@ -193,6 +193,10 @@ impl<'a> Card<'a> {
     }
 
     /// Show the card with content
+    ///
+    /// # Panics
+    ///
+    /// Panics if the content closure is not invoked during frame rendering.
     pub fn show<R>(
         self,
         ui: &mut egui::Ui,
@@ -237,12 +241,10 @@ impl<'a> Card<'a> {
         };
 
         // Use asymmetric margin if provided, otherwise uniform margin (using shadcn PADDING)
-        let frame_margin = if let Some(margin) = self.margin {
-            margin
-        } else {
+        let frame_margin = self.margin.unwrap_or_else(|| {
             let margin_val = self.inner_margin.unwrap_or(PADDING) as i8;
             egui::Margin::same(margin_val)
-        };
+        });
         let mut content_result = None;
 
         // If both width and height are specified, use exact size allocation

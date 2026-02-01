@@ -225,7 +225,8 @@ pub fn with_alpha(color: Color32, alpha: u8) -> Color32 {
 }
 
 /// Blend two colors using different modes
-#[must_use] 
+#[must_use]
+#[allow(clippy::many_single_char_names)]
 pub fn blend(a: Color32, b: Color32, t: f32, mode: BlendMode) -> Color32 {
     match mode {
         BlendMode::Normal => lerp_color(a, b, t),

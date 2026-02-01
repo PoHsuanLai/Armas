@@ -75,6 +75,7 @@ impl CardStack {
     }
 
     /// Create a new card stack with a unique ID
+    #[must_use]
     pub fn id(mut self, id: impl std::hash::Hash) -> Self {
         self.id = egui::Id::new(id);
         self

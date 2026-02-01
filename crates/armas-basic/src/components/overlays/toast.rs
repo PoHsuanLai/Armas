@@ -60,14 +60,14 @@ pub enum ToastVariant {
 }
 
 impl ToastVariant {
-    const fn icon(&self) -> WindowIcon {
+    const fn icon(self) -> WindowIcon {
         match self {
             Self::Default => WindowIcon::Info,
             Self::Destructive => WindowIcon::Error,
         }
     }
 
-    const fn color(&self, theme: &Theme) -> Color32 {
+    const fn color(self, theme: &Theme) -> Color32 {
         match self {
             Self::Default => theme.foreground(),
             Self::Destructive => theme.destructive(),
@@ -93,7 +93,7 @@ pub enum ToastPosition {
 }
 
 impl ToastPosition {
-    const fn anchor(&self) -> Align2 {
+    const fn anchor(self) -> Align2 {
         match self {
             Self::TopLeft => Align2::LEFT_TOP,
             Self::TopCenter => Align2::CENTER_TOP,
@@ -104,7 +104,7 @@ impl ToastPosition {
         }
     }
 
-    fn offset(&self, index: usize, toast_height: f32) -> Vec2 {
+    fn offset(self, index: usize, toast_height: f32) -> Vec2 {
         let y_offset = (toast_height + TOAST_SPACING) * index as f32;
 
         match self {
@@ -440,6 +440,7 @@ pub struct ToastBuilder<'a> {
 
 impl ToastBuilder<'_> {
     /// Set the toast message
+    #[must_use]
     pub fn message(mut self, message: impl Into<String>) -> Self {
         if let Some(toast) = &mut self.toast {
             toast.message = message.into();
@@ -450,6 +451,7 @@ impl ToastBuilder<'_> {
     }
 
     /// Set the toast title
+    #[must_use]
     pub fn title(mut self, title: impl Into<String>) -> Self {
         if let Some(toast) = &mut self.toast {
             toast.title = Some(title.into());

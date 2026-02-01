@@ -1,4 +1,4 @@
-//! Tests for Input component using egui_kittest
+//! Tests for Input component using `egui_kittest`
 
 use armas_basic::prelude::*;
 use egui_kittest::Harness;

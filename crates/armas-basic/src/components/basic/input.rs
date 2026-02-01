@@ -91,13 +91,14 @@ impl Input {
     }
 
     /// Set ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
     }
 
     /// Set the variant (for backwards compatibility)
-    #[must_use] 
+    #[must_use]
     pub const fn variant(mut self, variant: InputVariant) -> Self {
         self.variant = variant;
         self
@@ -111,30 +112,35 @@ impl Input {
     }
 
     /// Set a label above the input
+    #[must_use]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.label = Some(label.into());
         self
     }
 
     /// Set description/helper text below the input
+    #[must_use]
     pub fn description(mut self, text: impl Into<String>) -> Self {
         self.description = Some(text.into());
         self
     }
 
     /// Alias for description (backwards compatibility)
+    #[must_use]
     pub fn helper_text(mut self, text: impl Into<String>) -> Self {
         self.description = Some(text.into());
         self
     }
 
     /// Set left icon (emoji or character)
+    #[must_use]
     pub fn left_icon(mut self, icon: impl Into<String>) -> Self {
         self.left_icon = Some(icon.into());
         self
     }
 
     /// Set right icon (emoji or character)
+    #[must_use]
     pub fn right_icon(mut self, icon: impl Into<String>) -> Self {
         self.right_icon = Some(icon.into());
         self
@@ -434,19 +440,21 @@ impl SearchInput {
     }
 
     /// Set ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
     }
 
     /// Set placeholder text
+    #[must_use]
     pub fn placeholder(mut self, placeholder: impl Into<String>) -> Self {
         self.placeholder = placeholder.into();
         self
     }
 
     /// Set width
-    #[must_use] 
+    #[must_use]
     pub const fn width(mut self, width: f32) -> Self {
         self.width = Some(width);
         self

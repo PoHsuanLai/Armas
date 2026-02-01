@@ -19,21 +19,17 @@ pub enum GridSpan {
 }
 
 impl GridSpan {
-    const fn columns(&self) -> usize {
+    const fn columns(self) -> usize {
         match self {
-            Self::Single => 1,
-            Self::Wide => 2,
-            Self::Tall => 1,
-            Self::Large => 2,
+            Self::Single | Self::Tall => 1,
+            Self::Wide | Self::Large => 2,
         }
     }
 
-    const fn rows(&self) -> usize {
+    const fn rows(self) -> usize {
         match self {
-            Self::Single => 1,
-            Self::Wide => 1,
-            Self::Tall => 2,
-            Self::Large => 2,
+            Self::Single | Self::Wide => 1,
+            Self::Tall | Self::Large => 2,
         }
     }
 }
@@ -260,7 +256,7 @@ impl GridBuilder<'_> {
 
         // Draw background and border
         let painter = self.ui.painter();
-        let bg_color = background.unwrap_or(self.theme.card());
+        let bg_color = background.unwrap_or_else(|| self.theme.card());
         let border_color = border.or_else(|| Some(self.theme.border()));
 
         painter.rect_filled(rect, self.corner_radius, bg_color);

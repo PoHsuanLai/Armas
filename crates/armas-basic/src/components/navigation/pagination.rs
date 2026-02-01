@@ -70,6 +70,7 @@ impl Pagination {
     }
 
     /// Set ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
@@ -94,13 +95,11 @@ impl Pagination {
         let total_pages = self.total_pages;
 
         // Load state from memory if ID is set
-        let mut current_page = if let Some(id) = self.id {
+        let mut current_page = self.id.map_or(self.initial_page, |id| {
             let state_id = id.with("page");
             ui.ctx()
                 .data_mut(|d| d.get_temp(state_id).unwrap_or(self.initial_page))
-        } else {
-            self.initial_page
-        };
+        });
 
         // Calculate visible pages
         let pages = calculate_visible_pages(current_page, total_pages, self.sibling_count);

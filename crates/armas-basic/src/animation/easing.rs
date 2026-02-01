@@ -302,10 +302,7 @@ mod tests {
                 let result = func.apply(t);
                 assert!(
                     (-0.1..=1.1).contains(&result),
-                    "Easing {:?} at t={} gave {}",
-                    func,
-                    t,
-                    result
+                    "Easing {func:?} at t={t} gave {result}"
                 );
             }
         }

@@ -1,4 +1,4 @@
-//! Tests for Menu component using egui_kittest
+//! Tests for Menu component using `egui_kittest`
 
 use armas_basic::components::navigation::Menu;
 use armas_basic::prelude::*;
@@ -47,9 +47,9 @@ fn test_menu_with_icons() {
         let mut menu = Menu::new("icon_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
-            menu.item("Copy").icon("📋");
-            menu.item("Paste").icon("📄");
-            menu.item("Cut").icon("✂️");
+            let _ = menu.item("Copy").icon("📋");
+            let _ = menu.item("Paste").icon("📄");
+            let _ = menu.item("Cut").icon("✂️");
         });
     });
 
@@ -65,10 +65,10 @@ fn test_menu_with_shortcuts() {
         let mut menu = Menu::new("shortcut_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
-            menu.item("Copy").shortcut("⌘C");
-            menu.item("Paste").shortcut("⌘V");
-            menu.item("Cut").shortcut("⌘X");
-            menu.item("Undo").shortcut("⌘Z");
+            let _ = menu.item("Copy").shortcut("⌘C");
+            let _ = menu.item("Paste").shortcut("⌘V");
+            let _ = menu.item("Cut").shortcut("⌘X");
+            let _ = menu.item("Undo").shortcut("⌘Z");
         });
     });
 
@@ -84,9 +84,9 @@ fn test_menu_icons_and_shortcuts() {
         let mut menu = Menu::new("full_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
-            menu.item("Copy").icon("📋").shortcut("⌘C");
-            menu.item("Paste").icon("📄").shortcut("⌘V");
-            menu.item("Cut").icon("✂️").shortcut("⌘X");
+            let _ = menu.item("Copy").icon("📋").shortcut("⌘C");
+            let _ = menu.item("Paste").icon("📄").shortcut("⌘V");
+            let _ = menu.item("Cut").icon("✂️").shortcut("⌘X");
         });
     });
 
@@ -147,7 +147,7 @@ fn test_menu_destructive_item() {
             menu.item("Edit");
             menu.item("Duplicate");
             menu.separator();
-            menu.item("Delete").destructive().shortcut("⌫");
+            let _ = menu.item("Delete").destructive().shortcut("⌫");
         });
     });
 
@@ -164,8 +164,8 @@ fn test_menu_disabled_items() {
 
         menu.show(ctx, anchor_rect, |menu| {
             menu.item("Available");
-            menu.item("Not Available").disabled(true);
-            menu.item("Also Disabled").disabled(true);
+            let _ = menu.item("Not Available").disabled(true);
+            let _ = menu.item("Also Disabled").disabled(true);
         });
     });
 
@@ -253,9 +253,9 @@ fn test_menu_inset_items() {
         let mut menu = Menu::new("inset_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
-            menu.item("With Icon").icon("📄");
-            menu.item("No Icon (inset)").inset();
-            menu.item("Another Icon").icon("📁");
+            let _ = menu.item("With Icon").icon("📄");
+            let _ = menu.item("No Icon (inset)").inset();
+            let _ = menu.item("Another Icon").icon("📁");
         });
     });
 
@@ -271,9 +271,9 @@ fn test_context_menu_comprehensive() {
         let mut menu = Menu::new("context_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
-            menu.item("Open").icon("📂").shortcut("⌘O");
-            menu.item("Edit").icon("✏️").shortcut("⌘E");
-            menu.item("Duplicate").icon("📋").shortcut("⌘D");
+            let _ = menu.item("Open").icon("📂").shortcut("⌘O");
+            let _ = menu.item("Edit").icon("✏️").shortcut("⌘E");
+            let _ = menu.item("Duplicate").icon("📋").shortcut("⌘D");
             menu.separator();
             menu.checkbox("Show Preview", true);
             menu.checkbox("Show Details", false);
@@ -282,7 +282,7 @@ fn test_context_menu_comprehensive() {
             menu.radio("Date", "sort", "date", false);
             menu.radio("Size", "sort", "size", false);
             menu.separator();
-            menu.item("Delete").destructive().shortcut("⌫");
+            let _ = menu.item("Delete").destructive().shortcut("⌫");
         });
     });
 

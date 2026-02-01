@@ -1,4 +1,4 @@
-//! Tests for Tabs component using egui_kittest
+//! Tests for Tabs component using `egui_kittest`
 
 use armas_basic::components::navigation::Tabs;
 use armas_basic::ArmasContextExt;

@@ -1,4 +1,4 @@
-//! Tests for Toggle component using egui_kittest
+//! Tests for Toggle component using `egui_kittest`
 
 use armas_basic::prelude::*;
 use egui_kittest::Harness;
@@ -110,7 +110,7 @@ fn test_toggle_disabled() {
 }
 
 /// Test Toggle with description
-/// Note: Uses step() instead of run() because the checked=true state triggers
+/// Note: Uses `step()` instead of `run()` because the `checked=true` state triggers
 /// the spring animation which continuously requests repaints.
 #[test]
 fn test_toggle_with_description() {

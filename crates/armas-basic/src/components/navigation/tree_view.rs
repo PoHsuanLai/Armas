@@ -180,6 +180,7 @@ impl TreeView {
     }
 
     /// Set root path for filtering
+    #[must_use]
     pub fn root_path(mut self, path: impl Into<String>) -> Self {
         self.root_path = path.into();
         self
@@ -256,6 +257,7 @@ impl TreeView {
         }
     }
 
+    #[allow(clippy::needless_pass_by_value)]
     fn show_level(&mut self, ui: &mut Ui, params: ShowLevelParams) {
         let theme = ui.ctx().armas_theme();
         let items = self.get_children(params.parent);
@@ -295,6 +297,7 @@ impl TreeView {
         }
     }
 
+    #[allow(clippy::needless_pass_by_value)]
     fn show_item(&mut self, ui: &mut Ui, params: ShowItemParams) {
         let is_selected = self.selected.as_ref() == Some(&params.item.path);
         let indent = params.depth as f32 * INDENT_WIDTH;

@@ -74,11 +74,11 @@ impl Separator {
 
         let size = match self.orientation {
             SeparatorOrientation::Horizontal => {
-                let width = self.length.unwrap_or(ui.available_width());
+                let width = self.length.unwrap_or_else(|| ui.available_width());
                 Vec2::new(width, 1.0)
             }
             SeparatorOrientation::Vertical => {
-                let height = self.length.unwrap_or(ui.available_height());
+                let height = self.length.unwrap_or_else(|| ui.available_height());
                 Vec2::new(1.0, height)
             }
         };

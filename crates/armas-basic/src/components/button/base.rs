@@ -43,7 +43,7 @@ pub enum ButtonSize {
 }
 
 impl ButtonSize {
-    const fn height(&self) -> f32 {
+    const fn height(self) -> f32 {
         match self {
             Self::Xs => 22.0,
             Self::Small => 32.0,
@@ -52,7 +52,7 @@ impl ButtonSize {
         }
     }
 
-    const fn padding_x(&self) -> f32 {
+    const fn padding_x(self) -> f32 {
         match self {
             Self::Xs => 6.0,
             Self::Small => 12.0,   // px-3
@@ -61,7 +61,7 @@ impl ButtonSize {
         }
     }
 
-    const fn font_size(&self) -> f32 {
+    const fn font_size(self) -> f32 {
         match self {
             Self::Xs => 11.0,
             _ => 14.0, // text-sm

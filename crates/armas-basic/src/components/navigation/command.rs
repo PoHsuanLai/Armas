@@ -60,6 +60,7 @@ pub struct CommandItemBuilder<'a> {
 
 impl CommandItemBuilder<'_> {
     /// Set command icon
+    #[must_use]
     pub fn icon(self, icon: impl Into<String>) -> Self {
         if let Some(CommandItem::Action {
             icon: ref mut i, ..
@@ -71,6 +72,7 @@ impl CommandItemBuilder<'_> {
     }
 
     /// Set keyboard shortcut display (use format like "⌘+K" or "Ctrl+Shift+P")
+    #[must_use]
     pub fn shortcut(self, shortcut: impl Into<String>) -> Self {
         if let Some(CommandItem::Action {
             shortcut: ref mut s,
@@ -157,12 +159,14 @@ impl Command {
     }
 
     /// Set a custom ID for state persistence
+    #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
     }
 
     /// Set placeholder text for the search input
+    #[must_use]
     pub fn placeholder(mut self, placeholder: impl Into<String>) -> Self {
         self.placeholder = placeholder.into();
         self
@@ -406,11 +410,9 @@ impl Command {
                         self.draw_separator(ui, theme, PANEL_WIDTH);
 
                         // List
-                        if let Some((exec, sel)) = self.draw_list(ui, theme, filtered, should_close)
-                        {
-                            executed = exec;
-                            self.selected = sel;
-                        }
+                        let (exec, sel) = self.draw_list(ui, theme, filtered, should_close);
+                        executed = exec;
+                        self.selected = sel;
                     });
                 });
             });
@@ -470,7 +472,7 @@ impl Command {
         theme: &Theme,
         items: &[&CommandItem],
         should_close: &mut bool,
-    ) -> Option<(Option<String>, usize)> {
+    ) -> (Option<String>, usize) {
         let mut executed = None;
         let mut new_selected = self.selected;
         let mut action_index = 0;
@@ -498,7 +500,7 @@ impl Command {
                                         let result = self.draw_item(
                                             ui,
                                             theme,
-                                            ItemDrawParams {
+                                            &ItemDrawParams {
                                                 id,
                                                 label,
                                                 icon: icon.as_deref(),
@@ -538,7 +540,7 @@ impl Command {
                 ui.add_space(LIST_PADDING);
             });
 
-        Some((executed, new_selected))
+        (executed, new_selected)
     }
 
     fn draw_empty(&self, ui: &mut Ui, theme: &Theme) {
@@ -571,7 +573,7 @@ impl Command {
         &self,
         ui: &mut Ui,
         theme: &Theme,
-        params: ItemDrawParams,
+        params: &ItemDrawParams,
     ) -> (Option<String>, bool) {
         let id = params.id;
         let label = params.label;

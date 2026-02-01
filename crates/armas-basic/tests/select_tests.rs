@@ -1,4 +1,4 @@
-//! Tests for Select component using egui_kittest
+//! Tests for Select component using `egui_kittest`
 
 use armas_basic::components::basic::SelectOption;
 use armas_basic::prelude::*;
@@ -178,9 +178,9 @@ fn test_select_custom_width() {
 #[test]
 fn test_select_builder_api() {
     let mut select = Select::build(|s| {
-        s.option("apple", "Apple").icon("🍎");
-        s.option("banana", "Banana").icon("🍌");
-        s.option("cherry", "Cherry")
+        let _ = s.option("apple", "Apple").icon("🍎");
+        let _ = s.option("banana", "Banana").icon("🍌");
+        let _ = s.option("cherry", "Cherry")
             .icon("🍒")
             .description("Sweet red fruit");
     })
