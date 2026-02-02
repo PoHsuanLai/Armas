@@ -239,10 +239,8 @@ dependencies = [
  "egui 0.33.3",
  "egui-theme",
  "egui_kittest",
- "lyon_tessellation",
  "serde",
  "serde_json",
- "usvg",
 ]
 
 [[package]]
@@ -255,10 +253,8 @@ dependencies = [
  "egui 0.33.3",
  "egui-theme",
  "egui_kittest",
- "lyon_tessellation",
  "serde",
  "serde_json",
- "usvg",
 ]
 
 [[package]]

@@ -134,11 +134,11 @@ impl<'a> SiteHeader<'a> {
                             Self::render_separator(ui, self.theme);
 
                             let icon_data = if self.is_dark {
-                                &crate::web_icons::LIGHT
+                                crate::web_icons::light()
                             } else {
-                                &crate::web_icons::DARK
+                                crate::web_icons::dark()
                             };
-                            if IconButton::new(icon_data)
+                            if IconButton::from_owned(icon_data)
                                 .variant(ButtonVariant::Ghost)
                                 .size(16.0)
                                 .padding(4.0)

@@ -1,125 +1,66 @@
 //! Icon system for Armas
 //!
 //! Re-exports the generic icon infrastructure from [`armas_icon`] and provides
-//! window control icons for egui.
-//!
-//! # Example
-//!
-//! ```rust,no_run
-//! # use egui::Ui;
-//! # fn example(ui: &mut Ui) {
-//! use armas_basic::icon::{WindowIcon, WindowIconWidget};
-//! use armas_basic::ext::ArmasContextExt;
-//! use egui::Color32;
-//!
-//! let theme = ui.ctx().armas_theme();
-//! WindowIconWidget::new(WindowIcon::Close)
-//!     .size(12.0)
-//!     .color(Color32::WHITE)
-//!     .show(ui, &theme);
-//! # }
-//! ```
+//! window/UI icons parsed from embedded SVGs at runtime.
 
 // Re-export the generic icon infrastructure
-pub use armas_icon::{render_icon, Icon, IconData};
+pub use armas_icon::{render_icon, render_icon_data, Icon, IconData, OwnedIconData};
 
-// Include the generated window icon data
-include!(concat!(env!("OUT_DIR"), "/window_icons.rs"));
+use armas_icon::OwnedIconData as OID;
+use std::sync::OnceLock;
 
-use egui::{Color32, Response, Sense, Ui, Vec2};
-
-/// Window and UI icons
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum WindowIcon {
-    /// Close button (X)
-    Close,
-    /// Enter full screen
-    IntoFullScreen,
-    /// Exit full screen
-    ExitFullScreen,
-    /// Info icon (circle with i)
-    Info,
-    /// Error icon (circle with !)
-    Error,
-    /// Chevron left (<)
-    ChevronLeft,
-    /// Chevron right (>)
-    ChevronRight,
-    /// Chevron down (v)
-    ChevronDown,
+fn parse(svg: &str, name: &str) -> OID {
+    armas_icon::runtime::parse_svg_named(svg, name).unwrap()
 }
 
-impl WindowIcon {
-    /// Get the icon data for this window icon
-    #[must_use]
-    pub fn data(self) -> &'static IconData {
-        match self {
-            Self::Close => &CLOSE,
-            Self::IntoFullScreen => &INTO_FULL_SCREEN,
-            Self::ExitFullScreen => &EXIT_FULL_SCREEN,
-            Self::Info => &INFO,
-            Self::Error => &ERROR,
-            Self::ChevronLeft => &CHEVRON_LEFT,
-            Self::ChevronRight => &CHEVRON_RIGHT,
-            Self::ChevronDown => &CHEVRON_DOWN,
-        }
-    }
+static CLOSE: OnceLock<OID> = OnceLock::new();
+static INFO: OnceLock<OID> = OnceLock::new();
+static ERROR: OnceLock<OID> = OnceLock::new();
+static CHEVRON_LEFT: OnceLock<OID> = OnceLock::new();
+static CHEVRON_RIGHT: OnceLock<OID> = OnceLock::new();
+static CHEVRON_DOWN: OnceLock<OID> = OnceLock::new();
 
-    /// Create a `WindowIconWidget` from this `WindowIcon`
-    #[must_use]
-    pub const fn widget(self) -> WindowIconWidget {
-        WindowIconWidget::new(self)
-    }
+/// Close icon (X)
+pub fn close() -> &'static OwnedIconData {
+    CLOSE.get_or_init(|| parse(include_str!("../../icons/window/close.svg"), "close"))
 }
 
-/// Window icon widget component
-///
-/// Renders window control icons with theme colors and custom sizing.
-pub struct WindowIconWidget {
-    icon: WindowIcon,
-    size: f32,
-    color: Color32,
+/// Info icon (circle with i)
+pub fn info() -> &'static OwnedIconData {
+    INFO.get_or_init(|| parse(include_str!("../../icons/window/info.svg"), "info"))
 }
 
-impl WindowIconWidget {
-    /// Create a new window icon widget
-    #[must_use]
-    pub const fn new(icon: WindowIcon) -> Self {
-        Self {
-            icon,
-            size: 12.0,
-            color: Color32::WHITE,
-        }
-    }
+/// Error icon (circle with !)
+pub fn error() -> &'static OwnedIconData {
+    ERROR.get_or_init(|| parse(include_str!("../../icons/window/error.svg"), "error"))
+}
 
-    /// Set the icon size (width and height will be equal)
-    #[must_use]
-    pub const fn size(mut self, size: f32) -> Self {
-        self.size = size;
-        self
-    }
+/// Chevron left icon (<)
+pub fn chevron_left() -> &'static OwnedIconData {
+    CHEVRON_LEFT.get_or_init(|| {
+        parse(
+            include_str!("../../icons/window/chevron_left.svg"),
+            "chevron_left",
+        )
+    })
+}
 
-    /// Set the icon color
-    #[must_use]
-    pub const fn color(mut self, color: Color32) -> Self {
-        self.color = color;
-        self
-    }
+/// Chevron right icon (>)
+pub fn chevron_right() -> &'static OwnedIconData {
+    CHEVRON_RIGHT.get_or_init(|| {
+        parse(
+            include_str!("../../icons/window/chevron_right.svg"),
+            "chevron_right",
+        )
+    })
+}
 
-    /// Show the icon
-    pub fn show(self, ui: &mut Ui, _theme: &crate::Theme) -> Response {
-        let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), Sense::click());
-
-        if ui.is_rect_visible(rect) {
-            let icon_data = self.icon.data();
-            if icon_data.vertices.is_empty() {
-                // Fallback: draw a placeholder if icon data is missing
-                ui.painter().rect_filled(rect, 2.0, Color32::from_gray(100));
-            } else {
-                render_icon(ui.painter(), rect, icon_data, self.color);
-            }
-        }
-
-        response
-    }
+/// Chevron down icon (v)
+pub fn chevron_down() -> &'static OwnedIconData {
+    CHEVRON_DOWN.get_or_init(|| {
+        parse(
+            include_str!("../../icons/window/chevron_down.svg"),
+            "chevron_down",
+        )
+    })
 }

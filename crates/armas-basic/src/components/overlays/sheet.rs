@@ -24,7 +24,7 @@
 //! # }
 //! ```
 
-use crate::icon::{render_icon, WindowIcon};
+use crate::icon;
 use crate::Theme;
 use egui::{vec2, Color32, Key, Pos2, Rect, Sense, Stroke, Ui};
 
@@ -311,12 +311,7 @@ impl Sheet {
                     } else {
                         theme.muted_foreground()
                     };
-                    render_icon(
-                        ui.painter(),
-                        close_rect,
-                        WindowIcon::Close.data(),
-                        icon_color,
-                    );
+                    icon::close().render(ui.painter(), close_rect, icon_color);
 
                     if close_response.clicked() {
                         response.closed = true;

@@ -33,7 +33,7 @@
 use crate::animation::SpringAnimation;
 use crate::components::button::IconButton;
 use crate::ext::ArmasContextExt;
-use crate::icon::{render_icon, WindowIcon};
+use crate::icon;
 use crate::{ButtonVariant, Card, CardVariant, Theme};
 use egui::{vec2, Align2, Color32, Id, Sense, Vec2};
 use std::collections::VecDeque;
@@ -60,10 +60,10 @@ pub enum ToastVariant {
 }
 
 impl ToastVariant {
-    const fn icon(self) -> WindowIcon {
+    fn icon_data(self) -> &'static icon::OwnedIconData {
         match self {
-            Self::Default => WindowIcon::Info,
-            Self::Destructive => WindowIcon::Error,
+            Self::Default => icon::info(),
+            Self::Destructive => icon::error(),
         }
     }
 
@@ -364,10 +364,9 @@ impl ToastManager {
                             let icon_size = 16.0;
                             let (rect, _) =
                                 ui.allocate_exact_size(vec2(icon_size, icon_size), Sense::hover());
-                            render_icon(
+                            toast.variant.icon_data().render(
                                 ui.painter(),
                                 rect,
-                                toast.variant.icon().data(),
                                 accent_color,
                             );
 
@@ -384,7 +383,7 @@ impl ToastManager {
 
                             // Close button
                             if toast.dismissible {
-                                let close_response = IconButton::new(WindowIcon::Close.data())
+                                let close_response = IconButton::from_owned(icon::close())
                                     .variant(ButtonVariant::Ghost)
                                     .size(12.0)
                                     .padding(6.0)

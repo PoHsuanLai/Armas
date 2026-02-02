@@ -11,7 +11,7 @@ keywords = ["egui", "icons", "svg", "ui"]
 categories = ["gui"]
 
 [features]
-build = ["dep:usvg", "dep:lyon_tessellation"]
+runtime = ["dep:usvg", "dep:lyon_tessellation"]
 
 [dependencies]
 egui.workspace = true

@@ -39,7 +39,6 @@ pub use drum_sequencer::{
     DrumStep,
 };
 pub use fader::{Fader, FaderScalePosition, FaderStrip};
-pub use icons::TransportIcon;
 pub use knob::Knob;
 pub use meter::{AudioMeter, MeterStyle, ScalePosition};
 pub use midi_controller::{MidiController, MidiControllerResponse, MidiControllerState};

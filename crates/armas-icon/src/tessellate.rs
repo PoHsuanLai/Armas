@@ -1,90 +1,66 @@
-//! Build script to parse window SVG icons at compile time
+//! Shared SVG tessellation logic.
 //!
-//! This script:
-//! 1. Scans the `icons/window/` directory for SVG files
-//! 2. Parses each SVG using usvg
-//! 3. Tessellates paths into triangles using Lyon
-//! 4. Generates Rust code with icon data as constants
+//! Used by both the `build` module (compile-time codegen) and the `runtime` module
+//! (runtime SVG parsing).
 
 use lyon_tessellation::{
     path::Path as TessPath, BuffersBuilder, FillOptions, FillTessellator, FillVertex,
     StrokeOptions, StrokeTessellator, StrokeVertex, VertexBuffers,
 };
-use std::env;
-use std::fmt::Write as FmtWrite;
-use std::fs::{self, File};
-use std::io::Write;
-use std::path::{Path, PathBuf};
 use usvg::tiny_skia_path::PathSegment;
 
-fn main() {
-    println!("cargo:rerun-if-changed=icons/");
-
-    let out_dir = env::var("OUT_DIR").unwrap();
-    let dest_path = Path::new(&out_dir).join("window_icons.rs");
-    let mut output = File::create(&dest_path).unwrap();
-
-    // Start generating the Rust code
-    // Note: IconData is already imported by the parent module via `pub use armas_icon::IconData`
-    writeln!(
-        output,
-        "// Generated window icon data - DO NOT EDIT MANUALLY\n"
-    )
-    .unwrap();
-
-    // Parse window icons
-    let icons_dir = PathBuf::from("icons/window");
-    if icons_dir.exists() {
-        for entry in fs::read_dir(&icons_dir).unwrap() {
-            let entry = entry.unwrap();
-            let path = entry.path();
-
-            if path.extension().and_then(|s| s.to_str()) == Some("svg") {
-                let file_name = path.file_stem().unwrap().to_str().unwrap();
-                println!("cargo:rerun-if-changed={}", path.display());
-
-                // Convert file name to SCREAMING_SNAKE_CASE for constant name
-                let const_name = file_name.to_uppercase().replace('-', "_");
-
-                match parse_svg(&path) {
-                    Ok((vertices, indices, width, height)) => {
-                        writeln!(output, "#[allow(missing_docs)]").unwrap();
-                        writeln!(output, "pub static {const_name}: IconData = IconData {{")
-                            .unwrap();
-                        writeln!(output, "    name: \"{file_name}\",").unwrap();
-                        writeln!(output, "    vertices: &[{vertices}],").unwrap();
-                        writeln!(output, "    indices: &[{indices}],").unwrap();
-                        writeln!(output, "    viewbox_width: {width:.1},").unwrap();
-                        writeln!(output, "    viewbox_height: {height:.1},").unwrap();
-                        writeln!(output, "}};\n").unwrap();
-                    }
-                    Err(e) => {
-                        eprintln!("Warning: Failed to parse {}: {}", path.display(), e);
-                    }
-                }
-            }
-        }
-    }
-
-    println!("cargo:rustc-env=WINDOW_ICONS_PATH={}", dest_path.display());
+/// Tessellated icon geometry.
+pub struct TessellatedIcon {
+    pub vertices: Vec<(f32, f32)>,
+    pub indices: Vec<u32>,
+    pub viewbox_width: f32,
+    pub viewbox_height: f32,
 }
 
-fn parse_svg(path: &Path) -> Result<(String, String, f32, f32), Box<dyn std::error::Error>> {
-    let svg_data = fs::read_to_string(path)?;
+/// Error type for tessellation operations.
+#[derive(Debug)]
+pub enum TessError {
+    /// SVG parsing failed.
+    SvgParse(String),
+    /// Tessellation failed.
+    Tessellation(String),
+}
 
-    // Extract viewBox dimensions from the raw SVG
-    let (width, height) = extract_viewbox(&svg_data).unwrap_or((24.0, 24.0));
+impl std::fmt::Display for TessError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::SvgParse(e) => write!(f, "SVG parse error: {e}"),
+            Self::Tessellation(e) => write!(f, "tessellation error: {e}"),
+        }
+    }
+}
 
-    // Parse SVG with usvg
+impl std::error::Error for TessError {}
+
+impl From<lyon_tessellation::TessellationError> for TessError {
+    fn from(e: lyon_tessellation::TessellationError) -> Self {
+        Self::Tessellation(e.to_string())
+    }
+}
+
+
+impl From<usvg::Error> for TessError {
+    fn from(e: usvg::Error) -> Self {
+        Self::SvgParse(e.to_string())
+    }
+}
+
+/// Tessellate an SVG string into vertex/index geometry.
+pub fn tessellate_svg_data(svg_str: &str) -> Result<TessellatedIcon, TessError> {
+    let (viewbox_width, viewbox_height) = extract_viewbox(svg_str).unwrap_or((24.0, 24.0));
+
     let options = usvg::Options::default();
-    let tree = usvg::Tree::from_str(&svg_data, &options)?;
+    let tree = usvg::Tree::from_str(svg_str, &options)?;
 
-    // Tessellate the SVG paths into triangles
     let mut geometry: VertexBuffers<[f32; 2], u32> = VertexBuffers::new();
     let mut fill_tessellator = FillTessellator::new();
     let mut stroke_tessellator = StrokeTessellator::new();
 
-    // Extract and tessellate all paths
     tessellate_group(
         tree.root(),
         &mut fill_tessellator,
@@ -92,29 +68,17 @@ fn parse_svg(path: &Path) -> Result<(String, String, f32, f32), Box<dyn std::err
         &mut geometry,
     )?;
 
-    // Generate Rust code for vertices
-    let mut vertices_code = String::new();
-    for (i, vertex) in geometry.vertices.iter().enumerate() {
-        if i > 0 {
-            vertices_code.push_str(", ");
-        }
-        let _ = write!(vertices_code, "({:.2}, {:.2})", vertex[0], vertex[1]);
-    }
+    let vertices = geometry.vertices.iter().map(|v| (v[0], v[1])).collect();
 
-    // Generate Rust code for indices
-    let mut indices_code = String::new();
-    for (i, index) in geometry.indices.iter().enumerate() {
-        if i > 0 {
-            indices_code.push_str(", ");
-        }
-        let _ = write!(indices_code, "{index}");
-    }
-
-    Ok((vertices_code, indices_code, width, height))
+    Ok(TessellatedIcon {
+        vertices,
+        indices: geometry.indices,
+        viewbox_width,
+        viewbox_height,
+    })
 }
 
 fn extract_viewbox(svg_data: &str) -> Option<(f32, f32)> {
-    // Try to extract viewBox attribute first
     if let Some(viewbox_start) = svg_data.find("viewBox=\"") {
         let viewbox_str = &svg_data[viewbox_start + 9..];
         if let Some(viewbox_end) = viewbox_str.find('"') {
@@ -133,7 +97,6 @@ fn extract_viewbox(svg_data: &str) -> Option<(f32, f32)> {
         }
     }
 
-    // Fallback: try to extract width and height attributes
     let width = extract_dimension(svg_data, "width");
     let height = extract_dimension(svg_data, "height");
 
@@ -150,7 +113,6 @@ fn extract_dimension(svg_data: &str, attr: &str) -> Option<f32> {
         let value_str = &svg_data[start + pattern.len()..];
         if let Some(end) = value_str.find('"') {
             let value = &value_str[..end];
-            // Remove "px" suffix if present
             let value = value.trim_end_matches("px");
             return value.parse::<f32>().ok();
         }
@@ -163,7 +125,7 @@ fn tessellate_group(
     fill_tessellator: &mut FillTessellator,
     stroke_tessellator: &mut StrokeTessellator,
     geometry: &mut VertexBuffers<[f32; 2], u32>,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), TessError> {
     for node in group.children() {
         tessellate_node(node, fill_tessellator, stroke_tessellator, geometry)?;
     }
@@ -175,10 +137,9 @@ fn tessellate_node(
     fill_tessellator: &mut FillTessellator,
     stroke_tessellator: &mut StrokeTessellator,
     geometry: &mut VertexBuffers<[f32; 2], u32>,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), TessError> {
     match node {
         usvg::Node::Path(path) => {
-            // Convert usvg path to Lyon path
             let mut builder = TessPath::builder();
             let mut has_begun = false;
 
@@ -214,14 +175,12 @@ fn tessellate_node(
                 }
             }
 
-            // End path if not closed
             if has_begun {
                 builder.end(false);
             }
 
             let lyon_path = builder.build();
 
-            // Check if path has fill
             if path.fill().is_some() {
                 fill_tessellator.tessellate_path(
                     &lyon_path,
@@ -232,7 +191,6 @@ fn tessellate_node(
                 )?;
             }
 
-            // Check if path has stroke
             if let Some(stroke) = path.stroke() {
                 let stroke_width = stroke.width().get();
                 let stroke_options = StrokeOptions::default()

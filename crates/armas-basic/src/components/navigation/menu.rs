@@ -14,7 +14,7 @@
 //! - Label: px-2 py-1.5 text-sm font-medium
 
 use crate::components::basic::Kbd;
-use crate::icon::{render_icon, WindowIcon};
+use crate::icon;
 use crate::{Popover, PopoverPosition, PopoverStyle};
 use egui::{vec2, Color32, Id, Key, Rect, Sense, Ui};
 use std::collections::HashSet;
@@ -880,12 +880,7 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
         ),
         vec2(CHEVRON_SIZE, CHEVRON_SIZE),
     );
-    render_icon(
-        ui.painter(),
-        chevron_rect,
-        WindowIcon::ChevronRight.data(),
-        icon_color,
-    );
+    icon::chevron_right().render(ui.painter(), chevron_rect, icon_color);
 
     // Always render the submenu so it can animate closed
     // Position submenu to the right of the item

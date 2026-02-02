@@ -3,7 +3,7 @@
 //! A button variant specifically designed for rendering icons with Material Design 3 styling.
 
 use crate::components::button::ButtonVariant;
-use crate::icon::{render_icon, IconData};
+use crate::icon::{render_icon_data, IconData, OwnedIconData};
 use egui::{Color32, Response, Sense, Ui, Vec2};
 
 /// Icon Button component
@@ -35,7 +35,10 @@ use egui::{Color32, Response, Sense, Ui, Vec2};
 /// # }
 /// ```
 pub struct IconButton<'a> {
-    icon_data: &'a IconData,
+    vertices: &'a [(f32, f32)],
+    indices: &'a [u32],
+    viewbox_width: f32,
+    viewbox_height: f32,
     variant: ButtonVariant,
     size: f32,
     padding: f32,
@@ -45,11 +48,31 @@ pub struct IconButton<'a> {
 }
 
 impl<'a> IconButton<'a> {
-    /// Create a new icon button
+    /// Create a new icon button from static [`IconData`].
     #[must_use]
     pub const fn new(icon_data: &'a IconData) -> Self {
         Self {
-            icon_data,
+            vertices: icon_data.vertices,
+            indices: icon_data.indices,
+            viewbox_width: icon_data.viewbox_width,
+            viewbox_height: icon_data.viewbox_height,
+            variant: ButtonVariant::Default,
+            size: 24.0,
+            padding: 8.0,
+            enabled: true,
+            icon_color: None,
+            hover_icon_color: None,
+        }
+    }
+
+    /// Create a new icon button from [`OwnedIconData`].
+    #[must_use]
+    pub fn from_owned(data: &'a OwnedIconData) -> Self {
+        Self {
+            vertices: &data.vertices,
+            indices: &data.indices,
+            viewbox_width: data.viewbox_width,
+            viewbox_height: data.viewbox_height,
             variant: ButtonVariant::Default,
             size: 24.0,
             padding: 8.0,
@@ -188,7 +211,15 @@ impl<'a> IconButton<'a> {
 
             // Draw icon
             let icon_rect = egui::Rect::from_center_size(rect.center(), Vec2::splat(self.size));
-            render_icon(ui.painter(), icon_rect, self.icon_data, icon_color);
+            render_icon_data(
+                ui.painter(),
+                icon_rect,
+                self.vertices,
+                self.indices,
+                self.viewbox_width,
+                self.viewbox_height,
+                icon_color,
+            );
         }
 
         response

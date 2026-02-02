@@ -5,7 +5,7 @@
 //! Built on top of Card component for consistency.
 
 use crate::components::button::IconButton;
-use crate::icon::{render_icon, WindowIcon};
+use crate::icon;
 use crate::{ButtonVariant, Card, CardVariant, Theme};
 use egui::{vec2, Color32, Sense, Ui};
 
@@ -24,10 +24,10 @@ pub enum AlertVariant {
 }
 
 impl AlertVariant {
-    const fn icon(self) -> WindowIcon {
+    fn icon_data(self) -> &'static icon::OwnedIconData {
         match self {
-            Self::Info => WindowIcon::Info,
-            Self::Destructive => WindowIcon::Error,
+            Self::Info => icon::info(),
+            Self::Destructive => icon::error(),
         }
     }
 
@@ -199,7 +199,7 @@ impl Alert {
                     let icon_size = 16.0;
                     let (rect, _) =
                         ui.allocate_exact_size(vec2(icon_size, icon_size), Sense::hover());
-                    render_icon(ui.painter(), rect, self.variant.icon().data(), accent_color);
+                    self.variant.icon_data().render(ui.painter(), rect, accent_color);
                 }
 
                 // Content
@@ -217,7 +217,7 @@ impl Alert {
                     ui.allocate_space(ui.available_size());
 
                     // Close button
-                    let close_response = IconButton::new(WindowIcon::Close.data())
+                    let close_response = IconButton::from_owned(icon::close())
                         .variant(ButtonVariant::Ghost)
                         .size(12.0)
                         .padding(4.0)

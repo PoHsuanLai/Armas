@@ -1,6 +1,5 @@
 use std::collections::BTreeMap;
-use std::fs::{self, File};
-use std::io::Write;
+use std::fs;
 use std::path::{Path, PathBuf};
 
 type FileList = Vec<(String, PathBuf)>;
@@ -299,35 +298,9 @@ fn generate_nested_sections(sections: &Sections) -> String {
     code
 }
 
-/// Generate web icons from SVGs
-fn generate_web_icons() {
-    let icons_dir = Path::new("assets/icons");
-    if !icons_dir.exists() {
-        return;
-    }
-
-    let out_dir = std::env::var("OUT_DIR").unwrap();
-    let dest_path = Path::new(&out_dir).join("web_icons.rs");
-    let mut output = File::create(&dest_path).unwrap();
-
-    writeln!(
-        output,
-        "// Generated web icon data - DO NOT EDIT MANUALLY\n"
-    )
-    .unwrap();
-
-    if let Err(e) = armas_icon::build::generate_icons_from_dir(icons_dir, &mut output) {
-        eprintln!("Warning: Failed to generate web icons: {}", e);
-    }
-}
-
 fn main() {
     // Tell cargo to rerun if content directory changes
     println!("cargo:rerun-if-changed=content");
-    println!("cargo:rerun-if-changed=assets/icons");
-
-    // Generate icon data from SVGs
-    generate_web_icons();
 
     // Read all markdown files from content directory
     let content_dir = Path::new("content");

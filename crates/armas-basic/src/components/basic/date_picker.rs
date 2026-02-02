@@ -18,7 +18,7 @@
 //! # }
 //! ```
 
-use crate::icon::{render_icon, WindowIcon};
+use crate::icon;
 use crate::{Popover, PopoverPosition, Theme};
 use egui::{vec2, Color32, Id, Rect, Sense, Ui};
 
@@ -510,10 +510,9 @@ fn render_header(
             }
 
             let icon_rect = Rect::from_center_size(prev_rect.center(), vec2(16.0, 16.0));
-            render_icon(
+            icon::chevron_left().render(
                 ui.painter(),
                 icon_rect,
-                WindowIcon::ChevronLeft.data(),
                 if prev_response.hovered() {
                     theme.accent_foreground()
                 } else {
@@ -555,10 +554,9 @@ fn render_header(
             }
 
             let icon_rect = Rect::from_center_size(next_rect.center(), vec2(16.0, 16.0));
-            render_icon(
+            icon::chevron_right().render(
                 ui.painter(),
                 icon_rect,
-                WindowIcon::ChevronRight.data(),
                 if next_response.hovered() {
                     theme.accent_foreground()
                 } else {

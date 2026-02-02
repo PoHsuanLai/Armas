@@ -21,10 +21,8 @@ serde_json = { workspace = true }
 pulldown-cmark = "0.11"
 regex = "1.10"
 fuzzy-matcher = "0.3"
+armas-icon = { path = "../armas-icon", features = ["runtime"] }
 image = { version = "0.24", default-features = false, features = ["png"] }
-
-[build-dependencies]
-armas-icon = { path = "../armas-icon", features = ["build"] }
 
 # For opening URLs on native platforms
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
