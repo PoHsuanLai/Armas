@@ -7,6 +7,7 @@
 
 #![warn(missing_docs)]
 
+pub mod automation_editor;
 pub mod drum_sequencer;
 pub mod fader;
 pub mod knob;
@@ -25,7 +26,7 @@ pub mod xy_pad;
 
 // Icon module - transport icons used by documentation
 pub mod icons;
-pub(crate) mod piano;
+pub mod piano;
 pub(crate) mod playhead;
 pub(crate) mod slot;
 pub(crate) mod snap_grid;
@@ -34,6 +35,7 @@ pub(crate) mod timeline_track;
 pub(crate) mod track_header;
 
 // Re-exports
+pub use automation_editor::{AutomationEditor, AutomationEditorResponse, AutomationPoint as AutoPoint};
 pub use drum_sequencer::{
     DrumRow, DrumSequencer, DrumSequencerColorScheme, DrumSequencerResponse, DrumSequencerVariant,
     DrumStep,
@@ -65,7 +67,7 @@ pub use timeline_track::{
 pub use track_header::TrackControls;
 
 // Internal re-exports for cross-module use within the crate
-pub(crate) use piano::{Piano, PianoOrientation, PianoResponse};
+pub use piano::{Piano, PianoKey, PianoOrientation, PianoResponse};
 pub(crate) use playhead::Playhead;
 pub(crate) use slot::Slot;
 pub(crate) use snap_grid::SnapGrid;
