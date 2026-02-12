@@ -61,8 +61,8 @@ pub use xy_pad::{XYPad, XYPadVariant};
 // Types from internal modules that are exposed through public API structs
 pub use piano_roll::GridDivision;
 pub use timeline_track::{
-    AutomationData, AutomationPoint, FadeCurve, FadeHandle, FadeSettings, MidiData, MidiNote,
-    PlaybackSettings, Region, RegionEdge, RegionType,
+    AudioData, AutomationData, AutomationPoint, FadeCurve, FadeHandle, FadeSettings, MidiData,
+    MidiNote, PlaybackSettings, Region, RegionEdge, RegionType,
 };
 pub use track_header::TrackControls;
 

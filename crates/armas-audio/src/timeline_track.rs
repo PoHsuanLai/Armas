@@ -83,16 +83,43 @@ impl AutomationData {
     }
 }
 
-/// Region type with associated data
+/// Audio waveform data for audio regions
 #[derive(Debug, Clone, Default)]
+pub struct AudioData {
+    /// Min/max peak pairs for waveform visualization.
+    /// If empty, a simulated waveform is drawn.
+    pub peaks: Vec<(f32, f32)>,
+}
+
+impl AudioData {
+    /// Create empty audio data (will show simulated waveform)
+    #[must_use]
+    pub const fn empty() -> Self {
+        Self { peaks: Vec::new() }
+    }
+
+    /// Create audio data from peak pairs
+    #[must_use]
+    pub fn from_peaks(peaks: Vec<(f32, f32)>) -> Self {
+        Self { peaks }
+    }
+}
+
+/// Region type with associated data
+#[derive(Debug, Clone)]
 pub enum RegionType {
-    /// Audio region (placeholder for waveform data)
-    #[default]
-    Audio,
+    /// Audio region with optional waveform peaks
+    Audio(AudioData),
     /// MIDI region with optional MIDI notes
     Midi(MidiData),
     /// Automation region with optional automation points
     Automation(AutomationData),
+}
+
+impl Default for RegionType {
+    fn default() -> Self {
+        Self::Audio(AudioData::empty())
+    }
 }
 
 /// Fade curve types for region fades
@@ -293,7 +320,27 @@ impl Region {
             name: name.into(),
             start,
             duration,
-            region_type: RegionType::Audio,
+            region_type: RegionType::Audio(AudioData::empty()),
+            color: None,
+            selected: false,
+            muted: false,
+            fades: FadeSettings::default(),
+            playback: PlaybackSettings::default(),
+        }
+    }
+
+    /// Create an audio region with waveform peaks
+    pub fn audio_with_peaks(
+        name: impl Into<String>,
+        start: f32,
+        duration: f32,
+        peaks: Vec<(f32, f32)>,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            start,
+            duration,
+            region_type: RegionType::Audio(AudioData::from_peaks(peaks)),
             color: None,
             selected: false,
             muted: false,
@@ -780,7 +827,7 @@ impl TimelineTrack {
         // Draw visualization based on region type
         if !region.muted {
             match &region.region_type {
-                RegionType::Audio => self.draw_waveform_peaks(painter, rect, region_color, &[]),
+                RegionType::Audio(data) => self.draw_waveform_peaks(painter, rect, region_color, &data.peaks),
                 RegionType::Midi(data) => self.draw_midi_pattern(painter, rect, region_color, data),
                 RegionType::Automation(data) => {
                     self.draw_automation_curve(painter, rect, region_color, data);
