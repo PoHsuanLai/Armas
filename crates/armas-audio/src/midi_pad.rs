@@ -288,11 +288,7 @@ impl MidiPad {
                     // With Sense::drag(), drag_started fires immediately on
                     // pointer-down and drag_stopped fires on pointer-up.
                     if pad_response.drag_started() {
-                        let new_velocity = if self.show_velocity {
-                            100
-                        } else {
-                            127
-                        };
+                        let new_velocity = if self.show_velocity { 100 } else { 127 };
                         response.pressed = Some((pad_config.note, new_velocity));
                     }
 

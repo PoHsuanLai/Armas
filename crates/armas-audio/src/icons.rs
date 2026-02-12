@@ -70,5 +70,10 @@ pub fn loop_icon() -> &'static OwnedIconData {
 
 /// Metronome button icon
 pub fn metronome() -> &'static OwnedIconData {
-    METRONOME.get_or_init(|| parse(include_str!("../icons/transport/fad-metronome.svg"), "metronome"))
+    METRONOME.get_or_init(|| {
+        parse(
+            include_str!("../icons/transport/fad-metronome.svg"),
+            "metronome",
+        )
+    })
 }

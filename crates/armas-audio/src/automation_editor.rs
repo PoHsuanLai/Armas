@@ -69,7 +69,7 @@ pub struct AutomationEditor {
 impl AutomationEditor {
     /// Create a new automation editor
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             width: 400.0,
             height: 120.0,
@@ -256,7 +256,7 @@ impl AutomationEditor {
         );
     }
 
-    /// Draw beat-aware grid lines (matching SnapGrid visual hierarchy)
+    /// Draw beat-aware grid lines (matching `SnapGrid` visual hierarchy)
     fn draw_grid(&self, painter: &egui::Painter, rect: Rect, theme: &Theme) {
         let base_color = theme.border();
 
@@ -344,16 +344,13 @@ impl AutomationEditor {
             let wave1 = (t * 23.7).sin();
             let wave2 = (t * 47.3).sin() * 0.5;
             let wave3 = (t * 97.1).sin() * 0.25;
-            let envelope = (t * 3.14159).sin().abs(); // Fade in/out at edges
+            let envelope = (t * std::f32::consts::PI).sin().abs(); // Fade in/out at edges
 
             let amplitude = ((wave1 + wave2 + wave3).abs() * envelope * max_amplitude).max(1.0);
 
             // Draw vertical bar from bottom up (like drums hitting water)
             painter.line_segment(
-                [
-                    Pos2::new(x, bottom_y),
-                    Pos2::new(x, bottom_y - amplitude),
-                ],
+                [Pos2::new(x, bottom_y), Pos2::new(x, bottom_y - amplitude)],
                 Stroke::new(1.0, wave_color),
             );
         }
@@ -394,12 +391,7 @@ impl AutomationEditor {
     }
 
     /// Find which point is being hovered
-    fn find_hovered_point(
-        &self,
-        ui: &Ui,
-        rect: Rect,
-        points: &[AutomationPoint],
-    ) -> Option<usize> {
+    fn find_hovered_point(&self, ui: &Ui, rect: Rect, points: &[AutomationPoint]) -> Option<usize> {
         let pointer_pos = ui.input(|i| i.pointer.hover_pos())?;
 
         if !rect.contains(pointer_pos) {
@@ -461,11 +453,7 @@ impl AutomationEditor {
             painter.circle_filled(center, self.point_radius, handle_color);
 
             // Border
-            painter.circle_stroke(
-                center,
-                self.point_radius,
-                Stroke::new(1.0, theme.primary()),
-            );
+            painter.circle_stroke(center, self.point_radius, Stroke::new(1.0, theme.primary()));
         }
     }
 

@@ -35,7 +35,9 @@ pub(crate) mod timeline_track;
 pub(crate) mod track_header;
 
 // Re-exports
-pub use automation_editor::{AutomationEditor, AutomationEditorResponse, AutomationPoint as AutoPoint};
+pub use automation_editor::{
+    AutomationEditor, AutomationEditorResponse, AutomationPoint as AutoPoint,
+};
 pub use drum_sequencer::{
     DrumRow, DrumSequencer, DrumSequencerColorScheme, DrumSequencerResponse, DrumSequencerVariant,
     DrumStep,

@@ -100,7 +100,7 @@ impl AudioData {
 
     /// Create audio data from peak pairs
     #[must_use]
-    pub fn from_peaks(peaks: Vec<(f32, f32)>) -> Self {
+    pub const fn from_peaks(peaks: Vec<(f32, f32)>) -> Self {
         Self { peaks }
     }
 }
@@ -827,7 +827,9 @@ impl TimelineTrack {
         // Draw visualization based on region type
         if !region.muted {
             match &region.region_type {
-                RegionType::Audio(data) => self.draw_waveform_peaks(painter, rect, region_color, &data.peaks),
+                RegionType::Audio(data) => {
+                    self.draw_waveform_peaks(painter, rect, region_color, &data.peaks);
+                }
                 RegionType::Midi(data) => self.draw_midi_pattern(painter, rect, region_color, data),
                 RegionType::Automation(data) => {
                     self.draw_automation_curve(painter, rect, region_color, data);

@@ -43,7 +43,6 @@ impl From<lyon_tessellation::TessellationError> for TessError {
     }
 }
 
-
 impl From<usvg::Error> for TessError {
     fn from(e: usvg::Error) -> Self {
         Self::SvgParse(e.to_string())

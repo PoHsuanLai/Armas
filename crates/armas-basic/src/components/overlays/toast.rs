@@ -364,11 +364,10 @@ impl ToastManager {
                             let icon_size = 16.0;
                             let (rect, _) =
                                 ui.allocate_exact_size(vec2(icon_size, icon_size), Sense::hover());
-                            toast.variant.icon_data().render(
-                                ui.painter(),
-                                rect,
-                                accent_color,
-                            );
+                            toast
+                                .variant
+                                .icon_data()
+                                .render(ui.painter(), rect, accent_color);
 
                             // Content
                             ui.vertical(|ui| {
