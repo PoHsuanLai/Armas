@@ -40,6 +40,8 @@ pub struct MidiControllerState {
     pub drum_pads: HashMap<u8, PadState>,
     /// Step sequencer pattern
     pub sequencer_steps: Vec<bool>,
+    /// Current playback step for visual feedback (set by host)
+    pub sequencer_current_step: Option<usize>,
 }
 
 impl Default for MidiControllerState {
@@ -52,6 +54,7 @@ impl Default for MidiControllerState {
             active_notes: HashMap::new(),
             drum_pads: HashMap::new(),
             sequencer_steps: vec![false; 16],
+            sequencer_current_step: None,
         }
     }
 }
@@ -230,6 +233,7 @@ impl<'a> MidiController<'a> {
 
                     let seq_response = StepSequencer::new(&mut self.state.sequencer_steps)
                         .steps(16)
+                        .current_step(self.state.sequencer_current_step)
                         .step_size(theme.spacing.xl, theme.spacing.xl)
                         .gap(theme.spacing.xs)
                         .show_step_numbers(true)

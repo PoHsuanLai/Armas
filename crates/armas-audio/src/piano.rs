@@ -310,7 +310,7 @@ impl Piano {
                 continue;
             }
 
-            let response = ui.allocate_rect(key_rect, Sense::click_and_drag());
+            let response = ui.allocate_rect(key_rect, Sense::drag());
             let is_pressed =
                 self.pressed_keys.contains(&note) || response.is_pointer_button_down_on();
 
@@ -378,7 +378,7 @@ impl Piano {
                 continue;
             }
 
-            let response = ui.allocate_rect(key_rect, Sense::click_and_drag());
+            let response = ui.allocate_rect(key_rect, Sense::drag());
             let is_pressed =
                 self.pressed_keys.contains(&note) || response.is_pointer_button_down_on();
 
@@ -660,7 +660,10 @@ impl Piano {
         clicked_keys: &mut Vec<u8>,
         released_keys: &mut Vec<u8>,
     ) {
-        if response.clicked() {
+        // With Sense::drag(), drag_started fires immediately on pointer-down
+        // and drag_stopped fires on pointer-up — exactly the press/release
+        // semantics a piano keyboard needs.
+        if response.drag_started() {
             clicked_keys.push(note);
         }
         if response.drag_stopped() {

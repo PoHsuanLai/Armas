@@ -284,11 +284,11 @@ impl MidiPad {
                     let pad_response =
                         self.draw_pad(ui, theme, pad_rect, &pad_config, pad_index, velocity);
 
-                    // Handle pad interaction
-                    if pad_response.clicked() {
-                        // Calculate velocity based on click position (simple version)
+                    // Handle pad interaction.
+                    // With Sense::drag(), drag_started fires immediately on
+                    // pointer-down and drag_stopped fires on pointer-up.
+                    if pad_response.drag_started() {
                         let new_velocity = if self.show_velocity {
-                            // Could be enhanced with click force or Y position
                             100
                         } else {
                             127
@@ -320,7 +320,7 @@ impl MidiPad {
         index: usize,
         velocity: u8,
     ) -> Response {
-        let pad_response = ui.allocate_rect(rect, Sense::click_and_drag());
+        let pad_response = ui.allocate_rect(rect, Sense::drag());
         let painter = ui.painter();
 
         let is_pressed = velocity > 0 || pad_response.is_pointer_button_down_on();
