@@ -1,7 +1,7 @@
 //! Tests for Breadcrumb component using `egui_kittest`
 
-use armas_basic::Breadcrumb;
 use armas_basic::ArmasContextExt;
+use armas_basic::Breadcrumb;
 use egui_kittest::Harness;
 
 /// Test that Breadcrumb renders without panicking

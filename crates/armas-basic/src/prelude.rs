@@ -40,7 +40,7 @@ pub use crate::components::{
 pub use crate::components::{Alert, Avatar, AvatarShape, Kbd, Separator, Skeleton, Spinner};
 
 // Navigation components
-pub use crate::components::{Breadcrumb, DropdownMenu, Pagination, Tabs};
+pub use crate::components::{Breadcrumb, ContextMenu, DropdownMenu, Pagination, Tabs};
 
 // Card components
 pub use crate::components::Card;

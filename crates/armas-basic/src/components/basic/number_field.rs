@@ -1,6 +1,6 @@
 //! Number Field Component
 //!
-//! Numeric input with increment/decrement stepper buttons, styled like shadcn/vue NumberField.
+//! Numeric input with increment/decrement stepper buttons, styled like shadcn/vue `NumberField`.
 //! Features:
 //! - +/- stepper buttons
 //! - Min/max value constraints
@@ -54,7 +54,7 @@ pub struct NumberField {
 impl NumberField {
     /// Create a new number field with step of 1.0
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             id: None,
             min: None,
@@ -133,14 +133,9 @@ impl NumberField {
 
     /// Clamp value to min/max bounds
     fn clamp_value(&self, value: f32) -> f32 {
-        let mut v = value;
-        if let Some(min) = self.min {
-            v = v.max(min);
-        }
-        if let Some(max) = self.max {
-            v = v.min(max);
-        }
-        v
+        let min = self.min.unwrap_or(f32::NEG_INFINITY);
+        let max = self.max.unwrap_or(f32::INFINITY);
+        value.clamp(min, max)
     }
 
     /// Show the number field
@@ -266,7 +261,7 @@ impl NumberField {
         );
 
         // Decrement button
-        let can_decrement = !self.disabled && self.min.map_or(true, |min| *value > min);
+        let can_decrement = !self.disabled && self.min.is_none_or(|min| *value > min);
         let dec_response = ui.interact(
             decrement_rect,
             ui.id().with("dec"),
@@ -308,7 +303,7 @@ impl NumberField {
         }
 
         // Increment button
-        let can_increment = !self.disabled && self.max.map_or(true, |max| *value < max);
+        let can_increment = !self.disabled && self.max.is_none_or(|max| *value < max);
         let inc_response = ui.interact(
             increment_rect,
             ui.id().with("inc"),

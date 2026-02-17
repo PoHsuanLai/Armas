@@ -44,8 +44,7 @@ impl ToggleSize {
     const fn font_size(self) -> f32 {
         match self {
             Self::Sm => 12.8,
-            Self::Default => 14.0,
-            Self::Lg => 14.0,
+            Self::Default | Self::Lg => 14.0,
         }
     }
 
@@ -60,8 +59,7 @@ impl ToggleSize {
     const fn corner_radius(self) -> f32 {
         match self {
             Self::Sm => 5.0,
-            Self::Default => 6.0,
-            Self::Lg => 6.0,
+            Self::Default | Self::Lg => 6.0,
         }
     }
 }
@@ -184,9 +182,7 @@ impl Toggle {
             // Background color
             let bg_color = if self.disabled {
                 Color32::TRANSPARENT
-            } else if *pressed {
-                theme.muted()
-            } else if hovered {
+            } else if *pressed || hovered {
                 theme.muted()
             } else {
                 Color32::TRANSPARENT
@@ -296,8 +292,7 @@ impl ToggleGroupSize {
     const fn font_size(self) -> f32 {
         match self {
             Self::Sm => 12.8,
-            Self::Default => 14.0,
-            Self::Lg => 14.0,
+            Self::Default | Self::Lg => 14.0,
         }
     }
 
@@ -312,8 +307,7 @@ impl ToggleGroupSize {
     const fn corner_radius(self) -> f32 {
         match self {
             Self::Sm => 5.0,
-            Self::Default => 6.0,
-            Self::Lg => 6.0,
+            Self::Default | Self::Lg => 6.0,
         }
     }
 }
@@ -357,7 +351,7 @@ pub struct ToggleGroup {
 impl ToggleGroup {
     /// Create a new toggle group
     #[must_use]
-    pub fn new(group_type: ToggleGroupType) -> Self {
+    pub const fn new(group_type: ToggleGroupType) -> Self {
         Self {
             id: None,
             group_type,
@@ -577,9 +571,7 @@ impl ToggleGroup {
             // Background color
             let bg_color = if self.disabled {
                 Color32::TRANSPARENT
-            } else if is_selected {
-                theme.muted()
-            } else if hovered {
+            } else if is_selected || hovered {
                 theme.muted()
             } else {
                 Color32::TRANSPARENT
@@ -596,35 +588,23 @@ impl ToggleGroup {
                     theme.input()
                 };
 
-                if self.spacing > 0.0 {
-                    // Separated: full border on each item
-                    painter.rect_stroke(
-                        rect,
-                        corner_radius,
-                        Stroke::new(1.0, border_color),
-                        egui::StrokeKind::Inside,
-                    );
-                } else {
-                    // Joined: draw borders carefully to avoid double borders
-                    painter.rect_stroke(
-                        rect,
-                        corner_radius,
-                        Stroke::new(1.0, border_color),
-                        egui::StrokeKind::Inside,
-                    );
+                painter.rect_stroke(
+                    rect,
+                    corner_radius,
+                    Stroke::new(1.0, border_color),
+                    egui::StrokeKind::Inside,
+                );
 
-                    // Draw inner divider to cover double border between items
-                    if index > 0 {
-                        let divider_stroke = Stroke::new(1.0, border_color);
-                        if self.vertical {
-                            painter
-                                .line_segment([rect.left_top(), rect.right_top()], divider_stroke);
-                        } else {
-                            painter.line_segment(
-                                [rect.left_top(), rect.left_bottom()],
-                                divider_stroke,
-                            );
-                        }
+                // Joined: draw inner divider to cover double border between items
+                if self.spacing == 0.0 && index > 0 {
+                    let divider_stroke = Stroke::new(1.0, border_color);
+                    if self.vertical {
+                        painter.line_segment([rect.left_top(), rect.right_top()], divider_stroke);
+                    } else {
+                        painter.line_segment(
+                            [rect.left_top(), rect.left_bottom()],
+                            divider_stroke,
+                        );
                     }
                 }
             }

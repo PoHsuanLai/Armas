@@ -1,7 +1,7 @@
 //! Tests for Menu component using `egui_kittest`
 
-use armas_basic::DropdownMenu;
 use armas_basic::prelude::*;
+use armas_basic::DropdownMenu;
 use egui_kittest::Harness;
 
 /// Test that Menu renders when open

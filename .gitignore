@@ -12,7 +12,7 @@ dist/
 /egui_taffy
 /JUCE
 /hero-ui
-/ui
+/shadcn
 
 *.md
 !README.md
