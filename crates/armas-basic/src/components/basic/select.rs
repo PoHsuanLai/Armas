@@ -8,6 +8,7 @@
 //! - Disabled options
 //! - State persistence
 
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{
     vec2, Color32, CornerRadius, Key, Painter, Rect, Response, Sense, Stroke, TextEdit, Ui,
@@ -97,6 +98,9 @@ pub struct Select {
     custom_height: Option<f32>,
     max_height: f32,
     searchable: bool,
+    custom_font_size: Option<f32>,
+    custom_corner_radius: Option<u8>,
+    custom_padding_x: Option<f32>,
 }
 
 impl Select {
@@ -118,6 +122,9 @@ impl Select {
             custom_height: None,
             max_height: 300.0,
             searchable: true,
+            custom_font_size: None,
+            custom_corner_radius: None,
+            custom_padding_x: None,
         }
     }
 
@@ -186,6 +193,27 @@ impl Select {
         self
     }
 
+    /// Set font size (overrides height-derived default)
+    #[must_use]
+    pub const fn font_size(mut self, size: f32) -> Self {
+        self.custom_font_size = Some(size);
+        self
+    }
+
+    /// Set corner radius (overrides default 6)
+    #[must_use]
+    pub const fn corner_radius(mut self, radius: u8) -> Self {
+        self.custom_corner_radius = Some(radius);
+        self
+    }
+
+    /// Set horizontal padding (overrides height-derived default)
+    #[must_use]
+    pub const fn padding_x(mut self, padding: f32) -> Self {
+        self.custom_padding_x = Some(padding);
+        self
+    }
+
     /// Get the currently selected value
     #[must_use]
     pub fn selected_value(&self) -> Option<&str> {
@@ -202,7 +230,8 @@ impl Select {
     // ========================================================================
 
     /// Show the Select component
-    pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> SelectResponse {
+    pub fn show(&mut self, ui: &mut Ui) -> SelectResponse {
+        let theme = ui.ctx().armas_theme();
         let width = self.width.unwrap_or(200.0);
         let mut changed = false;
         let mut new_value = None;
@@ -212,15 +241,15 @@ impl Select {
         ui.vertical(|ui| {
             ui.spacing_mut().item_spacing.y = theme.spacing.xs;
 
-            self.show_label(ui, theme);
-            let (button_rect, response) = self.show_trigger(ui, theme, width);
+            self.show_label(ui, &theme);
+            let (button_rect, response) = self.show_trigger(ui, &theme, width);
 
             if response.clicked() {
                 self.toggle_dropdown();
             }
 
             if self.is_open {
-                let dropdown_response = self.show_dropdown(ui, theme, button_rect, width);
+                let dropdown_response = self.show_dropdown(ui, &theme, button_rect, width);
                 if let Some(value) = dropdown_response.selected_value {
                     self.selected_value = Some(value.clone());
                     new_value = Some(value);
@@ -316,7 +345,8 @@ impl Select {
     ) {
         let hovered = response.hovered();
         let is_focused = self.is_open;
-        let corner_radius = CornerRadius::same(CORNER_RADIUS);
+        let cr = self.custom_corner_radius.unwrap_or(CORNER_RADIUS);
+        let corner_radius = CornerRadius::same(cr);
 
         // Background
         let bg_color = if hovered && !is_focused {
@@ -348,23 +378,27 @@ impl Select {
             };
             painter.rect_stroke(
                 rect.expand(2.0),
-                CornerRadius::same(8),
+                CornerRadius::same(cr + 2),
                 Stroke::new(2.0, ring_color),
                 egui::StrokeKind::Outside,
             );
         }
 
         // Scale font and padding for small heights
-        let font_size = if height < 30.0 {
-            (height * 0.55).max(8.0)
-        } else {
-            14.0
-        };
-        let padding_x = if height < 30.0 {
-            (height * 0.3).max(4.0)
-        } else {
-            12.0
-        };
+        let font_size = self.custom_font_size.unwrap_or_else(|| {
+            if height < 30.0 {
+                (height * 0.55).max(8.0)
+            } else {
+                14.0
+            }
+        });
+        let padding_x = self.custom_padding_x.unwrap_or_else(|| {
+            if height < 30.0 {
+                (height * 0.3).max(4.0)
+            } else {
+                12.0
+            }
+        });
 
         // Display text
         let display_text = self.get_display_text();
@@ -452,7 +486,9 @@ impl Select {
                 egui::Frame::new()
                     .fill(theme.popover())
                     .stroke(Stroke::new(1.0, theme.border()))
-                    .corner_radius(CornerRadius::same(CORNER_RADIUS))
+                    .corner_radius(CornerRadius::same(
+                        self.custom_corner_radius.unwrap_or(CORNER_RADIUS),
+                    ))
                     .inner_margin(4.0)
                     .shadow(egui::epaint::Shadow {
                         offset: [0, 4],
@@ -546,12 +582,14 @@ impl Select {
     }
 
     fn item_font_size(&self) -> f32 {
-        let h = self.item_height();
-        if h < 30.0 {
-            (h * 0.55).max(8.0)
-        } else {
-            14.0
-        }
+        self.custom_font_size.unwrap_or_else(|| {
+            let h = self.item_height();
+            if h < 30.0 {
+                (h * 0.55).max(8.0)
+            } else {
+                14.0
+            }
+        })
     }
 
     fn show_disabled_option(&self, ui: &mut Ui, option: &SelectOption, theme: &Theme, width: f32) {

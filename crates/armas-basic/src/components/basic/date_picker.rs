@@ -8,16 +8,16 @@
 //! ```rust,no_run
 //! # use egui::{Context, Ui};
 //! # fn example(ctx: &Context, ui: &mut Ui) {
-//! use armas_basic::{DatePicker, Date, Theme};
+//! use armas_basic::{DatePicker, Date};
 //!
-//! let theme = Theme::dark();
 //! let mut date_picker = DatePicker::new("birthday");
 //! let mut selected_date = None;
 //!
-//! date_picker.show(ctx, &theme, ui, &mut selected_date);
+//! date_picker.show(ctx, ui, &mut selected_date);
 //! # }
 //! ```
 
+use crate::ext::ArmasContextExt;
 use crate::icon;
 use crate::{Popover, PopoverPosition, Theme};
 use egui::{vec2, Color32, Id, Rect, Sense, Ui};
@@ -168,13 +168,12 @@ impl Date {
 /// ```rust,no_run
 /// # use egui::{Context, Ui};
 /// # fn example(ctx: &Context, ui: &mut Ui) {
-/// use armas_basic::{DatePicker, Date, Theme};
+/// use armas_basic::{DatePicker, Date};
 ///
-/// let theme = Theme::dark();
 /// let mut date_picker = DatePicker::new("birthday");
 /// let mut selected_date = None;
 ///
-/// date_picker.show(ctx, &theme, ui, &mut selected_date);
+/// date_picker.show(ctx, ui, &mut selected_date);
 /// # }
 /// ```
 #[derive(Clone)]
@@ -241,11 +240,11 @@ impl DatePicker {
     pub fn show(
         &mut self,
         ctx: &egui::Context,
-        theme: &Theme,
         ui: &mut Ui,
         selected_date: &mut Option<Date>,
     ) -> DatePickerResponse {
-        let mut response = DatePickerResponse { changed: false };
+        let theme = ui.ctx().armas_theme();
+        let mut date_changed = false;
 
         // Load internal state from context
         let state_id = self.id.with("state");
@@ -281,7 +280,7 @@ impl DatePicker {
         // Trigger button
         let trigger_rect = Self::render_trigger(
             ui,
-            theme,
+            &theme,
             selected_date.as_ref(),
             &self.placeholder,
             self.width,
@@ -307,7 +306,7 @@ impl DatePicker {
 
         self.popover.set_open(is_open);
 
-        let popover_response = self.popover.show(ctx, theme, trigger_rect, |ui| {
+        let popover_response = self.popover.show(ctx, &theme, trigger_rect, |ui| {
             ui.set_min_width(CALENDAR_WIDTH);
 
             egui::Frame::new()
@@ -316,11 +315,17 @@ impl DatePicker {
                     ui.vertical(|ui| {
                         ui.spacing_mut().item_spacing.y = 4.0;
 
-                        render_header(ui, theme, viewing_year, viewing_month, &mut calendar_action);
+                        render_header(
+                            ui,
+                            &theme,
+                            viewing_year,
+                            viewing_month,
+                            &mut calendar_action,
+                        );
                         ui.add_space(4.0);
                         render_day_grid(
                             ui,
-                            theme,
+                            &theme,
                             viewing_year,
                             viewing_month,
                             today,
@@ -329,7 +334,7 @@ impl DatePicker {
                         );
 
                         if show_footer {
-                            render_footer(ui, theme, &mut calendar_action);
+                            render_footer(ui, &theme, &mut calendar_action);
                         }
                     });
                 });
@@ -362,7 +367,7 @@ impl DatePicker {
         if let Some(date) = calendar_action.date_clicked {
             *selected_date = Some(date);
             is_open = false;
-            response.changed = true;
+            date_changed = true;
         }
 
         if calendar_action.goto_today {
@@ -370,13 +375,13 @@ impl DatePicker {
             viewing_year = today.year;
             viewing_month = today.month;
             is_open = false;
-            response.changed = true;
+            date_changed = true;
         }
 
         if calendar_action.clear_date {
             *selected_date = None;
             is_open = false;
-            response.changed = true;
+            date_changed = true;
         }
 
         // Save internal state back to context
@@ -384,7 +389,12 @@ impl DatePicker {
             d.insert_temp(state_id, (is_open, viewing_year, viewing_month));
         });
 
-        response
+        let response = ui.interact(ui.min_rect(), self.id.with("response"), Sense::hover());
+
+        DatePickerResponse {
+            response,
+            changed: date_changed,
+        }
     }
 
     /// Render the trigger button that opens the calendar popover.
@@ -776,8 +786,9 @@ fn render_footer(ui: &mut Ui, theme: &Theme, action: &mut CalendarAction) {
 }
 
 /// Response from a date picker
-#[derive(Debug, Clone, Copy)]
 pub struct DatePickerResponse {
+    /// The UI response
+    pub response: egui::Response,
     /// Whether the selected date changed
     pub changed: bool,
 }

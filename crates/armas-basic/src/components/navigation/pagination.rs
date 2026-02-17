@@ -9,16 +9,25 @@
 //! # use egui::Ui;
 //! # fn example(ui: &mut Ui) {
 //! use armas_basic::Pagination;
-//! use armas_basic::ext::ArmasContextExt;
 //!
-//! let theme = ui.ctx().armas_theme();
-//! let (_, current_page) = Pagination::new(1, 10).show(ui, &theme);
+//! let resp = Pagination::new(1, 10).show(ui);
 //! // current_page is the page after user interaction
 //! # }
 //! ```
 
+use crate::ext::ArmasContextExt;
 use crate::{Button, ButtonVariant};
 use egui::{vec2, Sense, Ui};
+
+/// Response from pagination
+pub struct PaginationResponse {
+    /// The UI response
+    pub response: egui::Response,
+    /// Current page number after user interaction
+    pub page: usize,
+    /// Whether the page changed this frame
+    pub changed: bool,
+}
 
 // shadcn Pagination constants
 const BUTTON_SIZE: f32 = 36.0; // size-9
@@ -37,10 +46,8 @@ const DEFAULT_SIBLING_COUNT: usize = 1;
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas_basic::Pagination;
-/// use armas_basic::ext::ArmasContextExt;
 ///
-/// let theme = ui.ctx().armas_theme();
-/// let (_, current_page) = Pagination::new(1, 10).show(ui, &theme);
+/// let resp = Pagination::new(1, 10).show(ui);
 /// // current_page is the current page after any user interaction
 /// # }
 /// ```
@@ -50,6 +57,7 @@ pub struct Pagination {
     total_pages: usize,
     sibling_count: usize,
     show_prev_next: bool,
+    button_size: f32,
 }
 
 impl Pagination {
@@ -66,6 +74,7 @@ impl Pagination {
             total_pages: total_pages.max(1),
             sibling_count: DEFAULT_SIBLING_COUNT,
             show_prev_next: true,
+            button_size: BUTTON_SIZE,
         }
     }
 
@@ -90,8 +99,16 @@ impl Pagination {
         self
     }
 
-    /// Show the pagination and return (Response, `current_page`)
-    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> (egui::Response, usize) {
+    /// Set the size of page number and ellipsis buttons
+    #[must_use]
+    pub const fn button_size(mut self, button_size: f32) -> Self {
+        self.button_size = button_size;
+        self
+    }
+
+    /// Show the pagination and return `PaginationResponse`
+    pub fn show(self, ui: &mut Ui) -> PaginationResponse {
+        let theme = ui.ctx().armas_theme();
         let total_pages = self.total_pages;
 
         // Load state from memory if ID is set
@@ -100,6 +117,7 @@ impl Pagination {
             ui.ctx()
                 .data_mut(|d| d.get_temp(state_id).unwrap_or(self.initial_page))
         });
+        let page_before = current_page;
 
         // Calculate visible pages
         let pages = calculate_visible_pages(current_page, total_pages, self.sibling_count);
@@ -111,7 +129,14 @@ impl Pagination {
                 // Previous button - custom drawn with icon + text
                 if self.show_prev_next {
                     let can_go_prev = current_page > 1;
-                    let prev_clicked = draw_nav_button(ui, theme, "Previous", true, can_go_prev);
+                    let prev_clicked = draw_nav_button(
+                        ui,
+                        &theme,
+                        "Previous",
+                        true,
+                        can_go_prev,
+                        self.button_size,
+                    );
                     if prev_clicked {
                         current_page -= 1;
                     }
@@ -129,16 +154,18 @@ impl Pagination {
 
                         let btn = Button::new(page_num.to_string())
                             .variant(variant)
-                            .min_width(BUTTON_SIZE)
-                            .show(ui, theme);
+                            .min_width(self.button_size)
+                            .show(ui);
 
                         if btn.clicked() && !is_current {
                             current_page = *page_num;
                         }
                     } else {
                         // Ellipsis - shadcn uses MoreHorizontal icon (three dots)
-                        let (rect, _) =
-                            ui.allocate_exact_size(vec2(BUTTON_SIZE, BUTTON_SIZE), Sense::hover());
+                        let (rect, _) = ui.allocate_exact_size(
+                            vec2(self.button_size, self.button_size),
+                            Sense::hover(),
+                        );
 
                         if ui.is_rect_visible(rect) {
                             // Draw three horizontal dots (MoreHorizontal icon)
@@ -162,7 +189,8 @@ impl Pagination {
                 // Next button - custom drawn with text + icon
                 if self.show_prev_next {
                     let can_go_next = current_page < total_pages;
-                    let next_clicked = draw_nav_button(ui, theme, "Next", false, can_go_next);
+                    let next_clicked =
+                        draw_nav_button(ui, &theme, "Next", false, can_go_next, self.button_size);
                     if next_clicked {
                         current_page += 1;
                     }
@@ -178,7 +206,12 @@ impl Pagination {
             });
         }
 
-        (response, current_page)
+        let changed = current_page != page_before;
+        PaginationResponse {
+            response,
+            page: current_page,
+            changed,
+        }
     }
 }
 
@@ -190,6 +223,7 @@ fn draw_nav_button(
     label: &str,
     is_previous: bool,
     enabled: bool,
+    button_size: f32,
 ) -> bool {
     let font_id = egui::FontId::proportional(14.0);
     // Approximate text width (average char width * length)
@@ -199,7 +233,7 @@ fn draw_nav_button(
     let gap = 4.0;
 
     let total_width = padding + icon_width + gap + text_width + padding;
-    let (rect, response) = ui.allocate_exact_size(vec2(total_width, BUTTON_SIZE), Sense::click());
+    let (rect, response) = ui.allocate_exact_size(vec2(total_width, button_size), Sense::click());
 
     let clicked = enabled && response.clicked();
     let hovered = enabled && response.hovered();

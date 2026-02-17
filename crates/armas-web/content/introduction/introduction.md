@@ -22,14 +22,14 @@ ui.vertical(|ui| {
 
     Button::new("Primary Action")
         .variant(ButtonVariant::Filled)
-        .show(ui, &theme);
+        .show(ui);
 
     Button::new("Secondary Action")
         .variant(ButtonVariant::Outlined)
-        .show(ui, &theme);
+        .show(ui);
 
     Badge::new("New")
         .variant(BadgeVariant::Filled)
-        .show(ui, &theme);
+        .show(ui);
 });
 ```

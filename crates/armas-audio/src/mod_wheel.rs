@@ -90,11 +90,13 @@ pub struct ModWheel<'a> {
     show_center_line: bool,
     id: Option<egui::Id>,
     /// Enable velocity-based dragging (Ctrl/Cmd for fine control)
-    velocity_mode: bool,
+    pub(crate) velocity_mode: bool,
     /// Sensitivity for velocity mode
-    velocity_sensitivity: f64,
+    pub(crate) velocity_sensitivity: f64,
     /// Default value for double-click reset
-    default_value: Option<f32>,
+    pub(crate) default_value: Option<f32>,
+    /// Whether the mod wheel is disabled (non-interactive)
+    disabled: bool,
 }
 
 impl<'a> ModWheel<'a> {
@@ -111,6 +113,7 @@ impl<'a> ModWheel<'a> {
             velocity_mode: true,
             velocity_sensitivity: 1.0,
             default_value: None,
+            disabled: false,
         }
     }
 
@@ -160,32 +163,10 @@ impl<'a> ModWheel<'a> {
         self
     }
 
-    /// Enable velocity-based dragging
-    ///
-    /// When enabled, holding Ctrl/Cmd while dragging provides fine control
-    /// where faster mouse movement creates larger value changes.
+    /// Set whether the mod wheel is disabled (non-interactive)
     #[must_use]
-    pub const fn velocity_mode(mut self, enabled: bool) -> Self {
-        self.velocity_mode = enabled;
-        self
-    }
-
-    /// Set sensitivity for velocity mode
-    ///
-    /// Higher values make the wheel more responsive to mouse speed.
-    /// Default is 1.0.
-    #[must_use]
-    pub const fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
-        self.velocity_sensitivity = sensitivity.max(0.1);
-        self
-    }
-
-    /// Set default value for double-click reset
-    ///
-    /// When set, double-clicking the wheel resets it to this value.
-    #[must_use]
-    pub const fn default_value(mut self, value: f32) -> Self {
-        self.default_value = Some(value);
+    pub const fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
         self
     }
 
@@ -208,7 +189,12 @@ impl<'a> ModWheel<'a> {
         *self.value = self.value.clamp(min_val, max_val);
 
         let desired_size = Vec2::new(self.size.width(), self.size.height());
-        let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
+        let sense = if self.disabled {
+            Sense::hover()
+        } else {
+            Sense::click_and_drag()
+        };
+        let (rect, mut response) = ui.allocate_exact_size(desired_size, sense);
 
         // Get or create drag state
         let drag_id = self.id.unwrap_or_else(|| ui.id()).with("mod_wheel_drag");
@@ -220,67 +206,70 @@ impl<'a> ModWheel<'a> {
             })
         });
 
-        // Handle double-click reset
-        if response.double_clicked() {
-            if let Some(default) = self.default_value {
-                *self.value = default;
-                response.mark_changed();
-            }
-        }
-
-        // Handle drag interaction
-        if response.drag_started() {
-            let use_velocity =
-                self.velocity_mode && ui.input(|i| i.modifiers.command || i.modifiers.ctrl);
-            drag_state.drag.begin(
-                f64::from(*self.value),
-                f64::from(response.interact_pointer_pos().map_or(0.0, |p| p.y)),
-                use_velocity,
-            );
-        }
-
-        if response.dragged() {
-            if let Some(pos) = response.interact_pointer_pos() {
-                if drag_state.drag.is_velocity_mode() {
-                    // Velocity mode: value changes based on mouse speed
-                    let value_range = f64::from(max_val - min_val);
-                    let delta = drag_state.drag.update_tracked(
-                        f64::from(pos.y),
-                        value_range,
-                        f64::from(self.size.height()),
-                    );
-                    // Invert delta since moving up should increase value
-                    *self.value = (f64::from(*self.value) - delta)
-                        .clamp(f64::from(min_val), f64::from(max_val))
-                        as f32;
-                } else {
-                    // Absolute mode: Y position to value (inverted: top = max, bottom = min)
-                    let normalized = 1.0 - ((pos.y - rect.min.y) / rect.height()).clamp(0.0, 1.0);
-                    *self.value = min_val + normalized * (max_val - min_val);
+        if !self.disabled {
+            // Handle double-click reset
+            if response.double_clicked() {
+                if let Some(default) = self.default_value {
+                    *self.value = default;
+                    response.mark_changed();
                 }
+            }
+
+            // Handle drag interaction
+            if response.drag_started() {
+                let use_velocity =
+                    self.velocity_mode && ui.input(|i| i.modifiers.command || i.modifiers.ctrl);
+                drag_state.drag.begin(
+                    f64::from(*self.value),
+                    f64::from(response.interact_pointer_pos().map_or(0.0, |p| p.y)),
+                    use_velocity,
+                );
+            }
+
+            if response.dragged() {
+                if let Some(pos) = response.interact_pointer_pos() {
+                    if drag_state.drag.is_velocity_mode() {
+                        // Velocity mode: value changes based on mouse speed
+                        let value_range = f64::from(max_val - min_val);
+                        let delta = drag_state.drag.update_tracked(
+                            f64::from(pos.y),
+                            value_range,
+                            f64::from(self.size.height()),
+                        );
+                        // Invert delta since moving up should increase value
+                        *self.value = (f64::from(*self.value) - delta)
+                            .clamp(f64::from(min_val), f64::from(max_val))
+                            as f32;
+                    } else {
+                        // Absolute mode: Y position to value (inverted: top = max, bottom = min)
+                        let normalized =
+                            1.0 - ((pos.y - rect.min.y) / rect.height()).clamp(0.0, 1.0);
+                        *self.value = min_val + normalized * (max_val - min_val);
+                    }
+                    response.mark_changed();
+                }
+            }
+
+            if response.drag_stopped() {
+                drag_state.drag.end();
+            }
+
+            // Pitch bend springs back to center when released
+            if self.wheel_type == WheelType::PitchBend && response.drag_stopped() {
+                *self.value = 0.0;
                 response.mark_changed();
             }
-        }
 
-        if response.drag_stopped() {
-            drag_state.drag.end();
-        }
-
-        // Pitch bend springs back to center when released
-        if self.wheel_type == WheelType::PitchBend && response.drag_stopped() {
-            *self.value = 0.0;
-            response.mark_changed();
-        }
-
-        // Handle mouse wheel scroll for fine adjustment
-        if response.hovered() {
-            let scroll_delta = ui.input(|i| i.smooth_scroll_delta.y);
-            if scroll_delta.abs() > 0.0 {
-                let sensitivity = 0.005;
-                let delta = scroll_delta * sensitivity;
-                *self.value = (*self.value + delta).clamp(min_val, max_val);
-                response.mark_changed();
-                ui.ctx().input_mut(|i| i.smooth_scroll_delta = Vec2::ZERO);
+            // Handle mouse wheel scroll for fine adjustment
+            if response.hovered() {
+                let scroll_delta = ui.input(|i| i.smooth_scroll_delta.y);
+                if scroll_delta.abs() > 0.0 {
+                    let sensitivity = 0.005;
+                    let delta = scroll_delta * sensitivity;
+                    *self.value = (*self.value + delta).clamp(min_val, max_val);
+                    response.mark_changed();
+                    ui.ctx().input_mut(|i| i.smooth_scroll_delta = Vec2::ZERO);
+                }
             }
         }
 
@@ -292,11 +281,12 @@ impl<'a> ModWheel<'a> {
             let corner_radius = f32::from(theme.spacing.corner_radius_small);
 
             // Draw housing
-            painter.rect_filled(rect, corner_radius, theme.muted());
+            let dim = if self.disabled { 0.5 } else { 1.0 };
+            painter.rect_filled(rect, corner_radius, theme.muted().gamma_multiply(dim));
             painter.rect_stroke(
                 rect,
                 corner_radius,
-                egui::Stroke::new(1.0, theme.border()),
+                egui::Stroke::new(1.0, theme.border().gamma_multiply(dim)),
                 egui::StrokeKind::Outside,
             );
 
@@ -381,6 +371,11 @@ impl<'a> ModWheel<'a> {
         let bg_lum = (u16::from(bg.r()) + u16::from(bg.g()) + u16::from(bg.b())) / 3;
         let is_dark_theme = bg_lum < 128;
         let base_gray: u8 = if is_dark_theme { 85 } else { 160 };
+        let base_gray: u8 = if self.disabled {
+            (f32::from(base_gray) * 0.5) as u8
+        } else {
+            base_gray
+        };
         let brightness_boost: f32 = if is_active { 0.08 } else { 0.0 };
 
         let width = rect.width();

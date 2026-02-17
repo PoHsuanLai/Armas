@@ -58,6 +58,16 @@ pub struct FaderResponse {
     pub changed: bool,
 }
 
+/// Response from the fader strip (complete fader with housing)
+pub struct FaderStripResponse {
+    /// The UI response
+    pub response: Response,
+    /// Current fader value (0.0 to 1.0)
+    pub value: f32,
+    /// Whether the value changed this frame
+    pub changed: bool,
+}
+
 // Fader (minimal) default dimensions - just the track
 const FADER_DEFAULT_WIDTH: f32 = 30.0; // Track width from original
 const FADER_DEFAULT_HEIGHT: f32 = 240.0; // Track height from original
@@ -97,11 +107,13 @@ pub struct Fader {
     /// Value range (min, max) for dB or other units
     value_range: (f32, f32),
     /// Default value for double-click reset
-    default_value: Option<f32>,
+    pub(crate) default_value: Option<f32>,
     /// Enable velocity-based drag mode
-    velocity_mode: bool,
+    pub(crate) velocity_mode: bool,
     /// Sensitivity for velocity mode
-    velocity_sensitivity: f64,
+    pub(crate) velocity_sensitivity: f64,
+    /// Whether the fader is disabled (non-interactive)
+    disabled: bool,
 }
 
 impl Fader {
@@ -120,6 +132,7 @@ impl Fader {
             default_value: None,
             velocity_mode: true, // Enabled by default for faders
             velocity_sensitivity: 1.0,
+            disabled: false,
         }
     }
 
@@ -181,27 +194,10 @@ impl Fader {
         self
     }
 
-    /// Set default value for double-click reset
+    /// Set whether the fader is disabled (non-interactive)
     #[must_use]
-    pub const fn default_value(mut self, value: f32) -> Self {
-        self.default_value = Some(value);
-        self
-    }
-
-    /// Enable/disable velocity-based drag mode (default: enabled)
-    ///
-    /// When enabled, holding Ctrl/Cmd while dragging uses velocity mode
-    /// where faster mouse movement = larger value changes.
-    #[must_use]
-    pub const fn velocity_mode(mut self, enabled: bool) -> Self {
-        self.velocity_mode = enabled;
-        self
-    }
-
-    /// Set sensitivity for velocity-based drag mode
-    #[must_use]
-    pub const fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
-        self.velocity_sensitivity = sensitivity;
+    pub const fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
         self
     }
 
@@ -233,22 +229,29 @@ impl Fader {
         };
         let total_width = self.width + scale_width;
         let desired_size = Vec2::new(total_width, self.height);
-        let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
+        let sense = if self.disabled {
+            Sense::hover()
+        } else {
+            Sense::click_and_drag()
+        };
+        let (rect, mut response) = ui.allocate_exact_size(desired_size, sense);
 
         // Calculate fader rect (the actual fader area, always self.width wide)
         let fader_rect = self.calculate_fader_rect(rect, scale_width);
 
         // Handle interactions
-        if self.handle_double_click(&response, &mut changed) {
-            response.mark_changed();
-        } else if response.drag_started() {
-            self.handle_drag_start(ui, &response, drag_state_id);
-        } else if response.dragged() {
-            if self.handle_dragging(ui, &response, drag_state_id, fader_rect, &mut changed) {
+        if !self.disabled {
+            if self.handle_double_click(&response, &mut changed) {
                 response.mark_changed();
+            } else if response.drag_started() {
+                self.handle_drag_start(ui, &response, drag_state_id);
+            } else if response.dragged() {
+                if self.handle_dragging(ui, &response, drag_state_id, fader_rect, &mut changed) {
+                    response.mark_changed();
+                }
+            } else if response.drag_stopped() {
+                self.handle_drag_end(ui, drag_state_id);
             }
-        } else if response.drag_stopped() {
-            self.handle_drag_end(ui, drag_state_id);
         }
 
         // Render fader
@@ -426,17 +429,23 @@ impl Fader {
         );
 
         // Draw channel background
-        painter.rect_filled(
-            channel_rect,
-            CHANNEL_CORNER_RADIUS * scale,
-            theme.background(),
-        );
+        let channel_bg = if self.disabled {
+            theme.background().gamma_multiply(0.5)
+        } else {
+            theme.background()
+        };
+        painter.rect_filled(channel_rect, CHANNEL_CORNER_RADIUS * scale, channel_bg);
 
         // Add border to channel
+        let border_color = if self.disabled {
+            theme.border().gamma_multiply(0.5)
+        } else {
+            theme.border()
+        };
         painter.rect_stroke(
             channel_rect,
             CHANNEL_CORNER_RADIUS * scale,
-            (1.0 * scale, theme.border()),
+            (1.0 * scale, border_color),
             egui::StrokeKind::Middle,
         );
     }
@@ -561,10 +570,13 @@ impl Fader {
         // Base gray - brighter in dark mode, darker in light mode
         let base_gray = if is_dark { 120u8 } else { 80u8 };
 
+        // Dim colors when disabled
+        let dim = if self.disabled { 0.5_f32 } else { 1.0 };
+
         // Glow effect (outer shadow) - subtle
         for i in 0..3 {
             let glow_offset = (3 - i) as f32 * scale;
-            let glow_alpha = (20 - i * 5) as u8; // More subtle: 20, 15, 10
+            let glow_alpha = ((20 - i * 5) as f32 * dim) as u8;
             painter.rect_filled(
                 rect.expand(glow_offset),
                 2.0,
@@ -580,7 +592,7 @@ impl Fader {
         painter.rect_filled(
             top_cap,
             0.0,
-            Color32::from_rgb(base_gray + 20, base_gray + 20, base_gray + 20),
+            Color32::from_rgb(base_gray + 20, base_gray + 20, base_gray + 20).gamma_multiply(dim),
         );
 
         // Top cap highlight
@@ -591,7 +603,8 @@ impl Fader {
             ],
             (
                 1.0 * scale,
-                Color32::from_rgb(base_gray + 50, base_gray + 50, base_gray + 50),
+                Color32::from_rgb(base_gray + 50, base_gray + 50, base_gray + 50)
+                    .gamma_multiply(dim),
             ),
         );
 
@@ -603,7 +616,7 @@ impl Fader {
         painter.rect_filled(
             top_slant,
             0.0,
-            Color32::from_rgb(base_gray - 30, base_gray - 30, base_gray - 30),
+            Color32::from_rgb(base_gray - 30, base_gray - 30, base_gray - 30).gamma_multiply(dim),
         );
 
         // Main body (gradient)
@@ -611,7 +624,7 @@ impl Fader {
         for i in 0..gradient_lines {
             let t = i as f32 / (gradient_lines - 1) as f32;
             let gray_value = (f32::from(base_gray - 10) + t * 40.0) as u8;
-            let color = Color32::from_rgb(gray_value, gray_value, gray_value);
+            let color = Color32::from_rgb(gray_value, gray_value, gray_value).gamma_multiply(dim);
             painter.line_segment(
                 [
                     pos + Vec2::new(2.0 * w_scale, 8.0f32.mul_add(h_scale, i as f32 * h_scale)),
@@ -645,14 +658,15 @@ impl Fader {
         painter.rect_filled(
             groove,
             0.0,
-            Color32::from_rgb(base_gray + 60, base_gray + 60, base_gray + 60),
+            Color32::from_rgb(base_gray + 60, base_gray + 60, base_gray + 60).gamma_multiply(dim),
         );
         painter.rect_stroke(
             groove,
             0.0,
             (
                 1.0 * scale,
-                Color32::from_rgb(base_gray - 40, base_gray - 40, base_gray - 40),
+                Color32::from_rgb(base_gray - 40, base_gray - 40, base_gray - 40)
+                    .gamma_multiply(dim),
             ),
             egui::StrokeKind::Middle,
         );
@@ -665,7 +679,7 @@ impl Fader {
         painter.rect_filled(
             bottom_cap,
             0.0,
-            Color32::from_rgb(base_gray - 35, base_gray - 35, base_gray - 35),
+            Color32::from_rgb(base_gray - 35, base_gray - 35, base_gray - 35).gamma_multiply(dim),
         );
 
         // Side borders (scaled)
@@ -734,8 +748,8 @@ impl FaderStrip {
         self
     }
 
-    /// Show the fader strip and return the new value
-    pub fn show(mut self, ui: &mut Ui, theme: &armas_basic::Theme) -> (Response, f32) {
+    /// Show the fader strip and return the response
+    pub fn show(mut self, ui: &mut Ui, theme: &armas_basic::Theme) -> FaderStripResponse {
         let desired_size = Vec2::new(self.width, self.height);
         let (rect, response) = ui.allocate_exact_size(desired_size, Sense::hover());
 
@@ -815,9 +829,17 @@ impl FaderStrip {
             self.value = fader_response.value;
 
             // Return the fader's response (which handles interaction)
-            return (fader_response.response, self.value);
+            return FaderStripResponse {
+                response: fader_response.response,
+                value: self.value,
+                changed: fader_response.changed,
+            };
         }
 
-        (response, self.value)
+        FaderStripResponse {
+            response,
+            value: self.value,
+            changed: false,
+        }
     }
 }

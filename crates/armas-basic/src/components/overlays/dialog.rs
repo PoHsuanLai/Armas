@@ -114,10 +114,8 @@ impl Dialog {
         theme: &Theme,
         content: impl FnOnce(&mut Ui),
     ) -> DialogResponse {
-        let mut response = DialogResponse {
-            closed: false,
-            backdrop_clicked: false,
-        };
+        let mut closed = false;
+        let mut backdrop_clicked = false;
 
         let state_id = self.id.with("dialog_state");
         let mut is_open = self
@@ -126,7 +124,16 @@ impl Dialog {
 
         if !is_open {
             self.fade_animation.reset();
-            return response;
+            let dummy = egui::Area::new(self.id.with("dialog_empty"))
+                .order(egui::Order::Background)
+                .fixed_pos(egui::Pos2::ZERO)
+                .show(ctx, |_| {})
+                .response;
+            return DialogResponse {
+                response: dummy,
+                closed: false,
+                backdrop_clicked: false,
+            };
         }
 
         if !self.fade_animation.is_running() && !self.fade_animation.is_complete() {
@@ -164,15 +171,15 @@ impl Dialog {
 
                 if self.closable && backdrop_response.clicked() {
                     is_open = false;
-                    response.closed = true;
-                    response.backdrop_clicked = true;
+                    closed = true;
+                    backdrop_clicked = true;
                     self.fade_animation.reset();
                 }
             });
 
         // Draw dialog content
         let content_id = self.id.with("dialog_content");
-        egui::Area::new(content_id)
+        let area_response = egui::Area::new(content_id)
             .order(egui::Order::Foreground)
             .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
             .show(ctx, |ui| {
@@ -252,7 +259,7 @@ impl Dialog {
 
                                 if close_response.clicked() {
                                     is_open = false;
-                                    response.closed = true;
+                                    closed = true;
                                     self.fade_animation.reset();
                                 }
                             }
@@ -265,7 +272,7 @@ impl Dialog {
 
         if self.closable && ctx.input(|i| i.key_pressed(Key::Escape)) {
             is_open = false;
-            response.closed = true;
+            closed = true;
             self.fade_animation.reset();
         }
 
@@ -275,7 +282,7 @@ impl Dialog {
                 ctx.data_mut(|d| d.get_temp::<bool>(state_id).unwrap_or(true));
             if !state_after_content && is_open {
                 // Content closed the dialog
-                response.closed = true;
+                closed = true;
                 self.fade_animation.reset();
             }
 
@@ -283,7 +290,11 @@ impl Dialog {
             ctx.data_mut(|d| d.insert_temp(state_id, is_open));
         }
 
-        response
+        DialogResponse {
+            response: area_response.response,
+            closed,
+            backdrop_clicked,
+        }
     }
 }
 
@@ -294,8 +305,9 @@ impl Default for Dialog {
 }
 
 /// Response from a dialog
-#[derive(Debug, Clone, Copy)]
 pub struct DialogResponse {
+    /// The UI response
+    pub response: egui::Response,
     /// Whether the dialog was closed this frame
     pub closed: bool,
     /// Whether the backdrop was clicked

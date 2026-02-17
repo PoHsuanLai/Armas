@@ -12,7 +12,7 @@ let options = vec![
 ];
 
 let mut select = Select::new(options).id("select_1");
-select.show(ui, &theme);
+select.show(ui);
 ```
 
 ## With Label
@@ -27,7 +27,7 @@ let options = vec![
 let mut select = Select::new(options)
     .id("select_2")
     .label("Country");
-select.show(ui, &theme);
+select.show(ui);
 ```
 
 ## With Icons
@@ -41,7 +41,7 @@ let options = vec![
 
 let mut select = Select::new(options)
     .id("select_3");
-select.show(ui, &theme);
+select.show(ui);
 ```
 
 ## With Descriptions
@@ -58,7 +58,7 @@ let options = vec![
 
 let mut select = Select::new(options)
     .id("select_4");
-select.show(ui, &theme);
+select.show(ui);
 ```
 
 
@@ -74,7 +74,7 @@ let options = vec![
 
 let mut select = Select::new(options)
     .id("select_5");
-select.show(ui, &theme);
+select.show(ui);
 ```
 
 ## With Pre-Selection
@@ -89,7 +89,7 @@ let options = vec![
 let mut select = Select::new(options)
     .id("select_6")
     .selected("green");
-select.show(ui, &theme);
+select.show(ui);
 ```
 
 ## Non-Searchable
@@ -104,7 +104,7 @@ let options = vec![
 let mut select = Select::new(options)
     .id("select_7")
     .searchable(false);
-select.show(ui, &theme);
+select.show(ui);
 ```
 
 ## Custom Width
@@ -118,7 +118,7 @@ let options = vec![
 let mut select = Select::new(options)
     .id("select_8")
     .width(300.0);
-select.show(ui, &theme);
+select.show(ui);
 ```
 
 ## Handling Selection
@@ -131,7 +131,7 @@ let options = vec![
 
 let mut select = Select::new(options)
     .id("select_9");
-let response = select.show(ui, &theme);
+let response = select.show(ui);
 
 if response.changed {
     if let Some(value) = response.selected_value {

@@ -9,8 +9,11 @@
 use armas_basic::theme::Theme;
 
 /// Response from the slot component
-#[derive(Debug, Clone)]
-pub struct SlotResponse;
+#[allow(dead_code)]
+pub struct SlotResponse {
+    /// The UI response
+    pub response: egui::Response,
+}
 
 /// Plugin/effect insert slot component
 ///
@@ -209,7 +212,7 @@ impl<'a> Slot<'a> {
             }
         }
 
-        SlotResponse
+        SlotResponse { response }
     }
 }
 

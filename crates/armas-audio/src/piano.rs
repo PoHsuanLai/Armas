@@ -105,6 +105,7 @@ pub struct Piano {
     pressed_keys: HashSet<u8>,
     show_labels: bool,
     orientation: PianoOrientation,
+    disabled: bool,
 }
 
 impl Piano {
@@ -124,6 +125,7 @@ impl Piano {
             pressed_keys: HashSet::new(),
             show_labels: true,
             orientation: PianoOrientation::Horizontal,
+            disabled: false,
         }
     }
 
@@ -163,6 +165,13 @@ impl Piano {
         self
     }
 
+    /// Set whether the piano is disabled (non-interactive)
+    #[must_use]
+    pub const fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Set which keys are currently pressed
     #[must_use]
     pub fn pressed_keys(mut self, keys: HashSet<u8>) -> Self {
@@ -181,9 +190,10 @@ impl Piano {
 
         let layout = self.compute_layout();
 
-        self.render_keys(ui, theme, &layout, &mut clicked_keys, &mut released_keys);
+        let response = self.render_keys(ui, theme, &layout, &mut clicked_keys, &mut released_keys);
 
         PianoResponse {
+            response,
             clicked_keys,
             released_keys,
         }
@@ -229,17 +239,17 @@ impl Piano {
         layout: &PianoLayout,
         clicked_keys: &mut Vec<u8>,
         released_keys: &mut Vec<u8>,
-    ) {
+    ) -> Response {
         let alloc_size = if layout.is_horizontal {
             Vec2::new(layout.display_size, self.white_key_height)
         } else {
             Vec2::new(self.white_key_height, layout.display_size)
         };
 
-        let (rect, _) = ui.allocate_exact_size(alloc_size, Sense::hover());
+        let (rect, response) = ui.allocate_exact_size(alloc_size, Sense::hover());
 
         if !ui.is_rect_visible(rect) {
-            return;
+            return response;
         }
 
         let painter = ui.painter().clone();
@@ -273,6 +283,8 @@ impl Piano {
             clicked_keys,
             released_keys,
         );
+
+        response
     }
 
     fn render_white_keys(
@@ -310,7 +322,12 @@ impl Piano {
                 continue;
             }
 
-            let response = ui.allocate_rect(key_rect, Sense::drag());
+            let sense = if self.disabled {
+                Sense::hover()
+            } else {
+                Sense::drag()
+            };
+            let response = ui.allocate_rect(key_rect, sense);
             let is_pressed =
                 self.pressed_keys.contains(&note) || response.is_pointer_button_down_on();
 
@@ -335,7 +352,9 @@ impl Piano {
                 },
             });
 
-            self.handle_key_interaction(&response, note, clicked_keys, released_keys);
+            if !self.disabled {
+                self.handle_key_interaction(&response, note, clicked_keys, released_keys);
+            }
             white_key_index += 1;
         }
     }
@@ -378,7 +397,12 @@ impl Piano {
                 continue;
             }
 
-            let response = ui.allocate_rect(key_rect, Sense::drag());
+            let sense = if self.disabled {
+                Sense::hover()
+            } else {
+                Sense::drag()
+            };
+            let response = ui.allocate_rect(key_rect, sense);
             let is_pressed =
                 self.pressed_keys.contains(&note) || response.is_pointer_button_down_on();
 
@@ -399,7 +423,9 @@ impl Piano {
                 note: None,
             });
 
-            self.handle_key_interaction(&response, note, clicked_keys, released_keys);
+            if !self.disabled {
+                self.handle_key_interaction(&response, note, clicked_keys, released_keys);
+            }
         }
     }
 
@@ -537,13 +563,16 @@ impl Piano {
             params.opacity
         };
 
+        let dim = if self.disabled { 0.5 } else { 1.0 };
+
         let base_color = if params.is_black { 20 } else { 255 };
         let glass_color = Color32::from_rgba_unmultiplied(
             base_color,
             base_color,
             base_color,
             (255.0 * opacity) as u8,
-        );
+        )
+        .gamma_multiply(dim);
 
         // For black keys, draw an opaque background first to prevent white key lines showing through
         if params.is_black {
@@ -561,9 +590,9 @@ impl Piano {
 
         // Border
         let border_color = if params.is_pressed {
-            params.theme.primary()
+            params.theme.primary().gamma_multiply(dim)
         } else {
-            params.theme.border()
+            params.theme.border().gamma_multiply(dim)
         };
         params.painter.rect_stroke(
             params.rect,
@@ -578,7 +607,7 @@ impl Piano {
                 params.painter,
                 params.rect,
                 params.corner_radius,
-                params.theme.primary(),
+                params.theme.primary().gamma_multiply(dim),
                 params.glow_intensity,
             );
         }
@@ -684,6 +713,8 @@ impl Default for Piano {
 
 /// Response from piano keyboard interaction
 pub struct PianoResponse {
+    /// The UI response
+    pub response: Response,
     /// MIDI note numbers that were clicked this frame
     pub clicked_keys: Vec<u8>,
     /// MIDI note numbers that were released this frame

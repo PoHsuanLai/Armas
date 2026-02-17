@@ -57,7 +57,7 @@ impl RegionVariant {
 /// ```rust,no_run
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
-/// use armas_audio::{TimelineRegion, RegionVariant};
+/// use armas_audio::{AudioTiming, TimelineRegion, RegionVariant};
 /// use armas_basic::ext::ArmasContextExt;
 ///
 /// let theme = ui.ctx().armas_theme();
@@ -80,9 +80,9 @@ pub struct TimelineRegion<'a> {
     start: &'a mut f32,
     end: &'a mut f32,
     variant: RegionVariant,
-    beat_width: f32,
-    measures: u32,
-    beats_per_measure: u32,
+    pub(crate) beat_width: f32,
+    pub(crate) measures: u32,
+    pub(crate) beats_per_measure: u32,
     height: Option<f32>,
     enabled: bool,
     snap_to_grid: bool,
@@ -149,27 +149,6 @@ impl<'a> TimelineRegion<'a> {
     #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
-        self
-    }
-
-    /// Set pixels per beat (must match Timeline)
-    #[must_use]
-    pub const fn beat_width(mut self, width: f32) -> Self {
-        self.beat_width = width.max(1.0);
-        self
-    }
-
-    /// Set number of measures
-    #[must_use]
-    pub const fn measures(mut self, measures: u32) -> Self {
-        self.measures = measures;
-        self
-    }
-
-    /// Set beats per measure
-    #[must_use]
-    pub const fn beats_per_measure(mut self, beats: u32) -> Self {
-        self.beats_per_measure = beats;
         self
     }
 

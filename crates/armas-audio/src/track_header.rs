@@ -169,9 +169,10 @@ impl TrackHeader {
             .variant(CardVariant::Filled)
             .width(self.width)
             .height(self.height)
-            .inner_margin(0.0);
+            .inner_margin(0.0)
+            .clickable(true);
 
-        let card_response = card.show(ui, theme, |ui| {
+        let card_response = card.show(ui, |ui| {
             let (track_rect, _) =
                 ui.allocate_exact_size(Vec2::new(self.width, self.height), Sense::hover());
 
@@ -300,7 +301,7 @@ impl TrackHeader {
                             if Button::new("M")
                                 .variant(mute_variant)
                                 .min_width(button_size)
-                                .show(ui, theme)
+                                .show(ui)
                                 .clicked()
                             {
                                 controls.muted = !controls.muted;
@@ -316,7 +317,7 @@ impl TrackHeader {
                             if Button::new("S")
                                 .variant(solo_variant)
                                 .min_width(button_size)
-                                .show(ui, theme)
+                                .show(ui)
                                 .clicked()
                             {
                                 controls.soloed = !controls.soloed;
@@ -332,7 +333,7 @@ impl TrackHeader {
                             if Button::new("R")
                                 .variant(arm_variant)
                                 .min_width(button_size)
-                                .show(ui, theme)
+                                .show(ui)
                                 .clicked()
                             {
                                 controls.armed = !controls.armed;

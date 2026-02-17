@@ -42,7 +42,7 @@ pub use drum_sequencer::{
     DrumRow, DrumSequencer, DrumSequencerColorScheme, DrumSequencerResponse, DrumSequencerVariant,
     DrumStep,
 };
-pub use fader::{Fader, FaderScalePosition, FaderStrip};
+pub use fader::{Fader, FaderScalePosition, FaderStrip, FaderStripResponse};
 pub use knob::Knob;
 pub use meter::{AudioMeter, MeterStyle, ScalePosition};
 pub use midi_controller::{MidiController, MidiControllerResponse, MidiControllerState};
@@ -76,3 +76,6 @@ pub(crate) use snap_grid::SnapGrid;
 pub(crate) use time_ruler::TimeRuler;
 pub(crate) use timeline_track::TimelineTrack;
 pub(crate) use track_header::TrackHeader;
+
+mod traits;
+pub use traits::{AudioTiming, GlowEffect, MomentumScroll, VelocityControl};

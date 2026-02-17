@@ -277,19 +277,15 @@ fn test_sheet_navigation_content() {
             ui.vertical(|ui| {
                 ui.heading("Menu");
                 ui.separator();
-                Button::new("Home")
-                    .variant(ButtonVariant::Ghost)
-                    .show(ui, &theme);
+                Button::new("Home").variant(ButtonVariant::Ghost).show(ui);
                 Button::new("Settings")
                     .variant(ButtonVariant::Ghost)
-                    .show(ui, &theme);
+                    .show(ui);
                 Button::new("Profile")
                     .variant(ButtonVariant::Ghost)
-                    .show(ui, &theme);
+                    .show(ui);
                 ui.separator();
-                Button::new("Logout")
-                    .variant(ButtonVariant::Ghost)
-                    .show(ui, &theme);
+                Button::new("Logout").variant(ButtonVariant::Ghost).show(ui);
             });
         });
     });
@@ -313,9 +309,7 @@ fn test_sheet_settings_content() {
         sheet.show(ctx, &theme, |ui| {
             ui.vertical(|ui| {
                 let mut enabled = true;
-                Toggle::new()
-                    .label("Dark Mode")
-                    .show(ui, &mut enabled, &theme);
+                Switch::new().label("Dark Mode").show(ui, &mut enabled);
 
                 ui.add_space(8.0);
 
@@ -323,7 +317,7 @@ fn test_sheet_settings_content() {
                 Slider::new(0.0, 100.0)
                     .label("Volume")
                     .suffix("%")
-                    .show(ui, &mut volume, &theme);
+                    .show(ui, &mut volume);
             });
         });
     });

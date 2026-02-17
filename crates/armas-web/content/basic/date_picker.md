@@ -12,7 +12,7 @@ let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
 
 let mut date_picker = DatePicker::new("my_date_picker");
 
-date_picker.show(&ctx, &theme, ui, &mut selected_date);
+date_picker.show(&ctx, ui, &mut selected_date);
 
 ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
@@ -26,7 +26,7 @@ let date_id = ui.id().with("label_date");
 let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
 
 let mut date_picker = DatePicker::new("birthday").label("Birthday");
-date_picker.show(&ctx, &theme, ui, &mut selected_date);
+date_picker.show(&ctx, ui, &mut selected_date);
 
 ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
@@ -40,7 +40,7 @@ let date_id = ui.id().with("placeholder_date");
 let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
 
 let mut date_picker = DatePicker::new("event_date").placeholder("Choose event date...");
-date_picker.show(&ctx, &theme, ui, &mut selected_date);
+date_picker.show(&ctx, ui, &mut selected_date);
 
 ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
@@ -56,7 +56,7 @@ let date_id = ui.id().with("footer_date");
 let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
 
 let mut date_picker = DatePicker::new("with_footer").show_footer(true);
-date_picker.show(&ctx, &theme, ui, &mut selected_date);
+date_picker.show(&ctx, ui, &mut selected_date);
 
 ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
@@ -70,7 +70,7 @@ let date_id = ui.id().with("width_date");
 let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
 
 let mut date_picker = DatePicker::new("custom_width").width(200.0);
-date_picker.show(&ctx, &theme, ui, &mut selected_date);
+date_picker.show(&ctx, ui, &mut selected_date);
 
 ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
@@ -86,7 +86,7 @@ let mut selected_date: Option<Date> = ctx.data(|d| {
 });
 
 let mut date_picker = DatePicker::new("appointment");
-date_picker.show(&ctx, &theme, ui, &mut selected_date);
+date_picker.show(&ctx, ui, &mut selected_date);
 
 ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
@@ -102,7 +102,7 @@ let mut selected_date: Option<Date> = ctx.data(|d| {
 });
 
 let mut date_picker = DatePicker::new("today");
-date_picker.show(&ctx, &theme, ui, &mut selected_date);
+date_picker.show(&ctx, ui, &mut selected_date);
 
 ctx.data_mut(|d| d.insert_temp(date_id, selected_date));
 ```
@@ -116,7 +116,7 @@ let date_id = ui.id().with("changes_date");
 let mut selected_date: Option<Date> = ctx.data(|d| d.get_temp(date_id));
 
 let mut date_picker = DatePicker::new("date");
-let response = date_picker.show(&ctx, &theme, ui, &mut selected_date);
+let response = date_picker.show(&ctx, ui, &mut selected_date);
 
 if response.changed {
     if let Some(date) = selected_date {
@@ -185,7 +185,7 @@ ui.vertical(|ui| {
     let mut event_date = DatePicker::new("event")
         .label("Event Date")
         .placeholder("Select date...");
-    event_date.show(&ctx, &theme, ui, &mut event_date_value);
+    event_date.show(&ctx, ui, &mut event_date_value);
     ctx.data_mut(|d| d.insert_temp(event_date_id, event_date_value));
 
     ui.add_space(8.0);
@@ -196,7 +196,7 @@ ui.vertical(|ui| {
         .label("Registration Deadline")
         .placeholder("Select deadline...")
         .show_footer(true);
-    deadline.show(&ctx, &theme, ui, &mut deadline_date);
+    deadline.show(&ctx, ui, &mut deadline_date);
     ctx.data_mut(|d| d.insert_temp(deadline_id, deadline_date));
 });
 ```

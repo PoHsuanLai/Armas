@@ -119,9 +119,9 @@ notes = response.notes;
 ```demo
 let theme = ui.ctx().armas_theme();
 let mut notes = vec![
-    Note::with_velocity(60, 0.0, 1.0, 0.3),  // Soft
-    Note::with_velocity(64, 1.0, 1.0, 0.6),  // Medium
-    Note::with_velocity(67, 2.0, 1.0, 1.0),  // Loud
+    Note::with_velocity(60, 0.0, 1.0, 38),   // Soft
+    Note::with_velocity(64, 1.0, 1.0, 76),   // Medium
+    Note::with_velocity(67, 2.0, 1.0, 127),  // Loud
 ];
 
 let response = PianoRoll::new()

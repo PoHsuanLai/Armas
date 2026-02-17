@@ -376,7 +376,7 @@ impl ShowcaseApp {
                         if Button::new("GitHub")
                             .variant(ButtonVariant::Ghost)
                             .size(ButtonSize::Small)
-                            .show(ui, &theme)
+                            .show(ui)
                             .clicked()
                         {
                             Self::open_url("https://github.com/PoHsuanLai/Armas");
@@ -384,7 +384,7 @@ impl ShowcaseApp {
                         if Button::new("Crates.io")
                             .variant(ButtonVariant::Ghost)
                             .size(ButtonSize::Small)
-                            .show(ui, &theme)
+                            .show(ui)
                             .clicked()
                         {
                             Self::open_url("https://crates.io/crates/armas");
@@ -392,7 +392,7 @@ impl ShowcaseApp {
                         if Button::new("Docs.rs")
                             .variant(ButtonVariant::Ghost)
                             .size(ButtonSize::Small)
-                            .show(ui, &theme)
+                            .show(ui)
                             .clicked()
                         {
                             Self::open_url("https://docs.rs/armas");

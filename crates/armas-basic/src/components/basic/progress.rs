@@ -5,6 +5,7 @@
 //! - Progress: Simple horizontal progress bar (shadcn style)
 //! - `CircularProgressBar`: Circular/spinner progress
 
+use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Ui, Vec2};
 use std::f32::consts::PI;
 
@@ -24,14 +25,12 @@ const CIRCULAR_STROKE: f32 = 4.0;
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas_basic::Progress;
-/// use armas_basic::ext::ArmasContextExt;
 ///
-/// let theme = ui.ctx().armas_theme();
 /// // Basic progress (0-100)
-/// Progress::new(65.0).show(ui, &theme);
+/// Progress::new(65.0).show(ui);
 ///
 /// // With custom width
-/// Progress::new(33.0).width(200.0).show(ui, &theme);
+/// Progress::new(33.0).width(200.0).show(ui);
 /// # }
 /// ```
 pub struct Progress {
@@ -72,7 +71,8 @@ impl Progress {
     }
 
     /// Show the progress bar
-    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> egui::Response {
+    pub fn show(self, ui: &mut Ui) -> egui::Response {
+        let theme = ui.ctx().armas_theme();
         let desired_width = self.width.unwrap_or_else(|| ui.available_width());
         let corner_radius = PROGRESS_CORNER_RADIUS.min(self.height / 2.0);
 
@@ -117,19 +117,17 @@ impl Progress {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas_basic::CircularProgressBar;
-/// use armas_basic::ext::ArmasContextExt;
 ///
-/// let theme = ui.ctx().armas_theme();
 /// // Determinate progress (0-100)
 /// CircularProgressBar::new(75.0)
 ///     .size(80.0)
 ///     .show_percentage(true)
-///     .show(ui, &theme);
+///     .show(ui);
 ///
 /// // Indeterminate/loading mode
 /// CircularProgressBar::indeterminate()
 ///     .size(60.0)
-///     .show(ui, &theme);
+///     .show(ui);
 /// # }
 /// ```
 pub struct CircularProgressBar {
@@ -195,7 +193,8 @@ impl CircularProgressBar {
     }
 
     /// Show the circular progress
-    pub fn show(mut self, ui: &mut Ui, theme: &crate::Theme) -> egui::Response {
+    pub fn show(mut self, ui: &mut Ui) -> egui::Response {
+        let theme = ui.ctx().armas_theme();
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 
         if ui.is_rect_visible(rect) {

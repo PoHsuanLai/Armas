@@ -7,6 +7,7 @@
 //! - Destructive (red)
 //! - Outline (border only)
 
+use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
 
@@ -47,21 +48,19 @@ impl BadgeVariant {
 ///
 /// ```rust,no_run
 /// use armas_basic::components::{Badge, BadgeVariant};
-/// use armas_basic::ext::ArmasContextExt;
 ///
 /// fn ui(ui: &mut egui::Ui) {
-///     let theme = ui.ctx().armas_theme();
 ///     // Default badge
-///     Badge::new("New").show(ui, &theme);
+///     Badge::new("New").show(ui);
 ///
 ///     // Secondary badge
-///     Badge::new("Draft").variant(BadgeVariant::Secondary).show(ui, &theme);
+///     Badge::new("Draft").variant(BadgeVariant::Secondary).show(ui);
 ///
 ///     // Destructive badge
-///     Badge::new("Error").variant(BadgeVariant::Destructive).show(ui, &theme);
+///     Badge::new("Error").variant(BadgeVariant::Destructive).show(ui);
 ///
 ///     // Outline badge
-///     Badge::new("Outline").variant(BadgeVariant::Outline).show(ui, &theme);
+///     Badge::new("Outline").variant(BadgeVariant::Outline).show(ui);
 /// }
 /// ```
 pub struct Badge {
@@ -174,8 +173,9 @@ impl Badge {
     }
 
     /// Show the badge
-    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> BadgeResponse {
-        let (bg_color, text_color, border_color) = self.get_colors(theme);
+    pub fn show(self, ui: &mut Ui) -> BadgeResponse {
+        let theme = ui.ctx().armas_theme();
+        let (bg_color, text_color, border_color) = self.get_colors(&theme);
 
         // Resolve effective values (custom overrides or defaults)
         let font_size = self.custom_font_size.unwrap_or(FONT_SIZE);
@@ -387,7 +387,8 @@ impl NotificationBadge {
     }
 
     /// Show the notification badge
-    pub fn show(&self, ui: &mut Ui, theme: &crate::Theme) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         let color = self.color.unwrap_or_else(|| theme.destructive());
 
         let text = self.max_count.map_or_else(

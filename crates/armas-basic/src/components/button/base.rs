@@ -7,6 +7,7 @@
 //! - Ghost: No background, hover shows accent
 //! - Link: Text style with underline on hover
 
+use crate::ext::ArmasContextExt;
 use egui::{Color32, Response, Sense, Ui, Vec2};
 
 // shadcn Button constants
@@ -137,7 +138,8 @@ impl Button {
     }
 
     /// Show the button
-    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         let sense = if self.enabled {
             Sense::click()
         } else {

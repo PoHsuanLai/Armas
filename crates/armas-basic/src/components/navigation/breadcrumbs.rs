@@ -72,7 +72,7 @@ impl Breadcrumbs {
     ) -> BreadcrumbsResponse {
         let mut clicked: Option<usize> = None;
 
-        ui.horizontal(|ui| {
+        let inner_response = ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = self.spacing;
 
             let mut builder = BreadcrumbsBuilder {
@@ -85,7 +85,10 @@ impl Breadcrumbs {
             content(&mut builder);
         });
 
-        BreadcrumbsResponse { clicked }
+        BreadcrumbsResponse {
+            response: inner_response.response,
+            clicked,
+        }
     }
 }
 
@@ -242,8 +245,9 @@ impl Drop for ItemBuilder<'_> {
 }
 
 /// Response from breadcrumbs
-#[derive(Debug, Clone, Copy)]
 pub struct BreadcrumbsResponse {
+    /// The UI response
+    pub response: egui::Response,
     /// Index of clicked item (if any)
     pub clicked: Option<usize>,
 }

@@ -145,132 +145,130 @@ impl<'a> MidiController<'a> {
         let pitch_wheel_id = base_id.with("pitch_wheel");
         let xy_pad_id = base_id.with("xy_pad");
 
-        let card_response = Card::new()
-            .variant(CardVariant::Filled)
-            .show(ui, theme, |ui| {
-                // Top controls section (wheels, XY pad, drum pads)
-                section_panel(ui, theme, |ui| {
+        let card_response = Card::new().variant(CardVariant::Filled).show(ui, |ui| {
+            // Top controls section (wheels, XY pad, drum pads)
+            section_panel(ui, theme, |ui| {
+                ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = theme.spacing.lg;
+
+                    // Wheels
                     ui.horizontal(|ui| {
-                        ui.spacing_mut().item_spacing.x = theme.spacing.lg;
+                        ui.spacing_mut().item_spacing.x = theme.spacing.md;
 
-                        // Wheels
-                        ui.horizontal(|ui| {
-                            ui.spacing_mut().item_spacing.x = theme.spacing.md;
-
-                            let mod_response = ModWheel::new(&mut self.state.mod_wheel)
-                                .wheel_type(WheelType::Modulation)
-                                .size(self.wheel_size)
-                                .label("Mod")
-                                .id(mod_wheel_id)
-                                .show(ui, theme);
-                            mod_wheel_changed = mod_response.changed();
-
-                            let pitch_response = ModWheel::new(&mut self.state.pitch_wheel)
-                                .wheel_type(WheelType::PitchBend)
-                                .size(self.wheel_size)
-                                .label("Pitch")
-                                .id(pitch_wheel_id)
-                                .show(ui, theme);
-                            pitch_wheel_changed = pitch_response.changed();
-                        });
-
-                        // XY Pad
-                        let xy_response = XYPad::new(&mut self.state.xy_x, &mut self.state.xy_y)
-                            .size(180.0)
-                            .x_label("X")
-                            .y_label("Y")
-                            .id(xy_pad_id)
+                        let mod_response = ModWheel::new(&mut self.state.mod_wheel)
+                            .wheel_type(WheelType::Modulation)
+                            .size(self.wheel_size)
+                            .label("Mod")
+                            .id(mod_wheel_id)
                             .show(ui, theme);
-                        xy_pad_changed = xy_response.changed;
+                        mod_wheel_changed = mod_response.changed();
 
-                        // Drum pads
-                        ui.vertical(|ui| {
-                            let pad_count = 4 * 4;
-                            let mut pad_configs = Vec::new();
+                        let pitch_response = ModWheel::new(&mut self.state.pitch_wheel)
+                            .wheel_type(WheelType::PitchBend)
+                            .size(self.wheel_size)
+                            .label("Pitch")
+                            .id(pitch_wheel_id)
+                            .show(ui, theme);
+                        pitch_wheel_changed = pitch_response.changed();
+                    });
 
-                            let drum_notes = [
-                                36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
-                            ];
+                    // XY Pad
+                    let xy_response = XYPad::new(&mut self.state.xy_x, &mut self.state.xy_y)
+                        .size(180.0)
+                        .x_label("X")
+                        .y_label("Y")
+                        .id(xy_pad_id)
+                        .show(ui, theme);
+                    xy_pad_changed = xy_response.changed;
 
-                            for i in 0..pad_count {
-                                let note = drum_notes.get(i).copied().unwrap_or(36 + i as u8);
-                                pad_configs.push(PadConfig {
-                                    note,
-                                    label: Some(format!("{}", i + 1)),
-                                    color: None,
-                                });
-                            }
+                    // Drum pads
+                    ui.vertical(|ui| {
+                        let pad_count = 4 * 4;
+                        let mut pad_configs = Vec::new();
 
-                            let pad_response_inner = MidiPad::new()
-                                .grid(4, 4)
-                                .pads(pad_configs)
-                                .pad_states(self.state.drum_pads.clone())
-                                .color_scheme(PadColorScheme::Semantic)
-                                .show(ui, theme);
+                        let drum_notes = [
+                            36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
+                        ];
 
-                            if let Some((note, velocity)) = pad_response_inner.pressed {
-                                self.state
-                                    .drum_pads
-                                    .insert(note, PadState { note, velocity });
-                            }
-                            if let Some(note) = pad_response_inner.released {
-                                self.state.drum_pads.remove(&note);
-                            }
+                        for i in 0..pad_count {
+                            let note = drum_notes.get(i).copied().unwrap_or(36 + i as u8);
+                            pad_configs.push(PadConfig {
+                                note,
+                                label: Some(format!("{}", i + 1)),
+                                color: None,
+                            });
+                        }
 
-                            drum_pad_response = Some(pad_response_inner);
-                        });
+                        let pad_response_inner = MidiPad::new()
+                            .grid(4, 4)
+                            .pads(pad_configs)
+                            .pad_states(self.state.drum_pads.clone())
+                            .color_scheme(PadColorScheme::Semantic)
+                            .show(ui, theme);
+
+                        if let Some((note, velocity)) = pad_response_inner.pressed {
+                            self.state
+                                .drum_pads
+                                .insert(note, PadState { note, velocity });
+                        }
+                        if let Some(note) = pad_response_inner.released {
+                            self.state.drum_pads.remove(&note);
+                        }
+
+                        drum_pad_response = Some(pad_response_inner);
                     });
                 });
+            });
 
-                ui.add_space(theme.spacing.sm);
+            ui.add_space(theme.spacing.sm);
 
-                // Step sequencer section
-                ui.vertical(|ui| {
-                    ui.spacing_mut().item_spacing.y = theme.spacing.sm;
-                    ui.add_space(theme.spacing.xs);
+            // Step sequencer section
+            ui.vertical(|ui| {
+                ui.spacing_mut().item_spacing.y = theme.spacing.sm;
+                ui.add_space(theme.spacing.xs);
 
-                    self.state.sequencer_steps.resize(16, false);
+                self.state.sequencer_steps.resize(16, false);
 
-                    let seq_response = StepSequencer::new(&mut self.state.sequencer_steps)
-                        .steps(16)
-                        .current_step(self.state.sequencer_current_step)
-                        .step_size(theme.spacing.xl, theme.spacing.xl)
-                        .gap(theme.spacing.xs)
-                        .show_step_numbers(true)
+                let seq_response = StepSequencer::new(&mut self.state.sequencer_steps)
+                    .steps(16)
+                    .current_step(self.state.sequencer_current_step)
+                    .step_size(theme.spacing.xl, theme.spacing.xl)
+                    .gap(theme.spacing.xs)
+                    .show_step_numbers(true)
+                    .show(ui, theme);
+
+                sequencer_changed = seq_response.changed;
+            });
+
+            ui.add_space(theme.spacing.sm);
+
+            // Piano keyboard section
+            ScrollArea::horizontal()
+                .id_salt(base_id.with("piano_scroll"))
+                .show(ui, |ui| {
+                    let start_note = ((3 + 2) * 12) as u8;
+                    let pressed_keys: HashSet<u8> =
+                        self.state.active_notes.keys().copied().collect();
+
+                    let piano_response_inner = Piano::new()
+                        .octaves(3)
+                        .start_note(start_note)
+                        .white_key_width(theme.spacing.lg + theme.spacing.xs)
+                        .white_key_height(100.0)
+                        .orientation(PianoOrientation::Horizontal)
+                        .pressed_keys(pressed_keys)
                         .show(ui, theme);
 
-                    sequencer_changed = seq_response.changed;
+                    for note in &piano_response_inner.clicked_keys {
+                        self.state.active_notes.insert(*note, 100);
+                    }
+                    for note in &piano_response_inner.released_keys {
+                        self.state.active_notes.remove(note);
+                    }
+
+                    piano_response = Some(piano_response_inner);
                 });
-
-                ui.add_space(theme.spacing.sm);
-
-                // Piano keyboard section
-                ScrollArea::horizontal()
-                    .id_salt(base_id.with("piano_scroll"))
-                    .show(ui, |ui| {
-                        let start_note = ((3 + 2) * 12) as u8;
-                        let pressed_keys: HashSet<u8> =
-                            self.state.active_notes.keys().copied().collect();
-
-                        let piano_response_inner = Piano::new()
-                            .octaves(3)
-                            .start_note(start_note)
-                            .white_key_width(theme.spacing.lg + theme.spacing.xs)
-                            .white_key_height(100.0)
-                            .orientation(PianoOrientation::Horizontal)
-                            .pressed_keys(pressed_keys)
-                            .show(ui, theme);
-
-                        for note in &piano_response_inner.clicked_keys {
-                            self.state.active_notes.insert(*note, 100);
-                        }
-                        for note in &piano_response_inner.released_keys {
-                            self.state.active_notes.remove(note);
-                        }
-
-                        piano_response = Some(piano_response_inner);
-                    });
-            });
+        });
 
         MidiControllerResponse {
             response: card_response.response,

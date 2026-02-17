@@ -17,8 +17,8 @@ ui.data_mut(|d| d.insert_temp(id, value));
 use egui::Id;
 let id = Id::new("fader_strip");
 let mut value = ui.data_mut(|d| d.get_temp::<f32>(id).unwrap_or(0.6));
-let (response, new_value) = FaderStrip::new(value).show(ui, &theme);
-value = new_value;
+let strip_resp = FaderStrip::new(value).show(ui, &theme);
+value = strip_resp.value;
 ui.data_mut(|d| d.insert_temp(id, value));
 ```
 
@@ -32,8 +32,8 @@ ui.horizontal(|ui| {
         ui.vertical(|ui| {
             let id = Id::new(format!("mixer_{}", i));
             let mut value = ui.data_mut(|d| d.get_temp::<f32>(id).unwrap_or(0.5));
-            let (_, new_val) = FaderStrip::new(value).show(ui, &theme);
-            value = new_val;
+            let strip_resp = FaderStrip::new(value).show(ui, &theme);
+            value = strip_resp.value;
             ui.data_mut(|d| d.insert_temp(id, value));
             ui.label(format!("Ch {}", i + 1));
         });

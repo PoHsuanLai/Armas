@@ -104,7 +104,7 @@ pub struct XYPad<'a> {
     show_values: bool,
     show_trail: bool,
     handle_size: f32,
-    glow_intensity: f32,
+    pub(crate) glow_intensity: f32,
     id: Option<egui::Id>,
     /// Enable velocity-based dragging (Ctrl/Cmd for fine control)
     velocity_mode: bool,
@@ -114,6 +114,16 @@ pub struct XYPad<'a> {
     default_x: Option<f32>,
     /// Default Y value for double-click reset
     default_y: Option<f32>,
+    /// Override color for the handle (default: `theme.primary()`)
+    handle_color: Option<Color32>,
+    /// Override color for the movement trail (default: `theme.primary()`)
+    trail_color: Option<Color32>,
+    /// Override color for crosshair lines (default: `theme.muted_foreground()`)
+    crosshair_color: Option<Color32>,
+    /// Override color for grid lines and tick marks (default: `theme.border()`)
+    grid_color: Option<Color32>,
+    /// Whether the XY pad is disabled (non-interactive)
+    disabled: bool,
 }
 
 impl<'a> XYPad<'a> {
@@ -136,6 +146,11 @@ impl<'a> XYPad<'a> {
             velocity_sensitivity: 0.4,
             default_x: None,
             default_y: None,
+            handle_color: None,
+            trail_color: None,
+            crosshair_color: None,
+            grid_color: None,
+            disabled: false,
         }
     }
 
@@ -202,13 +217,6 @@ impl<'a> XYPad<'a> {
         self
     }
 
-    /// Set glow intensity
-    #[must_use]
-    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
-        self.glow_intensity = intensity.clamp(0.0, 1.0);
-        self
-    }
-
     /// Enable velocity mode (Ctrl/Cmd for fine control). Default: true
     #[must_use]
     pub const fn velocity_mode(mut self, enabled: bool) -> Self {
@@ -245,6 +253,41 @@ impl<'a> XYPad<'a> {
         self
     }
 
+    /// Set handle color (default: `theme.primary()`)
+    #[must_use]
+    pub const fn handle_color(mut self, color: Color32) -> Self {
+        self.handle_color = Some(color);
+        self
+    }
+
+    /// Set trail color (default: `theme.primary()`)
+    #[must_use]
+    pub const fn trail_color(mut self, color: Color32) -> Self {
+        self.trail_color = Some(color);
+        self
+    }
+
+    /// Set crosshair color (default: `theme.muted_foreground()`)
+    #[must_use]
+    pub const fn crosshair_color(mut self, color: Color32) -> Self {
+        self.crosshair_color = Some(color);
+        self
+    }
+
+    /// Set grid and tick mark color (default: `theme.border()`)
+    #[must_use]
+    pub const fn grid_color(mut self, color: Color32) -> Self {
+        self.grid_color = Some(color);
+        self
+    }
+
+    /// Set whether the XY pad is disabled (non-interactive)
+    #[must_use]
+    pub const fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Show the XY pad
     pub fn show(self, ui: &mut Ui, theme: &Theme) -> XYPadResponse {
         // Load previous state if ID is set
@@ -264,7 +307,12 @@ impl<'a> XYPad<'a> {
         *self.y = self.y.clamp(0.0, 1.0);
 
         let desired_size = Vec2::splat(self.size);
-        let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
+        let sense = if self.disabled {
+            Sense::hover()
+        } else {
+            Sense::click_and_drag()
+        };
+        let (rect, mut response) = ui.allocate_exact_size(desired_size, sense);
 
         // Get or create drag state
         let drag_state_id = self.id.unwrap_or(response.id).with("xy_pad_drag_state");
@@ -279,66 +327,69 @@ impl<'a> XYPad<'a> {
             })
         });
 
-        // Handle double-click to reset
-        if response.double_clicked() {
-            if let Some(default_x) = self.default_x {
-                *self.x = default_x;
-            }
-            if let Some(default_y) = self.default_y {
-                *self.y = default_y;
-            }
-            if self.default_x.is_some() || self.default_y.is_some() {
-                response.mark_changed();
-            }
-        }
-
-        // Handle drag interaction
-        if response.drag_started() {
-            let modifiers = ui.ctx().input(|i| i.modifiers);
-            // In velocity mode: Ctrl/Cmd switches to absolute mode
-            // Without velocity mode: always absolute
-            let use_velocity = self.velocity_mode && !modifiers.command && !modifiers.ctrl;
-
-            if let Some(pos) = response.interact_pointer_pos() {
-                drag_state
-                    .drag_x
-                    .begin(f64::from(*self.x), f64::from(pos.x), use_velocity);
-                drag_state
-                    .drag_y
-                    .begin(f64::from(*self.y), f64::from(pos.y), use_velocity);
-            }
-        }
-
-        if response.dragged() {
-            if let Some(pos) = response.interact_pointer_pos() {
-                if drag_state.drag_x.is_velocity_mode() {
-                    // Velocity mode: incremental changes based on mouse speed
-                    let delta_x = drag_state.drag_x.update_tracked(
-                        f64::from(pos.x),
-                        1.0,
-                        f64::from(self.size),
-                    );
-                    let delta_y = drag_state.drag_y.update_tracked(
-                        f64::from(pos.y),
-                        1.0,
-                        f64::from(self.size),
-                    );
-
-                    *self.x = (*self.x + delta_x as f32).clamp(0.0, 1.0);
-                    // Y is inverted (up = higher value)
-                    *self.y = (*self.y - delta_y as f32).clamp(0.0, 1.0);
-                } else {
-                    // Absolute mode: jump to cursor position
-                    *self.x = ((pos.x - rect.min.x) / rect.width()).clamp(0.0, 1.0);
-                    *self.y = 1.0 - ((pos.y - rect.min.y) / rect.height()).clamp(0.0, 1.0);
+        // Handle interactions (only when not disabled)
+        if !self.disabled {
+            // Handle double-click to reset
+            if response.double_clicked() {
+                if let Some(default_x) = self.default_x {
+                    *self.x = default_x;
                 }
-                response.mark_changed();
+                if let Some(default_y) = self.default_y {
+                    *self.y = default_y;
+                }
+                if self.default_x.is_some() || self.default_y.is_some() {
+                    response.mark_changed();
+                }
             }
-        }
 
-        if response.drag_stopped() {
-            drag_state.drag_x.end();
-            drag_state.drag_y.end();
+            // Handle drag interaction
+            if response.drag_started() {
+                let modifiers = ui.ctx().input(|i| i.modifiers);
+                // In velocity mode: Ctrl/Cmd switches to absolute mode
+                // Without velocity mode: always absolute
+                let use_velocity = self.velocity_mode && !modifiers.command && !modifiers.ctrl;
+
+                if let Some(pos) = response.interact_pointer_pos() {
+                    drag_state
+                        .drag_x
+                        .begin(f64::from(*self.x), f64::from(pos.x), use_velocity);
+                    drag_state
+                        .drag_y
+                        .begin(f64::from(*self.y), f64::from(pos.y), use_velocity);
+                }
+            }
+
+            if response.dragged() {
+                if let Some(pos) = response.interact_pointer_pos() {
+                    if drag_state.drag_x.is_velocity_mode() {
+                        // Velocity mode: incremental changes based on mouse speed
+                        let delta_x = drag_state.drag_x.update_tracked(
+                            f64::from(pos.x),
+                            1.0,
+                            f64::from(self.size),
+                        );
+                        let delta_y = drag_state.drag_y.update_tracked(
+                            f64::from(pos.y),
+                            1.0,
+                            f64::from(self.size),
+                        );
+
+                        *self.x = (*self.x + delta_x as f32).clamp(0.0, 1.0);
+                        // Y is inverted (up = higher value)
+                        *self.y = (*self.y - delta_y as f32).clamp(0.0, 1.0);
+                    } else {
+                        // Absolute mode: jump to cursor position
+                        *self.x = ((pos.x - rect.min.x) / rect.width()).clamp(0.0, 1.0);
+                        *self.y = 1.0 - ((pos.y - rect.min.y) / rect.height()).clamp(0.0, 1.0);
+                    }
+                    response.mark_changed();
+                }
+            }
+
+            if response.drag_stopped() {
+                drag_state.drag_x.end();
+                drag_state.drag_y.end();
+            }
         }
 
         // Save drag state
@@ -378,14 +429,14 @@ impl<'a> XYPad<'a> {
                 XYPadVariant::Elevated => self.draw_elevated(painter, theme, rect, corner_radius),
             }
 
-            Self::draw_grid(painter, theme, rect);
-            Self::draw_tick_marks(painter, theme, rect);
+            self.draw_grid(painter, theme, rect);
+            self.draw_tick_marks(painter, theme, rect);
 
             if self.show_trail {
-                Self::draw_trail(painter, theme, rect, &trail_state);
+                self.draw_trail(painter, theme, rect, &trail_state);
             }
             if self.show_crosshair {
-                Self::draw_crosshair_lines(painter, theme, rect, handle_pos);
+                self.draw_crosshair_lines(painter, theme, rect, handle_pos);
             }
 
             self.draw_handle(painter, theme, handle_pos, is_active);
@@ -425,8 +476,8 @@ impl<'a> XYPad<'a> {
     }
 
     /// Draw 4x4 grid lines with brighter center lines
-    fn draw_grid(painter: &egui::Painter, theme: &Theme, rect: Rect) {
-        let grid_color = theme.border();
+    fn draw_grid(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
+        let grid_color = self.grid_color.unwrap_or_else(|| theme.border());
         for i in 1..4u8 {
             let t = f32::from(i) / 4.0;
             let alpha = if i == 2 { 0.3 } else { 0.15 };
@@ -447,8 +498,11 @@ impl<'a> XYPad<'a> {
     }
 
     /// Draw axis tick marks on all four edges
-    fn draw_tick_marks(painter: &egui::Painter, theme: &Theme, rect: Rect) {
-        let tick_color = theme.border().gamma_multiply(0.25);
+    fn draw_tick_marks(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
+        let tick_color = self
+            .grid_color
+            .unwrap_or_else(|| theme.border())
+            .gamma_multiply(0.25);
         let tick_len = 3.0;
         let stroke = egui::Stroke::new(1.0, tick_color);
 
@@ -491,6 +545,7 @@ impl<'a> XYPad<'a> {
 
     /// Draw fading movement trail from recent handle positions
     fn draw_trail(
+        &self,
         painter: &egui::Painter,
         theme: &Theme,
         rect: Rect,
@@ -500,7 +555,7 @@ impl<'a> XYPad<'a> {
             return;
         }
 
-        let primary = theme.primary();
+        let primary = self.trail_color.unwrap_or_else(|| theme.primary());
         let (pr, pg, pb) = (primary.r(), primary.g(), primary.b());
         let total = trail_state.points.len();
 
@@ -526,8 +581,17 @@ impl<'a> XYPad<'a> {
     }
 
     /// Draw crosshair lines through the handle position
-    fn draw_crosshair_lines(painter: &egui::Painter, theme: &Theme, rect: Rect, handle_pos: Pos2) {
-        let color = theme.muted_foreground().gamma_multiply(0.3);
+    fn draw_crosshair_lines(
+        &self,
+        painter: &egui::Painter,
+        theme: &Theme,
+        rect: Rect,
+        handle_pos: Pos2,
+    ) {
+        let color = self
+            .crosshair_color
+            .unwrap_or_else(|| theme.muted_foreground())
+            .gamma_multiply(0.3);
         let stroke = egui::Stroke::new(1.0, color);
 
         painter.line_segment(
@@ -556,10 +620,16 @@ impl<'a> XYPad<'a> {
     ) {
         let radius = self.handle_size / 2.0;
 
+        let handle = self.handle_color.unwrap_or_else(|| theme.primary());
+        let handle = if self.disabled {
+            handle.gamma_multiply(0.5)
+        } else {
+            handle
+        };
+
         // Glow rings when active
         if is_active {
-            let primary = theme.primary();
-            let (pr, pg, pb) = (primary.r(), primary.g(), primary.b());
+            let (pr, pg, pb) = (handle.r(), handle.g(), handle.b());
             for i in 0..4u8 {
                 let offset = f32::from(i + 1) * 2.0;
                 let alpha = ((1.0 - f32::from(i) / 4.0) * 50.0 * self.glow_intensity) as u8;
@@ -573,7 +643,7 @@ impl<'a> XYPad<'a> {
         }
 
         // Main fill
-        painter.circle_filled(handle_pos, radius, theme.primary());
+        painter.circle_filled(handle_pos, radius, handle);
 
         // Inner highlight (lighter center for depth)
         painter.circle_filled(

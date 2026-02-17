@@ -2,6 +2,7 @@
 //!
 //! Simple horizontal or vertical divider line.
 
+use crate::ext::ArmasContextExt;
 use egui::{Response, Ui, Vec2};
 
 /// Separator orientation
@@ -22,14 +23,12 @@ pub enum SeparatorOrientation {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas_basic::Separator;
-/// use armas_basic::ext::ArmasContextExt;
 ///
-/// let theme = ui.ctx().armas_theme();
 /// // Horizontal separator (default)
-/// Separator::new().show(ui, &theme);
+/// Separator::new().show(ui);
 ///
 /// // Vertical separator
-/// Separator::new().vertical().show(ui, &theme);
+/// Separator::new().vertical().show(ui);
 /// # }
 /// ```
 pub struct Separator {
@@ -69,7 +68,8 @@ impl Separator {
     }
 
     /// Show the separator
-    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         let color = theme.border();
 
         let size = match self.orientation {

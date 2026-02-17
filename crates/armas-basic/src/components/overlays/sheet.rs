@@ -178,10 +178,18 @@ impl Sheet {
         theme: &Theme,
         content: impl FnOnce(&mut Ui),
     ) -> SheetResponse {
-        let mut response = SheetResponse { closed: false };
+        let mut closed = false;
 
         if !self.is_open {
-            return response;
+            let dummy = egui::Area::new(self.id.with("sheet_empty"))
+                .order(egui::Order::Background)
+                .fixed_pos(egui::Pos2::ZERO)
+                .show(ctx, |_| {})
+                .response;
+            return SheetResponse {
+                response: dummy,
+                closed: false,
+            };
         }
 
         #[allow(deprecated)]
@@ -220,7 +228,7 @@ impl Sheet {
                     ui.painter().rect_filled(screen_rect, 0.0, backdrop_color);
 
                     if backdrop_response.clicked() {
-                        response.closed = true;
+                        closed = true;
                     }
                 });
         }
@@ -246,7 +254,7 @@ impl Sheet {
         };
 
         // Draw the sheet panel
-        egui::Area::new(self.id)
+        let area_response = egui::Area::new(self.id)
             .order(egui::Order::Foreground)
             .fixed_pos(sheet_rect.min)
             .show(ctx, |ui| {
@@ -314,7 +322,7 @@ impl Sheet {
                     icon::close().render(ui.painter(), close_rect, icon_color);
 
                     if close_response.clicked() {
-                        response.closed = true;
+                        closed = true;
                     }
                 }
 
@@ -378,16 +386,20 @@ impl Sheet {
 
         // Handle ESC key
         if ctx.input(|i| i.key_pressed(Key::Escape)) {
-            response.closed = true;
+            closed = true;
         }
 
-        response
+        SheetResponse {
+            response: area_response.response,
+            closed,
+        }
     }
 }
 
 /// Response from showing a sheet
-#[derive(Debug, Clone, Copy)]
 pub struct SheetResponse {
+    /// The UI response
+    pub response: egui::Response,
     /// Whether the sheet was closed this frame (via close button, backdrop, or ESC)
     pub closed: bool,
 }

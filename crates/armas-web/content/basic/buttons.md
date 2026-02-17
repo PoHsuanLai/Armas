@@ -3,7 +3,7 @@
 Displays a button or a component that looks like a button.
 
 ```demo
-Button::new("Button").show(ui, &theme);
+Button::new("Button").show(ui);
 ```
 
 ## Variants
@@ -11,11 +11,11 @@ Button::new("Button").show(ui, &theme);
 ```demo
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
-    Button::new("Default").show(ui, &theme);
-    Button::new("Secondary").variant(ButtonVariant::Secondary).show(ui, &theme);
-    Button::new("Outline").variant(ButtonVariant::Outline).show(ui, &theme);
-    Button::new("Ghost").variant(ButtonVariant::Ghost).show(ui, &theme);
-    Button::new("Link").variant(ButtonVariant::Link).show(ui, &theme);
+    Button::new("Default").show(ui);
+    Button::new("Secondary").variant(ButtonVariant::Secondary).show(ui);
+    Button::new("Outline").variant(ButtonVariant::Outline).show(ui);
+    Button::new("Ghost").variant(ButtonVariant::Ghost).show(ui);
+    Button::new("Link").variant(ButtonVariant::Link).show(ui);
 });
 ```
 
@@ -24,23 +24,23 @@ ui.horizontal(|ui| {
 ```demo
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
-    Button::new("Xs").size(ButtonSize::Xs).show(ui, &theme);
-    Button::new("Small").size(ButtonSize::Small).show(ui, &theme);
-    Button::new("Default").show(ui, &theme);
-    Button::new("Large").size(ButtonSize::Large).show(ui, &theme);
+    Button::new("Xs").size(ButtonSize::Xs).show(ui);
+    Button::new("Small").size(ButtonSize::Small).show(ui);
+    Button::new("Default").show(ui);
+    Button::new("Large").size(ButtonSize::Large).show(ui);
 });
 ```
 
 ## Disabled
 
 ```demo
-Button::new("Disabled").enabled(false).show(ui, &theme);
+Button::new("Disabled").enabled(false).show(ui);
 ```
 
 ## Full Width
 
 ```demo
-Button::new("Full Width").full_width(true).show(ui, &theme);
+Button::new("Full Width").full_width(true).show(ui);
 ```
 
 ## With Icon
@@ -48,7 +48,7 @@ Button::new("Full Width").full_width(true).show(ui, &theme);
 ```demo
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 8.0;
-    Button::new("← Back").variant(ButtonVariant::Outline).show(ui, &theme);
-    Button::new("Next →").show(ui, &theme);
+    Button::new("← Back").variant(ButtonVariant::Outline).show(ui);
+    Button::new("Next →").show(ui);
 });
 ```

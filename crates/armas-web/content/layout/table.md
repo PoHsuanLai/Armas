@@ -94,8 +94,8 @@ table(ui, |rows| {
         });
         cell_ui(cells, |ui| {
             ui.horizontal(|ui| {
-                Button::new("Edit").variant(ButtonVariant::Text).show(ui, &theme);
-                Button::new("Delete").variant(ButtonVariant::Text).show(ui, &theme);
+                Button::new("Edit").variant(ButtonVariant::Text).show(ui);
+                Button::new("Delete").variant(ButtonVariant::Text).show(ui);
             });
         });
     });
@@ -108,8 +108,8 @@ table(ui, |rows| {
         });
         cell_ui(cells, |ui| {
             ui.horizontal(|ui| {
-                Button::new("Edit").variant(ButtonVariant::Text).show(ui, &theme);
-                Button::new("Delete").variant(ButtonVariant::Text).show(ui, &theme);
+                Button::new("Edit").variant(ButtonVariant::Text).show(ui);
+                Button::new("Delete").variant(ButtonVariant::Text).show(ui);
             });
         });
     });
@@ -128,28 +128,28 @@ table(ui, |rows| {
     row(rows, |cells| {
         cell(cells, "Website Redesign");
         cell_ui(cells, |ui| {
-            Badge::new("In Progress").color(theme.chart_4()).show(ui, &theme);
+            Badge::new("In Progress").color(theme.chart_4()).show(ui);
         });
         cell_ui(cells, |ui| {
-            Badge::new("High").destructive().show(ui, &theme);
+            Badge::new("High").destructive().show(ui);
         });
     });
     row(rows, |cells| {
         cell(cells, "API Migration");
         cell_ui(cells, |ui| {
-            Badge::new("Completed").color(theme.chart_2()).show(ui, &theme);
+            Badge::new("Completed").color(theme.chart_2()).show(ui);
         });
         cell_ui(cells, |ui| {
-            Badge::new("High").destructive().show(ui, &theme);
+            Badge::new("High").destructive().show(ui);
         });
     });
     row(rows, |cells| {
         cell(cells, "Documentation");
         cell_ui(cells, |ui| {
-            Badge::new("Pending").color(theme.chart_3()).show(ui, &theme);
+            Badge::new("Pending").color(theme.chart_3()).show(ui);
         });
         cell_ui(cells, |ui| {
-            Badge::new("Low").color(theme.chart_4()).show(ui, &theme);
+            Badge::new("Low").color(theme.chart_4()).show(ui);
         });
     });
 });

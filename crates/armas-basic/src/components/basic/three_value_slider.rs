@@ -280,7 +280,10 @@ impl ThreeValueSlider {
             });
         }
 
+        let response = ui.interact(ui.min_rect(), slider_id.with("response"), Sense::hover());
+
         ThreeValueSliderResponse {
+            response,
             min_bound: *min_bound,
             value: *value,
             max_bound: *max_bound,
@@ -628,8 +631,9 @@ impl ThreeValueSlider {
 }
 
 /// Response from a three value slider
-#[derive(Debug, Clone, Copy)]
 pub struct ThreeValueSliderResponse {
+    /// The UI response
+    pub response: Response,
     /// Current minimum bound
     pub min_bound: f32,
     /// Current value

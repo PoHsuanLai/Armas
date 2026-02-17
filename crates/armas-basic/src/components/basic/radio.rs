@@ -9,11 +9,9 @@
 //! # use egui::Ui;
 //! # fn example(ui: &mut Ui) {
 //! use armas_basic::components::{Radio, RadioGroup};
-//! use armas_basic::ext::ArmasContextExt;
 //!
-//! let theme = ui.ctx().armas_theme();
 //! // Single radio
-//! Radio::new().label("Option").show(ui, true, &theme);
+//! Radio::new().label("Option").show(ui, true);
 //!
 //! // Radio group
 //! let mut selected = Some("opt1".to_string());
@@ -118,7 +116,8 @@ impl Radio {
     }
 
     /// Show the radio button
-    pub fn show(&self, ui: &mut Ui, selected: bool, theme: &crate::Theme) -> RadioResponse {
+    pub fn show(self, ui: &mut Ui, selected: bool) -> RadioResponse {
+        let theme = ui.ctx().armas_theme();
         let response = ui
             .horizontal(|ui| {
                 // Radio control
@@ -133,7 +132,7 @@ impl Radio {
                 );
 
                 if ui.is_rect_visible(rect) {
-                    self.draw_radio(ui, rect, selected, theme);
+                    self.draw_radio(ui, rect, selected, &theme);
                 }
 
                 // Label and description
@@ -264,8 +263,7 @@ impl RadioGroupBuilder<'_> {
             radio = radio.description(desc);
         }
 
-        let theme = self.ui.ctx().armas_theme();
-        let response = radio.show(self.ui, is_selected, &theme);
+        let response = radio.show(self.ui, is_selected);
 
         // Update selection if clicked and not already selected
         if response.response.clicked() && !is_selected {
@@ -279,6 +277,8 @@ impl RadioGroupBuilder<'_> {
 
 /// Response from radio group
 pub struct RadioGroupResponse {
+    /// The UI response
+    pub response: Response,
     /// Whether the selection changed
     pub changed: bool,
     /// The currently selected value (if any)
@@ -346,7 +346,7 @@ impl<'a> RadioGroup<'a> {
         let theme = ui.ctx().armas_theme();
         let mut changed = false;
 
-        ui.vertical(|ui| {
+        let inner_response = ui.vertical(|ui| {
             ui.spacing_mut().item_spacing.y = theme.spacing.sm;
 
             // Group label
@@ -371,6 +371,7 @@ impl<'a> RadioGroup<'a> {
         });
 
         RadioGroupResponse {
+            response: inner_response.response,
             changed,
             selected: self.selected_value.clone(),
         }

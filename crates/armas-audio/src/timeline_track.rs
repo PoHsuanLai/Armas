@@ -311,6 +311,8 @@ pub struct Region {
     pub fades: FadeSettings,
     /// Playback settings
     pub playback: PlaybackSettings,
+    /// Waveform/pattern opacity (0–255). `None` uses the default (220).
+    pub waveform_opacity: Option<u8>,
 }
 
 impl Region {
@@ -326,6 +328,7 @@ impl Region {
             muted: false,
             fades: FadeSettings::default(),
             playback: PlaybackSettings::default(),
+            waveform_opacity: None,
         }
     }
 
@@ -346,6 +349,7 @@ impl Region {
             muted: false,
             fades: FadeSettings::default(),
             playback: PlaybackSettings::default(),
+            waveform_opacity: None,
         }
     }
 
@@ -361,6 +365,7 @@ impl Region {
             muted: false,
             fades: FadeSettings::default(),
             playback: PlaybackSettings::default(),
+            waveform_opacity: None,
         }
     }
 
@@ -381,6 +386,7 @@ impl Region {
             muted: false,
             fades: FadeSettings::default(),
             playback: PlaybackSettings::default(),
+            waveform_opacity: None,
         }
     }
 
@@ -396,6 +402,7 @@ impl Region {
             muted: false,
             fades: FadeSettings::default(),
             playback: PlaybackSettings::default(),
+            waveform_opacity: None,
         }
     }
 
@@ -416,6 +423,7 @@ impl Region {
             muted: false,
             fades: FadeSettings::default(),
             playback: PlaybackSettings::default(),
+            waveform_opacity: None,
         }
     }
 
@@ -481,6 +489,13 @@ impl Region {
         self.playback.set_gain_db(db);
         self
     }
+
+    /// Set waveform/pattern opacity (0–255). Default is 220.
+    #[must_use]
+    pub const fn waveform_opacity(mut self, opacity: u8) -> Self {
+        self.waveform_opacity = Some(opacity);
+        self
+    }
 }
 
 /// Region edge handle for resizing
@@ -510,6 +525,12 @@ pub struct TimelineTrackResponse {
     pub region_clicked: Option<usize>,
     /// Empty area clicked (position in beats)
     pub empty_clicked: Option<f32>,
+    /// Index of right-clicked region (if any)
+    pub region_right_clicked: Option<usize>,
+    /// Empty area right-clicked (position in beats)
+    pub empty_right_clicked: Option<f32>,
+    /// Screen position of the right-click (for context menu placement)
+    pub right_click_pos: Option<Pos2>,
 }
 
 /// Timeline track component for DAW
@@ -542,11 +563,11 @@ pub struct TimelineTrack {
     /// Height of regions within the track (None = track height - padding)
     region_height: Option<f32>,
     /// Width per beat in pixels (must match `TimeRuler`)
-    beat_width: f32,
+    pub(crate) beat_width: f32,
     /// Number of measures to display
-    measures: u32,
+    pub(crate) measures: u32,
     /// Beats per measure
-    beats_per_measure: u32,
+    pub(crate) beats_per_measure: u32,
     /// Track color (used for regions if not specified)
     track_color: Option<Color32>,
     /// Background color
@@ -596,27 +617,6 @@ impl TimelineTrack {
         self
     }
 
-    /// Set pixels per beat (must match `TimeRuler`)
-    #[must_use]
-    pub const fn beat_width(mut self, width: f32) -> Self {
-        self.beat_width = width;
-        self
-    }
-
-    /// Set number of measures
-    #[must_use]
-    pub const fn measures(mut self, measures: u32) -> Self {
-        self.measures = measures;
-        self
-    }
-
-    /// Set beats per measure
-    #[must_use]
-    pub const fn beats_per_measure(mut self, beats: u32) -> Self {
-        self.beats_per_measure = beats;
-        self
-    }
-
     /// Set track color (used for regions if not specified)
     #[must_use]
     pub const fn track_color(mut self, color: Color32) -> Self {
@@ -636,6 +636,9 @@ impl TimelineTrack {
 
         let mut region_clicked = None;
         let mut empty_clicked = None;
+        let mut region_right_clicked = None;
+        let mut empty_right_clicked = None;
+        let mut right_click_pos = None;
 
         // Don't add any padding - allocate full height to match TrackHeader
         let content_height = self.height;
@@ -650,7 +653,7 @@ impl TimelineTrack {
             .inner_margin(0.0)
             .fill(self.background_color.unwrap_or(Color32::TRANSPARENT));
 
-        let card_response = card.show(ui, theme, |ui| {
+        let card_response = card.show(ui, |ui| {
             let (rect, response) =
                 ui.allocate_exact_size(Vec2::new(total_width, content_height), Sense::click());
 
@@ -705,6 +708,18 @@ impl TimelineTrack {
                         }
                     }
 
+                    // Check for right-click on region
+                    if response.secondary_clicked() {
+                        eprintln!("[timeline_track] secondary_clicked detected in region loop, region={i}");
+                        if let Some(pos) = response.interact_pointer_pos() {
+                            if region_rect.contains(pos) {
+                                eprintln!("[timeline_track] pos {pos:?} is inside region rect {region_rect:?}");
+                                region_right_clicked = Some(i);
+                                right_click_pos = Some(pos);
+                            }
+                        }
+                    }
+
                     // Draw region
                     self.draw_region(painter, region_rect, region, theme);
 
@@ -727,6 +742,16 @@ impl TimelineTrack {
                         empty_clicked = Some(beat_pos.max(0.0));
                     }
                 }
+
+                // Check for empty area right-click
+                if response.secondary_clicked() && region_right_clicked.is_none() {
+                    if let Some(pos) = response.interact_pointer_pos() {
+                        let beat_pos = (pos.x - rect.min.x) / self.beat_width;
+                        eprintln!("[timeline_track] empty area right-click at beat={beat_pos}, pos={pos:?}");
+                        empty_right_clicked = Some(beat_pos.max(0.0));
+                        right_click_pos = Some(pos);
+                    }
+                }
             }
 
             response
@@ -736,6 +761,9 @@ impl TimelineTrack {
             response: card_response.response,
             region_clicked,
             empty_clicked,
+            region_right_clicked,
+            empty_right_clicked,
+            right_click_pos,
         }
     }
 
@@ -825,10 +853,17 @@ impl TimelineTrack {
         }
 
         // Draw visualization based on region type
+        let waveform_alpha = region.waveform_opacity.unwrap_or(220);
         if !region.muted {
             match &region.region_type {
                 RegionType::Audio(data) => {
-                    self.draw_waveform_peaks(painter, rect, region_color, &data.peaks);
+                    self.draw_waveform_peaks(
+                        painter,
+                        rect,
+                        region_color,
+                        &data.peaks,
+                        waveform_alpha,
+                    );
                 }
                 RegionType::Midi(data) => self.draw_midi_pattern(painter, rect, region_color, data),
                 RegionType::Automation(data) => {
@@ -845,9 +880,11 @@ impl TimelineTrack {
         rect: Rect,
         color: Color32,
         peaks: &[(f32, f32)],
+        alpha: u8,
     ) {
         let center_y = rect.center().y;
-        let waveform_color = Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), 100);
+        let waveform_color =
+            Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), alpha);
 
         let content_rect = rect.shrink2(Vec2::new(6.0, 12.0));
         let available_height = content_rect.height();
@@ -940,15 +977,16 @@ impl TimelineTrack {
         } else {
             // Draw real MIDI notes
             // Calculate note range for vertical positioning
+            let beats_per_measure = self.beats_per_measure as f32;
             let min_note = data.notes.iter().map(|n| n.note).min().unwrap_or(0);
             let max_note = data.notes.iter().map(|n| n.note).max().unwrap_or(127);
             let note_range = f32::from((max_note - min_note).max(12)); // At least one octave
 
             for note in &data.notes {
                 // Horizontal position based on start time (assuming beats)
-                let x_start = (note.start / self.beats_per_measure as f32)
-                    .mul_add(self.beat_width, content_rect.min.x);
-                let note_width = (note.duration / self.beats_per_measure as f32) * self.beat_width;
+                let x_start =
+                    (note.start / beats_per_measure).mul_add(self.beat_width, content_rect.min.x);
+                let note_width = (note.duration / beats_per_measure) * self.beat_width;
 
                 // Vertical position based on note number (inverted: higher notes at top)
                 let y_normalized = f32::from(note.note - min_note) / note_range;
@@ -1021,12 +1059,13 @@ impl TimelineTrack {
             }
         } else {
             // Draw real automation data
+            let beats_per_measure = self.beats_per_measure as f32;
             let mut screen_points = Vec::with_capacity(data.points.len());
 
             for point in &data.points {
                 // Horizontal position based on time
-                let x = (point.time / self.beats_per_measure as f32)
-                    .mul_add(self.beat_width, content_rect.min.x);
+                let x =
+                    (point.time / beats_per_measure).mul_add(self.beat_width, content_rect.min.x);
 
                 // Vertical position based on value (0.0 at bottom, 1.0 at top)
                 let y = point

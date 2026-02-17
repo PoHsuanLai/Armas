@@ -13,7 +13,7 @@ let mut selected = ui.data_mut(|d| d.get_temp::<usize>(theme_id).unwrap_or(0));
 ui.horizontal(|ui| {
     if Button::new("Dark")
         .variant(if selected == 0 { ButtonVariant::Default } else { ButtonVariant::Outline })
-        .show(ui, &theme)
+        .show(ui)
         .clicked()
     {
         selected = 0;
@@ -22,7 +22,7 @@ ui.horizontal(|ui| {
 
     if Button::new("Light")
         .variant(if selected == 1 { ButtonVariant::Default } else { ButtonVariant::Outline })
-        .show(ui, &theme)
+        .show(ui)
         .clicked()
     {
         selected = 1;

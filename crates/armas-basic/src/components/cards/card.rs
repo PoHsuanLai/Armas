@@ -12,20 +12,20 @@
 //! # Example
 //!
 //! ```rust,no_run
-//! use armas_basic::{Card, CardVariant, Theme};
+//! use armas_basic::{Card, CardVariant};
 //!
-//! fn show_cards(ui: &mut egui::Ui, theme: &Theme) {
+//! fn show_cards(ui: &mut egui::Ui) {
 //!     // Outlined card (shadcn default)
 //!     Card::new()
 //!         .variant(CardVariant::Outlined)
 //!         .title("Card Title")
-//!         .show(ui, theme, |ui| {
+//!         .show(ui, |ui| {
 //!             ui.label("Content goes here");
 //!         });
 //! }
 //! ```
 
-use crate::theme::Theme;
+use crate::ext::ArmasContextExt;
 use egui::{self, Color32, CornerRadius};
 
 // shadcn Card constants
@@ -200,9 +200,9 @@ impl<'a> Card<'a> {
     pub fn show<R>(
         self,
         ui: &mut egui::Ui,
-        theme: &Theme,
         content: impl FnOnce(&mut egui::Ui) -> R,
     ) -> CardResponse<R> {
+        let theme = ui.ctx().armas_theme();
         // shadcn/ui variant styling
         let (fill_color, border_width, border_color) = match self.variant {
             CardVariant::Filled => {

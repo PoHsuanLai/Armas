@@ -31,6 +31,8 @@ const CHEVRON_SIZE: f32 = 16.0; // h-4 w-4
 
 /// Response from showing an accordion
 pub struct AccordionResponse {
+    /// The UI response
+    pub response: egui::Response,
     /// Index of section that was clicked (if any)
     pub clicked: Option<usize>,
     /// Indices of currently open sections
@@ -174,7 +176,14 @@ impl Accordion {
             d.insert_temp(self.id.with("accordion_springs"), springs);
         });
 
+        let response = ui.interact(
+            ui.min_rect(),
+            self.id.with("response"),
+            egui::Sense::hover(),
+        );
+
         AccordionResponse {
+            response,
             clicked,
             open: open_indices,
         }

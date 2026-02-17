@@ -25,6 +25,19 @@
 //!     .duration(std::time::Duration::from_secs(5))
 //!     .show();
 //!
+//! // Progress toast (externally driven, won't auto-dismiss)
+//! let id = toasts.custom()
+//!     .title("Exporting")
+//!     .message("Rendering audio...")
+//!     .progress(0.0)
+//!     .show();
+//! // Later: update progress
+//! toasts.set_progress(id, 0.5);
+//! toasts.set_message(id, "Encoding...");
+//! // When done: switch to auto-dismiss countdown
+//! toasts.set_message(id, "Export complete!");
+//! toasts.start_dismiss(id, ctx.input(|i| i.time));
+//!
 //! // Render all toasts
 //! toasts.show(ctx);
 //! # }
@@ -118,6 +131,10 @@ impl ToastPosition {
     }
 }
 
+/// Opaque handle returned when creating a toast, used to update or dismiss it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ToastId(u64);
+
 /// Individual toast notification
 #[derive(Clone)]
 struct Toast {
@@ -130,6 +147,9 @@ struct Toast {
     created_at: f64,
     slide_animation: SpringAnimation,
     dismissible: bool,
+    /// When set, the progress bar shows this value (0.0..=1.0)
+    /// instead of the time-based countdown.
+    external_progress: Option<f32>,
 }
 
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -149,6 +169,7 @@ impl Toast {
             created_at: current_time,
             slide_animation: SpringAnimation::new(0.0, 1.0).params(250.0, 25.0),
             dismissible: true,
+            external_progress: None,
         }
     }
 
@@ -171,10 +192,17 @@ impl Toast {
     }
 
     fn is_expired(&self, current_time: f64) -> bool {
+        // Externally-driven toasts never auto-expire.
+        if self.external_progress.is_some() {
+            return false;
+        }
         (current_time - self.created_at) as f32 >= self.duration_secs
     }
 
     fn progress(&self, current_time: f64) -> f32 {
+        if let Some(p) = self.external_progress {
+            return p.clamp(0.0, 1.0);
+        }
         ((current_time - self.created_at) as f32 / self.duration_secs).min(1.0)
     }
 
@@ -190,6 +218,7 @@ pub struct ToastManager {
     toasts: VecDeque<Toast>,
     position: ToastPosition,
     max_toasts: usize,
+    width: f32,
 }
 
 impl ToastManager {
@@ -200,6 +229,7 @@ impl ToastManager {
             toasts: VecDeque::new(),
             position: ToastPosition::BottomRight, // shadcn default
             max_toasts: MAX_TOASTS,
+            width: TOAST_WIDTH,
         }
     }
 
@@ -217,24 +247,81 @@ impl ToastManager {
         self
     }
 
-    /// Add a new toast notification
-    pub fn add(&mut self, message: impl Into<String>, variant: ToastVariant, current_time: f64) {
+    /// Set the width of toast notifications
+    #[must_use]
+    pub const fn width(mut self, width: f32) -> Self {
+        self.width = width;
+        self
+    }
+
+    /// Add a new toast notification, returning its ID for later updates.
+    pub fn add(
+        &mut self,
+        message: impl Into<String>,
+        variant: ToastVariant,
+        current_time: f64,
+    ) -> ToastId {
         let toast = Toast::new(message, variant, current_time);
+        let id = ToastId(toast.id);
         self.toasts.push_back(toast);
 
         while self.toasts.len() > self.max_toasts {
             self.toasts.pop_front();
         }
+        id
     }
 
     /// Add a default toast
-    pub fn toast(&mut self, message: impl Into<String>) {
-        self.add(message, ToastVariant::Default, 0.0);
+    pub fn toast(&mut self, message: impl Into<String>) -> ToastId {
+        self.add(message, ToastVariant::Default, 0.0)
     }
 
     /// Add a destructive/error toast
-    pub fn error(&mut self, message: impl Into<String>) {
-        self.add(message, ToastVariant::Destructive, 0.0);
+    pub fn error(&mut self, message: impl Into<String>) -> ToastId {
+        self.add(message, ToastVariant::Destructive, 0.0)
+    }
+
+    /// Update the progress bar of a toast (0.0..=1.0).
+    /// While external progress is set the toast will not auto-dismiss.
+    pub fn set_progress(&mut self, id: ToastId, progress: f32) {
+        if let Some(toast) = self.toasts.iter_mut().find(|t| t.id == id.0) {
+            toast.external_progress = Some(progress.clamp(0.0, 1.0));
+        }
+    }
+
+    /// Update the message text of an existing toast.
+    pub fn set_message(&mut self, id: ToastId, message: impl Into<String>) {
+        if let Some(toast) = self.toasts.iter_mut().find(|t| t.id == id.0) {
+            toast.message = message.into();
+        }
+    }
+
+    /// Update the title of an existing toast.
+    pub fn set_title(&mut self, id: ToastId, title: impl Into<String>) {
+        if let Some(toast) = self.toasts.iter_mut().find(|t| t.id == id.0) {
+            toast.title = Some(title.into());
+        }
+    }
+
+    /// Update the variant of an existing toast.
+    pub fn set_variant(&mut self, id: ToastId, variant: ToastVariant) {
+        if let Some(toast) = self.toasts.iter_mut().find(|t| t.id == id.0) {
+            toast.variant = variant;
+        }
+    }
+
+    /// Remove external progress and start the auto-dismiss countdown from now.
+    /// Useful after a task completes to show a brief "done" message before fading.
+    pub fn start_dismiss(&mut self, id: ToastId, current_time: f64) {
+        if let Some(toast) = self.toasts.iter_mut().find(|t| t.id == id.0) {
+            toast.external_progress = None;
+            toast.created_at = current_time;
+        }
+    }
+
+    /// Immediately remove a toast by ID.
+    pub fn dismiss(&mut self, id: ToastId) {
+        self.toasts.retain(|t| t.id != id.0);
     }
 
     /// Add a custom toast with builder pattern
@@ -281,13 +368,17 @@ impl ToastManager {
         let toasts_to_render: Vec<_> = self.toasts.iter().cloned().collect();
 
         for (index, toast) in toasts_to_render.iter().enumerate() {
-            // Fade out animation near end
-            let progress = toast.progress(current_time);
-            let fade_start = 0.9;
-            let opacity = if progress > fade_start {
-                1.0 - ((progress - fade_start) / (1.0 - fade_start))
-            } else {
+            // Fade out animation near end (skip for externally-driven toasts)
+            let opacity = if toast.external_progress.is_some() {
                 1.0
+            } else {
+                let progress = toast.progress(current_time);
+                let fade_start = 0.9;
+                if progress > fade_start {
+                    1.0 - ((progress - fade_start) / (1.0 - fade_start))
+                } else {
+                    1.0
+                }
             };
 
             // Slide in animation using spring
@@ -312,6 +403,7 @@ impl ToastManager {
                 offset + slide_offset,
                 opacity,
                 current_time,
+                self.width,
             );
 
             if dismissed {
@@ -338,11 +430,13 @@ impl ToastManager {
         offset: Vec2,
         opacity: f32,
         current_time: f64,
+        width: f32,
     ) -> bool {
         let mut dismissed = false;
 
         egui::Area::new(Id::new("toast").with(toast.id))
             .order(egui::Order::Foreground)
+            .interactable(false)
             .anchor(position.anchor(), offset)
             .show(ctx, |ui| {
                 ui.set_opacity(opacity);
@@ -352,11 +446,11 @@ impl ToastManager {
                 // Use Card for consistent styling (shadcn toast style)
                 Card::new()
                     .variant(CardVariant::Outlined) // shadcn uses border
-                    .width(TOAST_WIDTH)
+                    .width(width)
                     .stroke(theme.border())
                     .corner_radius(TOAST_CORNER_RADIUS)
                     .inner_margin(TOAST_PADDING)
-                    .show(ui, theme, |ui| {
+                    .show(ui, |ui| {
                         ui.horizontal(|ui| {
                             ui.spacing_mut().item_spacing.x = TOAST_SPACING;
 
@@ -372,7 +466,7 @@ impl ToastManager {
                             // Content
                             ui.vertical(|ui| {
                                 ui.spacing_mut().item_spacing.y = 0.0;
-                                ui.set_width(TOAST_WIDTH - 100.0);
+                                ui.set_width(width - 100.0);
 
                                 if let Some(title) = &toast.title {
                                     ui.strong(title);
@@ -388,7 +482,7 @@ impl ToastManager {
                                     .padding(6.0)
                                     .icon_color(theme.muted_foreground())
                                     .hover_icon_color(theme.foreground())
-                                    .show(ui, theme);
+                                    .show(ui);
 
                                 if close_response.clicked() {
                                     dismissed = true;
@@ -398,7 +492,8 @@ impl ToastManager {
 
                         // Progress bar (shadcn style)
                         let progress = toast.progress(current_time).min(1.0);
-                        if progress < 1.0 {
+                        let show_progress = toast.external_progress.is_some() || progress < 1.0;
+                        if show_progress {
                             ui.add_space(TOAST_SPACING);
                             let (rect, _) = ui.allocate_exact_size(
                                 vec2(ui.available_width(), PROGRESS_HEIGHT),
@@ -506,13 +601,28 @@ impl ToastBuilder<'_> {
         self
     }
 
-    /// Add the toast to the manager
-    pub fn show(self) {
+    /// Set initial external progress (0.0..=1.0).
+    /// The toast will not auto-dismiss while external progress is set.
+    #[must_use]
+    pub const fn progress(mut self, progress: f32) -> Self {
+        if let Some(toast) = &mut self.toast {
+            toast.external_progress = Some(progress);
+        }
+        self
+    }
+
+    /// Add the toast to the manager, returning its ID for later updates.
+    #[must_use]
+    pub fn show(self) -> ToastId {
         if let Some(toast) = self.toast {
+            let id = ToastId(toast.id);
             self.manager.toasts.push_back(toast);
             while self.manager.toasts.len() > self.manager.max_toasts {
                 self.manager.toasts.pop_front();
             }
+            id
+        } else {
+            ToastId(0)
         }
     }
 }

@@ -362,7 +362,7 @@ fn render_code_block(
             let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(button_rect), |ui| {
                 if Button::new("🌓 Theme")
                     .variant(ButtonVariant::Text)
-                    .show(ui, theme)
+                    .show(ui)
                     .on_hover_text("Toggle light/dark theme")
                     .clicked()
                 {
@@ -410,7 +410,7 @@ fn render_code_block(
             let _ = ui.scope_builder(egui::UiBuilder::new().max_rect(button_rect), |ui| {
                 if Button::new(button_text)
                     .variant(ButtonVariant::Text)
-                    .show(ui, theme)
+                    .show(ui)
                     .on_hover_text(button_tooltip)
                     .clicked()
                 {

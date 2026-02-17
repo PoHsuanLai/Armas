@@ -7,6 +7,7 @@
 //! - Icons (left and right)
 //! - Password masking
 
+use crate::ext::ArmasContextExt;
 use egui::{Color32, Response, Sense, Stroke, TextEdit, Ui, Vec2};
 
 // shadcn Input constants
@@ -189,7 +190,8 @@ impl Input {
     }
 
     /// Show the input field
-    pub fn show(self, ui: &mut Ui, text: &mut String, theme: &crate::Theme) -> InputResponse {
+    pub fn show(self, ui: &mut Ui, text: &mut String) -> InputResponse {
+        let theme = ui.ctx().armas_theme();
         // Load state from memory if ID is set
         if let Some(id) = self.id {
             let state_id = id.with("input_state");
@@ -218,7 +220,7 @@ impl Input {
             }
 
             // Input field
-            let input_response = self.render_input(ui, text, width, theme);
+            let input_response = self.render_input(ui, text, width, &theme);
 
             // Description/helper text
             if let Some(desc) = &self.description {
@@ -461,7 +463,7 @@ impl SearchInput {
     }
 
     /// Show the search input
-    pub fn show(self, ui: &mut Ui, text: &mut String, theme: &crate::Theme) -> InputResponse {
+    pub fn show(self, ui: &mut Ui, text: &mut String) -> InputResponse {
         let mut input = Input::new(&self.placeholder)
             .left_icon("🔍")
             .width(self.width.unwrap_or(300.0));
@@ -470,7 +472,7 @@ impl SearchInput {
             input = input.id(id);
         }
 
-        input.show(ui, text, theme)
+        input.show(ui, text)
     }
 }
 

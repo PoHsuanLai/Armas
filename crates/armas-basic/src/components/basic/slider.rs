@@ -8,6 +8,7 @@
 //! - Labels and value display
 
 use crate::animation::{DragMode, VelocityDrag, VelocityDragConfig};
+use crate::ext::ArmasContextExt;
 use egui::{pos2, vec2, Color32, Rect, Sense, Stroke, Ui};
 
 // shadcn Slider constants
@@ -143,7 +144,8 @@ impl Slider {
     }
 
     /// Show the slider
-    pub fn show(self, ui: &mut Ui, value: &mut f32, theme: &crate::Theme) -> SliderResponse {
+    pub fn show(self, ui: &mut Ui, value: &mut f32) -> SliderResponse {
+        let theme = ui.ctx().armas_theme();
         let mut changed = false;
 
         // Generate a stable ID for drag state
@@ -345,7 +347,10 @@ impl Slider {
             });
         }
 
+        let response = ui.interact(ui.min_rect(), slider_id.with("response"), Sense::hover());
+
         SliderResponse {
+            response,
             value: *value,
             changed,
         }
@@ -353,8 +358,9 @@ impl Slider {
 }
 
 /// Response from a slider
-#[derive(Debug, Clone, Copy)]
 pub struct SliderResponse {
+    /// The UI response
+    pub response: egui::Response,
     /// Current value
     pub value: f32,
     /// Whether the value changed this frame

@@ -59,7 +59,7 @@ pub struct StepSequencer<'a> {
     gap: f32,
     accent_color: Option<Color32>,
     show_step_numbers: bool,
-    glow_intensity: f32,
+    pub(crate) glow_intensity: f32,
     /// Color for active (ON) steps
     step_on_color: Option<Color32>,
     /// Color for inactive (OFF) steps
@@ -70,6 +70,8 @@ pub struct StepSequencer<'a> {
     velocities: Option<&'a Vec<f32>>,
     /// Show measure accents (every N steps)
     measure_accent: Option<usize>,
+    /// Whether the sequencer is disabled (non-interactive)
+    disabled: bool,
 }
 
 impl<'a> StepSequencer<'a> {
@@ -90,6 +92,7 @@ impl<'a> StepSequencer<'a> {
             current_step_color: None,
             velocities: None,
             measure_accent: None,
+            disabled: false,
         }
     }
 
@@ -136,13 +139,6 @@ impl<'a> StepSequencer<'a> {
         self
     }
 
-    /// Set glow intensity
-    #[must_use]
-    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
-        self.glow_intensity = intensity.clamp(0.0, 1.0);
-        self
-    }
-
     /// Set color for active (ON) steps
     #[must_use]
     pub const fn step_on_color(mut self, color: Color32) -> Self {
@@ -178,6 +174,13 @@ impl<'a> StepSequencer<'a> {
         self
     }
 
+    /// Set whether the sequencer is disabled (non-interactive)
+    #[must_use]
+    pub const fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Show the step sequencer
     pub fn show(self, ui: &mut Ui, theme: &armas_basic::Theme) -> StepSequencerResponse {
         // Ensure steps vec has correct size
@@ -202,9 +205,14 @@ impl<'a> StepSequencer<'a> {
                     Vec2::new(self.step_width, self.step_height),
                 );
 
-                let step_response = ui.allocate_rect(step_rect, Sense::click());
+                let sense = if self.disabled {
+                    Sense::hover()
+                } else {
+                    Sense::click()
+                };
+                let step_response = ui.allocate_rect(step_rect, sense);
 
-                if step_response.clicked() {
+                if !self.disabled && step_response.clicked() {
                     self.steps[i] = !self.steps[i];
                     changed = true;
                 }
@@ -247,6 +255,11 @@ impl<'a> StepSequencer<'a> {
         // Determine colors
         let bg_color = if is_active {
             let accent = self.accent_color.unwrap_or_else(|| theme.primary());
+            let accent = if self.disabled {
+                accent.gamma_multiply(0.5)
+            } else {
+                accent
+            };
             if is_hovered {
                 accent.gamma_multiply(1.2)
             } else {
@@ -294,7 +307,12 @@ impl<'a> StepSequencer<'a> {
         // Sophisticated border
         let border_width = if is_active { 2.0 } else { 1.0 };
         let border_color = if is_active {
-            bg_color.gamma_multiply(1.3)
+            let c = bg_color.gamma_multiply(1.3);
+            if self.disabled {
+                c.gamma_multiply(0.5)
+            } else {
+                c
+            }
         } else {
             theme.border()
         };

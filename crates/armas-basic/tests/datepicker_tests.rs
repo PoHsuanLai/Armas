@@ -117,13 +117,12 @@ fn test_date_day_of_week() {
 /// Test `DatePicker` renders
 #[test]
 fn test_datepicker_renders() {
-    let theme = Theme::dark();
     let mut selected_date = None;
 
     let mut harness = Harness::new(|ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut picker = DatePicker::new("test_picker");
-            picker.show(ctx, &theme, ui, &mut selected_date);
+            picker.show(ctx, ui, &mut selected_date);
         });
     });
 
@@ -133,13 +132,12 @@ fn test_datepicker_renders() {
 /// Test `DatePicker` with pre-selected date
 #[test]
 fn test_datepicker_with_selection() {
-    let theme = Theme::dark();
     let mut selected_date = Date::new(2024, 6, 15);
 
     let mut harness = Harness::new(|ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut picker = DatePicker::new("test_picker");
-            picker.show(ctx, &theme, ui, &mut selected_date);
+            picker.show(ctx, ui, &mut selected_date);
         });
     });
 
@@ -149,13 +147,12 @@ fn test_datepicker_with_selection() {
 /// Test `DatePicker` with label
 #[test]
 fn test_datepicker_with_label() {
-    let theme = Theme::dark();
     let mut selected_date = None;
 
     let mut harness = Harness::new(|ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut picker = DatePicker::new("labeled_picker").label("Birth Date");
-            picker.show(ctx, &theme, ui, &mut selected_date);
+            picker.show(ctx, ui, &mut selected_date);
         });
     });
 
@@ -165,13 +162,12 @@ fn test_datepicker_with_label() {
 /// Test `DatePicker` with custom placeholder
 #[test]
 fn test_datepicker_with_placeholder() {
-    let theme = Theme::dark();
     let mut selected_date = None;
 
     let mut harness = Harness::new(|ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut picker = DatePicker::new("placeholder_picker").placeholder("Choose a date...");
-            picker.show(ctx, &theme, ui, &mut selected_date);
+            picker.show(ctx, ui, &mut selected_date);
         });
     });
 
@@ -181,13 +177,12 @@ fn test_datepicker_with_placeholder() {
 /// Test `DatePicker` with light theme
 #[test]
 fn test_datepicker_light_theme() {
-    let theme = Theme::light();
     let mut selected_date = None;
 
     let mut harness = Harness::new(|ctx| {
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut picker = DatePicker::new("light_picker");
-            picker.show(ctx, &theme, ui, &mut selected_date);
+            picker.show(ctx, ui, &mut selected_date);
         });
     });
 
@@ -197,7 +192,6 @@ fn test_datepicker_light_theme() {
 /// Test `DatePicker` full configuration
 #[test]
 fn test_datepicker_full_config() {
-    let theme = Theme::dark();
     let mut selected_date = Date::new(2024, 12, 25);
 
     let mut harness = Harness::new(|ctx| {
@@ -205,7 +199,7 @@ fn test_datepicker_full_config() {
             let mut picker = DatePicker::new("full_picker")
                 .label("Event Date")
                 .placeholder("Select event date...");
-            picker.show(ctx, &theme, ui, &mut selected_date);
+            picker.show(ctx, ui, &mut selected_date);
         });
     });
 
@@ -215,7 +209,6 @@ fn test_datepicker_full_config() {
 /// Test multiple `DatePicker`s
 #[test]
 fn test_multiple_datepickers() {
-    let theme = Theme::dark();
     let mut start_date = None;
     let mut end_date = None;
 
@@ -223,12 +216,12 @@ fn test_multiple_datepickers() {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical(|ui| {
                 let mut start_picker = DatePicker::new("start_picker").label("Start Date");
-                start_picker.show(ctx, &theme, ui, &mut start_date);
+                start_picker.show(ctx, ui, &mut start_date);
 
                 ui.add_space(8.0);
 
                 let mut end_picker = DatePicker::new("end_picker").label("End Date");
-                end_picker.show(ctx, &theme, ui, &mut end_date);
+                end_picker.show(ctx, ui, &mut end_date);
             });
         });
     });

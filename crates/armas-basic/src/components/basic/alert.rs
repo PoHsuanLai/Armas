@@ -5,6 +5,7 @@
 //! Built on top of Card component for consistency.
 
 use crate::components::button::IconButton;
+use crate::ext::ArmasContextExt;
 use crate::icon;
 use crate::{ButtonVariant, Card, CardVariant, Theme};
 use egui::{vec2, Color32, Sense, Ui};
@@ -61,22 +62,20 @@ impl AlertVariant {
 ///
 /// ```rust,no_run
 /// use armas_basic::components::{Alert, AlertVariant};
-/// use armas_basic::ext::ArmasContextExt;
 ///
 /// fn ui(ui: &mut egui::Ui) {
-///     let theme = ui.ctx().armas_theme();
 ///     // Default info alert
-///     Alert::new("Operation completed").show(ui, &theme);
+///     Alert::new("Operation completed").show(ui);
 ///
 ///     // Destructive alert
 ///     Alert::new("Something went wrong")
 ///         .variant(AlertVariant::Destructive)
-///         .show(ui, &theme);
+///         .show(ui);
 ///
 ///     // Custom color alert
 ///     Alert::new("Custom alert")
 ///         .color(egui::Color32::from_rgb(100, 200, 150))
-///         .show(ui, &theme);
+///         .show(ui);
 /// }
 /// ```
 pub struct Alert {
@@ -155,12 +154,14 @@ impl Alert {
     /// Show the alert using Card component
     ///
     /// Returns `AlertResponse` with information about user interaction
-    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> AlertResponse {
+    pub fn show(self, ui: &mut Ui) -> AlertResponse {
+        let theme = ui.ctx().armas_theme();
         let mut dismissed = false;
+        let alert_id = ui.make_persistent_id("alert");
 
         let accent_color = self
             .custom_color
-            .unwrap_or_else(|| self.variant.color(theme));
+            .unwrap_or_else(|| self.variant.color(&theme));
         let bg_color = if self.custom_color.is_some() {
             Color32::from_rgba_unmultiplied(
                 accent_color.r(),
@@ -169,12 +170,12 @@ impl Alert {
                 20,
             )
         } else {
-            self.variant.background_color(theme)
+            self.variant.background_color(&theme)
         };
         let border_color = if self.custom_color.is_some() {
             accent_color
         } else {
-            self.variant.border_color(theme)
+            self.variant.border_color(&theme)
         };
 
         // Build the Card with alert-specific styling (shadcn style)
@@ -190,7 +191,7 @@ impl Alert {
         }
 
         // Show the card with alert content
-        card.show(ui, theme, |ui| {
+        card.show(ui, |ui| {
             ui.horizontal(|ui| {
                 ui.spacing_mut().item_spacing.x = 12.0;
 
@@ -225,7 +226,7 @@ impl Alert {
                         .padding(4.0)
                         .icon_color(theme.muted_foreground())
                         .hover_icon_color(theme.foreground())
-                        .show(ui, theme);
+                        .show(ui);
 
                     if close_response.clicked() {
                         dismissed = true;
@@ -234,23 +235,29 @@ impl Alert {
             });
         });
 
-        AlertResponse { dismissed }
+        let response = ui.interact(ui.min_rect(), alert_id.with("response"), Sense::hover());
+
+        AlertResponse {
+            response,
+            dismissed,
+        }
     }
 }
 
 /// Response from an alert
-#[derive(Debug, Clone, Copy)]
 pub struct AlertResponse {
+    /// The UI response
+    pub response: egui::Response,
     /// Whether the alert was dismissed
     pub dismissed: bool,
 }
 
 /// Simple helper to show an alert with just a message
-pub fn alert(ui: &mut Ui, message: impl Into<String>, theme: &crate::Theme) {
-    Alert::new(message).show(ui, theme);
+pub fn alert(ui: &mut Ui, message: impl Into<String>) {
+    Alert::new(message).show(ui);
 }
 
 /// Show a destructive alert
-pub fn alert_destructive(ui: &mut Ui, message: impl Into<String>, theme: &crate::Theme) {
-    Alert::new(message).destructive().show(ui, theme);
+pub fn alert_destructive(ui: &mut Ui, message: impl Into<String>) {
+    Alert::new(message).destructive().show(ui);
 }

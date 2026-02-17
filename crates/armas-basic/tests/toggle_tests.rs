@@ -1,158 +1,133 @@
-//! Tests for Toggle component using `egui_kittest`
+//! Tests for Switch and Checkbox components using `egui_kittest`
 
 use armas_basic::prelude::*;
 use egui_kittest::Harness;
 
-/// Test that Toggle renders without panicking
+/// Test that Switch renders without panicking
 #[test]
-fn test_toggle_renders() {
+fn test_switch_renders() {
     let mut checked = false;
 
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
-        Toggle::new()
-            .label("Enable feature")
-            .show(ui, &mut checked, &theme);
+        Switch::new().label("Enable feature").show(ui, &mut checked);
     });
 
     harness.run();
 }
 
-/// Test Toggle Switch variant
+/// Test Switch Small size
 #[test]
-fn test_toggle_switch_variant() {
+fn test_switch_size_small() {
     let mut checked = false;
 
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
-        Toggle::new()
-            .variant(ToggleVariant::Switch)
-            .label("Switch toggle")
-            .show(ui, &mut checked, &theme);
+        Switch::new()
+            .size(SwitchSize::Small)
+            .label("Small switch")
+            .show(ui, &mut checked);
     });
     harness.run();
 }
 
-/// Test Toggle Checkbox variant
+/// Test Switch Medium size
 #[test]
-fn test_toggle_checkbox_variant() {
+fn test_switch_size_medium() {
     let mut checked = false;
 
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
-        Toggle::new()
-            .variant(ToggleVariant::Checkbox)
-            .label("Checkbox toggle")
-            .show(ui, &mut checked, &theme);
+        Switch::new()
+            .size(SwitchSize::Medium)
+            .label("Medium switch")
+            .show(ui, &mut checked);
     });
     harness.run();
 }
 
-/// Test Toggle Small size
+/// Test Switch Large size
 #[test]
-fn test_toggle_size_small() {
+fn test_switch_size_large() {
     let mut checked = false;
 
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
-        Toggle::new()
-            .size(ToggleSize::Small)
-            .label("Small toggle")
-            .show(ui, &mut checked, &theme);
+        Switch::new()
+            .size(SwitchSize::Large)
+            .label("Large switch")
+            .show(ui, &mut checked);
     });
     harness.run();
 }
 
-/// Test Toggle Medium size
+/// Test disabled Switch
 #[test]
-fn test_toggle_size_medium() {
+fn test_switch_disabled() {
     let mut checked = false;
 
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
-        Toggle::new()
-            .size(ToggleSize::Medium)
-            .label("Medium toggle")
-            .show(ui, &mut checked, &theme);
-    });
-    harness.run();
-}
-
-/// Test Toggle Large size
-#[test]
-fn test_toggle_size_large() {
-    let mut checked = false;
-
-    let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
-        Toggle::new()
-            .size(ToggleSize::Large)
-            .label("Large toggle")
-            .show(ui, &mut checked, &theme);
-    });
-    harness.run();
-}
-
-/// Test disabled Toggle
-#[test]
-fn test_toggle_disabled() {
-    let mut checked = false;
-
-    let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
-        Toggle::new()
+        Switch::new()
             .disabled(true)
-            .label("Disabled toggle")
-            .show(ui, &mut checked, &theme);
+            .label("Disabled switch")
+            .show(ui, &mut checked);
     });
 
     harness.run();
 }
 
-/// Test Toggle with description
+/// Test Switch with description
 /// Note: Uses `step()` instead of `run()` because the `checked=true` state triggers
 /// the spring animation which continuously requests repaints.
 #[test]
-fn test_toggle_with_description() {
+fn test_switch_with_description() {
     let mut checked = true;
 
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
-        Toggle::new()
+        Switch::new()
             .label("Dark mode")
             .description("Enable dark theme for better visibility at night")
-            .show(ui, &mut checked, &theme);
+            .show(ui, &mut checked);
     });
 
     // Use step() for animated components - run() expects the UI to settle
     harness.step();
 }
 
-// Snapshot tests - uncomment when ready to generate baseline images
-// #[test]
-// fn test_toggle_snapshot_unchecked() {
-//     let mut checked = false;
-//
-//     let mut harness = Harness::new_ui(|ui| {
-//         Toggle::new()
-//             .label("Feature toggle")
-//             .show(ui, &mut checked, &theme);
-//     });
-//
-//     harness.fit_contents();
-//     harness.snapshot("toggle_unchecked");
-// }
-//
-// #[test]
-// fn test_toggle_snapshot_checked() {
-//     let mut checked = true;
-//
-//     let mut harness = Harness::new_ui(|ui| {
-//         Toggle::new()
-//             .label("Feature toggle")
-//             .show(ui, &mut checked, &theme);
-//     });
-//
-//     harness.fit_contents();
-//     harness.snapshot("toggle_checked");
-// }
+/// Test Checkbox renders without panicking
+#[test]
+fn test_checkbox_renders() {
+    let mut checked = false;
+
+    let mut harness = Harness::new_ui(|ui| {
+        Checkbox::new().label("Accept terms").show(ui, &mut checked);
+    });
+
+    harness.run();
+}
+
+/// Test Checkbox with description
+#[test]
+fn test_checkbox_with_description() {
+    let mut checked = true;
+
+    let mut harness = Harness::new_ui(|ui| {
+        Checkbox::new()
+            .label("Subscribe")
+            .description("Receive email notifications")
+            .show(ui, &mut checked);
+    });
+
+    harness.step();
+}
+
+/// Test disabled Checkbox
+#[test]
+fn test_checkbox_disabled() {
+    let mut checked = false;
+
+    let mut harness = Harness::new_ui(|ui| {
+        Checkbox::new()
+            .disabled(true)
+            .label("Disabled checkbox")
+            .show(ui, &mut checked);
+    });
+
+    harness.run();
+}

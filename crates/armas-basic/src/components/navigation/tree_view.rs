@@ -12,7 +12,6 @@ use std::path::{Path, PathBuf};
 // Constants
 // ============================================================================
 
-const ITEM_HEIGHT: f32 = 24.0;
 const ITEM_GAP: f32 = 0.0;
 const ITEM_PADDING_X: f32 = 8.0;
 const CORNER_RADIUS: f32 = 4.0;
@@ -114,7 +113,6 @@ struct ShowItemParams<'a> {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas_basic::{TreeView, TreeItem};
-/// use armas_basic::ext::ArmasContextExt;
 ///
 /// let items = vec![
 ///     TreeItem::folder("src", "/src"),
@@ -122,12 +120,11 @@ struct ShowItemParams<'a> {
 ///     TreeItem::file("lib.rs", "/src/lib.rs"),
 /// ];
 ///
-/// let theme = ui.ctx().armas_theme();
 /// let mut tree = TreeView::new()
 ///     .items(items)
 ///     .root_path("/");
 ///
-/// let response = tree.show(ui, &theme);
+/// let response = tree.show(ui);
 /// if let Some(path) = response.selected {
 ///     // Handle file selection
 /// }
@@ -143,6 +140,7 @@ pub struct TreeView {
     // Config
     width: f32,
     height: f32,
+    item_height: f32,
     items: Vec<TreeItem>,
     root_path: String,
     show_lines: bool,
@@ -154,6 +152,7 @@ impl TreeView {
     pub fn new() -> Self {
         Self {
             root_path: "/".to_string(),
+            item_height: 24.0,
             ..Default::default()
         }
     }
@@ -169,6 +168,13 @@ impl TreeView {
     #[must_use]
     pub const fn height(mut self, height: f32) -> Self {
         self.height = height;
+        self
+    }
+
+    /// Set the height of each item row
+    #[must_use]
+    pub const fn item_height(mut self, height: f32) -> Self {
+        self.item_height = height;
         self
     }
 
@@ -214,7 +220,8 @@ impl TreeView {
     }
 
     /// Show the tree view
-    pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> TreeViewResponse {
+    pub fn show(&mut self, ui: &mut Ui) -> TreeViewResponse {
+        let theme = ui.ctx().armas_theme();
         let available = ui.available_size();
         let width = if self.width > 0.0 {
             self.width
@@ -307,8 +314,8 @@ impl TreeView {
             // Tree lines prefix
             if show_lines {
                 let prefix_width = indent;
-                let (prefix_rect, _) =
-                    ui.allocate_exact_size(Vec2::new(prefix_width, ITEM_HEIGHT), Sense::hover());
+                let (prefix_rect, _) = ui
+                    .allocate_exact_size(Vec2::new(prefix_width, self.item_height), Sense::hover());
 
                 let line_color = params.theme.border();
 
@@ -333,41 +340,24 @@ impl TreeView {
                     }
                 }
 
-                // Draw the connector for current item
+                // Vertical line for current level (no horizontal connector)
                 let line_x = prefix_rect.right() - INDENT_WIDTH / 2.0;
-                let center_y = prefix_rect.center().y;
-
-                // Vertical line segment for current level
-                ui.painter().line_segment(
-                    [
-                        Pos2::new(line_x, prefix_rect.top()),
-                        Pos2::new(
-                            line_x,
-                            if params.is_last {
-                                center_y
-                            } else {
-                                prefix_rect.bottom()
-                            },
-                        ),
-                    ],
-                    egui::Stroke::new(1.0, line_color),
-                );
-
-                // Horizontal line to item
-                ui.painter().line_segment(
-                    [
-                        Pos2::new(line_x, center_y),
-                        Pos2::new(prefix_rect.right(), center_y),
-                    ],
-                    egui::Stroke::new(1.0, line_color),
-                );
+                if !params.is_last {
+                    ui.painter().line_segment(
+                        [
+                            Pos2::new(line_x, prefix_rect.top()),
+                            Pos2::new(line_x, prefix_rect.bottom()),
+                        ],
+                        egui::Stroke::new(1.0, line_color),
+                    );
+                }
             } else if indent > 0.0 {
                 ui.add_space(indent);
             }
 
             let item_width = (params.width - indent - ITEM_PADDING_X).max(40.0);
             let (rect, response) =
-                ui.allocate_exact_size(Vec2::new(item_width, ITEM_HEIGHT), Sense::click());
+                ui.allocate_exact_size(Vec2::new(item_width, self.item_height), Sense::click());
             let hovered = response.hovered();
 
             // Background
@@ -389,17 +379,12 @@ impl TreeView {
 
             let x = rect.left() + ITEM_PADDING_X;
 
-            // Name (with folder indicator if directory)
-            let display_name = if params.item.is_directory {
-                format!("{}/", params.item.name)
-            } else {
-                params.item.name.clone()
-            };
+            let display_name = &params.item.name;
 
             ui.painter().text(
                 Pos2::new(x, rect.center().y),
                 egui::Align2::LEFT_CENTER,
-                &display_name,
+                display_name,
                 egui::FontId::proportional(13.0),
                 text_color,
             );

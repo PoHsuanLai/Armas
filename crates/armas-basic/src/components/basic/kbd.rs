@@ -2,6 +2,7 @@
 //!
 //! Keyboard shortcut display element.
 
+use crate::ext::ArmasContextExt;
 use crate::theme::Theme;
 use egui::{Response, Ui, Vec2};
 
@@ -13,14 +14,12 @@ use egui::{Response, Ui, Vec2};
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas_basic::Kbd;
-/// use armas_basic::ext::ArmasContextExt;
 ///
-/// let theme = ui.ctx().armas_theme();
 /// // Single key
-/// Kbd::new("K").show(ui, &theme);
+/// Kbd::new("K").show(ui);
 ///
 /// // Key combination (auto-splits on +)
-/// Kbd::new("Ctrl+K").show(ui, &theme);
+/// Kbd::new("Ctrl+K").show(ui);
 /// # }
 /// ```
 pub struct Kbd {
@@ -34,7 +33,8 @@ impl Kbd {
     }
 
     /// Show the keyboard shortcut
-    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         // Check if this is a key combination
         let parts: Vec<&str> = self.text.split('+').map(str::trim).collect();
 
@@ -46,13 +46,13 @@ impl Kbd {
                     if i > 0 {
                         ui.label("+");
                     }
-                    render_key(ui, part, theme);
+                    render_key(ui, part, &theme);
                 }
             });
             response.response
         } else {
             // Single key
-            render_key(ui, &self.text, theme)
+            render_key(ui, &self.text, &theme)
         }
     }
 }

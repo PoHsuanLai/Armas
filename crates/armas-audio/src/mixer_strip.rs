@@ -590,7 +590,7 @@ impl MixerStrip {
     fn render_sends_section(
         &self,
         ui: &mut Ui,
-        theme: &armas_basic::Theme,
+        _theme: &armas_basic::Theme,
         layout: &ResolvedLayout,
         button_width_full: f32,
     ) -> bool {
@@ -615,7 +615,7 @@ impl MixerStrip {
                         .size(layout.button_size)
                         .height(layout.row_height)
                         .min_width(button_width_full)
-                        .show(ui, theme)
+                        .show(ui)
                         .clicked()
                     {
                         add_clicked = true;
@@ -635,7 +635,7 @@ impl MixerStrip {
                                     .size(11.0 * scale)
                                     .height(layout.row_height)
                                     .min_width(button_width_full)
-                                    .show(ui, theme);
+                                    .show(ui);
                             },
                         );
                     }
@@ -646,7 +646,7 @@ impl MixerStrip {
                         .size(layout.button_size)
                         .height(layout.row_height)
                         .min_width(button_width_full)
-                        .show(ui, theme)
+                        .show(ui)
                         .clicked()
                     {
                         add_clicked = true;
@@ -661,7 +661,7 @@ impl MixerStrip {
     fn render_routing_section(
         &mut self,
         ui: &mut Ui,
-        theme: &armas_basic::Theme,
+        _theme: &armas_basic::Theme,
         layout: &ResolvedLayout,
         button_width_full: f32,
     ) -> (bool, bool) {
@@ -675,7 +675,7 @@ impl MixerStrip {
             .width(button_width_full)
             .height(layout.row_height)
             .searchable(false)
-            .show(ui, theme);
+            .show(ui);
 
         if input_resp.changed {
             if let Some(val) = input_resp.selected_value {
@@ -691,7 +691,7 @@ impl MixerStrip {
             .width(button_width_full)
             .height(layout.row_height)
             .searchable(false)
-            .show(ui, theme);
+            .show(ui);
 
         if output_resp.changed {
             if let Some(val) = output_resp.selected_value {
@@ -775,7 +775,7 @@ impl MixerStrip {
     fn render_control_buttons(
         &mut self,
         ui: &mut Ui,
-        theme: &armas_basic::Theme,
+        _theme: &armas_basic::Theme,
         layout: &ResolvedLayout,
         button_width_full: f32,
     ) {
@@ -790,7 +790,7 @@ impl MixerStrip {
                 .size(layout.button_size)
                 .height(layout.row_height)
                 .min_width(button_width_grid)
-                .show(ui, theme)
+                .show(ui)
                 .clicked()
             {
                 self.muted = !self.muted;
@@ -801,7 +801,7 @@ impl MixerStrip {
                 .size(layout.button_size)
                 .height(layout.row_height)
                 .min_width(button_width_grid)
-                .show(ui, theme)
+                .show(ui)
                 .clicked()
             {
                 self.soloed = !self.soloed;
@@ -818,7 +818,7 @@ impl MixerStrip {
                     .size(layout.button_size)
                     .height(layout.row_height)
                     .min_width(button_width_grid)
-                    .show(ui, theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.record_armed = !self.record_armed;
@@ -829,7 +829,7 @@ impl MixerStrip {
                     .size(layout.button_size)
                     .height(layout.row_height)
                     .min_width(button_width_grid)
-                    .show(ui, theme)
+                    .show(ui)
                     .clicked()
                 {
                     self.input_monitoring = !self.input_monitoring;
@@ -912,7 +912,7 @@ impl MixerStrip {
             .corner_radius(8.0 * scale)
             .inner_margin(2.0 * scale)
             .fill(self.card_color.unwrap_or(default_color))
-            .show(ui, theme, |ui| {
+            .show(ui, |ui| {
                 ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                     ui.spacing_mut().item_spacing.y = 1.0;
                     ui.add_space(layout.section_gap);

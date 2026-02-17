@@ -72,40 +72,41 @@ pub struct Note {
     /// MIDI note number (0-127)
     pub note: u8,
     /// Start position in beats
-    pub start_beat: f32,
+    pub start_beat: f64,
     /// Duration in beats
-    pub duration: f32,
-    /// Velocity (0.0-1.0)
-    pub velocity: f32,
+    pub duration: f64,
+    /// Velocity (0-127, MIDI standard)
+    pub velocity: u8,
 }
 
 impl Note {
     /// Create a new note
     #[must_use]
-    pub const fn new(note: u8, start_beat: f32, duration: f32) -> Self {
+    pub const fn new(note: u8, start_beat: f64, duration: f64) -> Self {
         Self {
             note,
             start_beat,
             duration,
-            velocity: 0.8,
+            velocity: 100,
         }
     }
 
     /// Create a new note with velocity
     #[must_use]
-    pub const fn with_velocity(note: u8, start_beat: f32, duration: f32, velocity: f32) -> Self {
+    pub const fn with_velocity(note: u8, start_beat: f64, duration: f64, velocity: u8) -> Self {
         Self {
             note,
             start_beat,
             duration,
-            velocity: velocity.clamp(0.0, 1.0),
+            velocity,
         }
     }
 }
 
 /// Response from the piano roll
-#[derive(Debug, Clone)]
 pub struct PianoRollResponse {
+    /// The UI response
+    pub response: Response,
     /// The notes after user interaction
     pub notes: Vec<Note>,
     /// Whether notes were modified this frame
@@ -127,13 +128,15 @@ pub struct PianoRoll {
     /// Height of white keys
     white_key_height: f32,
     /// Number of measures
-    measures: u32,
+    pub(crate) measures: u32,
+    /// Beats per measure (time signature numerator)
+    pub(crate) beats_per_measure: u32,
     /// Grid division
     division: GridDivision,
     /// Width per beat in pixels
-    beat_width: f32,
+    pub(crate) beat_width: f32,
     /// Default note duration when placing
-    default_note_duration: f32,
+    default_note_duration: f64,
     /// Notes to display
     notes: Vec<Note>,
     /// Show grid
@@ -161,11 +164,13 @@ pub struct PianoRoll {
     /// Viewport height (if scrollable)
     viewport_height: Option<f32>,
     /// Enable momentum scrolling
-    momentum_scrolling: bool,
+    pub(crate) momentum_scrolling: bool,
     /// Momentum damping factor
-    momentum_damping: f64,
+    pub(crate) momentum_damping: f64,
     /// Optional ID for state persistence
     id: Option<egui::Id>,
+    /// Whether the piano roll is disabled (non-interactive)
+    disabled: bool,
 }
 
 impl PianoRoll {
@@ -178,6 +183,7 @@ impl PianoRoll {
             white_key_width: 40.0,
             white_key_height: 120.0,
             measures: 4,
+            beats_per_measure: 4,
             division: GridDivision::Quarter,
             beat_width: 50.0,
             default_note_duration: 1.0, // Quarter note
@@ -197,6 +203,7 @@ impl PianoRoll {
             momentum_scrolling: true,
             momentum_damping: 5.0,
             id: None,
+            disabled: false,
         }
     }
 
@@ -228,13 +235,6 @@ impl PianoRoll {
         self
     }
 
-    /// Set number of measures
-    #[must_use]
-    pub const fn measures(mut self, measures: u32) -> Self {
-        self.measures = measures;
-        self
-    }
-
     /// Set grid division
     #[must_use]
     pub const fn division(mut self, division: GridDivision) -> Self {
@@ -242,16 +242,9 @@ impl PianoRoll {
         self
     }
 
-    /// Set width per beat
-    #[must_use]
-    pub const fn beat_width(mut self, width: f32) -> Self {
-        self.beat_width = width;
-        self
-    }
-
     /// Set default note duration when placing
     #[must_use]
-    pub const fn default_note_duration(mut self, duration: f32) -> Self {
+    pub const fn default_note_duration(mut self, duration: f64) -> Self {
         self.default_note_duration = duration;
         self
     }
@@ -319,6 +312,13 @@ impl PianoRoll {
         self
     }
 
+    /// Set whether the piano roll is disabled (non-interactive)
+    #[must_use]
+    pub const fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Enable snap-to-grid for note placement and resizing
     #[must_use]
     pub const fn snap_to_grid(mut self, enabled: bool) -> Self {
@@ -345,35 +345,13 @@ impl PianoRoll {
         self
     }
 
-    /// Enable or disable momentum scrolling
-    ///
-    /// When enabled, the piano roll continues scrolling after releasing
-    /// the mouse/trackpad, gradually slowing down with inertia.
-    ///
-    /// Default is enabled (when scrollable).
-    #[must_use]
-    pub const fn momentum_scrolling(mut self, enabled: bool) -> Self {
-        self.momentum_scrolling = enabled;
-        self
-    }
-
-    /// Set the momentum damping factor
-    ///
-    /// Higher values cause the scroll to stop faster.
-    /// Default is 5.0.
-    #[must_use]
-    pub const fn momentum_damping(mut self, damping: f64) -> Self {
-        self.momentum_damping = damping.max(1.0);
-        self
-    }
-
     /// Show the piano roll
     pub fn show(mut self, ui: &mut Ui, theme: &Theme) -> PianoRollResponse {
         let mut modified = false;
         let mut added_notes = Vec::new();
         let mut removed_notes = Vec::new();
 
-        ui.horizontal(|ui| {
+        let outer_response = ui.horizontal(|ui| {
             // Vertical piano on the left
             if self.show_piano {
                 let piano_response = Piano::new()
@@ -385,10 +363,10 @@ impl PianoRoll {
                     .show(ui, theme);
 
                 // Auto-add notes when piano keys are clicked
-                if self.editable {
+                if self.editable && !self.disabled {
                     for key in piano_response.clicked_keys {
                         // Place note at the start of the first measure
-                        let new_note = Note::new(key, 0.0, self.default_note_duration);
+                        let new_note = Note::new(key, 0.0_f64, self.default_note_duration);
                         self.notes.push(new_note);
                         added_notes.push(new_note);
                         modified = true;
@@ -424,6 +402,7 @@ impl PianoRoll {
         });
 
         PianoRollResponse {
+            response: outer_response.response,
             notes: self.notes.clone(),
             modified,
             added_notes,
@@ -444,8 +423,9 @@ impl PianoRoll {
             .count();
 
         let content_height = white_key_count as f32 * self.white_key_width;
-        let beats_per_measure = 4.0;
-        let total_beats = self.measures as f32 * beats_per_measure;
+        let measures = self.measures as f32;
+        let beats_per_measure = self.beats_per_measure as f32;
+        let total_beats = measures * beats_per_measure;
         let content_width = total_beats * self.beat_width;
 
         // Determine viewport size
@@ -459,14 +439,15 @@ impl PianoRoll {
         };
 
         // Allocate viewport space
-        let (viewport_rect, response) = ui.allocate_exact_size(
-            Vec2::new(viewport_width, viewport_height),
-            if self.editable {
-                Sense::click_and_drag()
-            } else {
-                Sense::hover()
-            },
-        );
+        let sense = if self.disabled {
+            Sense::hover()
+        } else if self.editable {
+            Sense::click_and_drag()
+        } else {
+            Sense::hover()
+        };
+        let (viewport_rect, response) =
+            ui.allocate_exact_size(Vec2::new(viewport_width, viewport_height), sense);
 
         // Get or create scroll state
         let scroll_id = self.id.unwrap_or_else(|| ui.id()).with("piano_roll_scroll");
@@ -557,8 +538,8 @@ impl PianoRoll {
             // Draw existing notes
             self.draw_notes_clipped(&painter, theme, content_rect, viewport_rect);
 
-            // Draw hover preview if editable
-            let note_interactions = if self.editable {
+            // Draw hover preview if editable and not disabled
+            let note_interactions = if self.editable && !self.disabled {
                 Some(self.handle_interactions_scrolled(
                     ui,
                     theme,
@@ -673,8 +654,9 @@ impl PianoRoll {
         };
 
         let divisions_per_beat = 1.0 / self.division.beat_fraction();
-        let beats_per_measure = 4.0;
-        let total_beats = self.measures as f32 * beats_per_measure;
+        let measures = self.measures as f32;
+        let beats_per_measure = self.beats_per_measure as f32;
+        let total_beats = measures * beats_per_measure;
         let total_divisions = (total_beats * divisions_per_beat) as i32;
 
         for i in 0..=total_divisions {
@@ -724,10 +706,12 @@ impl PianoRoll {
         content_rect: Rect,
         _viewport_rect: Rect,
     ) {
+        let dim = if self.disabled { 0.5 } else { 1.0 };
         for note in &self.notes {
             if let Some(note_rect) = self.get_note_rect_in_content(note, content_rect) {
-                let primary = theme.primary();
-                let intensity = (note.velocity * 255.0) as u8;
+                let primary = theme.primary().gamma_multiply(dim);
+                let velocity_f = f32::from(note.velocity) / 127.0;
+                let intensity = (velocity_f * 255.0) as u8;
                 let note_color = Color32::from_rgba_unmultiplied(
                     primary.r(),
                     primary.g(),
@@ -769,9 +753,11 @@ impl PianoRoll {
     /// Get note rect in content space
     fn get_note_rect_in_content(&self, note: &Note, content_rect: Rect) -> Option<Rect> {
         let row = self.note_to_row(note.note)?;
-        let x = note.start_beat.mul_add(self.beat_width, content_rect.min.x);
+        let start = note.start_beat as f32;
+        let dur = note.duration as f32;
+        let x = start.mul_add(self.beat_width, content_rect.min.x);
         let y = (row as f32).mul_add(self.white_key_width, content_rect.min.y);
-        let width = note.duration * self.beat_width;
+        let width = dur * self.beat_width;
         let height = self.white_key_width;
 
         Some(Rect::from_min_size(
@@ -913,7 +899,7 @@ impl PianoRoll {
 
         Some(Note::new(
             note_num,
-            snapped_beat,
+            f64::from(snapped_beat),
             self.default_note_duration,
         ))
     }

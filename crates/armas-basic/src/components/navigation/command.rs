@@ -9,8 +9,8 @@ use crate::Theme;
 use egui::{vec2, Align2, Color32, Key, Modifiers, Pos2, Rect, Sense, Ui};
 
 // Constants matching shadcn styling
-const PANEL_WIDTH: f32 = 512.0;
-const PANEL_MAX_HEIGHT: f32 = 384.0;
+const DEFAULT_PANEL_WIDTH: f32 = 512.0;
+const DEFAULT_PANEL_MAX_HEIGHT: f32 = 384.0;
 const CORNER_RADIUS: f32 = 6.0;
 const INPUT_HEIGHT: f32 = 44.0;
 const INPUT_PADDING_X: f32 = 12.0;
@@ -121,6 +121,8 @@ impl CommandBuilder<'_> {
 
 /// Response from command
 pub struct CommandResponse {
+    /// The UI response
+    pub response: egui::Response,
     /// ID of executed command, if any
     pub executed: Option<String>,
     /// Whether the command palette is currently open
@@ -135,6 +137,8 @@ pub struct Command {
     placeholder: String,
     trigger_key: Key,
     trigger_modifiers: Modifiers,
+    width: f32,
+    max_height: f32,
     // Internal state
     is_open: bool,
     search: String,
@@ -151,6 +155,8 @@ impl Command {
             placeholder: "Type a command or search...".to_string(),
             trigger_key: Key::K,
             trigger_modifiers: Modifiers::COMMAND,
+            width: DEFAULT_PANEL_WIDTH,
+            max_height: DEFAULT_PANEL_MAX_HEIGHT,
             is_open: false,
             search: String::new(),
             selected: 0,
@@ -177,6 +183,20 @@ impl Command {
     pub const fn trigger(mut self, key: Key, modifiers: Modifiers) -> Self {
         self.trigger_key = key;
         self.trigger_modifiers = modifiers;
+        self
+    }
+
+    /// Set the panel width
+    #[must_use]
+    pub const fn width(mut self, width: f32) -> Self {
+        self.width = width;
+        self
+    }
+
+    /// Set the panel max height
+    #[must_use]
+    pub const fn max_height(mut self, max_height: f32) -> Self {
+        self.max_height = max_height;
         self
     }
 
@@ -236,7 +256,10 @@ impl Command {
         // Save state
         self.save_state(&ctx, id);
 
+        let response = ui.interact(ui.min_rect(), id, Sense::hover());
+
         CommandResponse {
+            response,
             executed,
             is_open: self.is_open,
             changed,
@@ -389,7 +412,7 @@ impl Command {
             .anchor(Align2::CENTER_TOP, vec2(0.0, screen.height() * 0.2))
             .show(ui.ctx(), |ui| {
                 let panel_rect =
-                    Rect::from_min_size(ui.cursor().min, vec2(PANEL_WIDTH, PANEL_MAX_HEIGHT));
+                    Rect::from_min_size(ui.cursor().min, vec2(self.width, self.max_height));
 
                 // Panel background
                 ui.painter()
@@ -407,7 +430,7 @@ impl Command {
                         self.draw_input(ui, id, theme);
 
                         // Separator
-                        self.draw_separator(ui, theme, PANEL_WIDTH);
+                        self.draw_separator(ui, theme, self.width);
 
                         // List
                         let (exec, sel) = self.draw_list(ui, theme, filtered, should_close);
@@ -421,7 +444,7 @@ impl Command {
     }
 
     fn draw_input(&mut self, ui: &mut Ui, _id: egui::Id, theme: &Theme) {
-        let input_rect = Rect::from_min_size(ui.cursor().min, vec2(PANEL_WIDTH, INPUT_HEIGHT));
+        let input_rect = Rect::from_min_size(ui.cursor().min, vec2(self.width, INPUT_HEIGHT));
 
         // Search icon
         let icon_x = input_rect.left() + INPUT_PADDING_X;
@@ -526,7 +549,7 @@ impl Command {
                                         self.draw_separator(
                                             ui,
                                             theme,
-                                            PANEL_WIDTH - LIST_PADDING * 4.0,
+                                            self.width - LIST_PADDING * 4.0,
                                         );
                                         ui.add_space(LIST_PADDING);
                                     }
@@ -637,7 +660,7 @@ impl Command {
             );
             ui.scope_builder(egui::UiBuilder::new().max_rect(kbd_rect), |ui| {
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    Kbd::new(shortcut_text).show(ui, theme);
+                    Kbd::new(shortcut_text).show(ui);
                 });
             });
         }

@@ -147,7 +147,7 @@ pub struct DrumSequencer<'a> {
     row_label_width: f32,
     row_height: f32,
     gap: f32,
-    glow_intensity: f32,
+    pub(crate) glow_intensity: f32,
     variant: DrumSequencerVariant,
     color_scheme: DrumSequencerColorScheme,
     show_velocity: bool,
@@ -159,9 +159,11 @@ pub struct DrumSequencer<'a> {
     /// Viewport height (content will scroll if larger)
     viewport_height: Option<f32>,
     /// Enable momentum scrolling
-    momentum_scrolling: bool,
+    pub(crate) momentum_scrolling: bool,
     /// Damping factor for momentum (higher = faster decay). Default: 5.0
-    momentum_damping: f64,
+    pub(crate) momentum_damping: f64,
+    /// Whether the sequencer is disabled (non-interactive)
+    disabled: bool,
 }
 
 impl<'a> DrumSequencer<'a> {
@@ -186,6 +188,7 @@ impl<'a> DrumSequencer<'a> {
             viewport_height: None,
             momentum_scrolling: true,
             momentum_damping: 5.0,
+            disabled: false,
         }
     }
 
@@ -239,13 +242,6 @@ impl<'a> DrumSequencer<'a> {
         self
     }
 
-    /// Set glow intensity (0.0-1.0)
-    #[must_use]
-    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
-        self.glow_intensity = intensity.clamp(0.0, 1.0);
-        self
-    }
-
     /// Set visual variant
     #[must_use]
     pub const fn variant(mut self, variant: DrumSequencerVariant) -> Self {
@@ -267,6 +263,13 @@ impl<'a> DrumSequencer<'a> {
         self
     }
 
+    /// Set whether the sequencer is disabled (non-interactive)
+    #[must_use]
+    pub const fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Enable scrollable viewport with specified dimensions
     ///
     /// When content exceeds viewport size, scrolling is enabled.
@@ -275,24 +278,6 @@ impl<'a> DrumSequencer<'a> {
         self.scrollable = true;
         self.viewport_width = Some(width);
         self.viewport_height = Some(height);
-        self
-    }
-
-    /// Enable or disable momentum scrolling (default: true)
-    ///
-    /// When enabled, scrolling continues with inertia after mouse release.
-    #[must_use]
-    pub const fn momentum_scrolling(mut self, enabled: bool) -> Self {
-        self.momentum_scrolling = enabled;
-        self
-    }
-
-    /// Set momentum damping factor (default: 5.0)
-    ///
-    /// Higher values = faster velocity decay. Range: 1.0 to 20.0
-    #[must_use]
-    pub const fn momentum_damping(mut self, damping: f64) -> Self {
-        self.momentum_damping = damping.clamp(1.0, 20.0);
         self
     }
 
@@ -352,7 +337,7 @@ impl<'a> DrumSequencer<'a> {
     }
 
     /// Render grid of step buttons for a single row
-    #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
     fn render_grid(
         ui: &mut Ui,
         painter: &egui::Painter,
@@ -374,6 +359,7 @@ impl<'a> DrumSequencer<'a> {
         scrollable: bool,
         step_toggled: &mut HashMap<(usize, usize), bool>,
         row_idx: usize,
+        disabled: bool,
     ) -> bool {
         let mut changed = false;
 
@@ -399,6 +385,7 @@ impl<'a> DrumSequencer<'a> {
                 step_idx,
                 is_dragging,
                 mouse_pos,
+                disabled,
             );
 
             if step_changed {
@@ -409,12 +396,17 @@ impl<'a> DrumSequencer<'a> {
             let is_active = row.steps[step_idx].active;
             let is_hovered = step_response.hovered();
             let velocity = row.steps[step_idx].velocity;
+            let step_color = if disabled {
+                row.color.gamma_multiply(0.5)
+            } else {
+                row.color
+            };
 
             Self::draw_step_static(
                 painter,
                 theme,
                 step_rect,
-                row.color,
+                step_color,
                 is_active,
                 is_hovered,
                 velocity,
@@ -455,13 +447,23 @@ impl<'a> DrumSequencer<'a> {
         step_idx: usize,
         is_dragging: bool,
         mouse_pos: Option<Pos2>,
+        disabled: bool,
     ) -> (Response, bool) {
         // Only allocate for interaction if step is visible
         let step_response = if step_rect.intersects(viewport_rect) {
-            ui.allocate_rect(step_rect.intersect(viewport_rect), Sense::click())
+            let sense = if disabled {
+                Sense::hover()
+            } else {
+                Sense::click()
+            };
+            ui.allocate_rect(step_rect.intersect(viewport_rect), sense)
         } else {
             return (ui.allocate_rect(Rect::NOTHING, Sense::hover()), false);
         };
+
+        if disabled {
+            return (step_response, false);
+        }
 
         // Handle click
         let mut changed = if step_response.clicked() {
@@ -603,6 +605,7 @@ impl<'a> DrumSequencer<'a> {
         let viewport_height = self.viewport_height;
         let momentum_scrolling = self.momentum_scrolling;
         let momentum_damping = self.momentum_damping;
+        let disabled = self.disabled;
 
         // Ensure all rows have correct number of steps
         for row in self.rows.iter_mut() {
@@ -698,6 +701,7 @@ impl<'a> DrumSequencer<'a> {
                     scrollable,
                     &mut step_toggled,
                     row_idx,
+                    disabled,
                 );
 
                 if row_changed {

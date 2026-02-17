@@ -74,7 +74,7 @@ pub struct Knob {
     /// Sensitivity multiplier for normal drag
     sensitivity: f32,
     /// Sensitivity for velocity mode
-    velocity_sensitivity: f64,
+    pub(crate) velocity_sensitivity: f64,
     /// Response curve for value mapping
     curve: KnobCurve,
     /// Value range (min, max)
@@ -82,9 +82,11 @@ pub struct Knob {
     /// Show tick marks
     show_ticks: bool,
     /// Default value for double-click reset
-    default_value: Option<f32>,
+    pub(crate) default_value: Option<f32>,
     /// Enable velocity-based drag mode
-    velocity_mode: bool,
+    pub(crate) velocity_mode: bool,
+    /// Whether the knob is disabled (non-interactive)
+    disabled: bool,
 }
 
 impl Knob {
@@ -106,6 +108,7 @@ impl Knob {
             show_ticks: false,
             default_value: None,
             velocity_mode: true, // Enabled by default for knobs
+            disabled: false,
         }
     }
 
@@ -159,13 +162,6 @@ impl Knob {
         self
     }
 
-    /// Set sensitivity for velocity-based drag mode
-    #[must_use]
-    pub const fn velocity_sensitivity(mut self, sensitivity: f64) -> Self {
-        self.velocity_sensitivity = sensitivity;
-        self
-    }
-
     /// Set knob response curve for different control types
     #[must_use]
     pub const fn response_curve(mut self, curve: KnobCurve) -> Self {
@@ -187,27 +183,22 @@ impl Knob {
         self
     }
 
-    /// Set default value for double-click reset
+    /// Set whether the knob is disabled (non-interactive)
     #[must_use]
-    pub const fn default_value(mut self, value: f32) -> Self {
-        self.default_value = Some(value);
-        self
-    }
-
-    /// Enable/disable velocity-based drag mode (default: enabled)
-    ///
-    /// When enabled, holding Ctrl/Cmd while dragging uses velocity mode
-    /// where faster mouse movement = larger value changes.
-    #[must_use]
-    pub const fn velocity_mode(mut self, enabled: bool) -> Self {
-        self.velocity_mode = enabled;
+    pub const fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
         self
     }
 
     /// Show the knob
     pub fn show(self, ui: &mut Ui, value: &mut f32, theme: &Theme) -> KnobResponse {
         let desired_size = Vec2::splat(self.diameter);
-        let (rect, mut response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
+        let sense = if self.disabled {
+            Sense::hover()
+        } else {
+            Sense::click_and_drag()
+        };
+        let (rect, mut response) = ui.allocate_exact_size(desired_size, sense);
 
         let mut changed = false;
 
@@ -216,11 +207,13 @@ impl Knob {
         let drag_state_id = knob_id.with("drag_state");
 
         // Handle input interactions
-        changed |= self.handle_double_click(&mut response, value);
-        self.handle_drag_start(ui, &response, *value, drag_state_id);
-        changed |= self.handle_dragging(ui, &mut response, value, drag_state_id);
-        self.handle_drag_end(ui, &response, drag_state_id);
-        changed |= self.handle_mouse_wheel(ui, &mut response, value);
+        if !self.disabled {
+            changed |= self.handle_double_click(&mut response, value);
+            self.handle_drag_start(ui, &response, *value, drag_state_id);
+            changed |= self.handle_dragging(ui, &mut response, value, drag_state_id);
+            self.handle_drag_end(ui, &response, drag_state_id);
+            changed |= self.handle_mouse_wheel(ui, &mut response, value);
+        }
 
         // Render knob
         if ui.is_rect_visible(rect) {
@@ -230,6 +223,15 @@ impl Knob {
                 .color
                 .unwrap_or_else(|| Color32::from_rgb(210, 215, 222));
             let glow_color = self.glow_color.unwrap_or_else(|| theme.primary());
+
+            let (base_color, glow_color) = if self.disabled {
+                (
+                    base_color.gamma_multiply(0.5),
+                    glow_color.gamma_multiply(0.5),
+                )
+            } else {
+                (base_color, glow_color)
+            };
 
             self.render_knob(ui.painter(), center, radius, base_color, glow_color, *value);
         }

@@ -2,6 +2,7 @@
 //!
 //! User profile images and initials styled like shadcn/ui Avatar.
 
+use crate::ext::ArmasContextExt;
 use egui::{vec2, Response, Sense, Ui};
 
 // shadcn Avatar default size
@@ -58,14 +59,12 @@ pub enum AvatarShape {
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
 /// use armas_basic::Avatar;
-/// use armas_basic::ext::ArmasContextExt;
 ///
-/// let theme = ui.ctx().armas_theme();
 /// // Simple avatar with initials
-/// Avatar::new("JD").show(ui, &theme);
+/// Avatar::new("JD").show(ui);
 ///
 /// // Larger avatar
-/// Avatar::new("AM").size(48.0).show(ui, &theme);
+/// Avatar::new("AM").size(48.0).show(ui);
 /// # }
 /// ```
 pub struct Avatar {
@@ -106,7 +105,8 @@ impl Avatar {
     }
 
     /// Show the avatar
-    pub fn show(self, ui: &mut Ui, theme: &crate::Theme) -> Response {
+    pub fn show(self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         let (rect, response) = ui.allocate_exact_size(vec2(self.size, self.size), Sense::hover());
 
         if ui.is_rect_visible(rect) {

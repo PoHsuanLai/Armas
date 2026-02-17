@@ -26,9 +26,9 @@ use egui::{Color32, Pos2, Sense, Ui};
 /// # }
 /// ```
 pub struct SnapGrid {
-    beat_width: f32,
-    measures: u32,
-    beats_per_measure: u32,
+    pub(crate) beat_width: f32,
+    pub(crate) measures: u32,
+    pub(crate) beats_per_measure: u32,
     subdivision: u32,
 }
 
@@ -42,27 +42,6 @@ impl SnapGrid {
             beats_per_measure: 4,
             subdivision: 4,
         }
-    }
-
-    /// Set pixels per beat
-    #[must_use]
-    pub const fn beat_width(mut self, width: f32) -> Self {
-        self.beat_width = width.max(1.0);
-        self
-    }
-
-    /// Set number of measures
-    #[must_use]
-    pub const fn measures(mut self, measures: u32) -> Self {
-        self.measures = measures;
-        self
-    }
-
-    /// Set beats per measure
-    #[must_use]
-    pub const fn beats_per_measure(mut self, beats: u32) -> Self {
-        self.beats_per_measure = beats;
-        self
     }
 
     /// Set subdivision (lines per beat)
@@ -166,6 +145,7 @@ impl Default for SnapGrid {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::traits::AudioTiming;
 
     #[test]
     fn test_snap_grid_creation() {

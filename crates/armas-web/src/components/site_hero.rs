@@ -114,7 +114,7 @@ impl<'a> SiteHero<'a> {
                 ui.horizontal(|ui| {
                     if Button::new("Get Started")
                         .variant(ButtonVariant::Default)
-                        .show(ui, self.theme)
+                        .show(ui)
                         .clicked()
                     {
                         response.get_started_clicked = true;
@@ -124,7 +124,7 @@ impl<'a> SiteHero<'a> {
 
                     if Button::new("Components")
                         .variant(ButtonVariant::Outline)
-                        .show(ui, self.theme)
+                        .show(ui)
                         .clicked()
                     {
                         response.components_clicked = true;

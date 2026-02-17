@@ -5,6 +5,7 @@
 //! - Spinner: Classic rotating bar spinner
 //! - Skeleton: Content placeholder with shimmer
 
+use crate::ext::ArmasContextExt;
 use egui::{Color32, Pos2, Rect, Response, Ui, Vec2};
 use std::f32::consts::PI;
 
@@ -24,11 +25,9 @@ const SKELETON_SHIMMER_WIDTH: f32 = 0.3;
 ///
 /// ```rust,no_run
 /// use armas_basic::components::Spinner;
-/// use armas_basic::ext::ArmasContextExt;
 ///
 /// fn ui(ui: &mut egui::Ui, spinner: &mut Spinner) {
-///     let theme = ui.ctx().armas_theme();
-///     spinner.show(ui, &theme);
+///     spinner.show(ui);
 /// }
 /// ```
 #[derive(Debug, Clone)]
@@ -97,7 +96,8 @@ impl Spinner {
     }
 
     /// Show the spinner
-    pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         let (rect, response) = ui.allocate_exact_size(Vec2::splat(self.size), egui::Sense::hover());
 
         // Calculate rotation from time for stateless animation
@@ -105,7 +105,7 @@ impl Spinner {
         self.rotation = (time * self.speed) % (2.0 * PI);
 
         // Draw the spinner
-        self.draw_spinner(ui, rect, theme);
+        self.draw_spinner(ui, rect, &theme);
 
         // Request repaint for animation
         ui.ctx().request_repaint();
@@ -162,11 +162,9 @@ impl Spinner {
 ///
 /// ```rust,no_run
 /// use armas_basic::components::Skeleton;
-/// use armas_basic::ext::ArmasContextExt;
 ///
 /// fn ui(ui: &mut egui::Ui, skeleton: &mut Skeleton) {
-///     let theme = ui.ctx().armas_theme();
-///     skeleton.show(ui, &theme);
+///     skeleton.show(ui);
 /// }
 /// ```
 #[derive(Debug, Clone)]
@@ -242,7 +240,8 @@ impl Skeleton {
     }
 
     /// Show the skeleton loader
-    pub fn show(&mut self, ui: &mut Ui, theme: &crate::Theme) -> Response {
+    pub fn show(&mut self, ui: &mut Ui) -> Response {
+        let theme = ui.ctx().armas_theme();
         let (rect, response) =
             ui.allocate_exact_size(Vec2::new(self.width, self.height), egui::Sense::hover());
 
@@ -251,7 +250,7 @@ impl Skeleton {
         self.shimmer_pos = (time * self.speed) % 1.0;
 
         // Draw the skeleton
-        self.draw_skeleton(ui, rect, theme);
+        self.draw_skeleton(ui, rect, &theme);
 
         // Request repaint for animation
         ui.ctx().request_repaint();

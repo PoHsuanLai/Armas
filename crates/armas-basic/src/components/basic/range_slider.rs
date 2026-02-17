@@ -236,7 +236,10 @@ impl RangeSlider {
             });
         }
 
+        let response = ui.interact(ui.min_rect(), slider_id.with("response"), Sense::hover());
+
         RangeSliderResponse {
+            response,
             min_value: *min_value,
             max_value: *max_value,
             changed,
@@ -521,8 +524,9 @@ impl RangeSlider {
 }
 
 /// Response from a range slider
-#[derive(Debug, Clone, Copy)]
 pub struct RangeSliderResponse {
+    /// The UI response
+    pub response: Response,
     /// Current minimum value
     pub min_value: f32,
     /// Current maximum value

@@ -68,8 +68,9 @@ pub enum PopoverColor {
 // ============================================================================
 
 /// Response from showing a popover
-#[derive(Debug, Clone, Copy, Default)]
 pub struct PopoverResponse {
+    /// The UI response
+    pub response: egui::Response,
     /// Whether the user clicked outside the popover
     pub clicked_outside: bool,
     /// Whether the popover should be closed (for external state management)
@@ -188,12 +189,19 @@ impl Popover {
         anchor_rect: Rect,
         content: impl FnOnce(&mut Ui),
     ) -> PopoverResponse {
-        let mut response = PopoverResponse::default();
-
         // Check if should be open
         let is_open = self.external_is_open.unwrap_or(false);
         if !is_open {
-            return response;
+            let dummy = egui::Area::new(self.id.with("popover_empty"))
+                .order(egui::Order::Background)
+                .fixed_pos(egui::Pos2::ZERO)
+                .show(ctx, |_| {})
+                .response;
+            return PopoverResponse {
+                response: dummy,
+                clicked_outside: false,
+                should_close: false,
+            };
         }
 
         // Calculate position
@@ -217,9 +225,14 @@ impl Popover {
         let area_response = self.render_popover(ctx, theme, popover_pos, &style, content);
 
         // Handle click outside
-        response = self.check_click_outside(ctx, &area_response.response.rect, anchor_rect);
+        let (clicked_outside, should_close) =
+            self.check_click_outside(ctx, &area_response.response.rect, anchor_rect);
 
-        response
+        PopoverResponse {
+            response: area_response.response,
+            clicked_outside,
+            should_close,
+        }
     }
 
     // ========================================================================
@@ -337,7 +350,7 @@ impl Popover {
     fn render_popover(
         &self,
         ctx: &egui::Context,
-        theme: &Theme,
+        _theme: &Theme,
         popover_pos: Pos2,
         style: &PopoverRenderStyle,
         content: impl FnOnce(&mut Ui),
@@ -359,7 +372,7 @@ impl Popover {
                     .corner_radius(style.rounding)
                     .inner_margin(style.padding)
                     .width(content_width)
-                    .show(ui, theme, |ui| {
+                    .show(ui, |ui| {
                         content(ui);
                     });
             })
@@ -370,19 +383,20 @@ impl Popover {
         ctx: &egui::Context,
         popover_rect: &Rect,
         anchor_rect: Rect,
-    ) -> PopoverResponse {
-        let mut response = PopoverResponse::default();
+    ) -> (bool, bool) {
+        let mut clicked_outside = false;
+        let mut should_close = false;
 
         if ctx.input(|i| i.pointer.any_click()) {
             if let Some(click_pos) = ctx.input(|i| i.pointer.interact_pos()) {
                 if !popover_rect.contains(click_pos) && !anchor_rect.contains(click_pos) {
-                    response.clicked_outside = true;
-                    response.should_close = true;
+                    clicked_outside = true;
+                    should_close = true;
                 }
             }
         }
 
-        response
+        (clicked_outside, should_close)
     }
 }
 

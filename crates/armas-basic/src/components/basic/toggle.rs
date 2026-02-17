@@ -1,96 +1,118 @@
-//! Toggle/Switch Components
+//! Toggle & Toggle Group Components
 //!
-//! Animated toggle switches and checkboxes styled like shadcn/ui Switch.
-//! Provides smooth spring animations and supports:
-//! - Switch style (default)
-//! - Checkbox style
-//! - Labels and descriptions
-//! - Disabled state
+//! Toggle: A single pressable button with on/off state (shadcn/ui Toggle).
+//! Toggle Group: A group of pressable toggle buttons for selection (shadcn/ui Toggle Group).
 
-use crate::animation::SpringAnimation;
 use crate::ext::ArmasContextExt;
-use crate::Theme;
 use egui::{pos2, vec2, Color32, CornerRadius, Response, Sense, Stroke, Ui, Vec2};
 
-// shadcn Switch dimensions
-const SWITCH_WIDTH: f32 = 44.0; // w-11
-const SWITCH_HEIGHT: f32 = 24.0; // h-6
-const SWITCH_THUMB_SIZE: f32 = 20.0; // h-5 w-5
+// ============================================================================
+// TOGGLE — shadcn/ui pressable button with on/off state
+// ============================================================================
 
-/// Toggle switch variant
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Toggle visual variant
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ToggleVariant {
-    /// Standard toggle switch
-    Switch,
-    /// Checkbox style
-    Checkbox,
+    /// Transparent background, muted bg when pressed
+    #[default]
+    Default,
+    /// Bordered
+    Outline,
 }
 
 /// Toggle size
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ToggleSize {
-    /// Small toggle
-    Small,
-    /// Medium toggle (default)
-    Medium,
-    /// Large toggle
-    Large,
+    /// Small: 28px height, 28px min width
+    Sm,
+    /// Default: 32px height, 32px min width
+    #[default]
+    Default,
+    /// Large: 36px height, 36px min width
+    Lg,
 }
 
 impl ToggleSize {
-    const fn dimensions(self, variant: ToggleVariant) -> (f32, f32) {
-        match variant {
-            ToggleVariant::Switch => match self {
-                Self::Small => (36.0, 20.0),
-                Self::Medium => (SWITCH_WIDTH, SWITCH_HEIGHT), // shadcn default
-                Self::Large => (52.0, 28.0),
-            },
-            ToggleVariant::Checkbox => match self {
-                Self::Small => (16.0, 16.0),
-                Self::Medium => (20.0, 20.0),
-                Self::Large => (24.0, 24.0),
-            },
+    const fn height(self) -> f32 {
+        match self {
+            Self::Sm => 28.0,
+            Self::Default => 32.0,
+            Self::Lg => 36.0,
+        }
+    }
+
+    const fn font_size(self) -> f32 {
+        match self {
+            Self::Sm => 12.8,
+            Self::Default => 14.0,
+            Self::Lg => 14.0,
+        }
+    }
+
+    const fn padding_x(self) -> f32 {
+        match self {
+            Self::Sm => 8.0,
+            Self::Default => 10.0,
+            Self::Lg => 12.0,
+        }
+    }
+
+    const fn corner_radius(self) -> f32 {
+        match self {
+            Self::Sm => 5.0,
+            Self::Default => 6.0,
+            Self::Lg => 6.0,
         }
     }
 }
 
-/// Animated toggle switch component
-#[allow(clippy::struct_field_names)]
+/// Response from toggle interaction
+pub struct ToggleResponse {
+    /// The underlying egui response
+    pub response: Response,
+    /// Whether the toggle state changed this frame
+    pub changed: bool,
+}
+
+/// A pressable button with on/off state (shadcn/ui Toggle)
+///
+/// # Example
+///
+/// ```ignore
+/// let mut pressed = false;
+/// Toggle::new("Bold")
+///     .variant(ToggleVariant::Outline)
+///     .show(ui, &mut pressed);
+/// ```
 pub struct Toggle {
     id: Option<egui::Id>,
+    label: String,
     variant: ToggleVariant,
     size: ToggleSize,
-    label: Option<String>,
-    description: Option<String>,
     disabled: bool,
-    // Use spring animation for smooth, physics-based toggle animation
-    toggle_spring: SpringAnimation,
 }
 
 impl Toggle {
-    /// Create a new toggle
+    /// Create a new toggle with the given label
     #[must_use]
-    pub const fn new() -> Self {
+    pub fn new(label: impl Into<String>) -> Self {
         Self {
             id: None,
-            variant: ToggleVariant::Switch,
-            size: ToggleSize::Medium,
-            label: None,
-            description: None,
+            label: label.into(),
+            variant: ToggleVariant::Default,
+            size: ToggleSize::Default,
             disabled: false,
-            // Smooth spring animation for natural toggle feel
-            toggle_spring: SpringAnimation::new(0.0, 0.0).params(800.0, 30.0),
         }
     }
 
-    /// Set ID for state persistence (useful for demos where toggle is recreated each frame)
+    /// Set ID for state persistence
     #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
         self
     }
 
-    /// Set the variant
+    /// Set the visual variant
     #[must_use]
     pub const fn variant(mut self, variant: ToggleVariant) -> Self {
         self.variant = variant;
@@ -104,17 +126,281 @@ impl Toggle {
         self
     }
 
-    /// Set a label
+    /// Set disabled state
     #[must_use]
-    pub fn label(mut self, label: impl Into<String>) -> Self {
-        self.label = Some(label.into());
+    pub const fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
         self
     }
 
-    /// Set a description
+    /// Show the toggle button
+    ///
+    /// `pressed` tracks whether the toggle is in the on/off state.
+    pub fn show(self, ui: &mut Ui, pressed: &mut bool) -> ToggleResponse {
+        let theme = ui.ctx().armas_theme();
+
+        // Load state from memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("toggle_state");
+            let stored: bool = ui
+                .ctx()
+                .data_mut(|d| d.get_temp(state_id).unwrap_or(*pressed));
+            *pressed = stored;
+        }
+
+        let old_pressed = *pressed;
+
+        let height = self.size.height();
+        let font_size = self.size.font_size();
+        let padding_x = self.size.padding_x();
+        let item_radius = self.size.corner_radius();
+
+        // Measure text to determine width
+        let text_galley = ui.painter().layout_no_wrap(
+            self.label.clone(),
+            egui::FontId::proportional(font_size),
+            theme.foreground(),
+        );
+        let item_width = text_galley.size().x + padding_x * 2.0;
+
+        let (rect, response) = ui.allocate_exact_size(
+            Vec2::new(item_width, height),
+            if self.disabled {
+                Sense::hover()
+            } else {
+                Sense::click()
+            },
+        );
+
+        if response.clicked() && !self.disabled {
+            *pressed = !*pressed;
+        }
+
+        if ui.is_rect_visible(rect) {
+            let painter = ui.painter();
+            let hovered = response.hovered() && !self.disabled;
+            let corner_radius = CornerRadius::same(item_radius as u8);
+
+            // Background color
+            let bg_color = if self.disabled {
+                Color32::TRANSPARENT
+            } else if *pressed {
+                theme.muted()
+            } else if hovered {
+                theme.muted()
+            } else {
+                Color32::TRANSPARENT
+            };
+
+            painter.rect_filled(rect, corner_radius, bg_color);
+
+            // Border for outline variant
+            if self.variant == ToggleVariant::Outline {
+                let border_color = if self.disabled {
+                    theme.border().linear_multiply(0.5)
+                } else {
+                    theme.input()
+                };
+                painter.rect_stroke(
+                    rect,
+                    corner_radius,
+                    Stroke::new(1.0, border_color),
+                    egui::StrokeKind::Inside,
+                );
+            }
+
+            // Text
+            let text_color = if self.disabled {
+                theme.muted_foreground().linear_multiply(0.5)
+            } else if *pressed {
+                theme.foreground()
+            } else {
+                theme.muted_foreground()
+            };
+
+            let text_galley = painter.layout_no_wrap(
+                self.label.clone(),
+                egui::FontId::proportional(font_size),
+                text_color,
+            );
+            let text_pos = rect.center() - text_galley.size() / 2.0;
+            painter.galley(pos2(text_pos.x, text_pos.y), text_galley, text_color);
+
+            // Focus ring
+            if response.has_focus() && !self.disabled {
+                painter.rect_stroke(
+                    rect.expand(2.0),
+                    corner_radius,
+                    Stroke::new(2.0, theme.ring()),
+                    egui::StrokeKind::Outside,
+                );
+            }
+        }
+
+        let changed = old_pressed != *pressed;
+
+        // Save state to memory if ID is set
+        if let Some(id) = self.id {
+            let state_id = id.with("toggle_state");
+            ui.ctx().data_mut(|d| d.insert_temp(state_id, *pressed));
+        }
+
+        ToggleResponse { response, changed }
+    }
+}
+
+// ============================================================================
+// TOGGLE GROUP — shadcn/ui style pressable button group
+// ============================================================================
+
+/// Toggle group selection type
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ToggleGroupType {
+    /// Only one item can be selected at a time
+    Single,
+    /// Multiple items can be selected
+    Multiple,
+}
+
+/// Toggle group visual variant
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum ToggleGroupVariant {
+    /// Transparent background, muted bg when pressed
+    #[default]
+    Default,
+    /// Bordered items
+    Outline,
+}
+
+/// Toggle group item size
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum ToggleGroupSize {
+    /// Small: 28px height
+    Sm,
+    /// Default: 32px height
+    #[default]
+    Default,
+    /// Large: 36px height
+    Lg,
+}
+
+impl ToggleGroupSize {
+    const fn height(self) -> f32 {
+        match self {
+            Self::Sm => 28.0,
+            Self::Default => 32.0,
+            Self::Lg => 36.0,
+        }
+    }
+
+    const fn font_size(self) -> f32 {
+        match self {
+            Self::Sm => 12.8,
+            Self::Default => 14.0,
+            Self::Lg => 14.0,
+        }
+    }
+
+    const fn padding_x(self) -> f32 {
+        match self {
+            Self::Sm => 6.0,
+            Self::Default => 8.0,
+            Self::Lg => 10.0,
+        }
+    }
+
+    const fn corner_radius(self) -> f32 {
+        match self {
+            Self::Sm => 5.0,
+            Self::Default => 6.0,
+            Self::Lg => 6.0,
+        }
+    }
+}
+
+/// Response from toggle group interaction
+pub struct ToggleGroupResponse {
+    /// The underlying egui response
+    pub response: Response,
+    /// Whether the selection changed this frame
+    pub changed: bool,
+}
+
+/// A group of pressable toggle buttons for selection (shadcn/ui Toggle Group)
+///
+/// Supports single selection (radio-like) or multiple selection (checkbox-like).
+///
+/// # Example
+///
+/// ```ignore
+/// // Single selection — clicking one deselects the others
+/// let mut selected = vec![true, false, false];
+/// ToggleGroup::new(ToggleGroupType::Single)
+///     .variant(ToggleGroupVariant::Outline)
+///     .show(ui, &["Bold", "Italic", "Underline"], &mut selected);
+///
+/// // Multiple selection — each item toggles independently
+/// let mut selected = vec![false, false, false];
+/// ToggleGroup::new(ToggleGroupType::Multiple)
+///     .show(ui, &["Bold", "Italic", "Underline"], &mut selected);
+/// ```
+pub struct ToggleGroup {
+    id: Option<egui::Id>,
+    group_type: ToggleGroupType,
+    variant: ToggleGroupVariant,
+    size: ToggleGroupSize,
+    spacing: f32,
+    vertical: bool,
+    disabled: bool,
+}
+
+impl ToggleGroup {
+    /// Create a new toggle group
     #[must_use]
-    pub fn description(mut self, description: impl Into<String>) -> Self {
-        self.description = Some(description.into());
+    pub fn new(group_type: ToggleGroupType) -> Self {
+        Self {
+            id: None,
+            group_type,
+            variant: ToggleGroupVariant::Default,
+            size: ToggleGroupSize::Default,
+            spacing: 0.0,
+            vertical: false,
+            disabled: false,
+        }
+    }
+
+    /// Set ID for state persistence
+    #[must_use]
+    pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
+        self.id = Some(id.into());
+        self
+    }
+
+    /// Set the visual variant
+    #[must_use]
+    pub const fn variant(mut self, variant: ToggleGroupVariant) -> Self {
+        self.variant = variant;
+        self
+    }
+
+    /// Set the size
+    #[must_use]
+    pub const fn size(mut self, size: ToggleGroupSize) -> Self {
+        self.size = size;
+        self
+    }
+
+    /// Set spacing between items (0 = joined, >0 = separated)
+    #[must_use]
+    pub const fn spacing(mut self, spacing: f32) -> Self {
+        self.spacing = spacing;
+        self
+    }
+
+    /// Set vertical orientation
+    #[must_use]
+    pub const fn vertical(mut self, vertical: bool) -> Self {
+        self.vertical = vertical;
         self
     }
 
@@ -125,431 +411,255 @@ impl Toggle {
         self
     }
 
-    /// Show the toggle and return whether it changed
+    /// Show the toggle group
+    ///
+    /// `selected` is a bool per item. Will be resized to match `items.len()`.
+    /// - `Single`: clicking an item deselects all others (radio behavior)
+    /// - `Multiple`: each item toggles independently
     pub fn show(
-        &mut self,
+        self,
         ui: &mut Ui,
-        checked: &mut bool,
-        theme: &crate::Theme,
-    ) -> ToggleResponse {
+        items: &[&str],
+        selected: &mut Vec<bool>,
+    ) -> ToggleGroupResponse {
+        let theme = ui.ctx().armas_theme();
+        let mut changed = false;
+
+        selected.resize(items.len(), false);
+
         // Load state from memory if ID is set
         if let Some(id) = self.id {
-            let state_id = id.with("toggle_state");
-            let (stored_checked, stored_anim): (bool, f32) = ui.ctx().data_mut(|d| {
-                d.get_temp(state_id)
-                    .unwrap_or((*checked, if *checked { 1.0 } else { 0.0 }))
-            });
-            *checked = stored_checked;
-            self.toggle_spring.value = stored_anim;
+            let state_id = id.with("toggle_group_state");
+            let stored: Vec<bool> = ui
+                .ctx()
+                .data_mut(|d| d.get_temp(state_id).unwrap_or_else(|| selected.clone()));
+            if stored.len() == selected.len() {
+                *selected = stored;
+            }
         }
 
-        let old_checked = *checked;
-
-        // Update spring animation to match checked state
-        let target = if *checked { 1.0 } else { 0.0 };
-        self.toggle_spring.set_target(target);
-
-        let dt = ui.input(|i| i.stable_dt);
-        self.toggle_spring.update(dt);
-
-        // Request repaint while animating
-        if !self.toggle_spring.is_settled(0.001, 0.001) {
-            ui.ctx().request_repaint();
-        }
+        let layout = if self.vertical {
+            egui::Layout::top_down(egui::Align::LEFT)
+        } else {
+            egui::Layout::left_to_right(egui::Align::Center)
+        };
 
         let response = ui
-            .horizontal(|ui| {
-                // Toggle control
-                let (width, height) = self.size.dimensions(self.variant);
-                let (rect, mut response) = ui.allocate_exact_size(
-                    Vec2::new(width, height),
-                    if self.disabled {
-                        Sense::hover()
+            .with_layout(layout, |ui| {
+                if self.spacing > 0.0 {
+                    ui.spacing_mut().item_spacing = if self.vertical {
+                        vec2(0.0, self.spacing)
                     } else {
-                        Sense::click()
-                    },
-                );
+                        vec2(self.spacing, 0.0)
+                    };
+                } else {
+                    ui.spacing_mut().item_spacing = Vec2::ZERO;
+                }
 
-                if ui.is_rect_visible(rect) {
-                    match self.variant {
-                        ToggleVariant::Switch => {
-                            self.draw_switch(ui, rect, *checked, theme);
+                // Pre-measure all items to find uniform width
+                let font_size = self.size.font_size();
+                let padding_x = self.size.padding_x();
+                let max_text_width = items
+                    .iter()
+                    .map(|label| {
+                        ui.painter()
+                            .layout_no_wrap(
+                                label.to_string(),
+                                egui::FontId::proportional(font_size),
+                                theme.foreground(),
+                            )
+                            .size()
+                            .x
+                    })
+                    .fold(0.0_f32, f32::max);
+                let uniform_width = max_text_width + padding_x * 2.0;
+
+                for (i, label) in items.iter().enumerate() {
+                    let is_selected = selected[i];
+                    let item_response = self.draw_item(
+                        ui,
+                        label,
+                        is_selected,
+                        i,
+                        items.len(),
+                        uniform_width,
+                        &theme,
+                    );
+
+                    if item_response.clicked() && !self.disabled {
+                        match self.group_type {
+                            ToggleGroupType::Single => {
+                                if selected[i] {
+                                    // Deselect current
+                                    selected[i] = false;
+                                } else {
+                                    // Deselect all, then select clicked
+                                    for s in selected.iter_mut() {
+                                        *s = false;
+                                    }
+                                    selected[i] = true;
+                                }
+                            }
+                            ToggleGroupType::Multiple => {
+                                selected[i] = !selected[i];
+                            }
                         }
-                        ToggleVariant::Checkbox => {
-                            self.draw_checkbox(ui, rect, *checked, theme);
-                        }
+                        changed = true;
                     }
                 }
-
-                // Handle click
-                if response.clicked() && !self.disabled {
-                    *checked = !*checked;
-                    response.mark_changed();
-                }
-
-                // Label and description
-                if self.label.is_some() || self.description.is_some() {
-                    ui.add_space(theme.spacing.sm);
-                    ui.vertical(|ui| {
-                        ui.spacing_mut().item_spacing.y = theme.spacing.xs;
-                        if let Some(label) = &self.label {
-                            let label_color = if self.disabled {
-                                theme.muted_foreground().linear_multiply(0.5)
-                            } else {
-                                theme.foreground()
-                            };
-
-                            ui.label(egui::RichText::new(label).size(14.0).color(label_color));
-                        }
-
-                        if let Some(description) = &self.description {
-                            ui.label(
-                                egui::RichText::new(description)
-                                    .size(12.0)
-                                    .color(theme.muted_foreground()),
-                            );
-                        }
-                    });
-                }
-
-                response
             })
-            .inner;
+            .response;
 
         // Save state to memory if ID is set
         if let Some(id) = self.id {
-            let state_id = id.with("toggle_state");
-            ui.ctx().data_mut(|d| {
-                d.insert_temp(state_id, (*checked, self.toggle_spring.value));
-            });
+            let state_id = id.with("toggle_group_state");
+            ui.ctx()
+                .data_mut(|d| d.insert_temp(state_id, selected.clone()));
         }
 
-        ToggleResponse {
-            response,
-            changed: old_checked != *checked,
-        }
+        ToggleGroupResponse { response, changed }
     }
 
-    /// Draw a switch-style toggle (shadcn/ui style)
-    fn draw_switch(&self, ui: &mut Ui, rect: egui::Rect, checked: bool, theme: &Theme) {
-        let painter = ui.painter();
-        let t = self.toggle_spring.value;
+    /// Draw a single toggle group item
+    fn draw_item(
+        &self,
+        ui: &mut Ui,
+        label: &str,
+        is_selected: bool,
+        index: usize,
+        total: usize,
+        item_width: f32,
+        theme: &crate::Theme,
+    ) -> Response {
+        let height = self.size.height();
+        let font_size = self.size.font_size();
+        let item_radius = self.size.corner_radius();
 
-        // Background track - shadcn uses input color when unchecked, primary when checked
-        let bg_color = if self.disabled {
-            theme.muted().gamma_multiply(0.5)
-        } else if checked {
-            theme.primary()
-        } else {
-            theme.input()
-        };
-
-        // Full rounded corners (pill shape)
-        let track_radius = rect.height() / 2.0;
-        painter.rect_filled(rect, CornerRadius::same(track_radius as u8), bg_color);
-
-        // Focus ring on hover (shadcn style)
-        let response = ui.interact(rect, ui.id().with("switch_hover"), Sense::hover());
-        if response.hovered() && !self.disabled {
-            painter.rect_stroke(
-                rect.expand(2.0),
-                CornerRadius::same((track_radius + 2.0) as u8),
-                Stroke::new(2.0, theme.ring()),
-                egui::StrokeKind::Outside,
-            );
-        }
-
-        // Thumb (sliding circle) - shadcn uses background color for thumb
-        let thumb_radius = SWITCH_THUMB_SIZE / 2.0;
-        let thumb_padding = 2.0;
-        let thumb_travel = rect.width() - SWITCH_THUMB_SIZE - thumb_padding * 2.0;
-        let thumb_x = rect.min.x + thumb_padding + thumb_radius + thumb_travel * t;
-        let thumb_center = pos2(thumb_x, rect.center().y);
-
-        let thumb_color = if self.disabled {
-            theme.muted_foreground()
-        } else {
-            theme.background()
-        };
-
-        // Shadow under thumb
-        if !self.disabled {
-            painter.circle_filled(
-                thumb_center + vec2(0.0, 1.0),
-                thumb_radius,
-                Color32::from_rgba_unmultiplied(0, 0, 0, 20),
-            );
-        }
-
-        painter.circle_filled(thumb_center, thumb_radius, thumb_color);
-    }
-
-    /// Draw a checkbox-style toggle (shadcn/ui Checkbox style)
-    fn draw_checkbox(&self, ui: &mut Ui, rect: egui::Rect, checked: bool, theme: &Theme) {
-        let painter = ui.painter();
-        let t = self.toggle_spring.value;
-
-        // Background - shadcn uses primary when checked, transparent when unchecked
-        let bg_color = if self.disabled {
-            theme.muted().gamma_multiply(0.5)
-        } else if checked {
-            theme.primary()
-        } else {
-            Color32::TRANSPARENT
-        };
-
-        let corner_radius = 4u8; // rounded-sm for checkbox
-
-        painter.rect_filled(rect, CornerRadius::same(corner_radius), bg_color);
-
-        // Border - always visible when unchecked
-        let border_color = if self.disabled {
-            theme.border()
-        } else if checked {
-            theme.primary()
-        } else {
-            theme.border()
-        };
-
-        painter.rect_stroke(
-            rect,
-            CornerRadius::same(corner_radius),
-            Stroke::new(1.0, border_color),
-            egui::StrokeKind::Inside,
+        let (rect, response) = ui.allocate_exact_size(
+            Vec2::new(item_width, height),
+            if self.disabled {
+                Sense::hover()
+            } else {
+                Sense::click()
+            },
         );
 
-        // Focus ring on hover
-        let response = ui.interact(rect, ui.id().with("checkbox_hover"), Sense::hover());
-        if response.hovered() && !self.disabled {
-            painter.rect_stroke(
-                rect.expand(2.0),
-                CornerRadius::same(corner_radius + 2),
-                Stroke::new(2.0, theme.ring()),
-                egui::StrokeKind::Outside,
-            );
-        }
+        if ui.is_rect_visible(rect) {
+            let painter = ui.painter();
+            let hovered = response.hovered() && !self.disabled;
 
-        // Checkmark - white on primary background
-        if t > 0.0 {
-            let scale = t;
-            let center = rect.center();
-            let size = rect.height() * 0.5 * scale;
-
-            // Draw checkmark as two lines
-            let check_start = center + vec2(-size * 0.35, 0.0);
-            let check_middle = center + vec2(-size * 0.05, size * 0.3);
-            let check_end = center + vec2(size * 0.35, -size * 0.35);
-
-            let check_color = if self.disabled {
-                theme.muted_foreground()
+            // Calculate corner rounding based on spacing and position
+            let corner_radius = if self.spacing > 0.0 {
+                // Separated: all items get full rounding
+                CornerRadius::same(item_radius as u8)
             } else {
-                theme.primary_foreground() // White on primary
+                // Joined: only first/last get rounding on their outer edges
+                let is_first = index == 0;
+                let is_last = index == total - 1;
+
+                if self.vertical {
+                    CornerRadius {
+                        nw: if is_first { item_radius as u8 } else { 0 },
+                        ne: if is_first { item_radius as u8 } else { 0 },
+                        sw: if is_last { item_radius as u8 } else { 0 },
+                        se: if is_last { item_radius as u8 } else { 0 },
+                    }
+                } else {
+                    CornerRadius {
+                        nw: if is_first { item_radius as u8 } else { 0 },
+                        sw: if is_first { item_radius as u8 } else { 0 },
+                        ne: if is_last { item_radius as u8 } else { 0 },
+                        se: if is_last { item_radius as u8 } else { 0 },
+                    }
+                }
             };
 
-            let stroke_width = if self.size == ToggleSize::Small {
-                1.5
+            // Background color
+            let bg_color = if self.disabled {
+                Color32::TRANSPARENT
+            } else if is_selected {
+                theme.muted()
+            } else if hovered {
+                theme.muted()
             } else {
-                2.0
+                Color32::TRANSPARENT
             };
 
-            painter.line_segment(
-                [check_start, check_middle],
-                Stroke::new(stroke_width, check_color),
-            );
-            painter.line_segment(
-                [check_middle, check_end],
-                Stroke::new(stroke_width, check_color),
-            );
-        }
-    }
-}
+            // Draw background
+            painter.rect_filled(rect, corner_radius, bg_color);
 
-impl Default for Toggle {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+            // Border for outline variant
+            if self.variant == ToggleGroupVariant::Outline {
+                let border_color = if self.disabled {
+                    theme.border().linear_multiply(0.5)
+                } else {
+                    theme.input()
+                };
 
-/// Response from toggle interaction
-pub struct ToggleResponse {
-    /// The underlying egui response
-    pub response: Response,
-    /// Whether the toggle state changed
-    pub changed: bool,
-}
+                if self.spacing > 0.0 {
+                    // Separated: full border on each item
+                    painter.rect_stroke(
+                        rect,
+                        corner_radius,
+                        Stroke::new(1.0, border_color),
+                        egui::StrokeKind::Inside,
+                    );
+                } else {
+                    // Joined: draw borders carefully to avoid double borders
+                    painter.rect_stroke(
+                        rect,
+                        corner_radius,
+                        Stroke::new(1.0, border_color),
+                        egui::StrokeKind::Inside,
+                    );
 
-// ============================================================================
-// NEW CLOSURE-BASED API FOR TOGGLE GROUP
-// ============================================================================
-
-/// External state for `ToggleGroup`
-///
-/// Must be stored by the user and passed to `ToggleGroup::new()`.
-/// This is necessary because toggle states must persist across frames
-/// and be accessible outside the closure.
-#[derive(Default, Clone)]
-pub struct ToggleGroupState {
-    checked: std::collections::HashMap<String, bool>,
-}
-
-impl ToggleGroupState {
-    /// Create a new toggle group state
-    #[must_use]
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Check if a toggle is checked
-    #[must_use]
-    pub fn is_checked(&self, id: &str) -> bool {
-        self.checked.get(id).copied().unwrap_or(false)
-    }
-
-    /// Set the checked state of a toggle
-    pub fn set_checked(&mut self, id: &str, checked: bool) {
-        self.checked.insert(id.to_string(), checked);
-    }
-
-    /// Get all toggle states
-    #[must_use]
-    pub fn get_all(&self) -> Vec<(String, bool)> {
-        self.checked.iter().map(|(k, v)| (k.clone(), *v)).collect()
-    }
-}
-
-/// Builder for configuring individual toggles in a group
-pub struct ToggleBuilder {
-    label: String,
-    description: Option<String>,
-}
-
-impl ToggleBuilder {
-    fn new(_id: String, label: String) -> Self {
-        Self {
-            label,
-            description: None,
-        }
-    }
-
-    /// Set toggle description
-    #[must_use]
-    pub fn description(mut self, description: impl Into<String>) -> Self {
-        self.description = Some(description.into());
-        self
-    }
-}
-
-/// Builder for adding toggles to the group
-pub struct ToggleGroupBuilder<'a> {
-    state: &'a mut ToggleGroupState,
-    ui: &'a mut Ui,
-    changed: &'a mut Vec<(String, bool)>,
-}
-
-impl ToggleGroupBuilder<'_> {
-    /// Add a toggle to the group
-    pub fn toggle(&mut self, id: &str, label: &str) -> ToggleBuilder {
-        let builder = ToggleBuilder::new(id.to_string(), label.to_string());
-
-        // Get current checked state
-        let mut checked = self.state.is_checked(id);
-
-        // Create toggle and show it
-        let mut toggle = Toggle::new().label(&builder.label);
-
-        if let Some(desc) = &builder.description {
-            toggle = toggle.description(desc);
-        }
-
-        let theme = self.ui.ctx().armas_theme();
-        let response = toggle.show(self.ui, &mut checked, &theme);
-
-        // Update state if changed
-        if response.changed {
-            self.state.set_checked(id, checked);
-            self.changed.push((id.to_string(), checked));
-        }
-
-        builder
-    }
-}
-
-/// Response from toggle group
-pub struct ToggleGroupResponse {
-    /// List of toggles that changed: (id, `new_state`)
-    pub changed: Vec<(String, bool)>,
-}
-
-/// Toggle group for managing multiple related toggles (new closure-based API)
-///
-/// # Example
-///
-/// ```ignore
-/// let mut state = ToggleGroupState::default();
-/// ToggleGroup::new(&mut state)
-///     .label("Settings")
-///     .show(ui, |group| {
-///         group.toggle("option1", "Option 1");
-///         group.toggle("option2", "Option 2")
-///             .description("Enable advanced features");
-///     })
-/// ```
-pub struct ToggleGroup<'a> {
-    state: &'a mut ToggleGroupState,
-    label: Option<String>,
-}
-
-impl<'a> ToggleGroup<'a> {
-    /// Create a new toggle group with external state
-    pub const fn new(state: &'a mut ToggleGroupState) -> Self {
-        Self { state, label: None }
-    }
-
-    /// Set a label for the group
-    #[must_use]
-    pub fn label(mut self, label: impl Into<String>) -> Self {
-        self.label = Some(label.into());
-        self
-    }
-
-    /// Show the toggle group with closure-based API
-    pub fn show<R>(
-        self,
-        ui: &mut Ui,
-        content: impl FnOnce(&mut ToggleGroupBuilder) -> R,
-    ) -> ToggleGroupResponse {
-        let theme = ui.ctx().armas_theme();
-        let mut changed = Vec::new();
-
-        ui.vertical(|ui| {
-            ui.spacing_mut().item_spacing.y = theme.spacing.sm;
-
-            // Group label
-            if let Some(label) = &self.label {
-                ui.label(
-                    egui::RichText::new(label)
-                        .size(14.0)
-                        .strong()
-                        .color(theme.foreground()),
-                );
+                    // Draw inner divider to cover double border between items
+                    if index > 0 {
+                        let divider_stroke = Stroke::new(1.0, border_color);
+                        if self.vertical {
+                            painter
+                                .line_segment([rect.left_top(), rect.right_top()], divider_stroke);
+                        } else {
+                            painter.line_segment(
+                                [rect.left_top(), rect.left_bottom()],
+                                divider_stroke,
+                            );
+                        }
+                    }
+                }
             }
 
-            // Build toggles from closure
-            let mut builder = ToggleGroupBuilder {
-                state: self.state,
-                ui,
-                changed: &mut changed,
+            // Text
+            let text_color = if self.disabled {
+                theme.muted_foreground().linear_multiply(0.5)
+            } else if is_selected {
+                theme.foreground()
+            } else {
+                theme.muted_foreground()
             };
-            content(&mut builder);
-        });
 
-        ToggleGroupResponse { changed }
+            let text_galley = painter.layout_no_wrap(
+                label.to_string(),
+                egui::FontId::proportional(font_size),
+                text_color,
+            );
+            let text_pos = rect.center() - text_galley.size() / 2.0;
+            painter.galley(pos2(text_pos.x, text_pos.y), text_galley, text_color);
+
+            // Focus ring
+            if response.has_focus() && !self.disabled {
+                painter.rect_stroke(
+                    rect.expand(2.0),
+                    corner_radius,
+                    Stroke::new(2.0, theme.ring()),
+                    egui::StrokeKind::Outside,
+                );
+            }
+        }
+
+        response
     }
 }
-
-// ============================================================================
-// OLD API (DEPRECATED - kept for backwards compatibility)
-// ============================================================================
 
 #[cfg(test)]
 mod tests {
@@ -557,78 +667,64 @@ mod tests {
 
     #[test]
     fn test_toggle_creation() {
-        let toggle = Toggle::new();
-        assert_eq!(toggle.variant, ToggleVariant::Switch);
-        assert_eq!(toggle.size, ToggleSize::Medium);
+        let toggle = Toggle::new("Bold");
+        assert_eq!(toggle.label, "Bold");
+        assert_eq!(toggle.variant, ToggleVariant::Default);
+        assert_eq!(toggle.size, ToggleSize::Default);
         assert!(!toggle.disabled);
     }
 
     #[test]
     fn test_toggle_builder() {
-        let toggle = Toggle::new()
-            .variant(ToggleVariant::Checkbox)
-            .size(ToggleSize::Large)
-            .label("Enable feature")
+        let toggle = Toggle::new("Bold")
+            .variant(ToggleVariant::Outline)
+            .size(ToggleSize::Lg)
             .disabled(true);
 
-        assert_eq!(toggle.variant, ToggleVariant::Checkbox);
-        assert_eq!(toggle.size, ToggleSize::Large);
-        assert_eq!(toggle.label, Some("Enable feature".to_string()));
+        assert_eq!(toggle.variant, ToggleVariant::Outline);
+        assert_eq!(toggle.size, ToggleSize::Lg);
         assert!(toggle.disabled);
     }
 
     #[test]
-    fn test_toggle_size_dimensions() {
-        assert_eq!(
-            ToggleSize::Small.dimensions(ToggleVariant::Switch),
-            (36.0, 20.0)
-        );
-        assert_eq!(
-            ToggleSize::Medium.dimensions(ToggleVariant::Checkbox),
-            (20.0, 20.0)
-        );
+    fn test_toggle_size_heights() {
+        assert_eq!(ToggleSize::Sm.height(), 28.0);
+        assert_eq!(ToggleSize::Default.height(), 32.0);
+        assert_eq!(ToggleSize::Lg.height(), 36.0);
     }
 
     #[test]
-    fn test_toggle_group() {
-        // Test the new closure-based API
-        let mut state = ToggleGroupState::new();
+    fn test_toggle_group_creation() {
+        let group = ToggleGroup::new(ToggleGroupType::Single)
+            .variant(ToggleGroupVariant::Outline)
+            .size(ToggleGroupSize::Sm)
+            .spacing(4.0)
+            .vertical(true)
+            .disabled(true);
 
-        // Simulate setting up toggles
-        state.set_checked("option1", false);
-        state.set_checked("option2", true);
-
-        let all_states = state.get_all();
-        assert_eq!(all_states.len(), 2);
-
-        // Check that both toggles are present with correct values
-        assert!(all_states
-            .iter()
-            .any(|(id, checked)| id == "option1" && !checked));
-        assert!(all_states
-            .iter()
-            .any(|(id, checked)| id == "option2" && *checked));
-
-        state.set_checked("option1", true);
-        let all_states = state.get_all();
-        assert!(all_states
-            .iter()
-            .any(|(id, checked)| id == "option1" && *checked));
+        assert_eq!(group.group_type, ToggleGroupType::Single);
+        assert_eq!(group.variant, ToggleGroupVariant::Outline);
+        assert_eq!(group.size, ToggleGroupSize::Sm);
+        assert_eq!(group.spacing, 4.0);
+        assert!(group.vertical);
+        assert!(group.disabled);
     }
 
     #[test]
-    fn test_toggle_group_state() {
-        let mut state = ToggleGroupState::default();
+    fn test_toggle_group_size_heights() {
+        assert_eq!(ToggleGroupSize::Sm.height(), 28.0);
+        assert_eq!(ToggleGroupSize::Default.height(), 32.0);
+        assert_eq!(ToggleGroupSize::Lg.height(), 36.0);
+    }
 
-        // Initially, toggles should be unchecked
-        assert!(!state.is_checked("test"));
-
-        // Set checked
-        state.set_checked("test", true);
-        assert!(state.is_checked("test"));
-
-        // Set unchecked
-        state.set_checked("test", false);
-        assert!(!state.is_checked("test"));
+    #[test]
+    fn test_toggle_group_defaults() {
+        let group = ToggleGroup::new(ToggleGroupType::Multiple);
+        assert_eq!(group.group_type, ToggleGroupType::Multiple);
+        assert_eq!(group.variant, ToggleGroupVariant::Default);
+        assert_eq!(group.size, ToggleGroupSize::Default);
+        assert_eq!(group.spacing, 0.0);
+        assert!(!group.vertical);
+        assert!(!group.disabled);
     }
 }

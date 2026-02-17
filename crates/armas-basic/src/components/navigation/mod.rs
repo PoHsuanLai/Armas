@@ -14,7 +14,7 @@ pub mod tree_view;
 pub use breadcrumbs::{Breadcrumbs, BreadcrumbsResponse};
 pub use command::{Command, CommandResponse};
 pub use menu::{Menu, MenuResponse};
-pub use pagination::Pagination;
+pub use pagination::{Pagination, PaginationResponse};
 pub use sidebar::{CollapsibleMode, Sidebar, SidebarResponse, SidebarState, SidebarVariant};
 pub use tabs::Tabs;
 pub use tree_view::{TreeItem, TreeView, TreeViewResponse};

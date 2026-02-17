@@ -14,4 +14,4 @@ pub use dialog::{dialog_footer, Dialog, DialogResponse, DialogSize};
 pub use drawer::{Drawer, DrawerResponse, DrawerSnapPoint};
 pub use popover::{Popover, PopoverColor, PopoverPosition, PopoverResponse, PopoverStyle};
 pub use sheet::{Sheet, SheetResponse, SheetSide, SheetSize};
-pub use toast::{ToastManager, ToastPosition, ToastVariant};
+pub use toast::{ToastId, ToastManager, ToastPosition, ToastVariant};

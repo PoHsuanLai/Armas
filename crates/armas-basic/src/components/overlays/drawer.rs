@@ -163,13 +163,20 @@ impl Drawer {
         theme: &Theme,
         content: impl FnOnce(&mut Ui),
     ) -> DrawerResponse {
-        let mut response = DrawerResponse {
-            closed: false,
-            snap_point: DrawerSnapPoint::Full,
-        };
+        let mut closed = false;
+        let snap_point = DrawerSnapPoint::Full;
 
         if !self.is_open {
-            return response;
+            let dummy = egui::Area::new(self.id.with("drawer_empty"))
+                .order(egui::Order::Background)
+                .fixed_pos(egui::Pos2::ZERO)
+                .show(ctx, |_| {})
+                .response;
+            return DrawerResponse {
+                response: dummy,
+                closed: false,
+                snap_point,
+            };
         }
 
         #[allow(deprecated)]
@@ -201,7 +208,7 @@ impl Drawer {
                     ui.painter().rect_filled(screen_rect, 0.0, backdrop_color);
 
                     if backdrop_response.clicked() {
-                        response.closed = true;
+                        closed = true;
                     }
                 });
         }
@@ -213,7 +220,7 @@ impl Drawer {
         );
 
         // Draw the drawer panel
-        egui::Area::new(self.id)
+        let area_response = egui::Area::new(self.id)
             .order(egui::Order::Foreground)
             .fixed_pos(drawer_rect.min)
             .show(ctx, |ui| {
@@ -274,7 +281,7 @@ impl Drawer {
                         let velocity = last_drag_delta * 60.0; // Approximate velocity
 
                         if drag_ratio > DRAG_CLOSE_THRESHOLD || velocity > DRAG_VELOCITY_THRESHOLD {
-                            response.closed = true;
+                            closed = true;
                         }
                         // Snap back to nearest snap point (or reset on close)
                         drag_offset = 0.0;
@@ -348,24 +355,29 @@ impl Drawer {
 
         // Handle ESC key
         if ctx.input(|i| i.key_pressed(Key::Escape)) {
-            response.closed = true;
+            closed = true;
         }
 
         // Reset drag state if closing
-        if response.closed {
+        if closed {
             ctx.data_mut(|d| {
                 d.insert_temp(drag_state_id, 0.0f32);
                 d.insert_temp(velocity_id, 0.0f32);
             });
         }
 
-        response
+        DrawerResponse {
+            response: area_response.response,
+            closed,
+            snap_point,
+        }
     }
 }
 
 /// Response from showing a drawer
-#[derive(Debug, Clone, Copy)]
 pub struct DrawerResponse {
+    /// The UI response
+    pub response: egui::Response,
     /// Whether the drawer was closed this frame
     pub closed: bool,
     /// Current snap point (for partial open states)

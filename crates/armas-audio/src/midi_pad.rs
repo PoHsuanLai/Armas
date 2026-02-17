@@ -151,9 +151,11 @@ pub struct MidiPad {
     /// Gap between pads
     gap: f32,
     /// Glow intensity for pressed pads (0.0-1.0)
-    glow_intensity: f32,
+    pub(crate) glow_intensity: f32,
     /// Show velocity as brightness
     show_velocity: bool,
+    /// Whether the pad grid is disabled (non-interactive)
+    disabled: bool,
 }
 
 impl MidiPad {
@@ -171,6 +173,7 @@ impl MidiPad {
             gap: 8.0,
             glow_intensity: 0.8,
             show_velocity: true,
+            disabled: false,
         }
     }
 
@@ -224,17 +227,17 @@ impl MidiPad {
         self
     }
 
-    /// Set glow intensity (0.0-1.0)
-    #[must_use]
-    pub const fn glow_intensity(mut self, intensity: f32) -> Self {
-        self.glow_intensity = intensity.clamp(0.0, 1.0);
-        self
-    }
-
     /// Show velocity as brightness
     #[must_use]
     pub const fn show_velocity(mut self, show: bool) -> Self {
         self.show_velocity = show;
+        self
+    }
+
+    /// Set whether the pad grid is disabled (non-interactive)
+    #[must_use]
+    pub const fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
         self
     }
 
@@ -247,9 +250,10 @@ impl MidiPad {
             (self.rows as f32).mul_add(self.pad_size, (self.rows - 1) as f32 * self.gap);
         let desired_size = Vec2::new(total_width, total_height);
 
-        let (rect, _) = ui.allocate_exact_size(desired_size, Sense::hover());
+        let (rect, response) = ui.allocate_exact_size(desired_size, Sense::hover());
 
-        let mut response = MidiPadResponse {
+        let mut midi_pad_response = MidiPadResponse {
+            response,
             pressed: None,
             released: None,
             held: Vec::new(),
@@ -287,23 +291,25 @@ impl MidiPad {
                     // Handle pad interaction.
                     // With Sense::drag(), drag_started fires immediately on
                     // pointer-down and drag_stopped fires on pointer-up.
-                    if pad_response.drag_started() {
-                        let new_velocity = if self.show_velocity { 100 } else { 127 };
-                        response.pressed = Some((pad_config.note, new_velocity));
-                    }
+                    if !self.disabled {
+                        if pad_response.drag_started() {
+                            let new_velocity = if self.show_velocity { 100 } else { 127 };
+                            midi_pad_response.pressed = Some((pad_config.note, new_velocity));
+                        }
 
-                    if pad_response.drag_stopped() {
-                        response.released = Some(pad_config.note);
-                    }
+                        if pad_response.drag_stopped() {
+                            midi_pad_response.released = Some(pad_config.note);
+                        }
 
-                    if pad_response.is_pointer_button_down_on() {
-                        response.held.push(pad_config.note);
+                        if pad_response.is_pointer_button_down_on() {
+                            midi_pad_response.held.push(pad_config.note);
+                        }
                     }
                 }
             }
         }
 
-        response
+        midi_pad_response
     }
 
     /// Draw a single pad
@@ -316,14 +322,23 @@ impl MidiPad {
         index: usize,
         velocity: u8,
     ) -> Response {
-        let pad_response = ui.allocate_rect(rect, Sense::drag());
+        let sense = if self.disabled {
+            Sense::hover()
+        } else {
+            Sense::drag()
+        };
+        let pad_response = ui.allocate_rect(rect, sense);
         let painter = ui.painter();
 
         let is_pressed = velocity > 0 || pad_response.is_pointer_button_down_on();
         let is_hovered = pad_response.hovered();
 
         // Get pad color based on scheme
-        let base_color = self.get_pad_color(theme, config, index);
+        let base_color = if self.disabled {
+            self.get_pad_color(theme, config, index).gamma_multiply(0.5)
+        } else {
+            self.get_pad_color(theme, config, index)
+        };
 
         // Calculate corner radius
         let corner_radius = f32::from(theme.spacing.corner_radius_small);
@@ -604,8 +619,9 @@ impl Default for MidiPad {
 }
 
 /// Response from MIDI pad interaction
-#[derive(Debug)]
 pub struct MidiPadResponse {
+    /// The UI response
+    pub response: Response,
     /// Pad that was pressed this frame (note, velocity)
     pub pressed: Option<(u8, u8)>,
     /// Pad that was released this frame (note)

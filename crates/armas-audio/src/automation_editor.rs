@@ -24,8 +24,9 @@ impl AutomationPoint {
 }
 
 /// Response from automation editor interaction
-#[derive(Debug)]
 pub struct AutomationEditorResponse {
+    /// The UI response
+    pub response: egui::Response,
     /// Points after user interaction
     pub points: Vec<AutomationPoint>,
     /// Whether points were modified this frame
@@ -64,6 +65,8 @@ pub struct AutomationEditor {
     editable: bool,
     /// Currently selected point index
     selected_point: Option<usize>,
+    /// Whether the editor is disabled (non-interactive)
+    disabled: bool,
 }
 
 impl AutomationEditor {
@@ -84,6 +87,7 @@ impl AutomationEditor {
             waveform_opacity: 0.15,
             editable: true,
             selected_point: None,
+            disabled: false,
         }
     }
 
@@ -171,6 +175,13 @@ impl AutomationEditor {
         self
     }
 
+    /// Set whether the editor is disabled (non-interactive)
+    #[must_use]
+    pub const fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     /// Set selected point index
     #[must_use]
     pub const fn selected(mut self, index: Option<usize>) -> Self {
@@ -186,7 +197,14 @@ impl AutomationEditor {
         theme: &Theme,
     ) -> AutomationEditorResponse {
         let desired_size = Vec2::new(self.width, self.height);
-        let (rect, response) = ui.allocate_exact_size(desired_size, Sense::click_and_drag());
+        let sense = if self.disabled {
+            Sense::hover()
+        } else if self.editable {
+            Sense::click_and_drag()
+        } else {
+            Sense::hover()
+        };
+        let (rect, response) = ui.allocate_exact_size(desired_size, sense);
 
         let mut modified = false;
         let mut selected = self.selected_point;
@@ -220,13 +238,14 @@ impl AutomationEditor {
         }
 
         // Handle interactions
-        if self.editable {
+        if self.editable && !self.disabled {
             let interaction =
                 self.handle_interaction(ui, &response, rect, points, &mut selected, hovered);
             modified = interaction;
         }
 
         AutomationEditorResponse {
+            response,
             points: points.clone(),
             modified,
             selected,
@@ -320,7 +339,8 @@ impl AutomationEditor {
 
     /// Draw simulated waveform background (Logic Pro style - bars growing up from bottom)
     fn draw_waveform(&self, painter: &egui::Painter, rect: Rect, theme: &Theme) {
-        let primary = theme.primary();
+        let dim = if self.disabled { 0.5 } else { 1.0 };
+        let primary = theme.primary().gamma_multiply(dim);
         let wave_color = Color32::from_rgba_unmultiplied(
             primary.r(),
             primary.g(),
@@ -371,7 +391,8 @@ impl AutomationEditor {
         let mut sorted_points = points.to_vec();
         sorted_points.sort_by(|a, b| a.time.partial_cmp(&b.time).unwrap());
 
-        let line_color = theme.primary();
+        let dim = if self.disabled { 0.5 } else { 1.0 };
+        let line_color = theme.primary().gamma_multiply(dim);
 
         // Draw line segments between points
         for i in 0..sorted_points.len() - 1 {
@@ -423,6 +444,7 @@ impl AutomationEditor {
         hovered: Option<usize>,
         theme: &Theme,
     ) {
+        let dim = if self.disabled { 0.5 } else { 1.0 };
         for (i, point) in points.iter().enumerate() {
             let x = point.time.mul_add(rect.width(), rect.min.x);
             let y = (1.0 - point.value).mul_add(rect.height(), rect.min.y);
@@ -433,7 +455,7 @@ impl AutomationEditor {
 
             // Hover/select ring effect (like shadcn ring-4)
             if is_hovered || is_selected {
-                let ring_color = theme.ring().gamma_multiply(0.5);
+                let ring_color = theme.ring().gamma_multiply(0.5 * dim);
                 painter.circle_filled(center, self.point_radius + 4.0, ring_color);
             }
 
@@ -446,14 +468,18 @@ impl AutomationEditor {
 
             // Handle fill
             let handle_color = if is_selected {
-                theme.primary()
+                theme.primary().gamma_multiply(dim)
             } else {
-                theme.foreground()
+                theme.foreground().gamma_multiply(dim)
             };
             painter.circle_filled(center, self.point_radius, handle_color);
 
             // Border
-            painter.circle_stroke(center, self.point_radius, Stroke::new(1.0, theme.primary()));
+            painter.circle_stroke(
+                center,
+                self.point_radius,
+                Stroke::new(1.0, theme.primary().gamma_multiply(dim)),
+            );
         }
     }
 

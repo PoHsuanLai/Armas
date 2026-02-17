@@ -1,7 +1,6 @@
 //! Tests for `TreeView` component using `egui_kittest`
 
 use armas_basic::components::navigation::{TreeItem, TreeView};
-use armas_basic::ArmasContextExt;
 use egui_kittest::Harness;
 use std::path::PathBuf;
 
@@ -9,9 +8,8 @@ use std::path::PathBuf;
 #[test]
 fn test_tree_view_renders() {
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
         let mut tree = TreeView::new();
-        tree.show(ui, &theme);
+        tree.show(ui);
     });
 
     harness.run();
@@ -21,9 +19,8 @@ fn test_tree_view_renders() {
 #[test]
 fn test_tree_view_fixed_dimensions() {
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
         let mut tree = TreeView::new().width(300.0).height(400.0);
-        tree.show(ui, &theme);
+        tree.show(ui);
     });
 
     harness.run();
@@ -33,7 +30,6 @@ fn test_tree_view_fixed_dimensions() {
 #[test]
 fn test_tree_view_with_items() {
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
         let items = vec![
             TreeItem::folder("src", "/src"),
             TreeItem::file("main.rs", "/src/main.rs"),
@@ -41,7 +37,7 @@ fn test_tree_view_with_items() {
         ];
 
         let mut tree = TreeView::new().items(items).width(300.0).height(400.0);
-        tree.show(ui, &theme);
+        tree.show(ui);
     });
 
     harness.run();
@@ -51,7 +47,6 @@ fn test_tree_view_with_items() {
 #[test]
 fn test_tree_view_nested_folders() {
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
         let items = vec![
             TreeItem::folder("src", "/src"),
             TreeItem::folder("components", "/src/components"),
@@ -60,7 +55,7 @@ fn test_tree_view_nested_folders() {
         ];
 
         let mut tree = TreeView::new().items(items).width(300.0).height(400.0);
-        tree.show(ui, &theme);
+        tree.show(ui);
     });
 
     harness.run();
@@ -111,9 +106,8 @@ fn test_tree_view_getters() {
 #[test]
 fn test_tree_view_empty_items() {
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
         let mut tree = TreeView::new().items(vec![]).width(300.0).height(400.0);
-        tree.show(ui, &theme);
+        tree.show(ui);
     });
 
     harness.run();
@@ -123,7 +117,6 @@ fn test_tree_view_empty_items() {
 #[test]
 fn test_tree_view_custom_root() {
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
         let items = vec![
             TreeItem::folder("components", "/app/src/components"),
             TreeItem::file("button.rs", "/app/src/components/button.rs"),
@@ -134,7 +127,7 @@ fn test_tree_view_custom_root() {
             .items(items)
             .width(300.0)
             .height(400.0);
-        tree.show(ui, &theme);
+        tree.show(ui);
     });
 
     harness.run();
@@ -144,9 +137,8 @@ fn test_tree_view_custom_root() {
 #[test]
 fn test_tree_view_response() {
     let mut harness = Harness::new_ui(|ui| {
-        let theme = ui.ctx().armas_theme();
         let mut tree = TreeView::new().width(300.0).height(400.0);
-        let response = tree.show(ui, &theme);
+        let response = tree.show(ui);
 
         assert!(response.selected.is_none());
         assert!(response.toggled.is_none());

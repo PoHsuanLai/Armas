@@ -3,11 +3,11 @@
 //! Complete scrollable timeline view combining ruler, playhead, track headers, and tracks.
 
 use crate::{
-    MarkerVariant, Playhead, Region, RegionVariant, SnapGrid, TimeRuler, TimelineMarker,
-    TimelineRegion, TimelineTrack, TrackControls, TrackHeader,
+    traits::AudioTiming, MarkerVariant, Playhead, Region, RegionVariant, SnapGrid, TimeRuler,
+    TimelineMarker, TimelineRegion, TimelineTrack, TrackControls, TrackHeader,
 };
 use armas_basic::theme::Theme;
-use egui::{pos2, vec2, Color32, Rect, Response, Sense, Ui, Vec2};
+use egui::{pos2, vec2, Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
 // Track ID calculation constants
 const TRACK_ID_MULTIPLIER: usize = 1000; // Space between parent and child track IDs
@@ -238,6 +238,14 @@ pub struct TimelineResponse {
     pub playhead_position: f32,
     /// Which marker was moved (if any)
     pub marker_moved: Option<usize>,
+    /// Track header that was right-clicked (`track_idx`)
+    pub track_right_clicked: Option<usize>,
+    /// Region that was right-clicked (`track_idx`, `region_idx`)
+    pub region_right_clicked: Option<(usize, usize)>,
+    /// Empty area that was right-clicked (`track_idx`, `beat_position`)
+    pub empty_right_clicked: Option<(usize, f32)>,
+    /// Screen position of the right-click (for context menu placement)
+    pub right_click_pos: Option<Pos2>,
 }
 
 /// Timeline component
@@ -247,7 +255,7 @@ pub struct TimelineResponse {
 /// # Example
 ///
 /// ```rust,no_run
-/// use armas_audio::{Timeline, Track, Region};
+/// use armas_audio::{AudioTiming, Timeline, Track, Region};
 ///
 /// fn ui(ui: &mut egui::Ui, theme: &armas_basic::Theme) {
 ///     let mut tracks = vec![
@@ -276,11 +284,11 @@ pub struct Timeline<'a> {
     /// Height of each track
     track_height: f32,
     /// Width per beat in pixels
-    beat_width: f32,
+    pub(crate) beat_width: f32,
     /// Number of measures to display
-    measures: u32,
+    pub(crate) measures: u32,
     /// Beats per measure
-    beats_per_measure: u32,
+    pub(crate) beats_per_measure: u32,
     /// Height of ruler at top
     ruler_height: f32,
     /// Show playhead
@@ -314,9 +322,9 @@ pub struct Timeline<'a> {
     /// Empty state message
     empty_message: Option<String>,
     /// Enable momentum scrolling
-    momentum_scrolling: bool,
+    pub(crate) momentum_scrolling: bool,
     /// Momentum damping factor (higher = faster stop)
-    momentum_damping: f64,
+    pub(crate) momentum_damping: f64,
     /// Region height as a ratio of track height (0.0-1.0)
     region_height_ratio: f32,
 }
@@ -363,6 +371,10 @@ struct TimelineInteractions {
     region_clicked: Option<(usize, usize)>,
     empty_clicked: Option<(usize, f32)>,
     playhead_moved: bool,
+    track_right_clicked: Option<usize>,
+    region_right_clicked: Option<(usize, usize)>,
+    empty_right_clicked: Option<(usize, f32)>,
+    right_click_pos: Option<Pos2>,
 }
 
 /// Momentum scroll state stored in egui temp data
@@ -503,27 +515,6 @@ impl<'a> Timeline<'a> {
     #[must_use]
     pub const fn region_height_ratio(mut self, ratio: f32) -> Self {
         self.region_height_ratio = ratio.clamp(0.1, 1.0);
-        self
-    }
-
-    /// Set pixels per beat (zoom level)
-    #[must_use]
-    pub const fn beat_width(mut self, width: f32) -> Self {
-        self.beat_width = width;
-        self
-    }
-
-    /// Set number of measures
-    #[must_use]
-    pub const fn measures(mut self, measures: u32) -> Self {
-        self.measures = measures;
-        self
-    }
-
-    /// Set beats per measure
-    #[must_use]
-    pub const fn beats_per_measure(mut self, beats: u32) -> Self {
-        self.beats_per_measure = beats;
         self
     }
 
@@ -689,30 +680,6 @@ impl<'a> Timeline<'a> {
         self
     }
 
-    /// Enable or disable momentum scrolling
-    ///
-    /// When enabled, the timeline will continue scrolling after releasing the
-    /// mouse/trackpad, gradually slowing down with inertia.
-    ///
-    /// Default is enabled.
-    #[must_use]
-    pub const fn momentum_scrolling(mut self, enabled: bool) -> Self {
-        self.momentum_scrolling = enabled;
-        self
-    }
-
-    /// Set the momentum damping factor
-    ///
-    /// Higher values cause the scroll to stop faster.
-    /// - 3.0: Smooth, long glide
-    /// - 5.0: Balanced (default)
-    /// - 8.0: Quick stop
-    #[must_use]
-    pub const fn momentum_damping(mut self, damping: f64) -> Self {
-        self.momentum_damping = damping.max(1.0);
-        self
-    }
-
     // ========== HELPER FUNCTIONS ==========
 
     /// Get or create scroll state from persistent storage
@@ -726,7 +693,9 @@ impl<'a> Timeline<'a> {
 
     /// Calculate layout dimensions based on available space and content
     fn calculate_layout(&self, ui: &Ui, track_count: usize) -> TimelineLayout {
-        let content_width = self.measures as f32 * self.beats_per_measure as f32 * self.beat_width;
+        let measures = self.measures as f32;
+        let beats_per_measure = self.beats_per_measure as f32;
+        let content_width = measures * beats_per_measure * self.beat_width;
         let content_height = track_count as f32 * self.track_height;
 
         let available_rect = ui.available_rect_before_wrap();
@@ -861,8 +830,14 @@ impl<'a> Timeline<'a> {
                         if track_header_rect.max.y > headers_rect.min.y
                             && track_header_rect.min.y < headers_rect.max.y
                         {
+                            let header_child_id = self
+                                .id
+                                .unwrap_or_else(|| ui.id())
+                                .with("header_child")
+                                .with(info.track_idx);
                             let mut header_ui = ui.new_child(
                                 egui::UiBuilder::new()
+                                    .id_salt(header_child_id)
                                     .max_rect(track_header_rect)
                                     .layout(egui::Layout::top_down(egui::Align::Min)),
                             );
@@ -874,11 +849,7 @@ impl<'a> Timeline<'a> {
                                 info.track_idx,
                                 info.indent_level,
                                 info.parent_color,
-                                &mut interactions.track_clicked,
-                                &mut interactions.track_mute_clicked,
-                                &mut interactions.track_solo_clicked,
-                                &mut interactions.track_arm_clicked,
-                                &mut interactions.track_collapse_clicked,
+                                interactions,
                                 theme,
                             );
 
@@ -990,8 +961,7 @@ impl<'a> Timeline<'a> {
                             &mut track_ui,
                             track,
                             info.track_idx,
-                            &mut interactions.region_clicked,
-                            &mut interactions.empty_clicked,
+                            interactions,
                             theme,
                         );
                     }
@@ -1430,11 +1400,16 @@ impl<'a> Timeline<'a> {
 
     /// Build the final `TimelineResponse`
     #[allow(clippy::needless_pass_by_value)]
-    const fn build_response(
+    fn build_response(
         response: Response,
         interactions: TimelineInteractions,
         playhead_position: f32,
     ) -> TimelineResponse {
+        if interactions.right_click_pos.is_some() {
+            eprintln!("[timeline] build_response: right_click_pos={:?}, track_right={:?}, region_right={:?}, empty_right={:?}",
+                interactions.right_click_pos, interactions.track_right_clicked,
+                interactions.region_right_clicked, interactions.empty_right_clicked);
+        }
         TimelineResponse {
             response,
             track_clicked: interactions.track_clicked,
@@ -1448,6 +1423,10 @@ impl<'a> Timeline<'a> {
             playhead_clicked: false,
             playhead_position,
             marker_moved: None,
+            track_right_clicked: interactions.track_right_clicked,
+            region_right_clicked: interactions.region_right_clicked,
+            empty_right_clicked: interactions.empty_right_clicked,
+            right_click_pos: interactions.right_click_pos,
         }
     }
 
@@ -1461,11 +1440,7 @@ impl<'a> Timeline<'a> {
         track_idx: usize,
         indent_level: usize,
         parent_color: Option<Color32>,
-        track_clicked: &mut Option<usize>,
-        track_mute_clicked: &mut Option<usize>,
-        track_solo_clicked: &mut Option<usize>,
-        track_arm_clicked: &mut Option<usize>,
-        track_collapse_clicked: &mut Option<usize>,
+        interactions: &mut TimelineInteractions,
         theme: &Theme,
     ) -> egui::Rect {
         let header_id = self
@@ -1498,19 +1473,27 @@ impl<'a> Timeline<'a> {
 
         // Capture all track header interactions
         if header_response.response.clicked() {
-            *track_clicked = Some(track_idx);
+            interactions.track_clicked = Some(track_idx);
+        }
+        if header_response.response.secondary_clicked() {
+            eprintln!("[timeline] track header right-clicked: track_idx={track_idx}");
+            interactions.track_right_clicked = Some(track_idx);
+            if let Some(pos) = header_response.response.interact_pointer_pos() {
+                eprintln!("[timeline] track header right-click pos: {pos:?}");
+                interactions.right_click_pos = Some(pos);
+            }
         }
         if header_response.mute_clicked {
-            *track_mute_clicked = Some(track_idx);
+            interactions.track_mute_clicked = Some(track_idx);
         }
         if header_response.solo_clicked {
-            *track_solo_clicked = Some(track_idx);
+            interactions.track_solo_clicked = Some(track_idx);
         }
         if header_response.arm_clicked {
-            *track_arm_clicked = Some(track_idx);
+            interactions.track_arm_clicked = Some(track_idx);
         }
         if header_response.collapse_clicked {
-            *track_collapse_clicked = Some(track_idx);
+            interactions.track_collapse_clicked = Some(track_idx);
         }
 
         header_response.response.rect
@@ -1522,8 +1505,7 @@ impl<'a> Timeline<'a> {
         ui: &mut Ui,
         track: &mut Track,
         track_idx: usize,
-        region_clicked: &mut Option<(usize, usize)>,
-        empty_clicked: &mut Option<(usize, f32)>,
+        interactions: &mut TimelineInteractions,
         theme: &Theme,
     ) -> egui::Rect {
         let track_id = self
@@ -1543,11 +1525,28 @@ impl<'a> Timeline<'a> {
             .show(ui, &mut track.regions, theme);
 
         if let Some(region_idx) = track_response.region_clicked {
-            *region_clicked = Some((track_idx, region_idx));
+            interactions.region_clicked = Some((track_idx, region_idx));
         }
 
         if let Some(beat_pos) = track_response.empty_clicked {
-            *empty_clicked = Some((track_idx, beat_pos));
+            interactions.empty_clicked = Some((track_idx, beat_pos));
+        }
+
+        if let Some(region_idx) = track_response.region_right_clicked {
+            eprintln!("[timeline] track content region right-clicked: track={track_idx}, region={region_idx}");
+            interactions.region_right_clicked = Some((track_idx, region_idx));
+        }
+
+        if let Some(beat_pos) = track_response.empty_right_clicked {
+            eprintln!(
+                "[timeline] track content empty right-clicked: track={track_idx}, beat={beat_pos}"
+            );
+            interactions.empty_right_clicked = Some((track_idx, beat_pos));
+        }
+
+        if let Some(pos) = track_response.right_click_pos {
+            eprintln!("[timeline] track content right-click pos: {pos:?}");
+            interactions.right_click_pos = Some(pos);
         }
 
         track_response.response.rect

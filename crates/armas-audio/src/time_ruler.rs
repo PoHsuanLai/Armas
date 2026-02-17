@@ -26,11 +26,11 @@ pub use super::piano_roll::GridDivision;
 /// ```
 pub struct TimeRuler {
     /// Number of measures to display
-    measures: u32,
+    pub(crate) measures: u32,
     /// Width per beat in pixels (zoom level)
-    beat_width: f32,
+    pub(crate) beat_width: f32,
     /// Beats per measure (time signature numerator)
-    beats_per_measure: u32,
+    pub(crate) beats_per_measure: u32,
     /// Grid division for subdivisions
     division: GridDivision,
     /// Ruler height in pixels
@@ -69,27 +69,6 @@ impl TimeRuler {
     #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
         self.id = Some(id.into());
-        self
-    }
-
-    /// Set number of measures to display
-    #[must_use]
-    pub const fn measures(mut self, measures: u32) -> Self {
-        self.measures = measures;
-        self
-    }
-
-    /// Set width per beat in pixels (zoom level)
-    #[must_use]
-    pub const fn beat_width(mut self, width: f32) -> Self {
-        self.beat_width = width;
-        self
-    }
-
-    /// Set beats per measure (time signature numerator)
-    #[must_use]
-    pub const fn beats_per_measure(mut self, beats: u32) -> Self {
-        self.beats_per_measure = beats;
         self
     }
 
@@ -149,8 +128,10 @@ impl TimeRuler {
 
     /// Draw vertical grid lines
     fn draw_grid_lines(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
+        let measures = self.measures as f32;
+        let beats_per_measure = self.beats_per_measure as f32;
         let divisions_per_beat = 1.0 / self.division.beat_fraction();
-        let total_beats = self.measures as f32 * self.beats_per_measure as f32;
+        let total_beats = measures * beats_per_measure;
         let total_divisions = (total_beats * divisions_per_beat) as i32;
 
         for i in 0..=total_divisions {
@@ -163,7 +144,7 @@ impl TimeRuler {
             }
 
             // Determine line type
-            let is_measure_line = (beat_position % self.beats_per_measure as f32) == 0.0;
+            let is_measure_line = (beat_position % beats_per_measure) == 0.0;
             let is_beat_line = (beat_position % 1.0) == 0.0;
 
             if is_measure_line {
@@ -195,9 +176,9 @@ impl TimeRuler {
 
     /// Draw measure numbers at the top
     fn draw_measure_numbers(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
+        let beats_per_measure = self.beats_per_measure as f32;
         for measure in 0..self.measures {
-            let x = (measure as f32 * self.beats_per_measure as f32)
-                .mul_add(self.beat_width, rect.min.x);
+            let x = (measure as f32 * beats_per_measure).mul_add(self.beat_width, rect.min.x);
             let label_pos = Pos2::new(x + theme.spacing.xs, rect.min.y + theme.spacing.xs);
 
             let label = format!("{}", measure + 1);
@@ -214,7 +195,9 @@ impl TimeRuler {
 
     /// Draw beat numbers within measures
     fn draw_beat_numbers(&self, painter: &egui::Painter, theme: &Theme, rect: Rect) {
-        let total_beats = self.measures as f32 * self.beats_per_measure as f32;
+        let measures = self.measures as f32;
+        let beats_per_measure = self.beats_per_measure as f32;
+        let total_beats = measures * beats_per_measure;
 
         for beat_idx in 0..(total_beats as u32) {
             // Skip if this is a measure boundary (already has measure number)

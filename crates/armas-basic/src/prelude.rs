@@ -7,10 +7,9 @@
 //! # fn example(ui: &mut Ui) {
 //! use armas_basic::prelude::*;
 //!
-//! let theme = ui.ctx().armas_theme();
 //! // Now you can use components directly
-//! Badge::new("Success").show(ui, &theme);
-//! Button::new("Click me").show(ui, &theme);
+//! Badge::new("Success").show(ui);
+//! Button::new("Click me").show(ui);
 //! # }
 //! ```
 
@@ -27,13 +26,14 @@ pub use crate::layout::{cell, cell_ui, header_row, row, table, AspectRatio, Cont
 // Common component enums
 pub use crate::components::{
     AlertVariant, BadgeVariant, ButtonSize, ButtonVariant, DialogSize, InputState, InputVariant,
-    PopoverPosition, SheetSide, SheetSize, ToastVariant, ToggleSize, ToggleVariant,
-    TooltipPosition,
+    PopoverPosition, SheetSide, SheetSize, SwitchSize, ToastVariant, ToggleGroupSize,
+    ToggleGroupType, ToggleGroupVariant, ToggleSize, ToggleVariant, TooltipPosition,
 };
 
 // Essential interactive components
 pub use crate::components::{
-    Badge, Button, Input, RangeSlider, Select, Slider, Textarea, ThreeValueSlider, Toggle,
+    Badge, Button, Checkbox, Input, NumberField, RangeSlider, Select, Slider, Switch, Textarea,
+    ThreeValueSlider, Toggle, ToggleGroup,
 };
 
 // Display components

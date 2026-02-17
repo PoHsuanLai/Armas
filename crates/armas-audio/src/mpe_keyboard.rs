@@ -192,8 +192,8 @@ pub struct MPEKeyboard {
     orientation: MPEOrientation,
     scrollable: bool,
     viewport_size: Option<f32>,
-    momentum_scrolling: bool,
-    momentum_damping: f64,
+    pub(crate) momentum_scrolling: bool,
+    pub(crate) momentum_damping: f64,
     id: Option<egui::Id>,
     /// Pitch bend range in semitones for visualization scaling
     pitch_bend_range: f32,
@@ -205,6 +205,8 @@ pub struct MPEKeyboard {
     min_circle_radius: f32,
     /// Maximum circle radius scale (multiplied by key width)
     max_circle_radius_scale: f32,
+    /// Whether the keyboard is disabled (non-interactive)
+    disabled: bool,
 }
 
 impl MPEKeyboard {
@@ -233,6 +235,7 @@ impl MPEKeyboard {
             circle_outline_color: None,
             min_circle_radius: 5.0,
             max_circle_radius_scale: 0.4, // Max radius = 40% of key width
+            disabled: false,
         }
     }
 
@@ -322,20 +325,6 @@ impl MPEKeyboard {
         self
     }
 
-    /// Enable or disable momentum scrolling (default: true)
-    #[must_use]
-    pub const fn momentum_scrolling(mut self, enabled: bool) -> Self {
-        self.momentum_scrolling = enabled;
-        self
-    }
-
-    /// Set momentum damping factor (1.0-20.0, higher = more damping, default: 5.0)
-    #[must_use]
-    pub const fn momentum_damping(mut self, damping: f64) -> Self {
-        self.momentum_damping = damping.clamp(1.0, 20.0);
-        self
-    }
-
     /// Set pitch bend range in semitones for visualization scaling
     #[must_use]
     pub const fn pitch_bend_range(mut self, semitones: f32) -> Self {
@@ -347,6 +336,13 @@ impl MPEKeyboard {
     #[must_use]
     pub const fn circle_fill_color(mut self, color: Color32) -> Self {
         self.circle_fill_color = Some(color);
+        self
+    }
+
+    /// Set whether the keyboard is disabled (non-interactive)
+    #[must_use]
+    pub const fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
         self
     }
 
@@ -369,7 +365,7 @@ impl MPEKeyboard {
         let layout = self.compute_layout();
         let scroll_offset = self.handle_scrolling(ui, &layout);
 
-        self.render_keys(
+        let response = self.render_keys(
             ui,
             theme,
             &layout,
@@ -379,6 +375,7 @@ impl MPEKeyboard {
         );
 
         MPEKeyboardResponse {
+            response,
             clicked_keys,
             released_keys,
         }
@@ -500,17 +497,17 @@ impl MPEKeyboard {
         scroll_offset: f32,
         clicked_keys: &mut Vec<u8>,
         released_keys: &mut Vec<u8>,
-    ) {
+    ) -> Response {
         let alloc_size = if layout.is_horizontal {
             Vec2::new(layout.display_size, self.white_key_height)
         } else {
             Vec2::new(self.white_key_height, layout.display_size)
         };
 
-        let (rect, _) = ui.allocate_exact_size(alloc_size, Sense::hover());
+        let (rect, response) = ui.allocate_exact_size(alloc_size, Sense::hover());
 
         if !ui.is_rect_visible(rect) {
-            return;
+            return response;
         }
 
         let painter = if self.scrollable {
@@ -556,6 +553,8 @@ impl MPEKeyboard {
 
         // Draw MPE circles on top of all keys
         self.render_mpe_circles(&painter, theme, layout, &key_rects);
+
+        response
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -597,7 +596,12 @@ impl MPEKeyboard {
             // Store rect for MPE circle drawing
             key_rects.insert(note, key_rect);
 
-            let response = ui.allocate_rect(key_rect, Sense::click_and_drag());
+            let sense = if self.disabled {
+                Sense::hover()
+            } else {
+                Sense::click_and_drag()
+            };
+            let response = ui.allocate_rect(key_rect, sense);
             let is_active = self.active_notes.contains_key(&note);
             let is_pressed = is_active || response.is_pointer_button_down_on();
 
@@ -621,7 +625,9 @@ impl MPEKeyboard {
                 },
             });
 
-            self.handle_key_interaction(&response, note, clicked_keys, released_keys);
+            if !self.disabled {
+                self.handle_key_interaction(&response, note, clicked_keys, released_keys);
+            }
             white_key_index += 1;
         }
     }
@@ -668,7 +674,12 @@ impl MPEKeyboard {
             // Store rect for MPE circle drawing
             key_rects.insert(note, key_rect);
 
-            let response = ui.allocate_rect(key_rect, Sense::click_and_drag());
+            let sense = if self.disabled {
+                Sense::hover()
+            } else {
+                Sense::click_and_drag()
+            };
+            let response = ui.allocate_rect(key_rect, sense);
             let is_active = self.active_notes.contains_key(&note);
             let is_pressed = is_active || response.is_pointer_button_down_on();
 
@@ -688,7 +699,9 @@ impl MPEKeyboard {
                 note_label: None,
             });
 
-            self.handle_key_interaction(&response, note, clicked_keys, released_keys);
+            if !self.disabled {
+                self.handle_key_interaction(&response, note, clicked_keys, released_keys);
+            }
         }
     }
 
@@ -700,10 +713,15 @@ impl MPEKeyboard {
         layout: &MPELayout,
         key_rects: &HashMap<u8, Rect>,
     ) {
-        let fill_color = self.circle_fill_color.unwrap_or_else(|| theme.primary());
+        let dim = if self.disabled { 0.5 } else { 1.0 };
+        let fill_color = self
+            .circle_fill_color
+            .unwrap_or_else(|| theme.primary())
+            .gamma_multiply(dim);
         let outline_color = self
             .circle_outline_color
-            .unwrap_or_else(|| theme.secondary());
+            .unwrap_or_else(|| theme.secondary())
+            .gamma_multiply(dim);
         let max_radius = self.white_key_width * self.max_circle_radius_scale;
 
         for (note, mpe_note) in &self.active_notes {
@@ -918,13 +936,16 @@ impl MPEKeyboard {
             params.base_opacity
         };
 
+        let dim = if self.disabled { 0.5 } else { 1.0 };
+
         let base_color = if params.is_black { 20 } else { 255 };
         let glass_color = Color32::from_rgba_unmultiplied(
             base_color,
             base_color,
             base_color,
             (255.0 * opacity) as u8,
-        );
+        )
+        .gamma_multiply(dim);
 
         // For black keys, draw an opaque background first to prevent white key lines showing through
         if params.is_black {
@@ -942,9 +963,9 @@ impl MPEKeyboard {
 
         // Border
         let border_color = if params.is_pressed {
-            params.theme.primary()
+            params.theme.primary().gamma_multiply(dim)
         } else {
-            params.theme.border()
+            params.theme.border().gamma_multiply(dim)
         };
         params.painter.rect_stroke(
             params.rect,
@@ -1029,6 +1050,8 @@ impl Default for MPEKeyboard {
 
 /// Response from MPE keyboard interaction
 pub struct MPEKeyboardResponse {
+    /// The UI response
+    pub response: Response,
     /// MIDI note numbers that were clicked this frame
     pub clicked_keys: Vec<u8>,
     /// MIDI note numbers that were released this frame

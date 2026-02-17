@@ -73,7 +73,7 @@ impl<'a> SiteHeader<'a> {
                         if Button::new("Docs")
                             .variant(ButtonVariant::Ghost)
                             .size(ButtonSize::Small)
-                            .show(ui, self.theme)
+                            .show(ui)
                             .clicked()
                         {
                             response.docs_clicked = true;
@@ -82,7 +82,7 @@ impl<'a> SiteHeader<'a> {
                         if Button::new("Components")
                             .variant(ButtonVariant::Ghost)
                             .size(ButtonSize::Small)
-                            .show(ui, self.theme)
+                            .show(ui)
                             .clicked()
                         {
                             response.components_clicked = true;
@@ -97,7 +97,7 @@ impl<'a> SiteHeader<'a> {
                             if Button::new("☰")
                                 .variant(ButtonVariant::Ghost)
                                 .size(ButtonSize::Small)
-                                .show(ui, self.theme)
+                                .show(ui)
                                 .clicked()
                             {
                                 response.hamburger_clicked = true;
@@ -107,7 +107,7 @@ impl<'a> SiteHeader<'a> {
                             if Button::new("Docs.rs")
                                 .variant(ButtonVariant::Ghost)
                                 .size(ButtonSize::Small)
-                                .show(ui, self.theme)
+                                .show(ui)
                                 .clicked()
                             {
                                 response.docs_rs_clicked = true;
@@ -116,7 +116,7 @@ impl<'a> SiteHeader<'a> {
                             if Button::new("Crates.io")
                                 .variant(ButtonVariant::Ghost)
                                 .size(ButtonSize::Small)
-                                .show(ui, self.theme)
+                                .show(ui)
                                 .clicked()
                             {
                                 response.crates_io_clicked = true;
@@ -125,7 +125,7 @@ impl<'a> SiteHeader<'a> {
                             if Button::new("GitHub")
                                 .variant(ButtonVariant::Ghost)
                                 .size(ButtonSize::Small)
-                                .show(ui, self.theme)
+                                .show(ui)
                                 .clicked()
                             {
                                 response.github_clicked = true;
@@ -142,7 +142,7 @@ impl<'a> SiteHeader<'a> {
                                 .variant(ButtonVariant::Ghost)
                                 .size(16.0)
                                 .padding(4.0)
-                                .show(ui, self.theme)
+                                .show(ui)
                                 .clicked()
                             {
                                 response.theme_toggle_clicked = true;

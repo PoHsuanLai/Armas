@@ -12,11 +12,9 @@
 //! # fn example(ui: &mut Ui) {
 //! use armas_basic::prelude::*;
 //!
-//! let theme = ui.ctx().armas_theme();
-//!
 //! if Button::new("Click me")
 //!     .variant(ButtonVariant::Default)
-//!     .show(ui, &theme)
+//!     .show(ui)
 //!     .clicked()
 //! {
 //!     // Handle click
