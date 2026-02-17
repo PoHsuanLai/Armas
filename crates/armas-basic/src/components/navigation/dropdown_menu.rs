@@ -1,6 +1,6 @@
-//! Menu Component (shadcn/ui style)
+//! Dropdown Menu Component (shadcn/ui style)
 //!
-//! Dropdown and context menus with keyboard navigation, checkbox items,
+//! Dropdown menus with keyboard navigation, checkbox items,
 //! radio groups, submenus, and destructive variants.
 //!
 //! Styled to match shadcn/ui dropdown-menu:
@@ -63,6 +63,7 @@ struct MenuRenderContext<'a> {
     theme: &'a crate::Theme,
     menu_id: Id,
     menu_width: f32,
+    item_height: f32,
 }
 
 // ============================================================================
@@ -74,7 +75,7 @@ const CONTENT_MIN_WIDTH: f32 = 128.0;
 
 // Item: px-2 = 8px, py-1.5 = 6px, text-sm = 14px, gap-2 = 8px, rounded-sm = 2px
 const ITEM_PADDING_X: f32 = 8.0;
-const ITEM_HEIGHT: f32 = 26.0; // py-1.5 (6px) + text-sm (14px) + py-1.5 (6px) = 26px
+const DEFAULT_ITEM_HEIGHT: f32 = 26.0; // py-1.5 (6px) + text-sm (14px) + py-1.5 (6px) = 26px
 const ITEM_GAP: f32 = 8.0;
 const ITEM_RADIUS: f32 = 2.0;
 const ITEM_TEXT_SIZE: f32 = 14.0;
@@ -305,9 +306,10 @@ impl MenuItemBuilder<'_> {
 // Menu Response
 // ============================================================================
 
-/// Response from showing a menu
-#[derive(Debug, Clone, Default)]
-pub struct MenuResponse {
+/// Response from showing a dropdown menu
+pub struct DropdownMenuResponse {
+    /// The UI response
+    pub response: egui::Response,
     /// Index of selected/clicked item (if any)
     pub selected: Option<usize>,
     /// Whether the user clicked outside the menu
@@ -320,7 +322,7 @@ pub struct MenuResponse {
     pub is_open: bool,
 }
 
-impl MenuResponse {
+impl DropdownMenuResponse {
     /// Check if a specific item index was selected
     #[must_use]
     pub fn is_selected(&self, index: usize) -> bool {
@@ -328,21 +330,32 @@ impl MenuResponse {
     }
 }
 
+/// Internal response used during rendering (before we have the `egui::Response`)
+#[derive(Debug, Clone, Default)]
+struct MenuResponseInner {
+    selected: Option<usize>,
+    clicked_outside: bool,
+    checkbox_toggled: Option<(usize, bool)>,
+    radio_selected: Option<(String, String)>,
+    is_open: bool,
+}
+
 // ============================================================================
 // Menu Component
 // ============================================================================
 
-/// Menu component for dropdown and context menus
+/// Dropdown menu component (shadcn/ui Dropdown Menu)
 #[derive(Clone)]
-pub struct Menu {
+pub struct DropdownMenu {
     id: Id,
     popover: Popover,
     is_open: Option<bool>,
     width: f32,
+    item_height: f32,
 }
 
-impl Menu {
-    /// Create a new menu
+impl DropdownMenu {
+    /// Create a new dropdown menu
     pub fn new(id: impl Into<Id>) -> Self {
         let id = id.into();
         Self {
@@ -353,6 +366,7 @@ impl Menu {
                 .padding(4.0), // p-1 = 4px (shadcn)
             is_open: None,
             width: 200.0,
+            item_height: DEFAULT_ITEM_HEIGHT,
         }
     }
 
@@ -377,13 +391,20 @@ impl Menu {
         self
     }
 
+    /// Set the height of each menu item row
+    #[must_use]
+    pub const fn item_height(mut self, height: f32) -> Self {
+        self.item_height = height;
+        self
+    }
+
     /// Show the menu anchored to a rect
     pub fn show(
         &mut self,
         ctx: &egui::Context,
         anchor_rect: Rect,
         content: impl FnOnce(&mut MenuBuilder),
-    ) -> MenuResponse {
+    ) -> DropdownMenuResponse {
         let theme = crate::ext::ArmasContextExt::armas_theme(ctx);
 
         // Build items using closure
@@ -405,8 +426,8 @@ impl Menu {
             self.handle_keyboard(ctx, &items, &mut is_open, &mut selected_index);
         }
 
-        // Initialize response
-        let mut response = MenuResponse {
+        // Initialize internal response (without egui::Response)
+        let mut inner_response = MenuResponseInner {
             selected: None,
             clicked_outside: false,
             checkbox_toggled: None,
@@ -420,6 +441,7 @@ impl Menu {
 
         let menu_id = self.id;
         let menu_width = self.width;
+        let menu_item_height = self.item_height;
         let popover_response = self.popover.show(ctx, &theme, anchor_rect, |ui| {
             ui.spacing_mut().item_spacing = vec2(0.0, 1.0);
 
@@ -428,35 +450,43 @@ impl Menu {
                 theme: &theme,
                 menu_id,
                 menu_width,
+                item_height: menu_item_height,
             };
             render_items(
                 &mut ctx,
                 &items,
                 &mut selected_index,
                 &mut submenu_state,
-                &mut response,
+                &mut inner_response,
             );
         });
 
         if popover_response.clicked_outside {
-            response.clicked_outside = true;
+            inner_response.clicked_outside = true;
             is_open = false;
             submenu_state.close_all();
         }
 
         // Close submenus when an item is selected
-        if response.selected.is_some() {
+        if inner_response.selected.is_some() {
             submenu_state.close_all();
         }
 
-        // Update response with final open state
-        response.is_open = is_open;
+        // Update final open state
+        inner_response.is_open = is_open;
 
         // Save state
         self.save_state(ctx, is_open, selected_index);
         submenu_state.save(ctx, self.id);
 
-        response
+        DropdownMenuResponse {
+            response: popover_response.response,
+            selected: inner_response.selected,
+            clicked_outside: inner_response.clicked_outside,
+            checkbox_toggled: inner_response.checkbox_toggled,
+            radio_selected: inner_response.radio_selected,
+            is_open: inner_response.is_open,
+        }
     }
 
     // ========================================================================
@@ -530,7 +560,7 @@ fn render_items(
     items: &[MenuItemData],
     selected_index: &mut Option<usize>,
     submenu_state: &mut SubmenuState,
-    response: &mut MenuResponse,
+    response: &mut MenuResponseInner,
 ) {
     for (idx, item) in items.iter().enumerate() {
         match &item.kind {
@@ -546,6 +576,7 @@ fn render_items(
                     *destructive,
                     selected_index,
                     ItemVariant::Normal,
+                    ctx.item_height,
                 );
                 if let Some(r) = result {
                     response.selected = Some(r);
@@ -560,6 +591,7 @@ fn render_items(
                     false,
                     selected_index,
                     ItemVariant::Checkbox(*checked),
+                    ctx.item_height,
                 );
                 if result.is_some() {
                     response.selected = Some(idx);
@@ -579,6 +611,7 @@ fn render_items(
                     false,
                     selected_index,
                     ItemVariant::Radio(*selected),
+                    ctx.item_height,
                 );
                 if result.is_some() {
                     response.selected = Some(idx);
@@ -594,6 +627,7 @@ fn render_items(
                 let render_params = RenderSubmenuParams {
                     menu_id: ctx.menu_id,
                     menu_width: ctx.menu_width,
+                    item_height: ctx.item_height,
                     submenu_params,
                     selected_index,
                     submenu_state,
@@ -626,12 +660,13 @@ fn render_item_with_hover(
     destructive: bool,
     selected_index: &mut Option<usize>,
     variant: ItemVariant,
+    item_height: f32,
 ) -> (Option<usize>, bool) {
     let is_selected = *selected_index == Some(idx);
     let has_indicator = matches!(variant, ItemVariant::Checkbox(_) | ItemVariant::Radio(_));
 
     let (rect, item_response) = ui.allocate_exact_size(
-        vec2(ui.available_width(), ITEM_HEIGHT),
+        vec2(ui.available_width(), item_height),
         if item.disabled {
             Sense::hover()
         } else {
@@ -768,7 +803,7 @@ fn render_item_content(ui: &mut Ui, theme: &crate::Theme, params: &ItemContentPa
         );
         ui.scope_builder(egui::UiBuilder::new().max_rect(shortcut_rect), |ui| {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                Kbd::new(shortcut).show(ui, theme);
+                Kbd::new(shortcut).show(ui);
             });
         });
     }
@@ -804,10 +839,11 @@ struct SubmenuParams<'a> {
 struct RenderSubmenuParams<'a> {
     menu_id: Id,
     menu_width: f32,
+    item_height: f32,
     submenu_params: SubmenuParams<'a>,
     selected_index: &'a mut Option<usize>,
     submenu_state: &'a mut SubmenuState,
-    response: &'a mut MenuResponse,
+    response: &'a mut MenuResponseInner,
 }
 
 #[allow(clippy::needless_pass_by_value)]
@@ -816,7 +852,7 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
     let is_submenu_open = params.submenu_state.is_open(params.submenu_params.idx);
 
     let (rect, item_response) = ui.allocate_exact_size(
-        vec2(ui.available_width(), ITEM_HEIGHT),
+        vec2(ui.available_width(), params.item_height),
         if params.submenu_params.item.disabled {
             Sense::hover()
         } else {
@@ -893,7 +929,7 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
     let submenu_should_be_open = params.submenu_state.is_open(params.submenu_params.idx)
         && !params.submenu_params.item.disabled;
 
-    let mut submenu = Menu::new(submenu_id)
+    let mut submenu = DropdownMenu::new(submenu_id)
         .position(PopoverPosition::Right)
         .width(params.menu_width)
         .open(submenu_should_be_open);
@@ -1072,9 +1108,9 @@ fn navigate_up(selected_index: &mut Option<usize>, items: &[MenuItemData]) {
 // Convenience: MenuItem struct for pre-built items
 // ============================================================================
 
-/// Pre-built menu item (alternative to builder pattern)
+/// Pre-built dropdown menu item (alternative to builder pattern)
 #[derive(Clone)]
-pub struct MenuItem {
+pub struct DropdownMenuItem {
     /// Menu item label
     pub label: String,
     /// Optional icon
@@ -1087,7 +1123,7 @@ pub struct MenuItem {
     pub destructive: bool,
 }
 
-impl MenuItem {
+impl DropdownMenuItem {
     /// Create a new menu item
     pub fn new(label: impl Into<String>) -> Self {
         Self {

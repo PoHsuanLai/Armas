@@ -6,8 +6,6 @@ use eframe::egui;
 use crate::showcase_gen;
 
 const CARD_GAP: f32 = 12.0;
-const CARD_PADDING: f32 = 16.0;
-const CARD_ROUNDING: f32 = 8.0;
 
 /// A page entry with name and render function
 type PageEntry = (&'static str, fn(&mut egui::Ui));
@@ -40,11 +38,8 @@ impl<'a> ComponentsListPage<'a> {
 
             let h_pad = if is_mobile { 24.0 } else { 48.0 };
             let content_width = 768.0f32.min(rect.width() - h_pad);
-            let margin = (rect.width() - content_width) / 2.0;
 
-            ui.add_space(margin.max(if is_mobile { 16.0 } else { 24.0 }));
-
-            ui.vertical(|ui| {
+            ui.vertical_centered(|ui| {
                 ui.set_max_width(content_width);
 
                 ui.add_space(if is_mobile { 20.0 } else { 32.0 });
@@ -113,50 +108,23 @@ impl<'a> ComponentsListPage<'a> {
 
         ui.add_space(12.0);
 
-        // Lay out cards in a manual grid
         let available = ui.available_width();
         let card_width = (available - CARD_GAP * (cols as f32 - 1.0)) / cols as f32;
 
-        for row in pages.chunks(cols) {
-            ui.horizontal(|ui| {
-                ui.spacing_mut().item_spacing.x = CARD_GAP;
+        egui::Grid::new(title)
+            .num_columns(cols)
+            .spacing(egui::vec2(CARD_GAP, CARD_GAP))
+            .min_col_width(card_width)
+            .max_col_width(card_width)
+            .show(ui, |ui| {
+                for (idx, (name, _)) in pages.iter().enumerate() {
+                    let btn = Button::new(*name)
+                        .variant(ButtonVariant::Outline)
+                        .size(ButtonSize::Large)
+                        .full_width(true);
+                    let btn_response = btn.show(ui);
 
-                for (name, _) in row.iter() {
-                    let (rect, card_response) =
-                        ui.allocate_exact_size(egui::vec2(card_width, 44.0), egui::Sense::click());
-
-                    // Border color: highlight on hover
-                    let border_color = if card_response.hovered() {
-                        self.theme.foreground()
-                    } else {
-                        self.theme.border()
-                    };
-
-                    if card_response.hovered() {
-                        ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
-                    }
-
-                    // Card background + border
-                    ui.painter()
-                        .rect_filled(rect, CARD_ROUNDING, self.theme.background());
-                    ui.painter().rect_stroke(
-                        rect,
-                        CARD_ROUNDING,
-                        egui::Stroke::new(1.0, border_color),
-                        egui::StrokeKind::Inside,
-                    );
-
-                    // Component name
-                    let text_pos = egui::pos2(rect.left() + CARD_PADDING, rect.center().y - 7.0);
-                    ui.painter().text(
-                        text_pos,
-                        egui::Align2::LEFT_CENTER,
-                        *name,
-                        egui::FontId::new(14.0, egui::FontFamily::Name("InterMedium".into())),
-                        self.theme.foreground(),
-                    );
-
-                    if card_response.clicked() {
+                    if btn_response.clicked() {
                         for (i, (page_name, _)) in self.pages.iter().enumerate() {
                             if *page_name == *name {
                                 response.selected_page = Some(i);
@@ -164,11 +132,12 @@ impl<'a> ComponentsListPage<'a> {
                             }
                         }
                     }
+
+                    if (idx + 1) % cols == 0 {
+                        ui.end_row();
+                    }
                 }
             });
-
-            ui.add_space(CARD_GAP);
-        }
 
         ui.add_space(12.0);
     }

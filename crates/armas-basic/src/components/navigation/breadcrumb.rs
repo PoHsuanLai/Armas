@@ -1,4 +1,4 @@
-//! Breadcrumbs Component
+//! Breadcrumb Component
 //!
 //! Navigation path indicator styled like shadcn/ui Breadcrumb.
 //! Shows the current location in a hierarchy with clickable navigation items.
@@ -8,9 +8,9 @@
 //! ```rust,no_run
 //! # use egui::Ui;
 //! # fn example(ui: &mut Ui) {
-//! use armas_basic::Breadcrumbs;
+//! use armas_basic::Breadcrumb;
 //!
-//! Breadcrumbs::new()
+//! Breadcrumb::new()
 //!     .show(ui, |breadcrumbs| {
 //!         breadcrumbs.item("Home", None);
 //!         breadcrumbs.item("Projects", None);
@@ -27,7 +27,7 @@ const ITEM_GAP: f32 = 6.0; // gap-1.5
 const FONT_SIZE: f32 = 14.0; // text-sm
 const SEPARATOR_SIZE: f32 = 14.0; // size-3.5
 
-/// Breadcrumbs navigation component
+/// Breadcrumb navigation component
 ///
 /// Shows a navigation path with clickable items, styled like shadcn/ui.
 ///
@@ -36,9 +36,9 @@ const SEPARATOR_SIZE: f32 = 14.0; // size-3.5
 /// ```rust,no_run
 /// # use egui::Ui;
 /// # fn example(ui: &mut Ui) {
-/// use armas_basic::Breadcrumbs;
+/// use armas_basic::Breadcrumb;
 ///
-/// Breadcrumbs::new()
+/// Breadcrumb::new()
 ///     .show(ui, |breadcrumbs| {
 ///         breadcrumbs.item("Home", None);
 ///         breadcrumbs.item("Projects", None);
@@ -46,11 +46,11 @@ const SEPARATOR_SIZE: f32 = 14.0; // size-3.5
 ///     });
 /// # }
 /// ```
-pub struct Breadcrumbs {
+pub struct Breadcrumb {
     spacing: f32,
 }
 
-impl Breadcrumbs {
+impl Breadcrumb {
     /// Create a new breadcrumbs component
     #[must_use]
     pub const fn new() -> Self {
@@ -68,14 +68,14 @@ impl Breadcrumbs {
     pub fn show<R>(
         self,
         ui: &mut Ui,
-        content: impl FnOnce(&mut BreadcrumbsBuilder) -> R,
-    ) -> BreadcrumbsResponse {
+        content: impl FnOnce(&mut BreadcrumbBuilder) -> R,
+    ) -> BreadcrumbResponse {
         let mut clicked: Option<usize> = None;
 
         let inner_response = ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = self.spacing;
 
-            let mut builder = BreadcrumbsBuilder {
+            let mut builder = BreadcrumbBuilder {
                 ui,
                 spacing: self.spacing,
                 item_index: 0,
@@ -85,28 +85,28 @@ impl Breadcrumbs {
             content(&mut builder);
         });
 
-        BreadcrumbsResponse {
+        BreadcrumbResponse {
             response: inner_response.response,
             clicked,
         }
     }
 }
 
-impl Default for Breadcrumbs {
+impl Default for Breadcrumb {
     fn default() -> Self {
         Self::new()
     }
 }
 
 /// Builder for adding breadcrumb items
-pub struct BreadcrumbsBuilder<'a> {
+pub struct BreadcrumbBuilder<'a> {
     ui: &'a mut Ui,
     spacing: f32,
     item_index: usize,
     clicked: &'a mut Option<usize>,
 }
 
-impl BreadcrumbsBuilder<'_> {
+impl BreadcrumbBuilder<'_> {
     /// Add a breadcrumb item with optional icon
     pub fn item(&mut self, label: &str, icon: Option<&str>) -> ItemBuilder<'_> {
         let theme = self.ui.ctx().armas_theme();
@@ -245,7 +245,7 @@ impl Drop for ItemBuilder<'_> {
 }
 
 /// Response from breadcrumbs
-pub struct BreadcrumbsResponse {
+pub struct BreadcrumbResponse {
     /// The UI response
     pub response: egui::Response,
     /// Index of clicked item (if any)

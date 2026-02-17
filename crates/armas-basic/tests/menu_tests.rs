@@ -1,6 +1,6 @@
 //! Tests for Menu component using `egui_kittest`
 
-use armas_basic::components::navigation::Menu;
+use armas_basic::DropdownMenu;
 use armas_basic::prelude::*;
 use egui_kittest::Harness;
 
@@ -10,7 +10,7 @@ fn test_menu_renders_open() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("test_menu").open(true);
+        let mut menu = DropdownMenu::new("test_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             menu.item("Option 1");
@@ -28,7 +28,7 @@ fn test_menu_closed() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("test_menu").open(false);
+        let mut menu = DropdownMenu::new("test_menu").open(false);
 
         menu.show(ctx, anchor_rect, |menu| {
             menu.item("Option 1");
@@ -44,7 +44,7 @@ fn test_menu_with_icons() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("icon_menu").open(true);
+        let mut menu = DropdownMenu::new("icon_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             let _ = menu.item("Copy").icon("📋");
@@ -62,7 +62,7 @@ fn test_menu_with_shortcuts() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("shortcut_menu").open(true);
+        let mut menu = DropdownMenu::new("shortcut_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             let _ = menu.item("Copy").shortcut("⌘C");
@@ -81,7 +81,7 @@ fn test_menu_icons_and_shortcuts() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("full_menu").open(true);
+        let mut menu = DropdownMenu::new("full_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             let _ = menu.item("Copy").icon("📋").shortcut("⌘C");
@@ -99,7 +99,7 @@ fn test_menu_with_separators() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("sep_menu").open(true);
+        let mut menu = DropdownMenu::new("sep_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             menu.item("New File");
@@ -121,7 +121,7 @@ fn test_menu_with_groups() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("group_menu").open(true);
+        let mut menu = DropdownMenu::new("group_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             menu.item("New");
@@ -141,7 +141,7 @@ fn test_menu_destructive_item() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("destructive_menu").open(true);
+        let mut menu = DropdownMenu::new("destructive_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             menu.item("Edit");
@@ -160,7 +160,7 @@ fn test_menu_disabled_items() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("disabled_menu").open(true);
+        let mut menu = DropdownMenu::new("disabled_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             menu.item("Available");
@@ -178,7 +178,7 @@ fn test_menu_checkbox_items() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("checkbox_menu").open(true);
+        let mut menu = DropdownMenu::new("checkbox_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             menu.checkbox("Show Toolbar", true);
@@ -196,7 +196,7 @@ fn test_menu_radio_items() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("radio_menu").open(true);
+        let mut menu = DropdownMenu::new("radio_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             menu.radio("Light", "theme", "light", false);
@@ -214,7 +214,7 @@ fn test_menu_custom_width() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("wide_menu").width(300.0).open(true);
+        let mut menu = DropdownMenu::new("wide_menu").width(300.0).open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             menu.item("This is a very long menu item text");
@@ -231,7 +231,7 @@ fn test_menu_position_bottom() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("bottom_menu")
+        let mut menu = DropdownMenu::new("bottom_menu")
             .position(PopoverPosition::Bottom)
             .open(true);
 
@@ -250,7 +250,7 @@ fn test_menu_inset_items() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("inset_menu").open(true);
+        let mut menu = DropdownMenu::new("inset_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             let _ = menu.item("With Icon").icon("📄");
@@ -268,7 +268,7 @@ fn test_context_menu_comprehensive() {
     let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
 
     let mut harness = Harness::new(|ctx| {
-        let mut menu = Menu::new("context_menu").open(true);
+        let mut menu = DropdownMenu::new("context_menu").open(true);
 
         menu.show(ctx, anchor_rect, |menu| {
             let _ = menu.item("Open").icon("📂").shortcut("⌘O");

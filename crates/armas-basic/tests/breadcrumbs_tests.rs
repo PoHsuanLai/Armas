@@ -1,15 +1,15 @@
-//! Tests for Breadcrumbs component using `egui_kittest`
+//! Tests for Breadcrumb component using `egui_kittest`
 
-use armas_basic::components::navigation::Breadcrumbs;
+use armas_basic::Breadcrumb;
 use armas_basic::ArmasContextExt;
 use egui_kittest::Harness;
 
-/// Test that Breadcrumbs renders without panicking
+/// Test that Breadcrumb renders without panicking
 #[test]
 fn test_breadcrumbs_renders() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
-        Breadcrumbs::new().show(ui, |bc| {
+        Breadcrumb::new().show(ui, |bc| {
             bc.item("Home", None);
             bc.item("Products", None);
             bc.item("Electronics", None);
@@ -19,12 +19,12 @@ fn test_breadcrumbs_renders() {
     harness.run();
 }
 
-/// Test Breadcrumbs with single item
+/// Test Breadcrumb with single item
 #[test]
 fn test_breadcrumbs_single_item() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
-        Breadcrumbs::new().show(ui, |bc| {
+        Breadcrumb::new().show(ui, |bc| {
             bc.item("Home", None);
         });
     });
@@ -32,12 +32,12 @@ fn test_breadcrumbs_single_item() {
     harness.run();
 }
 
-/// Test Breadcrumbs with current (non-clickable) item
+/// Test Breadcrumb with current (non-clickable) item
 #[test]
 fn test_breadcrumbs_with_current() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
-        Breadcrumbs::new().show(ui, |bc| {
+        Breadcrumb::new().show(ui, |bc| {
             bc.item("Home", None);
             bc.item("Products", None);
             let _ = bc.item("Current Page", None).current();
@@ -47,12 +47,12 @@ fn test_breadcrumbs_with_current() {
     harness.run();
 }
 
-/// Test Breadcrumbs with icons
+/// Test Breadcrumb with icons
 #[test]
 fn test_breadcrumbs_with_icons() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
-        Breadcrumbs::new().show(ui, |bc| {
+        Breadcrumb::new().show(ui, |bc| {
             bc.item("Home", Some("🏠"));
             bc.item("Settings", Some("⚙️"));
             let _ = bc.item("Profile", Some("👤")).current();
@@ -62,12 +62,12 @@ fn test_breadcrumbs_with_icons() {
     harness.run();
 }
 
-/// Test Breadcrumbs with custom spacing
+/// Test Breadcrumb with custom spacing
 #[test]
 fn test_breadcrumbs_custom_spacing() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
-        Breadcrumbs::new().spacing(8.0).show(ui, |bc| {
+        Breadcrumb::new().spacing(8.0).show(ui, |bc| {
             bc.item("A", None);
             bc.item("B", None);
             bc.item("C", None);
@@ -77,12 +77,12 @@ fn test_breadcrumbs_custom_spacing() {
     harness.run();
 }
 
-/// Test Breadcrumbs with zero spacing
+/// Test Breadcrumb with zero spacing
 #[test]
 fn test_breadcrumbs_zero_spacing() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
-        Breadcrumbs::new().spacing(0.0).show(ui, |bc| {
+        Breadcrumb::new().spacing(0.0).show(ui, |bc| {
             bc.item("One", None);
             bc.item("Two", None);
         });
@@ -91,12 +91,12 @@ fn test_breadcrumbs_zero_spacing() {
     harness.run();
 }
 
-/// Test Breadcrumbs with many items
+/// Test Breadcrumb with many items
 #[test]
 fn test_breadcrumbs_many_items() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
-        Breadcrumbs::new().show(ui, |bc| {
+        Breadcrumb::new().show(ui, |bc| {
             bc.item("Root", None);
             bc.item("Level 1", None);
             bc.item("Level 2", None);
@@ -109,12 +109,12 @@ fn test_breadcrumbs_many_items() {
     harness.run();
 }
 
-/// Test Breadcrumbs file path style
+/// Test Breadcrumb file path style
 #[test]
 fn test_breadcrumbs_file_path() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
-        Breadcrumbs::new().show(ui, |bc| {
+        Breadcrumb::new().show(ui, |bc| {
             bc.item("Users", Some("📁"));
             bc.item("john", Some("📁"));
             bc.item("Documents", Some("📁"));
@@ -125,12 +125,12 @@ fn test_breadcrumbs_file_path() {
     harness.run();
 }
 
-/// Test Breadcrumbs website navigation style
+/// Test Breadcrumb website navigation style
 #[test]
 fn test_breadcrumbs_website_nav() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
-        Breadcrumbs::new().show(ui, |bc| {
+        Breadcrumb::new().show(ui, |bc| {
             bc.item("Home", Some("🏠"));
             bc.item("Shop", None);
             bc.item("Electronics", None);
@@ -142,12 +142,12 @@ fn test_breadcrumbs_website_nav() {
     harness.run();
 }
 
-/// Test Breadcrumbs response (clicked field exists)
+/// Test Breadcrumb response (clicked field exists)
 #[test]
 fn test_breadcrumbs_response() {
     let mut harness = Harness::new_ui(|ui| {
         let _theme = ui.ctx().armas_theme();
-        let response = Breadcrumbs::new().show(ui, |bc| {
+        let response = Breadcrumb::new().show(ui, |bc| {
             bc.item("Home", None);
             let _ = bc.item("Page", None).current();
         });
