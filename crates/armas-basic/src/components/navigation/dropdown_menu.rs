@@ -461,6 +461,13 @@ impl DropdownMenu {
             );
         });
 
+        // Block background scrolling while menu is open
+        if is_open {
+            ctx.input_mut(|input| {
+                input.smooth_scroll_delta = egui::Vec2::ZERO;
+            });
+        }
+
         if popover_response.clicked_outside {
             inner_response.clicked_outside = true;
             is_open = false;
