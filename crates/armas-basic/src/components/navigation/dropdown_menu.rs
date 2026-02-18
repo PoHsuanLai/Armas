@@ -100,7 +100,7 @@ const CHEVRON_SIZE: f32 = 16.0;
 // ============================================================================
 
 #[derive(Clone)]
-enum MenuItemKind {
+pub(crate) enum MenuItemKind {
     Item {
         destructive: bool,
     },
@@ -119,13 +119,13 @@ enum MenuItemKind {
 }
 
 #[derive(Clone)]
-struct MenuItemData {
-    label: String,
-    icon: Option<String>,
-    shortcut: Option<String>,
-    disabled: bool,
-    inset: bool,
-    kind: MenuItemKind,
+pub(crate) struct MenuItemData {
+    pub(crate) label: String,
+    pub(crate) icon: Option<String>,
+    pub(crate) shortcut: Option<String>,
+    pub(crate) disabled: bool,
+    pub(crate) inset: bool,
+    pub(crate) kind: MenuItemKind,
 }
 
 impl MenuItemData {
@@ -144,8 +144,18 @@ pub struct MenuBuilder {
 }
 
 impl MenuBuilder {
-    const fn new() -> Self {
+    pub(crate) const fn new() -> Self {
         Self { items: Vec::new() }
+    }
+
+    /// Convert builder into its items (for use by Menubar).
+    pub(crate) fn into_items(self) -> Vec<MenuItemData> {
+        self.items
+    }
+
+    /// Push a pre-built item (for replay by Menubar).
+    pub(crate) fn push_item(&mut self, item: MenuItemData) {
+        self.items.push(item);
     }
 
     /// Add a regular menu item
