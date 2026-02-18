@@ -21,32 +21,38 @@ pub use crate::Theme;
 pub use crate::color::{BlendMode, ColorStop, Gradient};
 
 // Layout helpers
-pub use crate::layout::{cell, cell_ui, header_row, row, table, AspectRatio, ContentMode};
+pub use crate::layout::{
+    cell, cell_ui, header_row, row, table, AspectRatio, ContentMode, Resizable, ResizableDirection,
+    ResizablePanel,
+};
 
 // Common component enums
 pub use crate::components::{
-    AlertVariant, BadgeVariant, ButtonSize, ButtonVariant, DialogSize, InputState, InputVariant,
-    PopoverPosition, SheetSide, SheetSize, SwitchSize, ToastVariant, ToggleGroupSize,
-    ToggleGroupType, ToggleGroupVariant, ToggleSize, ToggleVariant, TooltipPosition,
+    AlertVariant, BadgeVariant, ButtonSize, ButtonVariant, CarouselOrientation, DialogSize,
+    InputState, InputVariant, PopoverPosition, SheetSide, SheetSize, SwitchSize, ToastVariant,
+    ToggleGroupSize, ToggleGroupType, ToggleGroupVariant, ToggleSize, ToggleVariant,
+    TooltipPosition,
 };
 
 // Essential interactive components
 pub use crate::components::{
-    Badge, Button, Checkbox, Input, NumberField, RangeSlider, Select, Slider, Switch, Textarea,
-    ThreeValueSlider, Toggle, ToggleGroup,
+    Badge, Button, Carousel, Checkbox, Input, NumberField, RangeSlider, Select, Slider, Switch,
+    Textarea, ThreeValueSlider, Toggle, ToggleGroup,
 };
 
 // Display components
 pub use crate::components::{Alert, Avatar, AvatarShape, Kbd, Separator, Skeleton, Spinner};
 
 // Navigation components
-pub use crate::components::{Breadcrumb, ContextMenu, DropdownMenu, Pagination, Tabs};
+pub use crate::components::{Breadcrumb, ContextMenu, DropdownMenu, Menubar, Pagination, Tabs};
 
 // Card components
 pub use crate::components::Card;
 
 // Overlay components
-pub use crate::components::{Dialog, DialogResponse, Drawer, Popover, Sheet, Tooltip};
+pub use crate::components::{
+    dialog_footer, Dialog, DialogResponse, Drawer, HoverCard, Popover, Sheet, Tooltip,
+};
 
 // Grouping components
 pub use crate::components::Accordion;
