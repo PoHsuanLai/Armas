@@ -16,8 +16,10 @@
 
 mod aspect_ratio;
 mod bento_grid;
+pub mod resizable;
 mod table;
 
 pub use aspect_ratio::{AspectRatio, ContentMode};
 pub use bento_grid::{BentoGrid, GridSpan};
+pub use resizable::{Resizable, ResizableDirection, ResizablePanel, ResizableResponse};
 pub use table::{cell, cell_ui, header_row, row, table, TableCells, TableRows};
