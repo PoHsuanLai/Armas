@@ -601,10 +601,7 @@ impl ToggleGroup {
                     if self.vertical {
                         painter.line_segment([rect.left_top(), rect.right_top()], divider_stroke);
                     } else {
-                        painter.line_segment(
-                            [rect.left_top(), rect.left_bottom()],
-                            divider_stroke,
-                        );
+                        painter.line_segment([rect.left_top(), rect.left_bottom()], divider_stroke);
                     }
                 }
             }
