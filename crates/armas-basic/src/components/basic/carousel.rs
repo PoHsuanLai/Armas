@@ -21,6 +21,7 @@ use egui::{vec2, Id, Pos2, Rect, Sense, Stroke, Ui};
 const BUTTON_SIZE: f32 = 32.0;
 const BUTTON_RADIUS: f32 = 16.0;
 const BUTTON_ICON_SIZE: f32 = 16.0;
+const BUTTON_MARGIN: f32 = 12.0; // Space between button and content edge
 const DEFAULT_GAP: f32 = 16.0;
 const DEFAULT_HEIGHT: f32 = 200.0;
 
@@ -130,11 +131,33 @@ impl Carousel {
 
         let is_horizontal = self.orientation == CarouselOrientation::Horizontal;
         let available_width = ui.available_width();
-        let container_size = vec2(available_width, self.height);
 
-        // Allocate container
-        let (container_rect, container_response) =
-            ui.allocate_exact_size(container_size, Sense::drag());
+        // Reserve space for buttons outside the content area
+        let button_space = if self.show_buttons {
+            BUTTON_SIZE + BUTTON_MARGIN
+        } else {
+            0.0
+        };
+
+        // The outer rect includes buttons; the content rect is inset
+        let outer_size = vec2(available_width, self.height);
+        let (outer_rect, outer_response) = ui.allocate_exact_size(outer_size, Sense::hover());
+
+        // Content area is inset from the outer rect to leave room for buttons
+        let content_rect = if is_horizontal {
+            Rect::from_min_max(
+                Pos2::new(outer_rect.left() + button_space, outer_rect.top()),
+                Pos2::new(outer_rect.right() - button_space, outer_rect.bottom()),
+            )
+        } else {
+            Rect::from_min_max(
+                Pos2::new(outer_rect.left(), outer_rect.top() + button_space),
+                Pos2::new(outer_rect.right(), outer_rect.bottom() - button_space),
+            )
+        };
+
+        // Drag interaction on the content area
+        let drag_response = ui.interact(content_rect, self.id.with("drag"), Sense::drag());
 
         // Load state
         let spring_id = self.id.with("spring");
@@ -149,33 +172,61 @@ impl Carousel {
 
         // Calculate item dimensions
         let main_extent = if is_horizontal {
-            container_rect.width()
+            content_rect.width()
         } else {
-            container_rect.height()
+            content_rect.height()
         };
         let item_extent = main_extent * self.item_basis - self.gap * (1.0 - self.item_basis);
         let step = item_extent + self.gap;
-        let max_index = if item_count > 0 { item_count - 1 } else { 0 };
+        let max_index = item_count.saturating_sub(1);
 
         // Handle drag
-        if container_response.dragged() {
+        if drag_response.dragged() {
             let delta = if is_horizontal {
-                container_response.drag_delta().x
+                drag_response.drag_delta().x
             } else {
-                container_response.drag_delta().y
+                drag_response.drag_delta().y
             };
             spring.value -= delta;
             spring.velocity = 0.0;
         }
 
         // Snap on drag release
-        if container_response.drag_stopped() {
+        if drag_response.drag_stopped() {
             let raw_index = (spring.value / step).round().clamp(0.0, max_index as f32);
             current_index = raw_index as usize;
             spring.target = current_index as f32 * step;
         }
 
-        // Handle button clicks
+        // Draw items with clipping to content_rect
+        for i in 0..item_count {
+            let offset = i as f32 * step - spring.value;
+
+            let item_rect = if is_horizontal {
+                Rect::from_min_size(
+                    Pos2::new(content_rect.left() + offset, content_rect.top()),
+                    vec2(item_extent, content_rect.height()),
+                )
+            } else {
+                Rect::from_min_size(
+                    Pos2::new(content_rect.left(), content_rect.top() + offset),
+                    vec2(content_rect.width(), item_extent),
+                )
+            };
+
+            // Only render visible items
+            if item_rect.intersects(content_rect) {
+                let mut child_ui = ui.new_child(
+                    egui::UiBuilder::new()
+                        .max_rect(item_rect)
+                        .layout(egui::Layout::top_down(egui::Align::LEFT)),
+                );
+                child_ui.set_clip_rect(content_rect);
+                content(&mut child_ui, i);
+            }
+        }
+
+        // Draw buttons AFTER items so they render on top and get click priority
         let mut prev_clicked = false;
         let mut next_clicked = false;
 
@@ -184,24 +235,24 @@ impl Carousel {
             let can_next = self.loop_mode || current_index < max_index;
 
             if is_horizontal {
-                // Left button
+                // Left button — centered vertically, to the left of content
                 if can_prev {
                     let btn_rect = Rect::from_center_size(
                         Pos2::new(
-                            container_rect.left() + BUTTON_SIZE / 2.0 + 8.0,
-                            container_rect.center().y,
+                            outer_rect.left() + BUTTON_SIZE / 2.0,
+                            content_rect.center().y,
                         ),
                         vec2(BUTTON_SIZE, BUTTON_SIZE),
                     );
                     prev_clicked = self.draw_nav_button(ui, &theme, btn_rect, true);
                 }
 
-                // Right button
+                // Right button — centered vertically, to the right of content
                 if can_next {
                     let btn_rect = Rect::from_center_size(
                         Pos2::new(
-                            container_rect.right() - BUTTON_SIZE / 2.0 - 8.0,
-                            container_rect.center().y,
+                            outer_rect.right() - BUTTON_SIZE / 2.0,
+                            content_rect.center().y,
                         ),
                         vec2(BUTTON_SIZE, BUTTON_SIZE),
                     );
@@ -212,8 +263,8 @@ impl Carousel {
                 if can_prev {
                     let btn_rect = Rect::from_center_size(
                         Pos2::new(
-                            container_rect.center().x,
-                            container_rect.top() + BUTTON_SIZE / 2.0 + 8.0,
+                            content_rect.center().x,
+                            outer_rect.top() + BUTTON_SIZE / 2.0,
                         ),
                         vec2(BUTTON_SIZE, BUTTON_SIZE),
                     );
@@ -224,8 +275,8 @@ impl Carousel {
                 if can_next {
                     let btn_rect = Rect::from_center_size(
                         Pos2::new(
-                            container_rect.center().x,
-                            container_rect.bottom() - BUTTON_SIZE / 2.0 - 8.0,
+                            content_rect.center().x,
+                            outer_rect.bottom() - BUTTON_SIZE / 2.0,
                         ),
                         vec2(BUTTON_SIZE, BUTTON_SIZE),
                     );
@@ -260,38 +311,6 @@ impl Carousel {
             ui.ctx().request_repaint();
         }
 
-        // Draw items with clipping
-        let clip_rect = container_rect;
-        let _painter = ui.painter_at(clip_rect);
-
-        for i in 0..item_count {
-            let offset = i as f32 * step - spring.value;
-
-            let item_rect = if is_horizontal {
-                Rect::from_min_size(
-                    Pos2::new(container_rect.left() + offset, container_rect.top()),
-                    vec2(item_extent, container_rect.height()),
-                )
-            } else {
-                Rect::from_min_size(
-                    Pos2::new(container_rect.left(), container_rect.top() + offset),
-                    vec2(container_rect.width(), item_extent),
-                )
-            };
-
-            // Only render visible items
-            if item_rect.intersects(clip_rect) {
-                // Create a child UI for this item
-                let mut child_ui = ui.new_child(
-                    egui::UiBuilder::new()
-                        .max_rect(item_rect)
-                        .layout(egui::Layout::top_down(egui::Align::LEFT)),
-                );
-                child_ui.set_clip_rect(clip_rect);
-                content(&mut child_ui, i);
-            }
-        }
-
         let changed = current_index != prev_index;
 
         // Save state
@@ -301,7 +320,7 @@ impl Carousel {
         });
 
         CarouselResponse {
-            response: container_response,
+            response: outer_response,
             active_index: current_index,
             changed,
         }
@@ -321,7 +340,7 @@ impl Carousel {
         );
         let hovered = response.hovered();
 
-        // Button background
+        // Button background — outline variant like shadcn
         let bg = if hovered {
             theme.accent()
         } else {
@@ -345,6 +364,7 @@ impl Carousel {
         let center = rect.center();
         let half = BUTTON_ICON_SIZE * 0.3;
         let is_horizontal = self.orientation == CarouselOrientation::Horizontal;
+        let stroke = Stroke::new(1.5, fg);
 
         if is_horizontal {
             if is_prev {
@@ -354,10 +374,8 @@ impl Carousel {
                     Pos2::new(center.x - half * 0.5, center.y),
                     Pos2::new(center.x + half * 0.5, center.y + half),
                 ];
-                ui.painter()
-                    .line_segment([points[0], points[1]], Stroke::new(1.5, fg));
-                ui.painter()
-                    .line_segment([points[1], points[2]], Stroke::new(1.5, fg));
+                ui.painter().line_segment([points[0], points[1]], stroke);
+                ui.painter().line_segment([points[1], points[2]], stroke);
             } else {
                 // Right chevron: >
                 let points = [
@@ -365,10 +383,8 @@ impl Carousel {
                     Pos2::new(center.x + half * 0.5, center.y),
                     Pos2::new(center.x - half * 0.5, center.y + half),
                 ];
-                ui.painter()
-                    .line_segment([points[0], points[1]], Stroke::new(1.5, fg));
-                ui.painter()
-                    .line_segment([points[1], points[2]], Stroke::new(1.5, fg));
+                ui.painter().line_segment([points[0], points[1]], stroke);
+                ui.painter().line_segment([points[1], points[2]], stroke);
             }
         } else if is_prev {
             // Up chevron: ^
@@ -377,10 +393,8 @@ impl Carousel {
                 Pos2::new(center.x, center.y - half * 0.5),
                 Pos2::new(center.x + half, center.y + half * 0.5),
             ];
-            ui.painter()
-                .line_segment([points[0], points[1]], Stroke::new(1.5, fg));
-            ui.painter()
-                .line_segment([points[1], points[2]], Stroke::new(1.5, fg));
+            ui.painter().line_segment([points[0], points[1]], stroke);
+            ui.painter().line_segment([points[1], points[2]], stroke);
         } else {
             // Down chevron: v
             let points = [
@@ -388,10 +402,8 @@ impl Carousel {
                 Pos2::new(center.x, center.y + half * 0.5),
                 Pos2::new(center.x + half, center.y - half * 0.5),
             ];
-            ui.painter()
-                .line_segment([points[0], points[1]], Stroke::new(1.5, fg));
-            ui.painter()
-                .line_segment([points[1], points[2]], Stroke::new(1.5, fg));
+            ui.painter().line_segment([points[0], points[1]], stroke);
+            ui.painter().line_segment([points[1], points[2]], stroke);
         }
 
         response.clicked()

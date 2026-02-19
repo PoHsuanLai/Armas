@@ -12,7 +12,9 @@ pub use crate::icons;
 pub use crate::knob::Knob;
 pub use crate::meter::{AudioMeter, MeterStyle, ScalePosition};
 pub use crate::midi_controller::{MidiController, MidiControllerResponse, MidiControllerState};
-pub use crate::midi_pad::{MidiPad, MidiPadResponse, PadColorScheme, PadConfig, PadState, PadVariant};
+pub use crate::midi_pad::{
+    MidiPad, MidiPadResponse, PadColorScheme, PadConfig, PadState, PadVariant,
+};
 pub use crate::mixer_strip::{Insert, MixerStrip, MixerStripMode, MixerStripResponse, Route, Send};
 pub use crate::mod_wheel::{ModWheel, WheelSize, WheelType};
 pub use crate::mpe_keyboard::{MPEKey, MPEKeyboard, MPEKeyboardResponse, MPENote, MPEOrientation};

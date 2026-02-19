@@ -53,7 +53,7 @@ fn test_carousel_custom_config() {
             .height(300.0)
             .show_buttons(false);
         carousel.show(ui, 9, |ui, index| {
-            ui.label(format!("Item {}", index));
+            ui.label(format!("Item {index}"));
         });
     });
 
@@ -67,7 +67,7 @@ fn test_carousel_vertical() {
         let mut carousel =
             Carousel::new("vertical_carousel").orientation(CarouselOrientation::Vertical);
         carousel.show(ui, 5, |ui, index| {
-            ui.label(format!("Row {}", index));
+            ui.label(format!("Row {index}"));
         });
     });
 
@@ -80,7 +80,7 @@ fn test_carousel_loop() {
     let mut harness = Harness::new_ui(|ui| {
         let mut carousel = Carousel::new("loop_carousel").loop_mode(true);
         carousel.show(ui, 3, |ui, index| {
-            ui.label(format!("Slide {}", index));
+            ui.label(format!("Slide {index}"));
         });
     });
 
