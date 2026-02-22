@@ -55,12 +55,10 @@ pub enum PianoOrientation {
     /// Horizontal with keys extending upward
     Horizontal,
     /// Horizontal with keys extending downward
-    #[allow(dead_code)]
     HorizontalUp,
     /// Vertical with keys extending rightward
     Vertical,
     /// Vertical with keys extending leftward
-    #[allow(dead_code)]
     VerticalLeft,
 }
 

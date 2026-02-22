@@ -16,8 +16,8 @@ egui-theme = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = { version = "0.4", features = ["clock", "wasmbind"] }
-armas-basic = { version = "0.1.2", path = "../armas-basic" }
-armas-icon = { version = "0.1.2", path = "../armas-icon", features = ["runtime"] }
+armas-basic = { version = "0.2.0", path = "../armas-basic" }
+armas-icon = { version = "0.2.0", path = "../armas-icon", features = ["runtime"] }
 
 [dev-dependencies]
 egui_kittest = { version = "0.33", features = ["wgpu", "snapshot"] }

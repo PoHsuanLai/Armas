@@ -17,9 +17,9 @@ audio = ["dep:armas-audio", "basic"]
 icon = ["dep:armas-icon"]
 
 [dependencies]
-armas-basic = { version = "0.1.2", path = "../armas-basic", optional = true }
-armas-audio = { version = "0.1.2", path = "../armas-audio", optional = true }
-armas-icon = { version = "0.1.2", path = "../armas-icon", optional = true }
+armas-basic = { version = "0.2.0", path = "../armas-basic", optional = true }
+armas-audio = { version = "0.2.0", path = "../armas-audio", optional = true }
+armas-icon = { version = "0.2.0", path = "../armas-icon", optional = true }
 
 [lints]
 workspace = true

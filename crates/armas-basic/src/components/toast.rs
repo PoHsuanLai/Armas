@@ -173,24 +173,6 @@ impl Toast {
         }
     }
 
-    #[allow(dead_code)]
-    fn with_title(mut self, title: impl Into<String>) -> Self {
-        self.title = Some(title.into());
-        self
-    }
-
-    #[allow(dead_code)]
-    const fn with_duration_secs(mut self, duration_secs: f32) -> Self {
-        self.duration_secs = duration_secs;
-        self
-    }
-
-    #[allow(dead_code)]
-    const fn with_dismissible(mut self, dismissible: bool) -> Self {
-        self.dismissible = dismissible;
-        self
-    }
-
     fn is_expired(&self, current_time: f64) -> bool {
         // Externally-driven toasts never auto-expire.
         if self.external_progress.is_some() {

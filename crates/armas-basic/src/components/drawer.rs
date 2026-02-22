@@ -66,7 +66,6 @@ pub enum DrawerSnapPoint {
 
 impl DrawerSnapPoint {
     /// Convert snap point to ratio (0.0-1.0)
-    #[allow(dead_code)]
     #[must_use]
     pub const fn to_ratio(&self) -> f32 {
         match self {
