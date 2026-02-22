@@ -16,5 +16,6 @@ dist/
 
 *.md
 !README.md
+!CHANGELOG.md
 
 /assets
