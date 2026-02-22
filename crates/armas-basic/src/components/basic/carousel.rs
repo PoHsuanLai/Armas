@@ -156,9 +156,6 @@ impl Carousel {
             )
         };
 
-        // Drag interaction on the content area
-        let drag_response = ui.interact(content_rect, self.id.with("drag"), Sense::drag());
-
         // Load state
         let spring_id = self.id.with("spring");
         let index_id = self.id.with("index");
@@ -179,24 +176,6 @@ impl Carousel {
         let item_extent = main_extent * self.item_basis - self.gap * (1.0 - self.item_basis);
         let step = item_extent + self.gap;
         let max_index = item_count.saturating_sub(1);
-
-        // Handle drag
-        if drag_response.dragged() {
-            let delta = if is_horizontal {
-                drag_response.drag_delta().x
-            } else {
-                drag_response.drag_delta().y
-            };
-            spring.value -= delta;
-            spring.velocity = 0.0;
-        }
-
-        // Snap on drag release
-        if drag_response.drag_stopped() {
-            let raw_index = (spring.value / step).round().clamp(0.0, max_index as f32);
-            current_index = raw_index as usize;
-            spring.target = current_index as f32 * step;
-        }
 
         // Draw items with clipping to content_rect
         for i in 0..item_count {
@@ -224,6 +203,26 @@ impl Carousel {
                 child_ui.set_clip_rect(content_rect);
                 content(&mut child_ui, i);
             }
+        }
+
+        // Drag interaction AFTER items so it sits on top and captures drag
+        // before item widgets (like text selection) can consume it.
+        let drag_response = ui.interact(content_rect, self.id.with("drag"), Sense::drag());
+
+        if drag_response.dragged() {
+            let delta = if is_horizontal {
+                drag_response.drag_delta().x
+            } else {
+                drag_response.drag_delta().y
+            };
+            spring.value -= delta;
+            spring.velocity = 0.0;
+        }
+
+        if drag_response.drag_stopped() {
+            let raw_index = (spring.value / step).round().clamp(0.0, max_index as f32);
+            current_index = raw_index as usize;
+            spring.target = current_index as f32 * step;
         }
 
         // Draw buttons AFTER items so they render on top and get click priority

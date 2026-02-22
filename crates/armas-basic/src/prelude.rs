@@ -28,16 +28,16 @@ pub use crate::layout::{
 
 // Common component enums
 pub use crate::components::{
-    AlertVariant, BadgeVariant, ButtonSize, ButtonVariant, CarouselOrientation, DialogSize,
-    InputState, InputVariant, PopoverPosition, SheetSide, SheetSize, SwitchSize, ToastVariant,
-    ToggleGroupSize, ToggleGroupType, ToggleGroupVariant, ToggleSize, ToggleVariant,
-    TooltipPosition,
+    AlertVariant, BadgeVariant, ButtonGroupOrientation, ButtonSize, ButtonVariant,
+    CarouselOrientation, DialogSize, InputState, InputVariant, PopoverPosition, SheetSide,
+    SheetSize, SwitchSize, ToastVariant, ToggleGroupSize, ToggleGroupType, ToggleGroupVariant,
+    ToggleSize, ToggleVariant, TooltipPosition,
 };
 
 // Essential interactive components
 pub use crate::components::{
-    Badge, Button, Carousel, Checkbox, Input, NumberField, RangeSlider, Select, Slider, Switch,
-    Textarea, ThreeValueSlider, Toggle, ToggleGroup,
+    Badge, Button, ButtonGroup, Calendar, Carousel, Checkbox, Input, InputGroup, NumberField,
+    RangeSlider, Select, Slider, Switch, Textarea, ThreeValueSlider, Toggle, ToggleGroup,
 };
 
 // Display components

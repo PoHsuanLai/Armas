@@ -344,6 +344,7 @@ pub struct ToggleGroup {
     variant: ToggleGroupVariant,
     size: ToggleGroupSize,
     spacing: f32,
+    padding: Option<f32>,
     vertical: bool,
     disabled: bool,
 }
@@ -358,6 +359,7 @@ impl ToggleGroup {
             variant: ToggleGroupVariant::Default,
             size: ToggleGroupSize::Default,
             spacing: 0.0,
+            padding: None,
             vertical: false,
             disabled: false,
         }
@@ -388,6 +390,14 @@ impl ToggleGroup {
     #[must_use]
     pub const fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
+        self
+    }
+
+    /// Override horizontal padding around each item's text.
+    /// When set, this takes precedence over the size-based default padding.
+    #[must_use]
+    pub const fn padding(mut self, padding: f32) -> Self {
+        self.padding = Some(padding);
         self
     }
 
@@ -438,6 +448,11 @@ impl ToggleGroup {
             egui::Layout::left_to_right(egui::Align::Center)
         };
 
+        // Zero out parent item_spacing so with_layout doesn't add
+        // outer padding around the group.
+        let prev_spacing = ui.spacing().item_spacing;
+        ui.spacing_mut().item_spacing = Vec2::ZERO;
+
         let response = ui
             .with_layout(layout, |ui| {
                 if self.spacing > 0.0 {
@@ -452,7 +467,7 @@ impl ToggleGroup {
 
                 // Pre-measure all items to find uniform width
                 let font_size = self.size.font_size();
-                let padding_x = self.size.padding_x();
+                let padding_x = self.padding.unwrap_or_else(|| self.size.padding_x());
                 let max_text_width = items
                     .iter()
                     .map(|label| {
@@ -503,6 +518,9 @@ impl ToggleGroup {
                 }
             })
             .response;
+
+        // Restore parent spacing
+        ui.spacing_mut().item_spacing = prev_spacing;
 
         // Save state to memory if ID is set
         if let Some(id) = self.id {

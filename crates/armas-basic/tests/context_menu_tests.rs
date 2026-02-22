@@ -1,9 +1,9 @@
-//! Tests for ContextMenu component using `egui_kittest`
+//! Tests for `ContextMenu` component using `egui_kittest`
 
 use armas_basic::ContextMenu;
 use egui_kittest::Harness;
 
-/// Test that ContextMenu renders without panicking when closed
+/// Test that `ContextMenu` renders without panicking when closed
 #[test]
 fn test_context_menu_closed() {
     let mut harness = Harness::new(|ctx| {
@@ -21,7 +21,7 @@ fn test_context_menu_closed() {
     harness.run();
 }
 
-/// Test ContextMenu with custom width
+/// Test `ContextMenu` with custom width
 #[test]
 fn test_context_menu_custom_width() {
     let mut harness = Harness::new(|ctx| {
@@ -38,7 +38,7 @@ fn test_context_menu_custom_width() {
     harness.run();
 }
 
-/// Test ContextMenu with separators and destructive items
+/// Test `ContextMenu` with separators and destructive items
 #[test]
 fn test_context_menu_with_separators() {
     let mut harness = Harness::new(|ctx| {
@@ -57,7 +57,7 @@ fn test_context_menu_with_separators() {
     harness.run();
 }
 
-/// Test ContextMenu with shortcuts and icons
+/// Test `ContextMenu` with shortcuts and icons
 #[test]
 fn test_context_menu_full() {
     let mut harness = Harness::new(|ctx| {

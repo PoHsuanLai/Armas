@@ -510,7 +510,7 @@ mod tests {
     #[test]
     fn test_format_value() {
         assert_eq!(format_value(5.0), "5");
-        assert_eq!(format_value(3.14), "3.14");
+        assert_eq!(format_value(3.125), "3.125");
         assert_eq!(format_value(0.0), "0");
         assert_eq!(format_value(-1.0), "-1");
         assert_eq!(format_value(2.5), "2.5");

@@ -1,9 +1,9 @@
-//! Tests for HoverCard component using `egui_kittest`
+//! Tests for `HoverCard` component using `egui_kittest`
 
 use armas_basic::prelude::*;
 use egui_kittest::Harness;
 
-/// Test HoverCard renders without panicking (not hovered = closed)
+/// Test `HoverCard` renders without panicking (not hovered = closed)
 #[test]
 fn test_hover_card_closed() {
     let mut harness = Harness::new(|ctx| {
@@ -19,7 +19,7 @@ fn test_hover_card_closed() {
     harness.run();
 }
 
-/// Test HoverCard with custom delays
+/// Test `HoverCard` with custom delays
 #[test]
 fn test_hover_card_custom_delays() {
     let mut harness = Harness::new(|ctx| {
@@ -37,7 +37,7 @@ fn test_hover_card_custom_delays() {
     harness.run();
 }
 
-/// Test HoverCard with custom width and position
+/// Test `HoverCard` with custom width and position
 #[test]
 fn test_hover_card_custom_config() {
     let mut harness = Harness::new(|ctx| {
@@ -56,7 +56,7 @@ fn test_hover_card_custom_config() {
     harness.run();
 }
 
-/// Test HoverCard response has is_open field
+/// Test `HoverCard` response has `is_open` field
 #[test]
 fn test_hover_card_response() {
     let mut harness = Harness::new(|ctx| {
