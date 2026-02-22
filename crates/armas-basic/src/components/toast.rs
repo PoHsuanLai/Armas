@@ -44,7 +44,7 @@
 //! ```
 
 use crate::animation::SpringAnimation;
-use crate::components::button::IconButton;
+use crate::components::IconButton;
 use crate::ext::ArmasContextExt;
 use crate::icon;
 use crate::{ButtonVariant, Card, CardVariant, Theme};

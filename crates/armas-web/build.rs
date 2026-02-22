@@ -32,11 +32,8 @@ fn get_section_order() -> Vec<&'static str> {
         "introduction",
         "installation",
         "layout",
-        "basic",
-        "navigation",
-        "cards",
+        "components",
         "audio",
-        "overlays",
         "backgrounds",
     ]
 }

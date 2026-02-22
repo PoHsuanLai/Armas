@@ -2,7 +2,7 @@
 //!
 //! A button variant specifically designed for rendering icons with Material Design 3 styling.
 
-use crate::components::button::ButtonVariant;
+use crate::components::ButtonVariant;
 use crate::ext::ArmasContextExt;
 use crate::icon::{render_icon_data, IconData, OwnedIconData};
 use egui::{Color32, Response, Sense, Ui, Vec2};
@@ -21,7 +21,7 @@ use egui::{Color32, Response, Sense, Ui, Vec2};
 /// #     viewbox_width: 24.0, viewbox_height: 24.0,
 /// # };
 /// # fn example(ui: &mut Ui) {
-/// use armas_basic::components::button::{IconButton, ButtonVariant};
+/// use armas_basic::components::{IconButton, ButtonVariant};
 ///
 /// if IconButton::new(&MY_ICON)
 ///     .variant(ButtonVariant::Filled)

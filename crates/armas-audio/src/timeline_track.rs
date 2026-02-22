@@ -2,7 +2,7 @@
 //!
 //! A horizontal track row for DAW timelines that displays audio/MIDI regions.
 
-use armas_basic::components::cards::{Card, CardVariant};
+use armas_basic::components::{Card, CardVariant};
 use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, StrokeKind, Ui, Vec2};
 

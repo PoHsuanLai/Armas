@@ -7,7 +7,7 @@ use crate::{
     MidiPad, MidiPadResponse, ModWheel, PadColorScheme, PadConfig, PadState, Piano,
     PianoOrientation, PianoResponse, StepSequencer, WheelSize, WheelType, XYPad,
 };
-use armas_basic::components::cards::{Card, CardVariant};
+use armas_basic::components::{Card, CardVariant};
 use egui::{Response, ScrollArea, Ui};
 use std::collections::{HashMap, HashSet};
 

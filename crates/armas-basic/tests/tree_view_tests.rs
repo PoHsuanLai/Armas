@@ -1,6 +1,6 @@
 //! Tests for `TreeView` component using `egui_kittest`
 
-use armas_basic::components::navigation::{TreeItem, TreeView};
+use armas_basic::components::{TreeItem, TreeView};
 use egui_kittest::Harness;
 use std::path::PathBuf;
 

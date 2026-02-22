@@ -1,6 +1,6 @@
 //! Tests for Command component using `egui_kittest`
 
-use armas_basic::components::navigation::Command;
+use armas_basic::components::Command;
 use armas_basic::ArmasContextExt;
 use egui_kittest::Harness;
 

@@ -4,9 +4,9 @@
 //! mute/solo, meter, and fader.
 
 use crate::{AudioMeter, Fader, Knob, Slot};
-use armas_basic::components::basic::{Badge, Select, SelectOption};
-use armas_basic::components::button::{Button, ButtonSize, ButtonVariant};
-use armas_basic::components::cards::{Card, CardVariant};
+use armas_basic::components::{Badge, Select, SelectOption};
+use armas_basic::components::{Button, ButtonSize, ButtonVariant};
+use armas_basic::components::{Card, CardVariant};
 use egui::{Color32, Id, Response, Ui, Vec2};
 
 /// Mixer channel strip component

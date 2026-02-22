@@ -1,6 +1,6 @@
 //! Tests for Select component using `egui_kittest`
 
-use armas_basic::components::basic::SelectOption;
+use armas_basic::components::SelectOption;
 use armas_basic::prelude::*;
 use egui_kittest::Harness;
 

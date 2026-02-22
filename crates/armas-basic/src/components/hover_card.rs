@@ -3,7 +3,7 @@
 //! A card that appears on hover with configurable open/close delays.
 //! Placeholder — implementation follows.
 
-use crate::components::overlays::popover::{Popover, PopoverPosition, PopoverStyle};
+use crate::components::popover::{Popover, PopoverPosition, PopoverStyle};
 use egui::{Id, Ui};
 
 /// Hover Card — appears on hover over a trigger element.

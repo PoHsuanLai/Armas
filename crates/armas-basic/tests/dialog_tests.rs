@@ -1,6 +1,6 @@
 //! Tests for Dialog component using `egui_kittest`
 
-use armas_basic::components::overlays::{Dialog, DialogSize};
+use armas_basic::components::{Dialog, DialogSize};
 use armas_basic::prelude::*;
 use egui_kittest::Harness;
 

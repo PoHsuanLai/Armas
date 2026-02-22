@@ -3,7 +3,7 @@
 //! A command palette for search and quick actions. Styled to match shadcn/ui command.
 
 use crate::animation::{Animation, EasingFunction};
-use crate::components::basic::Kbd;
+use crate::components::Kbd;
 use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{vec2, Align2, Color32, Key, Modifiers, Pos2, Rect, Sense, Ui};

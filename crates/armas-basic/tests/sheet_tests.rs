@@ -1,6 +1,6 @@
 //! Tests for Sheet component (side panel)
 
-use armas_basic::components::overlays::{Sheet, SheetSide, SheetSize};
+use armas_basic::components::{Sheet, SheetSide, SheetSize};
 use armas_basic::prelude::*;
 use egui_kittest::Harness;
 

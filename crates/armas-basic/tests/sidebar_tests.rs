@@ -1,6 +1,6 @@
 //! Tests for Sidebar component using `egui_kittest`
 
-use armas_basic::components::navigation::{CollapsibleMode, Sidebar};
+use armas_basic::components::{CollapsibleMode, Sidebar};
 use armas_basic::ArmasContextExt;
 use egui_kittest::Harness;
 

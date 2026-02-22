@@ -1,6 +1,6 @@
 //! Tests for Drawer component (vaul-style bottom sheet)
 
-use armas_basic::components::overlays::Drawer;
+use armas_basic::components::Drawer;
 use armas_basic::prelude::*;
 use egui_kittest::Harness;
 

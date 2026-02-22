@@ -1,6 +1,6 @@
 //! Tests for Tabs component using `egui_kittest`
 
-use armas_basic::components::navigation::Tabs;
+use armas_basic::components::Tabs;
 use egui_kittest::Harness;
 
 /// Test that Tabs renders without panicking

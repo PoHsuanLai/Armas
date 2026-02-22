@@ -4,7 +4,7 @@
 //! so we use `harness.step()` instead of `harness.run()` for rendering tests.
 
 use armas_audio::mixer_strip::{Insert, MixerStrip, MixerStripMode, Route, Send};
-use armas_basic::components::basic::SelectOption;
+use armas_basic::components::SelectOption;
 use armas_basic::ArmasContextExt;
 use egui::Color32;
 use egui_kittest::Harness;

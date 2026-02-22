@@ -1,6 +1,6 @@
 //! Tests for `DatePicker` component using `egui_kittest`
 
-use armas_basic::components::basic::{Date, DatePicker};
+use armas_basic::components::{Date, DatePicker};
 use egui_kittest::Harness;
 
 /// Test Date creation with valid values
