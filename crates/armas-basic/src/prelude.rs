@@ -37,7 +37,7 @@ pub use crate::components::{
 // Essential interactive components
 pub use crate::components::{
     Badge, Button, ButtonGroup, Calendar, Carousel, Checkbox, Input, InputGroup, NumberField,
-    RangeSlider, Select, Slider, Switch, Textarea, ThreeValueSlider, Toggle, ToggleGroup,
+    RangeSlider, Select, Slider, Switch, Textarea, Toggle, ToggleGroup,
 };
 
 // Display components

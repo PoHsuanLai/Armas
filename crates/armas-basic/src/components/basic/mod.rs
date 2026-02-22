@@ -23,7 +23,6 @@ pub mod separator;
 pub mod slider;
 pub mod switch;
 pub mod textarea;
-pub mod three_value_slider;
 pub mod toggle;
 pub mod tooltip;
 
@@ -49,7 +48,6 @@ pub use separator::{Separator, SeparatorOrientation};
 pub use slider::{Slider, SliderResponse};
 pub use switch::{Switch, SwitchResponse, SwitchSize};
 pub use textarea::Textarea;
-pub use three_value_slider::{ThreeValueSlider, ThreeValueSliderResponse, ValueThumbStyle};
 pub use toggle::{
     Toggle, ToggleGroup, ToggleGroupResponse, ToggleGroupSize, ToggleGroupType, ToggleGroupVariant,
     ToggleResponse, ToggleSize, ToggleVariant,
