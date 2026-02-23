@@ -106,23 +106,6 @@ impl Toggle {
         }
     }
 
-    /// Create a toggle for use with [`show_content`](Self::show_content).
-    ///
-    /// The toggle has no text label; content is provided in the show call.
-    /// Defaults to a square layout (width = height). Use
-    /// [`content_width`](Self::content_width) for wider content.
-    #[must_use]
-    pub const fn content() -> Self {
-        Self {
-            id: None,
-            label: String::new(),
-            variant: ToggleVariant::Default,
-            size: ToggleSize::Default,
-            disabled: false,
-            custom_content_width: None,
-        }
-    }
-
     /// Set ID for state persistence
     #[must_use]
     pub fn id(mut self, id: impl Into<egui::Id>) -> Self {
@@ -153,7 +136,7 @@ impl Toggle {
 
     /// Set explicit content area width for custom content.
     ///
-    /// When using [`show_content`](Self::show_content), this controls the inner width.
+    /// When using [`show_ui`](Self::show_ui), this controls the inner width.
     /// If not set, defaults to a square layout (width = height).
     #[must_use]
     pub const fn content_width(mut self, width: f32) -> Self {
@@ -301,13 +284,13 @@ impl Toggle {
     ///
     /// ```ignore
     /// let mut pressed = false;
-    /// Toggle::content()
+    /// Toggle::new("")
     ///     .variant(ToggleVariant::Outline)
-    ///     .show_content(ui, &mut pressed, |ui, ctx| {
+    ///     .show_ui(ui, &mut pressed, |ui, ctx| {
     ///         // Render an icon using ctx.color
     ///     });
     /// ```
-    pub fn show_content(
+    pub fn show_ui(
         self,
         ui: &mut Ui,
         pressed: &mut bool,
@@ -540,7 +523,7 @@ impl ToggleGroup {
 
     /// Set explicit uniform item width.
     ///
-    /// Required when using [`show_content`](Self::show_content) for proper layout.
+    /// Required when using [`show_ui`](Self::show_ui) for proper layout.
     /// For text-based [`show`](Self::show), items auto-size to the widest label.
     #[must_use]
     pub const fn item_width(mut self, width: f32) -> Self {
@@ -808,11 +791,11 @@ impl ToggleGroup {
     /// let mut selected = vec![false, false, false];
     /// ToggleGroup::new(ToggleGroupType::Single)
     ///     .item_width(40.0)
-    ///     .show_content(ui, 3, &mut selected, |index, ui, ctx| {
+    ///     .show_ui(ui, 3, &mut selected, |index, ui, ctx| {
     ///         // Render icon for item `index` using ctx.color
     ///     });
     /// ```
-    pub fn show_content(
+    pub fn show_ui(
         self,
         ui: &mut Ui,
         count: usize,
@@ -915,15 +898,15 @@ mod tests {
     }
 
     #[test]
-    fn test_toggle_content_constructor() {
-        let toggle = Toggle::content();
+    fn test_toggle_empty_label() {
+        let toggle = Toggle::new("");
         assert_eq!(toggle.label, "");
         assert!(toggle.custom_content_width.is_none());
     }
 
     #[test]
     fn test_toggle_content_width() {
-        let toggle = Toggle::content().content_width(80.0);
+        let toggle = Toggle::new("").content_width(80.0);
         assert_eq!(toggle.custom_content_width, Some(80.0));
     }
 

@@ -207,38 +207,6 @@ impl Button {
         }
     }
 
-    /// Create a button for use with [`show_content`](Self::show_content).
-    ///
-    /// The button has no text label; content is provided in the show call.
-    ///
-    /// # Example
-    ///
-    /// ```rust,no_run
-    /// # use egui::Ui;
-    /// # fn example(ui: &mut Ui) {
-    /// use armas_basic::components::{Button, ButtonVariant};
-    ///
-    /// Button::content()
-    ///     .variant(ButtonVariant::Ghost)
-    ///     .show_content(ui, |ui, ctx| {
-    ///         ui.label("Custom content");
-    ///     });
-    /// # }
-    /// ```
-    #[must_use]
-    pub const fn content() -> Self {
-        Self {
-            text: String::new(),
-            variant: ButtonVariant::Default,
-            size: ButtonSize::Default,
-            enabled: true,
-            full_width: false,
-            min_width: None,
-            custom_height: None,
-            content_width: None,
-        }
-    }
-
     /// Set the button variant
     #[must_use]
     pub const fn variant(mut self, variant: ButtonVariant) -> Self {
@@ -283,7 +251,7 @@ impl Button {
 
     /// Set explicit content area width for custom content buttons.
     ///
-    /// When using [`show_content`](Self::show_content), this controls the inner width
+    /// When using [`show_ui`](Self::show_ui), this controls the inner width
     /// available for the closure. If not set, defaults to a square (height-based) layout.
     #[must_use]
     pub const fn content_width(mut self, width: f32) -> Self {
@@ -369,22 +337,22 @@ impl Button {
     /// use armas_basic::components::{Button, ButtonVariant};
     ///
     /// // Icon-only button (square)
-    /// Button::content()
+    /// Button::new("")
     ///     .variant(ButtonVariant::Ghost)
-    ///     .show_content(ui, |ui, ctx| {
+    ///     .show_ui(ui, |ui, ctx| {
     ///         ui.label("X");
     ///     });
     ///
     /// // Icon + text button
-    /// Button::content()
+    /// Button::new("")
     ///     .content_width(80.0)
-    ///     .show_content(ui, |ui, ctx| {
+    ///     .show_ui(ui, |ui, ctx| {
     ///         // render_icon(ui.painter(), my_icon, ctx.color);
     ///         ui.label("Save");
     ///     });
     /// # }
     /// ```
-    pub fn show_content(
+    pub fn show_ui(
         self,
         ui: &mut Ui,
         content: impl FnOnce(&mut Ui, &ContentContext),

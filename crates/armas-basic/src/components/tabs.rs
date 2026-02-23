@@ -83,29 +83,6 @@ impl Tabs {
         }
     }
 
-    /// Create tabs for use with [`show_content`](Self::show_content).
-    ///
-    /// No labels are stored; content is rendered via the closure in `show_content`.
-    /// Set the tab count when calling `show_content`.
-    #[must_use]
-    pub const fn content() -> Self {
-        Self {
-            labels: Vec::new(),
-            active_index: 0,
-            animate: true,
-            indicator_pos: 0.0,
-            persist_state: true,
-            width: 0.0,
-            height: DEFAULT_HEIGHT,
-            padding: DEFAULT_PADDING,
-            list_radius: DEFAULT_LIST_RADIUS,
-            trigger_radius: DEFAULT_TRIGGER_RADIUS,
-            trigger_padding_x: DEFAULT_TRIGGER_PADDING_X,
-            gap: DEFAULT_GAP,
-            font_size: DEFAULT_FONT_SIZE,
-        }
-    }
-
     /// Set active tab index
     #[must_use]
     pub fn active(mut self, index: usize) -> Self {
@@ -385,14 +362,14 @@ impl Tabs {
     /// # Example
     ///
     /// ```ignore
-    /// let mut tabs = Tabs::content().height(28.0);
-    /// let response = tabs.show_content(ui, 3, |index, ui, ctx| {
+    /// let mut tabs = Tabs::new(Vec::<String>::new()).height(28.0);
+    /// let response = tabs.show_ui(ui, 3, |index, ui, ctx| {
     ///     // Render icon + label for tab `index` using ctx.color
     ///     let labels = ["Account", "Password", "Settings"];
     ///     ui.label(labels[index]);
     /// });
     /// ```
-    pub fn show_content(
+    pub fn show_ui(
         &mut self,
         ui: &mut Ui,
         count: usize,

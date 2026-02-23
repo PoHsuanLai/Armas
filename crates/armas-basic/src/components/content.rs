@@ -22,8 +22,8 @@ use egui::Color32;
 /// # fn example(ui: &mut Ui) {
 /// use armas_basic::components::{Button, ContentContext};
 ///
-/// Button::content()
-///     .show_content(ui, |ui, ctx| {
+/// Button::new("")
+///     .show_ui(ui, |ui, ctx| {
 ///         // ctx.color is the correct text/icon color for the current state
 ///         ui.label("Save");
 ///     });

@@ -3,7 +3,8 @@
 //! Complete DAW-style mixer channel strip with sends, routing, inserts, pan,
 //! mute/solo, meter, and fader.
 
-use crate::{AudioMeter, Fader, Knob, Slot};
+use crate::slot::Slot;
+use crate::{AudioMeter, Fader, Knob};
 use armas_basic::components::{Badge, Select, SelectOption};
 use armas_basic::components::{Button, ButtonSize, ButtonVariant};
 use armas_basic::components::{Card, CardVariant};

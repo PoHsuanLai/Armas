@@ -84,14 +84,14 @@ impl MenubarBuilder {
     /// # Example
     ///
     /// ```ignore
-    /// bar.menu_content(60.0, |ui, ctx| {
+    /// bar.menu_ui(60.0, |ui, ctx| {
     ///     // Render icon trigger using ctx.color
     /// }, |menu| {
     ///     menu.item("New");
     ///     menu.item("Open");
     /// });
     /// ```
-    pub fn menu_content(
+    pub fn menu_ui(
         &mut self,
         trigger_width: f32,
         trigger: impl Fn(&mut Ui, &ContentContext) + 'static,

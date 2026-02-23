@@ -218,7 +218,7 @@ impl Theme {
                 destructive_foreground: [250, 250, 250], // zinc-50
 
                 border: [39, 39, 42],  // zinc-800
-                input: [39, 39, 42],   // zinc-800
+                input: [82, 82, 91],   // zinc-600
                 ring: [212, 212, 216], // zinc-300
 
                 chart_1: [59, 130, 246], // blue-500

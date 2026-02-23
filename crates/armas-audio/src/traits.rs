@@ -129,22 +129,9 @@ use crate::midi_pad::MidiPad;
 use crate::mod_wheel::ModWheel;
 use crate::mpe_keyboard::MPEKeyboard;
 use crate::piano_roll::PianoRoll;
-use crate::snap_grid::SnapGrid;
-use crate::step_sequencer::StepSequencer;
-use crate::time_ruler::TimeRuler;
-use crate::timeline::Timeline;
-use crate::timeline_marker::TimelineMarker;
-use crate::timeline_region::TimelineRegion;
-use crate::timeline_track::TimelineTrack;
 use crate::xy_pad::XYPad;
 
 // AudioTiming
-impl_audio_timing!(Timeline<'a>);
-impl_audio_timing!(TimelineTrack);
-impl_audio_timing!(TimelineRegion<'a>);
-impl_audio_timing!(TimelineMarker<'a>);
-impl_audio_timing!(TimeRuler);
-impl_audio_timing!(SnapGrid);
 impl_audio_timing!(PianoRoll);
 
 // VelocityControl
@@ -153,7 +140,6 @@ impl_velocity_control!(Knob);
 impl_velocity_control!(ModWheel<'a>);
 
 // MomentumScroll
-impl_momentum_scroll!(Timeline<'a>);
 impl_momentum_scroll!(PianoRoll);
 impl_momentum_scroll!(MPEKeyboard);
 impl_momentum_scroll!(DrumSequencer<'a>);
@@ -161,5 +147,4 @@ impl_momentum_scroll!(DrumSequencer<'a>);
 // GlowEffect
 impl_glow_effect!(XYPad<'a>);
 impl_glow_effect!(MidiPad);
-impl_glow_effect!(StepSequencer<'a>);
 impl_glow_effect!(DrumSequencer<'a>);

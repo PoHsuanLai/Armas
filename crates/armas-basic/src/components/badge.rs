@@ -173,27 +173,6 @@ impl Badge {
         self
     }
 
-    /// Create a badge for use with [`show_content`](Self::show_content).
-    ///
-    /// The badge has no text label; content is provided in the show call.
-    /// Use [`min_width`](Self::min_width) to control the badge width.
-    #[must_use]
-    pub fn content() -> Self {
-        Self {
-            text: String::new(),
-            variant: BadgeVariant::default(),
-            custom_color: None,
-            show_dot: false,
-            removable: false,
-            is_selected: false,
-            custom_font_size: None,
-            custom_corner_radius: None,
-            custom_vertical_padding: None,
-            custom_height: None,
-            min_width: None,
-        }
-    }
-
     /// Show the badge
     pub fn show(self, ui: &mut Ui) -> BadgeResponse {
         let theme = ui.ctx().armas_theme();
@@ -331,15 +310,15 @@ impl Badge {
     /// # fn example(ui: &mut Ui) {
     /// use armas_basic::components::Badge;
     ///
-    /// Badge::content()
+    /// Badge::new("")
     ///     .min_width(60.0)
-    ///     .show_content(ui, |ui, ctx| {
+    ///     .show_ui(ui, |ui, ctx| {
     ///         // Render icon + text using ctx.color
     ///         ui.label("New");
     ///     });
     /// # }
     /// ```
-    pub fn show_content(
+    pub fn show_ui(
         self,
         ui: &mut Ui,
         content: impl FnOnce(&mut Ui, &ContentContext),
