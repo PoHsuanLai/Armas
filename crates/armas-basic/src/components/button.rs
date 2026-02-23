@@ -71,6 +71,24 @@ impl ButtonSize {
 }
 
 /// Button component styled like shadcn/ui
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
+/// use armas_basic::components::{Button, ButtonVariant, ButtonSize};
+///
+/// if Button::new("Save")
+///     .variant(ButtonVariant::Default)
+///     .size(ButtonSize::Default)
+///     .show(ui)
+///     .clicked()
+/// {
+///     // handle click
+/// }
+/// # }
+/// ```
 pub struct Button {
     text: String,
     variant: ButtonVariant,

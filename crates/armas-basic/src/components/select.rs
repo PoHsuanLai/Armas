@@ -84,6 +84,25 @@ impl SelectOption {
 // ============================================================================
 
 /// Searchable dropdown select component
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
+/// use armas_basic::components::{Select, SelectOption};
+///
+/// let options = vec![
+///     SelectOption::new("apple", "Apple"),
+///     SelectOption::new("banana", "Banana"),
+///     SelectOption::new("cherry", "Cherry"),
+/// ];
+/// let mut select = Select::new(options)
+///     .selected("apple")
+///     .placeholder("Pick a fruit...");
+/// select.show(ui);
+/// # }
+/// ```
 pub struct Select {
     id: Option<egui::Id>,
     options: Vec<SelectOption>,

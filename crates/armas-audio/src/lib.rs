@@ -28,8 +28,6 @@ pub mod timeline_marker;
 pub mod timeline_region;
 pub mod xy_pad;
 
-// Icon module - transport icons used by documentation
-pub mod icons;
 pub mod piano;
 pub(crate) mod playhead;
 pub(crate) mod slot;

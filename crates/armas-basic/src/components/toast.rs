@@ -44,10 +44,9 @@
 //! ```
 
 use crate::animation::SpringAnimation;
-use crate::components::IconButton;
 use crate::ext::ArmasContextExt;
 use crate::icon;
-use crate::{ButtonVariant, Card, CardVariant, Theme};
+use crate::{Card, CardVariant, Theme};
 use egui::{vec2, Align2, Color32, Id, Sense, Vec2};
 use std::collections::VecDeque;
 
@@ -73,13 +72,6 @@ pub enum ToastVariant {
 }
 
 impl ToastVariant {
-    fn icon_data(self) -> &'static icon::OwnedIconData {
-        match self {
-            Self::Default => icon::info(),
-            Self::Destructive => icon::error(),
-        }
-    }
-
     const fn color(self, theme: &Theme) -> Color32 {
         match self {
             Self::Default => theme.foreground(),
@@ -440,10 +432,14 @@ impl ToastManager {
                             let icon_size = 16.0;
                             let (rect, _) =
                                 ui.allocate_exact_size(vec2(icon_size, icon_size), Sense::hover());
-                            toast
-                                .variant
-                                .icon_data()
-                                .render(ui.painter(), rect, accent_color);
+                            match toast.variant {
+                                ToastVariant::Default => {
+                                    icon::draw_info(ui.painter(), rect, accent_color);
+                                }
+                                ToastVariant::Destructive => {
+                                    icon::draw_error(ui.painter(), rect, accent_color);
+                                }
+                            }
 
                             // Content
                             ui.vertical(|ui| {
@@ -458,13 +454,24 @@ impl ToastManager {
 
                             // Close button
                             if toast.dismissible {
-                                let close_response = IconButton::from_owned(icon::close())
-                                    .variant(ButtonVariant::Ghost)
-                                    .size(12.0)
-                                    .padding(6.0)
-                                    .icon_color(theme.muted_foreground())
-                                    .hover_icon_color(theme.foreground())
-                                    .show(ui);
+                                let btn_size = 24.0;
+                                let (close_rect, close_response) = ui
+                                    .allocate_exact_size(vec2(btn_size, btn_size), Sense::click());
+                                if ui.is_rect_visible(close_rect) {
+                                    if close_response.hovered() {
+                                        ui.painter().rect_filled(close_rect, 4.0, theme.accent());
+                                    }
+                                    let icon_color = if close_response.hovered() {
+                                        theme.foreground()
+                                    } else {
+                                        theme.muted_foreground()
+                                    };
+                                    let icon_rect = egui::Rect::from_center_size(
+                                        close_rect.center(),
+                                        vec2(12.0, 12.0),
+                                    );
+                                    icon::draw_close(ui.painter(), icon_rect, icon_color);
+                                }
 
                                 if close_response.clicked() {
                                     dismissed = true;

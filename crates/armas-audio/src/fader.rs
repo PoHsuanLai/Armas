@@ -94,6 +94,20 @@ const THUMB_HEIGHT: f32 = 54.0;
 ///
 /// This is the core interactive slider without any container/housing.
 /// Use this when you want to place the fader in your own container or card.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # use armas_basic::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::Fader;
+///
+/// Fader::new(0.75)
+///     .size(30.0, 200.0)
+///     .show(ui, theme);
+/// # }
+/// ```
 pub struct Fader {
     id: Option<egui::Id>,
     width: f32,

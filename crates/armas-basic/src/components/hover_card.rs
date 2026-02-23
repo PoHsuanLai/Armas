@@ -7,6 +7,20 @@ use crate::components::popover::{Popover, PopoverPosition, PopoverStyle};
 use egui::{Id, Ui};
 
 /// Hover Card — appears on hover over a trigger element.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ctx: &egui::Context, trigger: &egui::Response) {
+/// use armas_basic::components::HoverCard;
+///
+/// let mut card = HoverCard::new("user_card");
+/// card.show(ctx, trigger, |ui| {
+///     ui.label("User details here");
+/// });
+/// # }
+/// ```
 pub struct HoverCard {
     id: Id,
     open_delay: f32,

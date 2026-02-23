@@ -25,6 +25,16 @@ impl ColorStop {
 }
 
 /// Gradient builder for creating various gradient types
+///
+/// # Example
+///
+/// ```rust
+/// use egui::Color32;
+/// use armas_basic::color::{Gradient, ColorStop};
+///
+/// let gradient = Gradient::linear(Color32::RED, Color32::BLUE);
+/// let mid_color = gradient.sample(0.5);
+/// ```
 pub struct Gradient {
     stops: Vec<ColorStop>,
 }

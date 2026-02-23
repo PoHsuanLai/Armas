@@ -82,6 +82,21 @@ pub struct PopoverResponse {
 // ============================================================================
 
 /// Popover component for floating panels anchored to elements
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::{Ui, Rect};
+/// # use armas_basic::Theme;
+/// # fn example(ctx: &egui::Context, theme: &Theme, anchor: Rect) {
+/// use armas_basic::components::Popover;
+///
+/// let mut popover = Popover::new("settings").open(true);
+/// popover.show(ctx, theme, anchor, |ui| {
+///     ui.label("Popover content");
+/// });
+/// # }
+/// ```
 #[derive(Clone)]
 pub struct Popover {
     id: Id,

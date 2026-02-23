@@ -1,6 +1,20 @@
+//! Interpolation trait and helpers for animating values.
+//!
+//! Implemented for `f32`, `f64`, `Color32`, `Pos2`, `Vec2`, and `Rect`.
+
 use egui::{Color32, Pos2, Rect, Vec2};
 
 /// Trait for types that can be interpolated between two values
+///
+/// # Example
+///
+/// ```rust
+/// use armas_basic::animation::Interpolate;
+///
+/// let a = 0.0_f32;
+/// let b = 10.0_f32;
+/// assert_eq!(a.interpolate(&b, 0.5), 5.0);
+/// ```
 pub trait Interpolate: Clone {
     /// Interpolate between self and other by factor t (0.0 to 1.0)
     #[must_use]

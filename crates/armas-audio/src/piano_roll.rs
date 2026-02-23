@@ -118,6 +118,26 @@ pub struct PianoRollResponse {
 }
 
 /// Complete piano roll editor
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # use armas_basic::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::{PianoRoll, Note, AudioTiming};
+///
+/// let notes = vec![
+///     Note::new(60, 0.0, 1.0),  // C4
+///     Note::new(64, 1.0, 1.0),  // E4
+///     Note::new(67, 2.0, 1.0),  // G4
+/// ];
+/// let response = PianoRoll::new()
+///     .notes(notes)
+///     .measures(4)
+///     .show(ui, theme);
+/// # }
+/// ```
 pub struct PianoRoll {
     /// Starting MIDI note
     start_note: u8,

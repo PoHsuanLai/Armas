@@ -393,7 +393,7 @@ Common drum mappings (General MIDI standard):
 
 ## Visual Design
 
-### Material Design 3 Styling
+### Styling
 - **Filled**: Uses `surface_variant` backgrounds with theme colors
 - **Outlined**: Transparent backgrounds with colored borders
 - **Elevated**: Shadow layers for depth perception

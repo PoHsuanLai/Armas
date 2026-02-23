@@ -8,7 +8,6 @@ pub use crate::drum_sequencer::{
     DrumStep,
 };
 pub use crate::fader::{Fader, FaderScalePosition, FaderStrip, FaderStripResponse};
-pub use crate::icons;
 pub use crate::knob::Knob;
 pub use crate::meter::{AudioMeter, MeterStyle, ScalePosition};
 pub use crate::midi_controller::{MidiController, MidiControllerResponse, MidiControllerState};

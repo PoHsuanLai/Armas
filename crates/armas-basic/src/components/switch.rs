@@ -46,6 +46,19 @@ impl SwitchSize {
 }
 
 /// Animated switch component (shadcn/ui Switch)
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
+/// use armas_basic::components::Switch;
+///
+/// let mut checked = false;
+/// let mut switch = Switch::new().label("Dark mode");
+/// switch.show(ui, &mut checked);
+/// # }
+/// ```
 pub struct Switch {
     id: Option<egui::Id>,
     size: SwitchSize,

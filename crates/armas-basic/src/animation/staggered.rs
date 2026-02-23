@@ -9,6 +9,18 @@ use super::{Animation, AnimationState, EasingFunction, Interpolate};
 ///
 /// Creates a choreographed animation where items animate in sequence
 /// with configurable delays between them.
+///
+/// # Example
+///
+/// ```rust
+/// use armas_basic::animation::StaggeredAnimation;
+///
+/// // Fade in 5 items, each delayed by 0.1s, taking 0.3s each
+/// let mut anim = StaggeredAnimation::new(0.0_f32, 1.0, 5, 0.1, 0.3);
+/// anim.update(0.2);
+/// let opacity_0 = anim.opacity(0); // mostly visible
+/// let opacity_4 = anim.opacity(4); // not started yet
+/// ```
 #[derive(Debug, Clone)]
 pub struct StaggeredAnimation<T: Interpolate> {
     /// Base delay before first item starts (seconds)
@@ -136,6 +148,16 @@ impl<T: Interpolate> StaggeredAnimation<T> {
 }
 
 /// Animation sequence that runs animations one after another
+///
+/// # Example
+///
+/// ```rust
+/// use armas_basic::animation::{Animation, AnimationSequence, EasingFunction};
+///
+/// let seq = AnimationSequence::new()
+///     .then(Animation::new(0.0_f32, 1.0, 0.3), 0.0)
+///     .then(Animation::new(1.0_f32, 0.5, 0.2), 0.1);
+/// ```
 #[derive(Debug)]
 pub struct AnimationSequence<T: Interpolate> {
     animations: Vec<SequenceStep<T>>,
@@ -242,6 +264,16 @@ pub enum LoopMode {
 }
 
 /// Animation with loop support
+///
+/// # Example
+///
+/// ```rust
+/// use armas_basic::animation::{LoopingAnimation, LoopMode};
+///
+/// let mut anim = LoopingAnimation::new(0.0_f32, 1.0, 1.0, LoopMode::PingPong);
+/// anim.update(0.5);
+/// let value = anim.value();
+/// ```
 #[derive(Debug, Clone)]
 pub struct LoopingAnimation<T: Interpolate> {
     animation: Animation<T>,

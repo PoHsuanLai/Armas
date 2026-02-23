@@ -7,6 +7,17 @@ use egui::Color32;
 use serde::{Deserialize, Serialize};
 
 /// Complete theme with colors and spacing
+///
+/// # Example
+///
+/// ```rust
+/// use armas_basic::Theme;
+///
+/// let theme = Theme::dark();
+/// let bg = theme.background();
+/// let fg = theme.foreground();
+/// let primary = theme.primary();
+/// ```
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Theme {
     /// Color palette

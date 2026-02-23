@@ -32,6 +32,24 @@ impl Default for SliderDragState {
 }
 
 /// Slider component
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
+/// use armas_basic::components::Slider;
+///
+/// let mut value = 50.0;
+/// let response = Slider::new(0.0, 100.0)
+///     .label("Volume")
+///     .show(ui, &mut value);
+///
+/// if response.changed {
+///     // value was modified
+/// }
+/// # }
+/// ```
 pub struct Slider {
     id: Option<egui::Id>,
     min: f32,

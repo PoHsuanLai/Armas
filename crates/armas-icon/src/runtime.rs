@@ -1,6 +1,6 @@
 //! Runtime SVG parsing.
 //!
-//! Parse SVG strings into [`OwnedIconData`](crate::OwnedIconData) at runtime,
+//! Parse SVG strings into [`OwnedIconData`] at runtime,
 //! without needing a build script.
 //!
 //! # Example

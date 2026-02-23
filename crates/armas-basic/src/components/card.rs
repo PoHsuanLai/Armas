@@ -121,7 +121,7 @@ impl<'a> Card<'a> {
         self
     }
 
-    /// Set the Material Design 3 card variant
+    /// Set the card variant
     #[must_use]
     pub const fn variant(mut self, variant: CardVariant) -> Self {
         self.variant = variant;

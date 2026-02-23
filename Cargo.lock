@@ -222,7 +222,6 @@ name = "armas-audio"
 version = "0.2.0"
 dependencies = [
  "armas-basic",
- "armas-icon",
  "egui",
  "egui_kittest",
 ]

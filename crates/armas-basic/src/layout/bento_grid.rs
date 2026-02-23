@@ -35,6 +35,24 @@ impl GridSpan {
 }
 
 /// Bento grid layout component
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
+/// use armas_basic::layout::{BentoGrid, GridSpan};
+///
+/// BentoGrid::new()
+///     .columns(3)
+///     .cell_size(120.0)
+///     .gap(8.0)
+///     .show(ui, |grid| {
+///         grid.item(GridSpan::Single, |ui| { ui.label("Cell 1"); });
+///         grid.item(GridSpan::Wide, |ui| { ui.label("Wide cell"); });
+///     });
+/// # }
+/// ```
 pub struct BentoGrid {
     columns: usize,
     cell_size: f32,

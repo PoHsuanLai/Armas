@@ -56,6 +56,22 @@ pub enum KnobCurve {
 }
 
 /// Metallic knob with inner glow indicator
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # use armas_basic::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::Knob;
+///
+/// let mut value = 0.5;
+/// Knob::new(0.5)
+///     .diameter(60.0)
+///     .label("Gain")
+///     .show(ui, &mut value, theme);
+/// # }
+/// ```
 pub struct Knob {
     /// Knob diameter
     diameter: f32,

@@ -319,7 +319,7 @@ impl Sheet {
                     } else {
                         theme.muted_foreground()
                     };
-                    icon::close().render(ui.painter(), close_rect, icon_color);
+                    icon::draw_close(ui.painter(), close_rect, icon_color);
 
                     if close_response.clicked() {
                         closed = true;

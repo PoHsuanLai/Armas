@@ -57,6 +57,24 @@ pub enum InputVariant {
 }
 
 /// Text input field styled like shadcn/ui
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
+/// use armas_basic::components::Input;
+///
+/// let mut text = String::new();
+/// let response = Input::new("Email")
+///     .label("Email address")
+///     .show(ui, &mut text);
+///
+/// if response.changed {
+///     // text was modified
+/// }
+/// # }
+/// ```
 pub struct Input {
     id: Option<egui::Id>,
     variant: InputVariant,

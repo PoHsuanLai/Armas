@@ -90,6 +90,24 @@ struct KeyDrawParams<'a> {
 // ============================================================================
 
 /// Piano keyboard component with glassmorphic styling
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # use armas_basic::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::Piano;
+///
+/// let response = Piano::new()
+///     .octaves(2)
+///     .show(ui, theme);
+///
+/// for note in response.clicked_keys {
+///     // handle note press
+/// }
+/// # }
+/// ```
 pub struct Piano {
     start_note: u8,
     octaves: u8,

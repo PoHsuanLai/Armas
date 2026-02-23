@@ -4,6 +4,16 @@
 //! that creates more natural-looking animations.
 
 /// Easing function type
+///
+/// # Example
+///
+/// ```rust
+/// use armas_basic::animation::EasingFunction;
+///
+/// let t = 0.5; // halfway through animation
+/// let eased = EasingFunction::CubicOut.apply(t);
+/// assert!(eased > 0.5); // CubicOut is faster at start
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum EasingFunction {
     /// No easing, linear interpolation

@@ -214,7 +214,7 @@ pub(crate) fn render_header(
             }
 
             let icon_rect = Rect::from_center_size(prev_rect.center(), vec2(16.0, 16.0));
-            icon::chevron_left().render(
+            icon::draw_chevron_left(
                 ui.painter(),
                 icon_rect,
                 if prev_response.hovered() {
@@ -258,7 +258,7 @@ pub(crate) fn render_header(
             }
 
             let icon_rect = Rect::from_center_size(next_rect.center(), vec2(16.0, 16.0));
-            icon::chevron_right().render(
+            icon::draw_chevron_right(
                 ui.painter(),
                 icon_rect,
                 if next_response.hovered() {

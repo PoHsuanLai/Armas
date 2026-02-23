@@ -132,6 +132,25 @@ pub struct CommandResponse {
 }
 
 /// Command palette component
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
+/// use armas_basic::components::Command;
+///
+/// let mut cmd = Command::new().placeholder("Type a command...");
+/// let response = cmd.show(ui, |builder| {
+///     builder.item("open", "Open File");
+///     builder.item("save", "Save");
+///     builder.item("quit", "Quit");
+/// });
+/// if let Some(id) = response.executed {
+///     // handle executed command id
+/// }
+/// # }
+/// ```
 pub struct Command {
     id: Option<egui::Id>,
     placeholder: String,

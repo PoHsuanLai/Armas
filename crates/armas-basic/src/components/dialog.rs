@@ -48,6 +48,27 @@ impl DialogSize {
 }
 
 /// Dialog component styled like shadcn/ui Dialog
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # use armas_basic::Theme;
+/// # fn example(ctx: &egui::Context, theme: &Theme) {
+/// use armas_basic::components::Dialog;
+///
+/// let mut dialog = Dialog::new("confirm")
+///     .open(true)
+///     .title("Are you sure?")
+///     .description("This action cannot be undone.");
+/// let response = dialog.show(ctx, theme, |ui| {
+///     ui.label("Confirm to proceed.");
+/// });
+/// if response.closed {
+///     // dialog was dismissed
+/// }
+/// # }
+/// ```
 pub struct Dialog {
     id: egui::Id,
     title: Option<String>,

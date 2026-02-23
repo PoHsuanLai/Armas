@@ -1,6 +1,6 @@
 //! Icon Button Component
 //!
-//! A button variant specifically designed for rendering icons with Material Design 3 styling.
+//! A button variant specifically designed for rendering icons.
 
 use crate::components::ButtonVariant;
 use crate::ext::ArmasContextExt;
@@ -9,7 +9,7 @@ use egui::{Color32, Response, Sense, Ui, Vec2};
 
 /// Icon Button component
 ///
-/// A button specifically designed for icons, following Material Design 3 principles.
+/// A button specifically designed for icons.
 ///
 /// # Example
 ///

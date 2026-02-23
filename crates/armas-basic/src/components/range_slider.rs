@@ -33,6 +33,21 @@ struct SliderGeometry<'a> {
 }
 
 /// Range slider with two thumbs for min/max selection
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
+/// use armas_basic::components::RangeSlider;
+///
+/// let mut min = 20.0;
+/// let mut max = 80.0;
+/// RangeSlider::new(0.0, 100.0)
+///     .label("Price range")
+///     .show(ui, &mut min, &mut max);
+/// # }
+/// ```
 pub struct RangeSlider {
     id: Option<egui::Id>,
     range_min: f32,

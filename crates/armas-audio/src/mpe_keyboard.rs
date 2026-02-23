@@ -178,6 +178,21 @@ struct KeyDrawParams<'a> {
 /// - Outer circle outline size = pressure
 /// - Circle X position = pitch bend
 /// - Circle Y position = slide
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # use armas_basic::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::MPEKeyboard;
+///
+/// MPEKeyboard::new()
+///     .octaves(2)
+///     .start_note(48)
+///     .show(ui, theme);
+/// # }
+/// ```
 pub struct MPEKeyboard {
     start_note: u8,
     octaves: u8,

@@ -1,3 +1,8 @@
+//! Animation utilities for smooth, physics-based motion.
+//!
+//! Provides timed animations with easing, spring physics, staggered
+//! entrance effects, and looping support.
+
 /// Easing functions for smooth animations
 pub mod easing;
 /// Interpolation trait for animating values
@@ -28,6 +33,18 @@ pub enum AnimationState {
 }
 
 /// A generic animation that interpolates between two values over time
+///
+/// # Example
+///
+/// ```rust
+/// use armas_basic::animation::{Animation, EasingFunction};
+///
+/// let mut anim = Animation::new(0.0_f32, 1.0, 0.3)
+///     .easing(EasingFunction::EaseOut);
+/// anim.start();
+/// anim.update(0.15);
+/// let value = anim.value(); // interpolated between 0.0 and 1.0
+/// ```
 #[derive(Debug, Clone)]
 pub struct Animation<T: Interpolate> {
     /// Starting value
@@ -139,6 +156,17 @@ impl<T: Interpolate> Animation<T> {
 ///
 /// This uses a damped spring physics model for natural-looking animations.
 /// Unlike timed animations, springs don't have a fixed duration - they settle over time.
+///
+/// # Example
+///
+/// ```rust
+/// use armas_basic::animation::SpringAnimation;
+///
+/// let mut spring = SpringAnimation::new(0.0, 1.0)
+///     .params(200.0, 20.0);
+/// spring.update(0.016); // one frame at 60fps
+/// let current = spring.value;
+/// ```
 #[derive(Debug, Clone)]
 pub struct SpringAnimation {
     /// Current value

@@ -38,6 +38,26 @@ pub struct AutomationEditorResponse {
 }
 
 /// Automation curve editor with glassmorphic styling
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # use armas_basic::Theme;
+/// # fn example(ui: &mut Ui, theme: &Theme) {
+/// use armas_audio::{AutomationEditor, AutoPoint};
+///
+/// let mut points = vec![
+///     AutoPoint::new(0.0, 0.0),
+///     AutoPoint::new(0.5, 1.0),
+///     AutoPoint::new(1.0, 0.5),
+/// ];
+/// AutomationEditor::new()
+///     .width(400.0)
+///     .height(200.0)
+///     .show(ui, &mut points, theme);
+/// # }
+/// ```
 pub struct AutomationEditor {
     /// Editor width
     width: f32,

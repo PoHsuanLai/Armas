@@ -14,7 +14,7 @@ categories = ["gui"]
 egui = "0.33"
 serde = { version = "1.0", features = ["derive"] }
 chrono = { version = "0.4", features = ["clock", "wasmbind"] }
-armas-icon = { version = "0.2.0", path = "../armas-icon", features = ["runtime"] }
+armas-icon = { version = "0.2.0", path = "../armas-icon" }
 
 [dev-dependencies]
 eframe = "0.33"

@@ -10,7 +10,7 @@
 //!
 //! - `basic` (default) — Core UI components via [`armas_basic`]
 //! - `icon` (default) — SVG icon system via [`armas_icon`]
-//! - `audio` — Audio/DAW components via [`armas_audio`]
+//! - `audio` — Audio/DAW components via `armas_audio`
 //!
 //! ## Quick Start
 //!

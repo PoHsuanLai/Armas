@@ -355,6 +355,24 @@ struct MenuResponseInner {
 // ============================================================================
 
 /// Dropdown menu component (shadcn/ui Dropdown Menu)
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::{Ui, Rect};
+/// # fn example(ctx: &egui::Context, anchor: Rect) {
+/// use armas_basic::components::DropdownMenu;
+///
+/// let mut menu = DropdownMenu::new("actions").open(true);
+/// menu.show(ctx, anchor, |builder| {
+///     builder.item("Cut");
+///     builder.item("Copy");
+///     builder.item("Paste");
+///     builder.separator();
+///     builder.item("Delete");
+/// });
+/// # }
+/// ```
 #[derive(Clone)]
 pub struct DropdownMenu {
     id: Id,
@@ -933,7 +951,7 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
         ),
         vec2(CHEVRON_SIZE, CHEVRON_SIZE),
     );
-    icon::chevron_right().render(ui.painter(), chevron_rect, icon_color);
+    icon::draw_chevron_right(ui.painter(), chevron_rect, icon_color);
 
     // Always render the submenu so it can animate closed
     // Position submenu to the right of the item

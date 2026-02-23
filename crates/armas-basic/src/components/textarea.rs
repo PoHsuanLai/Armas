@@ -29,6 +29,20 @@ pub struct TextareaResponse {
 }
 
 /// Multi-line text input field styled like shadcn/ui
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
+/// use armas_basic::components::Textarea;
+///
+/// let mut text = String::new();
+/// Textarea::new("Enter your message...")
+///     .rows(4)
+///     .show(ui, &mut text);
+/// # }
+/// ```
 pub struct Textarea {
     id: Option<egui::Id>,
     variant: InputVariant,
