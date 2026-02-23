@@ -246,6 +246,8 @@ pub struct TimelineResponse {
     pub empty_right_clicked: Option<(usize, f32)>,
     /// Screen position of the right-click (for context menu placement)
     pub right_click_pos: Option<Pos2>,
+    /// Track header that was double-clicked (`track_idx`)
+    pub track_double_clicked: Option<usize>,
 }
 
 /// Timeline component
@@ -364,6 +366,7 @@ struct TimelineLayout {
 #[derive(Default)]
 struct TimelineInteractions {
     track_clicked: Option<usize>,
+    track_double_clicked: Option<usize>,
     track_mute_clicked: Option<usize>,
     track_solo_clicked: Option<usize>,
     track_arm_clicked: Option<usize>,
@@ -1427,6 +1430,7 @@ impl<'a> Timeline<'a> {
             region_right_clicked: interactions.region_right_clicked,
             empty_right_clicked: interactions.empty_right_clicked,
             right_click_pos: interactions.right_click_pos,
+            track_double_clicked: interactions.track_double_clicked,
         }
     }
 
@@ -1472,7 +1476,9 @@ impl<'a> Timeline<'a> {
         );
 
         // Capture all track header interactions
-        if header_response.response.clicked() {
+        if header_response.response.double_clicked() {
+            interactions.track_double_clicked = Some(track_idx);
+        } else if header_response.response.clicked() {
             interactions.track_clicked = Some(track_idx);
         }
         if header_response.response.secondary_clicked() {
