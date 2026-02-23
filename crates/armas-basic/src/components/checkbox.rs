@@ -136,12 +136,16 @@ impl Checkbox {
                             } else {
                                 theme.foreground()
                             };
-                            ui.label(egui::RichText::new(label).size(14.0).color(color));
+                            ui.label(
+                                egui::RichText::new(label)
+                                    .size(theme.typography.base)
+                                    .color(color),
+                            );
                         }
                         if let Some(desc) = &self.description {
                             ui.label(
                                 egui::RichText::new(desc)
-                                    .size(12.0)
+                                    .size(theme.typography.sm)
                                     .color(theme.muted_foreground()),
                             );
                         }

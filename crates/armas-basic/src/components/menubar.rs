@@ -23,21 +23,33 @@
 //! # }
 //! ```
 
+use super::content::ContentContext;
 use super::dropdown_menu::{DropdownMenu, MenuBuilder};
 use egui::{Id, Rect, Sense, Stroke, Ui};
 
 // Constants matching shadcn menubar
 const TRIGGER_PADDING_X: f32 = 12.0; // px-3
 const TRIGGER_PADDING_Y: f32 = 6.0; // py-1.5
-const TRIGGER_TEXT_SIZE: f32 = 14.0; // text-sm
+                                    // Trigger text size resolved from theme.typography.base at show-time
 const TRIGGER_RADIUS: f32 = 4.0; // rounded-sm
 const BAR_HEIGHT: f32 = 40.0; // h-10
 const BAR_RADIUS: f32 = 6.0; // rounded-md
 const BAR_PADDING: f32 = 4.0; // p-1
 
-/// A menu entry definition (label + content builder)
+/// Boxed closure for rendering custom menu trigger content.
+type TriggerRenderFn = Box<dyn Fn(&mut Ui, &ContentContext)>;
+
+/// Trigger content for a menu entry.
+enum MenuTrigger {
+    /// Text label trigger (existing behavior).
+    Text(String),
+    /// Custom content trigger with explicit width.
+    Custom { width: f32, render: TriggerRenderFn },
+}
+
+/// A menu entry definition (trigger + dropdown items)
 struct MenuEntry {
-    label: String,
+    trigger: MenuTrigger,
     items: Vec<super::dropdown_menu::MenuItemData>,
 }
 
@@ -53,12 +65,45 @@ impl MenubarBuilder {
         }
     }
 
-    /// Add a menu with a trigger label and dropdown content.
+    /// Add a menu with a text trigger label and dropdown content.
     pub fn menu(&mut self, label: impl Into<String>, content: impl FnOnce(&mut MenuBuilder)) {
         let mut builder = MenuBuilder::new();
         content(&mut builder);
         self.entries.push(MenuEntry {
-            label: label.into(),
+            trigger: MenuTrigger::Text(label.into()),
+            items: builder.into_items(),
+        });
+    }
+
+    /// Add a menu with custom trigger content and dropdown content.
+    ///
+    /// `trigger_width` specifies the width of the trigger area.
+    /// The `trigger` closure receives a `&mut Ui` and [`ContentContext`] and is called
+    /// every frame to render the trigger (use icons, icon+text, etc.).
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// bar.menu_content(60.0, |ui, ctx| {
+    ///     // Render icon trigger using ctx.color
+    /// }, |menu| {
+    ///     menu.item("New");
+    ///     menu.item("Open");
+    /// });
+    /// ```
+    pub fn menu_content(
+        &mut self,
+        trigger_width: f32,
+        trigger: impl Fn(&mut Ui, &ContentContext) + 'static,
+        content: impl FnOnce(&mut MenuBuilder),
+    ) {
+        let mut builder = MenuBuilder::new();
+        content(&mut builder);
+        self.entries.push(MenuEntry {
+            trigger: MenuTrigger::Custom {
+                width: trigger_width,
+                render: Box::new(trigger),
+            },
             items: builder.into_items(),
         });
     }
@@ -99,7 +144,6 @@ impl Menubar {
         let (bar_rect, bar_response) =
             ui.allocate_exact_size(egui::vec2(ui.available_width(), BAR_HEIGHT), Sense::hover());
 
-        // Bar background: border rounded-md bg-background
         ui.painter()
             .rect_filled(bar_rect, BAR_RADIUS, theme.background());
         ui.painter().rect_stroke(
@@ -112,18 +156,24 @@ impl Menubar {
         // Draw trigger buttons and collect their rects
         let mut trigger_rects: Vec<Rect> = Vec::new();
         let mut x = bar_rect.left() + BAR_PADDING;
+        let trigger_text_size = theme.typography.base;
         let trigger_y =
-            bar_rect.top() + (BAR_HEIGHT - TRIGGER_PADDING_Y * 2.0 - TRIGGER_TEXT_SIZE) / 2.0;
+            bar_rect.top() + (BAR_HEIGHT - TRIGGER_PADDING_Y * 2.0 - trigger_text_size) / 2.0;
 
         for (i, entry) in entries.iter().enumerate() {
-            let galley = ui.painter().layout_no_wrap(
-                entry.label.clone(),
-                egui::FontId::proportional(TRIGGER_TEXT_SIZE),
-                theme.foreground(),
-            );
-            let text_width = galley.size().x;
-            let trigger_width = text_width + TRIGGER_PADDING_X * 2.0;
-            let trigger_height = TRIGGER_TEXT_SIZE + TRIGGER_PADDING_Y * 2.0;
+            let trigger_height = trigger_text_size + TRIGGER_PADDING_Y * 2.0;
+
+            let trigger_width = match &entry.trigger {
+                MenuTrigger::Text(label) => {
+                    let galley = ui.painter().layout_no_wrap(
+                        label.clone(),
+                        egui::FontId::proportional(trigger_text_size),
+                        theme.foreground(),
+                    );
+                    galley.size().x + TRIGGER_PADDING_X * 2.0
+                }
+                MenuTrigger::Custom { width, .. } => *width,
+            };
 
             let trigger_rect = Rect::from_min_size(
                 egui::pos2(x, trigger_y),
@@ -140,20 +190,39 @@ impl Menubar {
                     .rect_filled(trigger_rect, TRIGGER_RADIUS, theme.accent());
             }
 
-            // Text color
+            // Render trigger content
             let text_color = if is_active || is_hovered {
                 theme.accent_foreground()
             } else {
                 theme.foreground()
             };
 
-            ui.painter().text(
-                trigger_rect.center(),
-                egui::Align2::CENTER_CENTER,
-                &entry.label,
-                egui::FontId::proportional(TRIGGER_TEXT_SIZE),
-                text_color,
-            );
+            match &entry.trigger {
+                MenuTrigger::Text(label) => {
+                    ui.painter().text(
+                        trigger_rect.center(),
+                        egui::Align2::CENTER_CENTER,
+                        label,
+                        egui::FontId::proportional(trigger_text_size),
+                        text_color,
+                    );
+                }
+                MenuTrigger::Custom { render, .. } => {
+                    let mut child_ui = ui.new_child(
+                        egui::UiBuilder::new()
+                            .max_rect(trigger_rect)
+                            .layout(egui::Layout::left_to_right(egui::Align::Center)),
+                    );
+                    child_ui.style_mut().visuals.override_text_color = Some(text_color);
+
+                    let ctx = ContentContext {
+                        color: text_color,
+                        font_size: trigger_text_size,
+                        is_active,
+                    };
+                    render(&mut child_ui, &ctx);
+                }
+            }
 
             // Click to toggle
             if trigger_response.clicked() {
@@ -170,7 +239,7 @@ impl Menubar {
             }
 
             trigger_rects.push(trigger_rect);
-            x += trigger_width + 2.0; // small gap between triggers
+            x += trigger_width + 2.0;
         }
 
         // Show the active dropdown menu
@@ -180,13 +249,11 @@ impl Menubar {
                 let mut dropdown =
                     DropdownMenu::new(self.id.with(("dropdown", active_idx))).open(true);
 
-                // Rebuild MenuBuilder items for the dropdown
                 let entry_items = &entries[active_idx].items;
                 let response = dropdown.show(ui.ctx(), anchor, |menu| {
                     replay_items(menu, entry_items);
                 });
 
-                // Close on selection or click outside
                 if response.selected.is_some() || response.clicked_outside {
                     active_menu = None;
                 }

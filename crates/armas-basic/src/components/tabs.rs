@@ -3,6 +3,7 @@
 //! Tab navigation styled like shadcn/ui Tabs.
 //! Features a muted background container with animated active indicator.
 
+use super::content::ContentContext;
 use crate::ext::ArmasContextExt;
 use egui::{Pos2, Ui, Vec2};
 
@@ -82,10 +83,38 @@ impl Tabs {
         }
     }
 
+    /// Create tabs for use with [`show_content`](Self::show_content).
+    ///
+    /// No labels are stored; content is rendered via the closure in `show_content`.
+    /// Set the tab count when calling `show_content`.
+    #[must_use]
+    pub const fn content() -> Self {
+        Self {
+            labels: Vec::new(),
+            active_index: 0,
+            animate: true,
+            indicator_pos: 0.0,
+            persist_state: true,
+            width: 0.0,
+            height: DEFAULT_HEIGHT,
+            padding: DEFAULT_PADDING,
+            list_radius: DEFAULT_LIST_RADIUS,
+            trigger_radius: DEFAULT_TRIGGER_RADIUS,
+            trigger_padding_x: DEFAULT_TRIGGER_PADDING_X,
+            gap: DEFAULT_GAP,
+            font_size: DEFAULT_FONT_SIZE,
+        }
+    }
+
     /// Set active tab index
     #[must_use]
     pub fn active(mut self, index: usize) -> Self {
-        self.active_index = index.min(self.labels.len().saturating_sub(1));
+        let max = if self.labels.is_empty() {
+            usize::MAX
+        } else {
+            self.labels.len().saturating_sub(1)
+        };
+        self.active_index = index.min(max);
         self.indicator_pos = self.active_index as f32;
         self.persist_state = false;
         self
@@ -154,20 +183,8 @@ impl Tabs {
         self
     }
 
-    /// Show the tabs and return the response
-    pub fn show(&mut self, ui: &mut Ui) -> TabsResponse {
-        let theme = ui.ctx().armas_theme();
-        if self.labels.is_empty() {
-            let (_, empty_response) =
-                ui.allocate_exact_size(egui::Vec2::new(0.0, self.height), egui::Sense::hover());
-            return TabsResponse {
-                response: empty_response,
-                selected: None,
-                changed: false,
-            };
-        }
-
-        // Load state if persisting
+    /// Load persisted state and update animation.
+    fn load_and_animate(&mut self, ui: &Ui, count: usize) {
         if self.persist_state {
             let tabs_id = ui.id().with("tabs_state");
             let (stored_active, stored_indicator): (usize, f32) = ui.ctx().data_mut(|d| {
@@ -175,40 +192,36 @@ impl Tabs {
                     .unwrap_or((self.active_index, self.active_index as f32))
             });
 
-            if self.active_index == 0 && stored_active > 0 {
+            if self.active_index == 0 && stored_active > 0 && stored_active < count {
                 self.active_index = stored_active;
             }
             self.indicator_pos = stored_indicator;
         }
 
-        // Animate
         let dt = ui.input(|i| i.stable_dt);
         if self.animate {
             let target = self.active_index as f32;
             let speed = 12.0;
             self.indicator_pos += (target - self.indicator_pos) * speed * dt;
-
             if (self.indicator_pos - target).abs() > 0.01 {
                 ui.ctx().request_repaint();
             }
         } else {
             self.indicator_pos = self.active_index as f32;
         }
+    }
 
-        // Resolve width: 0 = fit content, >0 = fixed/fill
-        let font_id = egui::FontId::proportional(self.font_size);
+    /// Compute tab widths and total width.
+    fn compute_widths(&self, ui: &Ui, count: usize) -> (Vec<f32>, f32) {
+        let total_gap = self.gap * count.saturating_sub(1) as f32;
         let explicit_width = if self.width > 0.0 { self.width } else { 0.0 };
 
-        let n = self.labels.len();
-        let total_gap = self.gap * n.saturating_sub(1) as f32;
-
         let tab_widths: Vec<f32> = if explicit_width > 0.0 {
-            // Distribute evenly across available space
             let inner = explicit_width - self.padding * 2.0 - total_gap;
-            let per_tab = inner / n as f32;
-            vec![per_tab; n]
-        } else {
-            // Fit to content
+            let per_tab = inner / count as f32;
+            vec![per_tab; count]
+        } else if !self.labels.is_empty() {
+            // Fit to content using label text
             let char_width = self.font_size * 0.6;
             self.labels
                 .iter()
@@ -217,32 +230,50 @@ impl Tabs {
                     text_width + self.trigger_padding_x * 2.0
                 })
                 .collect()
+        } else {
+            // Content mode with no labels: use available width, distribute evenly
+            let avail = ui.available_width();
+            let inner = avail - self.padding * 2.0 - total_gap;
+            let per_tab = inner / count as f32;
+            vec![per_tab; count]
         };
 
         let total_width = if explicit_width > 0.0 {
             explicit_width
-        } else {
+        } else if !self.labels.is_empty() {
             tab_widths.iter().sum::<f32>() + total_gap + self.padding * 2.0
+        } else {
+            ui.available_width()
         };
 
-        // Allocate space for the TabsList container
+        (tab_widths, total_width)
+    }
+
+    /// Draw the list background and animated indicator. Returns `(list_rect, x_positions, inner_height)`.
+    fn draw_background(
+        &self,
+        ui: &mut Ui,
+        tab_widths: &[f32],
+        total_width: f32,
+        count: usize,
+    ) -> (egui::Rect, Vec<f32>, f32, egui::Response) {
+        let theme = ui.ctx().armas_theme();
+
         let (list_rect, list_response) =
             ui.allocate_exact_size(Vec2::new(total_width, self.height), egui::Sense::hover());
 
-        // Draw TabsList background
         ui.painter()
             .rect_filled(list_rect, self.list_radius, theme.muted());
 
-        let mut selected = None;
         let inner_height = self.height - self.padding * 2.0;
 
         // Calculate cumulative x positions
-        let mut x_positions: Vec<f32> = Vec::with_capacity(self.labels.len());
+        let mut x_positions: Vec<f32> = Vec::with_capacity(count);
         let mut current_x = list_rect.min.x + self.padding;
         for (i, width) in tab_widths.iter().enumerate() {
             x_positions.push(current_x);
             current_x += width;
-            if i < self.labels.len() - 1 {
+            if i < count - 1 {
                 current_x += self.gap;
             }
         }
@@ -266,7 +297,42 @@ impl Tabs {
                 .rect_filled(active_rect, self.trigger_radius, theme.background());
         }
 
-        // Draw tab triggers
+        (list_rect, x_positions, inner_height, list_response)
+    }
+
+    /// Persist state if enabled.
+    fn persist(&self, ui: &Ui) {
+        if self.persist_state {
+            let tabs_id = ui.id().with("tabs_state");
+            ui.ctx().data_mut(|d| {
+                d.insert_persisted(tabs_id, (self.active_index, self.indicator_pos));
+            });
+        }
+    }
+
+    /// Show the tabs and return the response
+    pub fn show(&mut self, ui: &mut Ui) -> TabsResponse {
+        let n = self.labels.len();
+        if n == 0 {
+            let (_, empty_response) =
+                ui.allocate_exact_size(egui::Vec2::new(0.0, self.height), egui::Sense::hover());
+            return TabsResponse {
+                response: empty_response,
+                selected: None,
+                changed: false,
+            };
+        }
+
+        let theme = ui.ctx().armas_theme();
+        self.load_and_animate(ui, n);
+
+        let (tab_widths, total_width) = self.compute_widths(ui, n);
+        let (list_rect, x_positions, inner_height, list_response) =
+            self.draw_background(ui, &tab_widths, total_width, n);
+
+        let font_id = egui::FontId::proportional(self.font_size);
+        let mut selected = None;
+
         for (index, label) in self.labels.iter().enumerate() {
             let tab_rect = egui::Rect::from_min_size(
                 Pos2::new(x_positions[index], list_rect.min.y + self.padding),
@@ -301,13 +367,98 @@ impl Tabs {
             self.active_index = new_index;
         }
 
-        // Persist state
-        if self.persist_state {
-            let tabs_id = ui.id().with("tabs_state");
-            ui.ctx().data_mut(|d| {
-                d.insert_persisted(tabs_id, (self.active_index, self.indicator_pos));
-            });
+        self.persist(ui);
+
+        TabsResponse {
+            response: list_response,
+            selected,
+            changed,
         }
+    }
+
+    /// Show the tabs with custom content for each tab trigger.
+    ///
+    /// The closure receives the tab index, a `&mut Ui`, and a [`ContentContext`].
+    /// If [`width`](Self::width) is not set, the tabs use `ui.available_width()`
+    /// and distribute tab widths evenly.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let mut tabs = Tabs::content().height(28.0);
+    /// let response = tabs.show_content(ui, 3, |index, ui, ctx| {
+    ///     // Render icon + label for tab `index` using ctx.color
+    ///     let labels = ["Account", "Password", "Settings"];
+    ///     ui.label(labels[index]);
+    /// });
+    /// ```
+    pub fn show_content(
+        &mut self,
+        ui: &mut Ui,
+        count: usize,
+        render_tab: impl Fn(usize, &mut Ui, &ContentContext),
+    ) -> TabsResponse {
+        if count == 0 {
+            let (_, empty_response) =
+                ui.allocate_exact_size(egui::Vec2::new(0.0, self.height), egui::Sense::hover());
+            return TabsResponse {
+                response: empty_response,
+                selected: None,
+                changed: false,
+            };
+        }
+
+        let theme = ui.ctx().armas_theme();
+        self.load_and_animate(ui, count);
+
+        let (tab_widths, total_width) = self.compute_widths(ui, count);
+        let (list_rect, x_positions, inner_height, list_response) =
+            self.draw_background(ui, &tab_widths, total_width, count);
+
+        let mut selected = None;
+
+        for index in 0..count {
+            let tab_rect = egui::Rect::from_min_size(
+                Pos2::new(x_positions[index], list_rect.min.y + self.padding),
+                Vec2::new(tab_widths[index], inner_height),
+            );
+
+            let is_active = index == self.active_index;
+            let is_hovered = ui.rect_contains_pointer(tab_rect);
+
+            let text_color = if is_active {
+                theme.foreground()
+            } else {
+                theme.muted_foreground()
+            };
+
+            // Create child UI for custom content
+            let mut child_ui = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(tab_rect)
+                    .layout(egui::Layout::left_to_right(egui::Align::Center)),
+            );
+            child_ui.style_mut().visuals.override_text_color = Some(text_color);
+
+            let ctx = ContentContext {
+                color: text_color,
+                font_size: self.font_size,
+                is_active,
+            };
+            render_tab(index, &mut child_ui, &ctx);
+
+            if is_hovered && ui.input(|i| i.pointer.primary_clicked()) {
+                selected = Some(index);
+                self.active_index = index;
+            }
+        }
+
+        let changed = selected.is_some();
+        if let Some(new_index) = selected {
+            self.active_index = new_index;
+        }
+
+        self.persist(ui);
 
         TabsResponse {
             response: list_response,

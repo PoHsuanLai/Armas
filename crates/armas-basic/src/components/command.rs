@@ -15,17 +15,14 @@ const CORNER_RADIUS: f32 = 6.0;
 const INPUT_HEIGHT: f32 = 44.0;
 const INPUT_PADDING_X: f32 = 12.0;
 const INPUT_GAP: f32 = 8.0;
-const INPUT_TEXT_SIZE: f32 = 14.0;
 const LIST_MAX_HEIGHT: f32 = 300.0;
 const LIST_PADDING: f32 = 4.0;
 const GROUP_PADDING_X: f32 = 8.0;
 const GROUP_PADDING_Y: f32 = 6.0;
-const GROUP_HEADING_SIZE: f32 = 12.0;
 const ITEM_HEIGHT: f32 = 32.0;
 const ITEM_RADIUS: f32 = 2.0;
 const ITEM_PADDING_X: f32 = 8.0;
 const ITEM_GAP: f32 = 8.0;
-const ITEM_TEXT_SIZE: f32 = 14.0;
 const ICON_SIZE: f32 = 16.0;
 
 /// Internal representation of a command item
@@ -488,7 +485,7 @@ impl Command {
                     egui::TextEdit::singleline(&mut self.search)
                         .frame(false)
                         .hint_text(&self.placeholder)
-                        .font(egui::FontId::proportional(INPUT_TEXT_SIZE))
+                        .font(egui::FontId::proportional(theme.typography.base))
                         .vertical_align(egui::Align::Center),
                 );
                 response.request_focus();
@@ -591,7 +588,7 @@ impl Command {
             ui.label(
                 egui::RichText::new("No results found.")
                     .color(theme.muted_foreground())
-                    .size(ITEM_TEXT_SIZE),
+                    .size(theme.typography.base),
             );
         });
         ui.add_space(24.0);
@@ -604,7 +601,7 @@ impl Command {
             ui.label(
                 egui::RichText::new(heading)
                     .color(theme.muted_foreground())
-                    .size(GROUP_HEADING_SIZE)
+                    .size(theme.typography.sm)
                     .strong(),
             );
         });
@@ -666,7 +663,7 @@ impl Command {
             Pos2::new(x, rect.center().y),
             Align2::LEFT_CENTER,
             label,
-            egui::FontId::proportional(ITEM_TEXT_SIZE),
+            egui::FontId::proportional(theme.typography.base),
             text_color,
         );
 

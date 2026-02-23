@@ -225,7 +225,7 @@ fn draw_nav_button(
     enabled: bool,
     button_size: f32,
 ) -> bool {
-    let font_id = egui::FontId::proportional(14.0);
+    let font_id = egui::FontId::proportional(theme.typography.base);
     // Approximate text width (average char width * length)
     let text_width = 8.0 * label.len() as f32;
     let icon_width = ICON_SIZE;

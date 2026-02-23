@@ -15,7 +15,7 @@ use egui::{Color32, Response, Stroke, TextEdit, Ui};
 const CORNER_RADIUS: f32 = 6.0; // rounded-md
 const MIN_HEIGHT: f32 = 80.0; // Minimum height
 const PADDING: f32 = 12.0; // px-3 py-2
-const FONT_SIZE: f32 = 14.0; // text-sm
+                           // Font size resolved from theme.typography.base at show-time
 
 /// Response from the textarea
 #[derive(Debug, Clone)]
@@ -176,7 +176,7 @@ impl Textarea {
                     ui.horizontal(|ui| {
                         ui.label(
                             egui::RichText::new(label)
-                                .size(14.0)
+                                .size(theme.typography.base)
                                 .color(if self.disabled {
                                     theme.muted_foreground()
                                 } else {
@@ -198,7 +198,7 @@ impl Textarea {
                                     };
                                     ui.label(
                                         egui::RichText::new(format!("{}/{}", text.len(), max))
-                                            .size(12.0)
+                                            .size(theme.typography.sm)
                                             .color(count_color),
                                     );
                                 },
@@ -252,9 +252,10 @@ impl Textarea {
                     ui.style_mut().visuals.widgets.hovered.bg_stroke = Stroke::NONE;
                     ui.style_mut().visuals.widgets.active.bg_stroke = Stroke::NONE;
                     ui.style_mut().visuals.override_text_color = Some(text_color);
-                    ui.style_mut()
-                        .text_styles
-                        .insert(egui::TextStyle::Body, egui::FontId::proportional(FONT_SIZE));
+                    ui.style_mut().text_styles.insert(
+                        egui::TextStyle::Body,
+                        egui::FontId::proportional(theme.typography.base),
+                    );
 
                     let mut text_edit = TextEdit::multiline(text)
                         .hint_text(&self.placeholder)
@@ -287,7 +288,11 @@ impl Textarea {
                         InputState::Error => theme.destructive(),
                         InputState::Warning => theme.chart_3(),
                     };
-                    ui.label(egui::RichText::new(desc).size(12.0).color(desc_color));
+                    ui.label(
+                        egui::RichText::new(desc)
+                            .size(theme.typography.sm)
+                            .color(desc_color),
+                    );
                 }
 
                 response.inner

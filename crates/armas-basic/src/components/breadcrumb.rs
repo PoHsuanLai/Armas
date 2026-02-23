@@ -24,7 +24,6 @@ use egui::{Sense, Ui};
 
 // shadcn Breadcrumb constants
 const ITEM_GAP: f32 = 6.0; // gap-1.5
-const FONT_SIZE: f32 = 14.0; // text-sm
 const SEPARATOR_SIZE: f32 = 14.0; // size-3.5
 
 /// Breadcrumb navigation component
@@ -201,7 +200,7 @@ impl ItemBuilder<'_> {
         if self.is_current {
             self.ui.label(
                 egui::RichText::new(&display_label)
-                    .size(FONT_SIZE)
+                    .size(theme.typography.base)
                     .color(theme.foreground()),
             );
         } else {
@@ -209,7 +208,7 @@ impl ItemBuilder<'_> {
             let response = self.ui.add(
                 egui::Label::new(
                     egui::RichText::new(&display_label)
-                        .size(FONT_SIZE)
+                        .size(theme.typography.base)
                         .color(theme.muted_foreground()),
                 )
                 .sense(Sense::click()),
@@ -226,7 +225,7 @@ impl ItemBuilder<'_> {
                     rect.left_center(),
                     egui::Align2::LEFT_CENTER,
                     &display_label,
-                    egui::FontId::proportional(FONT_SIZE),
+                    egui::FontId::proportional(theme.typography.base),
                     theme.foreground(),
                 );
             }

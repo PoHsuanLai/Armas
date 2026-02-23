@@ -337,7 +337,7 @@ impl Select {
         if let Some(label) = &self.label {
             ui.label(
                 egui::RichText::new(label)
-                    .size(14.0)
+                    .size(theme.typography.base)
                     .color(theme.foreground()),
             );
         }
@@ -408,7 +408,7 @@ impl Select {
             if height < 30.0 {
                 (height * 0.55).max(8.0)
             } else {
-                14.0
+                theme.typography.base
             }
         });
         let padding_x = self.custom_padding_x.unwrap_or_else(|| {
@@ -576,7 +576,7 @@ impl Select {
                     ui.label(
                         egui::RichText::new("No results found.")
                             .color(theme.muted_foreground())
-                            .size(14.0),
+                            .size(theme.typography.base),
                     );
                     return;
                 }

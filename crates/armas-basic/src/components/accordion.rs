@@ -26,7 +26,6 @@ use egui::{Pos2, Ui, Vec2};
 // shadcn Accordion constants
 const TRIGGER_PADDING_Y: f32 = 16.0; // py-4
 const CONTENT_PADDING_BOTTOM: f32 = 16.0; // pb-4
-const FONT_SIZE: f32 = 14.0; // text-sm
 const CHEVRON_SIZE: f32 = 16.0; // h-4 w-4
 
 /// Response from showing an accordion
@@ -193,7 +192,7 @@ impl Accordion {
         let available_width = ui.available_width();
         let text_galley = ui.painter().layout_no_wrap(
             title.to_string(),
-            egui::FontId::proportional(FONT_SIZE),
+            egui::FontId::proportional(theme.typography.base),
             theme.foreground(),
         );
         let text_height = text_galley.rect.height();

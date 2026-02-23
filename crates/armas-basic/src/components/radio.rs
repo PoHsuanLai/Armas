@@ -34,8 +34,8 @@ const RADIO_SIZE_SM: f32 = 14.0; // Small variant
 const RADIO_SIZE_LG: f32 = 20.0; // Large variant
 const BORDER_WIDTH: f32 = 1.0; // border
 const INNER_CIRCLE_RATIO: f32 = 0.5; // Inner dot is 50% of outer
-const LABEL_FONT_SIZE: f32 = 14.0; // text-sm
-const DESCRIPTION_FONT_SIZE: f32 = 12.0; // text-xs
+                                     // Label font size resolved from theme.typography.base at show-time
+                                     // Description font size resolved from theme.typography.sm at show-time
 
 /// Radio button size
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -149,7 +149,7 @@ impl Radio {
 
                             ui.label(
                                 egui::RichText::new(label)
-                                    .size(LABEL_FONT_SIZE)
+                                    .size(theme.typography.base)
                                     .color(label_color),
                             );
                         }
@@ -157,7 +157,7 @@ impl Radio {
                         if let Some(description) = &self.description {
                             ui.label(
                                 egui::RichText::new(description)
-                                    .size(DESCRIPTION_FONT_SIZE)
+                                    .size(theme.typography.sm)
                                     .color(theme.muted_foreground()),
                             );
                         }
@@ -353,7 +353,7 @@ impl<'a> RadioGroup<'a> {
             if let Some(label) = &self.label {
                 ui.label(
                     egui::RichText::new(label)
-                        .size(LABEL_FONT_SIZE)
+                        .size(theme.typography.base)
                         .strong()
                         .color(theme.foreground()),
                 );

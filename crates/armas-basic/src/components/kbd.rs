@@ -58,7 +58,7 @@ impl Kbd {
 }
 
 fn render_key(ui: &mut Ui, text: &str, theme: &Theme) -> Response {
-    let font_size = 12.0;
+    let font_size = theme.typography.sm;
     let font_id = egui::FontId::proportional(font_size);
     let text_color = theme.muted_foreground();
     let bg_color = theme.muted();

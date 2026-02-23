@@ -23,7 +23,7 @@ const HEIGHT: f32 = 40.0;
 const CORNER_RADIUS: f32 = 6.0;
 const ADDON_PADDING: f32 = 10.0;
 const INPUT_PADDING: f32 = 12.0;
-const FONT_SIZE: f32 = 14.0;
+// Font size resolved from theme.typography.base at show-time
 
 /// Boxed closure for addon content.
 type AddonFn = Box<dyn FnOnce(&mut Ui)>;
@@ -218,7 +218,7 @@ impl InputGroup {
             .desired_width(input_rect.width())
             .hint_text(
                 egui::RichText::new(&self.placeholder)
-                    .size(FONT_SIZE)
+                    .size(theme.typography.base)
                     .color(theme.muted_foreground()),
             )
             .frame(false);

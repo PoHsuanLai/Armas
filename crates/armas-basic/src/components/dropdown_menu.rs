@@ -78,7 +78,7 @@ const ITEM_PADDING_X: f32 = 8.0;
 const DEFAULT_ITEM_HEIGHT: f32 = 26.0; // py-1.5 (6px) + text-sm (14px) + py-1.5 (6px) = 26px
 const ITEM_GAP: f32 = 8.0;
 const ITEM_RADIUS: f32 = 2.0;
-const ITEM_TEXT_SIZE: f32 = 14.0;
+// Item text size resolved from theme.typography.base at render-time
 const ITEM_ICON_SIZE: f32 = 16.0; // size-4 = 16px
 
 // Inset: pl-8 = 32px
@@ -826,7 +826,7 @@ fn render_item_content(ui: &mut Ui, theme: &crate::Theme, params: &ItemContentPa
         egui::pos2(x, params.rect.center().y),
         egui::Align2::LEFT_CENTER,
         &params.item.label,
-        egui::FontId::proportional(ITEM_TEXT_SIZE),
+        egui::FontId::proportional(theme.typography.base),
         text_color,
     );
 
@@ -939,7 +939,7 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
         egui::pos2(x, rect.center().y),
         egui::Align2::LEFT_CENTER,
         &params.submenu_params.item.label,
-        egui::FontId::proportional(ITEM_TEXT_SIZE),
+        egui::FontId::proportional(theme.typography.base),
         text_color,
     );
 

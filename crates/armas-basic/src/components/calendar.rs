@@ -25,8 +25,6 @@ const CELL_SIZE: f32 = 32.0;
 const CALENDAR_PADDING: f32 = 12.0;
 const CALENDAR_WIDTH: f32 = 252.0;
 const NAV_BUTTON_SIZE: f32 = 32.0;
-const FONT_SIZE: f32 = 14.0;
-const SMALL_FONT_SIZE: f32 = 12.0;
 
 /// A standalone calendar for date selection.
 pub struct Calendar {
@@ -203,6 +201,8 @@ pub(crate) fn render_header(
     viewing_month: u32,
     action: &mut CalendarAction,
 ) {
+    let font_size = theme.typography.base;
+
     ui.horizontal(|ui| {
         // Previous month button
         let (prev_rect, prev_response) =
@@ -241,7 +241,7 @@ pub(crate) fn render_header(
                             .month_name(),
                         viewing_year
                     ))
-                    .size(FONT_SIZE)
+                    .size(font_size)
                     .strong()
                     .color(theme.foreground()),
                 );
@@ -287,6 +287,9 @@ pub(crate) fn render_day_grid(
     show_outside_days: bool,
     action: &mut CalendarAction,
 ) {
+    let font_size = theme.typography.base;
+    let small_font_size = theme.typography.sm;
+
     // Weekday headers
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = 2.0;
@@ -295,7 +298,7 @@ pub(crate) fn render_day_grid(
                 ui.centered_and_justified(|ui| {
                     ui.label(
                         egui::RichText::new(*day)
-                            .size(SMALL_FONT_SIZE)
+                            .size(small_font_size)
                             .color(theme.muted_foreground()),
                     );
                 });
@@ -381,7 +384,7 @@ pub(crate) fn render_day_grid(
                         rect.center(),
                         egui::Align2::CENTER_CENTER,
                         day.to_string(),
-                        egui::FontId::proportional(FONT_SIZE),
+                        egui::FontId::proportional(font_size),
                         text_color,
                     );
                 }
@@ -396,6 +399,8 @@ pub(crate) fn render_day_grid(
 
 /// Render the optional footer with Today/Clear buttons.
 pub(crate) fn render_footer(ui: &mut Ui, theme: &Theme, action: &mut CalendarAction) {
+    let font_size = theme.typography.base;
+
     ui.add_space(8.0);
 
     let sep_rect = ui.allocate_space(vec2(ui.available_width(), 1.0)).1;
@@ -419,7 +424,7 @@ pub(crate) fn render_footer(ui: &mut Ui, theme: &Theme, action: &mut CalendarAct
                 today_rect.center(),
                 egui::Align2::CENTER_CENTER,
                 "Today",
-                egui::FontId::proportional(FONT_SIZE),
+                egui::FontId::proportional(font_size),
                 if today_response.hovered() {
                     theme.accent_foreground()
                 } else {
@@ -454,7 +459,7 @@ pub(crate) fn render_footer(ui: &mut Ui, theme: &Theme, action: &mut CalendarAct
                 clear_rect.center(),
                 egui::Align2::CENTER_CENTER,
                 "Clear",
-                egui::FontId::proportional(FONT_SIZE),
+                egui::FontId::proportional(font_size),
                 if clear_response.hovered() {
                     theme.destructive()
                 } else {

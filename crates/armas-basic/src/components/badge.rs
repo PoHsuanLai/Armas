@@ -7,6 +7,7 @@
 //! - Destructive (red)
 //! - Outline (border only)
 
+use super::content::ContentContext;
 use crate::ext::ArmasContextExt;
 use crate::Theme;
 use egui::{Color32, Pos2, Response, Ui, Vec2};
@@ -15,7 +16,7 @@ use egui::{Color32, Pos2, Response, Ui, Vec2};
 const CORNER_RADIUS: f32 = 9999.0; // rounded-full (pill shape)
 const PADDING_X: f32 = 10.0; // px-2.5
 const PADDING_Y: f32 = 2.0; // py-0.5
-const FONT_SIZE: f32 = 12.0; // text-xs
+                            // Font size resolved from theme.typography.sm at show-time
 
 /// Badge variant styles (shadcn/ui)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -172,13 +173,34 @@ impl Badge {
         self
     }
 
+    /// Create a badge for use with [`show_content`](Self::show_content).
+    ///
+    /// The badge has no text label; content is provided in the show call.
+    /// Use [`min_width`](Self::min_width) to control the badge width.
+    #[must_use]
+    pub fn content() -> Self {
+        Self {
+            text: String::new(),
+            variant: BadgeVariant::default(),
+            custom_color: None,
+            show_dot: false,
+            removable: false,
+            is_selected: false,
+            custom_font_size: None,
+            custom_corner_radius: None,
+            custom_vertical_padding: None,
+            custom_height: None,
+            min_width: None,
+        }
+    }
+
     /// Show the badge
     pub fn show(self, ui: &mut Ui) -> BadgeResponse {
         let theme = ui.ctx().armas_theme();
         let (bg_color, text_color, border_color) = self.get_colors(&theme);
 
         // Resolve effective values (custom overrides or defaults)
-        let font_size = self.custom_font_size.unwrap_or(FONT_SIZE);
+        let font_size = self.custom_font_size.unwrap_or(theme.typography.sm);
         let corner_radius = self.custom_corner_radius.unwrap_or(CORNER_RADIUS);
         let padding_y = self.custom_vertical_padding.unwrap_or(PADDING_Y);
 
@@ -265,6 +287,152 @@ impl Badge {
             }
 
             // Draw X
+            let cross_size = 3.0;
+            let center = remove_rect.center();
+            ui.painter().line_segment(
+                [
+                    Pos2::new(center.x - cross_size, center.y - cross_size),
+                    Pos2::new(center.x + cross_size, center.y + cross_size),
+                ],
+                egui::Stroke::new(1.5, text_color),
+            );
+            ui.painter().line_segment(
+                [
+                    Pos2::new(center.x + cross_size, center.y - cross_size),
+                    Pos2::new(center.x - cross_size, center.y + cross_size),
+                ],
+                egui::Stroke::new(1.5, text_color),
+            );
+
+            if is_hovered && ui.input(|i| i.pointer.primary_clicked()) {
+                was_clicked = true;
+            }
+        }
+
+        BadgeResponse {
+            clicked: response.clicked(),
+            removed: was_clicked,
+            response,
+        }
+    }
+
+    /// Show the badge with custom content instead of a text label.
+    ///
+    /// The closure receives a `&mut Ui` (with override text color set) and a
+    /// [`ContentContext`] with the state-dependent color.
+    ///
+    /// Use [`min_width`](Self::min_width) to control the badge width.
+    /// Dot and removable features still work alongside custom content.
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use egui::Ui;
+    /// # fn example(ui: &mut Ui) {
+    /// use armas_basic::components::Badge;
+    ///
+    /// Badge::content()
+    ///     .min_width(60.0)
+    ///     .show_content(ui, |ui, ctx| {
+    ///         // Render icon + text using ctx.color
+    ///         ui.label("New");
+    ///     });
+    /// # }
+    /// ```
+    pub fn show_content(
+        self,
+        ui: &mut Ui,
+        content: impl FnOnce(&mut Ui, &ContentContext),
+    ) -> BadgeResponse {
+        let theme = ui.ctx().armas_theme();
+        let (bg_color, text_color, border_color) = self.get_colors(&theme);
+
+        let font_size = self.custom_font_size.unwrap_or(theme.typography.sm);
+        let corner_radius = self.custom_corner_radius.unwrap_or(CORNER_RADIUS);
+        let padding_y = self.custom_vertical_padding.unwrap_or(PADDING_Y);
+
+        let dot_space = if self.show_dot { 12.0 } else { 0.0 };
+        let remove_space = if self.removable { 16.0 } else { 0.0 };
+        let height = self
+            .custom_height
+            .unwrap_or(font_size + padding_y * 2.0 + 4.0);
+
+        // Width: use min_width or a fallback
+        let base_width = dot_space + remove_space + PADDING_X * 2.0 + height;
+        let width = self
+            .min_width
+            .map_or(base_width, |min_w| base_width.max(min_w));
+
+        let (rect, response) =
+            ui.allocate_exact_size(Vec2::new(width, height), egui::Sense::click());
+
+        // Draw background
+        match self.variant {
+            BadgeVariant::Outline => {
+                ui.painter().rect_stroke(
+                    rect,
+                    corner_radius,
+                    egui::Stroke::new(1.0, border_color),
+                    egui::StrokeKind::Inside,
+                );
+            }
+            _ => {
+                ui.painter().rect_filled(rect, corner_radius, bg_color);
+            }
+        }
+
+        let mut x = rect.min.x + PADDING_X;
+
+        // Dot indicator
+        if self.show_dot {
+            let dot_center = Pos2::new(x + 3.0, rect.center().y);
+            ui.painter().circle_filled(dot_center, 3.0, text_color);
+            x += 12.0;
+        }
+
+        // Custom content area
+        let content_right = if self.removable {
+            rect.max.x - PADDING_X - 16.0
+        } else {
+            rect.max.x - PADDING_X
+        };
+        let content_rect = egui::Rect::from_min_max(
+            Pos2::new(x, rect.min.y),
+            Pos2::new(content_right, rect.max.y),
+        );
+
+        let mut child_ui = ui.new_child(
+            egui::UiBuilder::new()
+                .max_rect(content_rect)
+                .layout(egui::Layout::left_to_right(egui::Align::Center)),
+        );
+        child_ui.style_mut().visuals.override_text_color = Some(text_color);
+
+        let ctx = ContentContext {
+            color: text_color,
+            font_size,
+            is_active: self.is_selected,
+        };
+        content(&mut child_ui, &ctx);
+
+        // Remove button
+        let mut was_clicked = false;
+        if self.removable {
+            let remove_x = content_right + 4.0;
+            let remove_rect = egui::Rect::from_center_size(
+                Pos2::new(remove_x + 6.0, rect.center().y),
+                Vec2::splat(12.0),
+            );
+
+            let is_hovered = ui.rect_contains_pointer(remove_rect);
+            if is_hovered {
+                ui.painter().circle_filled(
+                    remove_rect.center(),
+                    6.0,
+                    text_color.gamma_multiply(0.2),
+                );
+            }
+
             let cross_size = 3.0;
             let center = remove_rect.center();
             ui.painter().line_segment(

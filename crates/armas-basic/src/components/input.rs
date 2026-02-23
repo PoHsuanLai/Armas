@@ -15,7 +15,7 @@ const CORNER_RADIUS: f32 = 6.0; // rounded-md
 const HEIGHT: f32 = 36.0; // h-9
 const PADDING_X: f32 = 12.0; // px-3
 const PADDING_Y: f32 = 8.0; // py-2
-const FONT_SIZE: f32 = 14.0; // text-sm
+                            // Font size resolved from theme.typography.base at show-time
 
 /// Response from the input field
 #[derive(Debug, Clone)]
@@ -228,7 +228,7 @@ impl Input {
             if let Some(label) = &self.label {
                 ui.label(
                     egui::RichText::new(label)
-                        .size(14.0)
+                        .size(theme.typography.base)
                         .color(if self.disabled {
                             theme.muted_foreground()
                         } else {
@@ -248,7 +248,11 @@ impl Input {
                     InputState::Error => theme.destructive(),
                     InputState::Warning => theme.chart_3(),
                 };
-                ui.label(egui::RichText::new(desc).size(12.0).color(desc_color));
+                ui.label(
+                    egui::RichText::new(desc)
+                        .size(theme.typography.sm)
+                        .color(desc_color),
+                );
             }
 
             input_response
@@ -344,10 +348,11 @@ impl Input {
             );
 
             // Scale font and padding to fit custom height
-            let font_size = if height < FONT_SIZE + PADDING_Y * 2.0 {
+            let base_font = theme.typography.base;
+            let font_size = if height < base_font + PADDING_Y * 2.0 {
                 (height * 0.6).max(8.0)
             } else {
-                FONT_SIZE
+                base_font
             };
             let padding_y = ((height - font_size) / 2.0).max(0.0);
             let content_rect = rect.shrink2(Vec2::new(PADDING_X, padding_y));

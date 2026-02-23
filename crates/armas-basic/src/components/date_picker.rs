@@ -28,7 +28,7 @@ const CALENDAR_PADDING: f32 = 12.0;
 const CALENDAR_WIDTH: f32 = 252.0; // 7 * 32px + 6 * 2px gaps + padding
 const TRIGGER_WIDTH: f32 = 280.0;
 const TRIGGER_HEIGHT: f32 = 40.0;
-const FONT_SIZE: f32 = 14.0;
+// Font size resolved from theme.typography.base at show-time
 const CORNER_RADIUS: f32 = 6.0;
 
 /// A date value (year, month, day)
@@ -269,7 +269,7 @@ impl DatePicker {
         if let Some(label) = &self.label {
             ui.label(
                 egui::RichText::new(label)
-                    .size(FONT_SIZE)
+                    .size(theme.typography.base)
                     .color(theme.foreground()),
             );
             ui.add_space(4.0);
@@ -469,7 +469,7 @@ impl DatePicker {
                 trigger_rect.left_center() + vec2(36.0, 0.0),
                 egui::Align2::LEFT_CENTER,
                 &text,
-                egui::FontId::proportional(FONT_SIZE),
+                egui::FontId::proportional(theme.typography.base),
                 text_color,
             );
         }

@@ -25,6 +25,9 @@ pub struct Theme {
 
     /// Spacing configuration
     pub spacing: Spacing,
+
+    /// Typography / font size scale
+    pub typography: Typography,
 }
 
 /// Color palette using shadcn/ui naming conventions
@@ -142,6 +145,42 @@ pub struct Spacing {
     pub corner_radius_large: u8,
 }
 
+/// Font size scale following a modular type system.
+///
+/// Based on a 1.2 minor-third scale with 14px base, matching
+/// common UI/design system conventions (Tailwind, shadcn/ui).
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Typography {
+    /// Extra-extra-small (10px) — fine print, badges
+    pub xxs: f32,
+    /// Extra-small (11px) — captions, metadata
+    pub xs: f32,
+    /// Small (12px) — secondary labels, descriptions
+    pub sm: f32,
+    /// Base/default (14px) — body text, inputs, buttons
+    pub base: f32,
+    /// Large (16px) — section headers, emphasized text
+    pub lg: f32,
+    /// Extra-large (18px) — page titles, headings
+    pub xl: f32,
+    /// 2XL (24px) — hero headings, display text
+    pub xxl: f32,
+}
+
+impl Default for Typography {
+    fn default() -> Self {
+        Self {
+            xxs: 10.0,
+            xs: 11.0,
+            sm: 12.0,
+            base: 14.0,
+            lg: 16.0,
+            xl: 18.0,
+            xxl: 24.0,
+        }
+    }
+}
+
 impl Default for Theme {
     fn default() -> Self {
         Self::dark()
@@ -215,6 +254,15 @@ impl Theme {
                 corner_radius: 12,
                 corner_radius_large: 16,
             },
+            typography: Typography {
+                xxs: 10.0,
+                xs: 11.0,
+                sm: 12.0,
+                base: 14.0,
+                lg: 16.0,
+                xl: 18.0,
+                xxl: 24.0,
+            },
         }
     }
 
@@ -283,6 +331,15 @@ impl Theme {
                 corner_radius_small: 8,
                 corner_radius: 12,
                 corner_radius_large: 16,
+            },
+            typography: Typography {
+                xxs: 10.0,
+                xs: 11.0,
+                sm: 12.0,
+                base: 14.0,
+                lg: 16.0,
+                xl: 18.0,
+                xxl: 24.0,
             },
         }
     }

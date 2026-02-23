@@ -316,7 +316,7 @@ impl Drawer {
                             if let Some(title) = &self.title {
                                 ui.label(
                                     egui::RichText::new(title)
-                                        .size(18.0)
+                                        .size(theme.typography.xl)
                                         .strong()
                                         .color(theme.foreground()),
                                 );
@@ -326,7 +326,7 @@ impl Drawer {
                                 ui.add_space(GAP_Y);
                                 ui.label(
                                     egui::RichText::new(desc)
-                                        .size(14.0)
+                                        .size(theme.typography.base)
                                         .color(theme.muted_foreground()),
                                 );
                             }

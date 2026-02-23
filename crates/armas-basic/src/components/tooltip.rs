@@ -10,7 +10,7 @@ use egui::{pos2, vec2, Color32, FontId, Rect, Response, Shape, Stroke, Ui, Vec2}
 const CORNER_RADIUS: f32 = 6.0; // rounded-md
 const PADDING_X: f32 = 12.0; // px-3
 const PADDING_Y: f32 = 6.0; // py-1.5
-const FONT_SIZE: f32 = 12.0; // text-xs
+                            // Font size resolved from theme.typography.sm at show-time
 const ARROW_SIZE: f32 = 5.0; // size-2.5 (10px / 2 for triangle)
 
 /// Tooltip position relative to the target
@@ -123,7 +123,7 @@ impl Tooltip {
         }
 
         // Calculate tooltip content size
-        let font_id = FontId::proportional(FONT_SIZE);
+        let font_id = FontId::proportional(theme.typography.sm);
         let padding = vec2(PADDING_X, PADDING_Y);
 
         // shadcn uses inverted colors: bg-foreground text-background

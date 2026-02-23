@@ -3,6 +3,7 @@
 //! Toggle: A single pressable button with on/off state (shadcn/ui Toggle).
 //! Toggle Group: A group of pressable toggle buttons for selection (shadcn/ui Toggle Group).
 
+use super::content::ContentContext;
 use crate::ext::ArmasContextExt;
 use egui::{pos2, vec2, Color32, CornerRadius, Response, Sense, Stroke, Ui, Vec2};
 
@@ -41,10 +42,10 @@ impl ToggleSize {
         }
     }
 
-    const fn font_size(self) -> f32 {
+    const fn font_size(self, typo: &crate::theme::Typography) -> f32 {
         match self {
-            Self::Sm => 12.8,
-            Self::Default | Self::Lg => 14.0,
+            Self::Sm => typo.sm,
+            Self::Default | Self::Lg => typo.base,
         }
     }
 
@@ -88,6 +89,7 @@ pub struct Toggle {
     variant: ToggleVariant,
     size: ToggleSize,
     disabled: bool,
+    custom_content_width: Option<f32>,
 }
 
 impl Toggle {
@@ -100,6 +102,24 @@ impl Toggle {
             variant: ToggleVariant::Default,
             size: ToggleSize::Default,
             disabled: false,
+            custom_content_width: None,
+        }
+    }
+
+    /// Create a toggle for use with [`show_content`](Self::show_content).
+    ///
+    /// The toggle has no text label; content is provided in the show call.
+    /// Defaults to a square layout (width = height). Use
+    /// [`content_width`](Self::content_width) for wider content.
+    #[must_use]
+    pub const fn content() -> Self {
+        Self {
+            id: None,
+            label: String::new(),
+            variant: ToggleVariant::Default,
+            size: ToggleSize::Default,
+            disabled: false,
+            custom_content_width: None,
         }
     }
 
@@ -131,13 +151,18 @@ impl Toggle {
         self
     }
 
-    /// Show the toggle button
+    /// Set explicit content area width for custom content.
     ///
-    /// `pressed` tracks whether the toggle is in the on/off state.
-    pub fn show(self, ui: &mut Ui, pressed: &mut bool) -> ToggleResponse {
-        let theme = ui.ctx().armas_theme();
+    /// When using [`show_content`](Self::show_content), this controls the inner width.
+    /// If not set, defaults to a square layout (width = height).
+    #[must_use]
+    pub const fn content_width(mut self, width: f32) -> Self {
+        self.custom_content_width = Some(width);
+        self
+    }
 
-        // Load state from memory if ID is set
+    /// Load toggle state from memory if ID is set, update `pressed`.
+    fn load_state(&self, ui: &Ui, pressed: &mut bool) {
         if let Some(id) = self.id {
             let state_id = id.with("toggle_state");
             let stored: bool = ui
@@ -145,13 +170,87 @@ impl Toggle {
                 .data_mut(|d| d.get_temp(state_id).unwrap_or(*pressed));
             *pressed = stored;
         }
+    }
 
+    /// Save toggle state to memory if ID is set.
+    fn save_state(&self, ui: &Ui, pressed: bool) {
+        if let Some(id) = self.id {
+            let state_id = id.with("toggle_state");
+            ui.ctx().data_mut(|d| d.insert_temp(state_id, pressed));
+        }
+    }
+
+    /// Draw the toggle frame (background, border, focus ring).
+    /// Returns `(text_color, hovered)`.
+    fn draw_frame(
+        &self,
+        ui: &Ui,
+        rect: egui::Rect,
+        response: &Response,
+        pressed: bool,
+        theme: &crate::Theme,
+    ) -> Color32 {
+        let painter = ui.painter();
+        let hovered = response.hovered() && !self.disabled;
+        let item_radius = self.size.corner_radius();
+        let corner_radius = CornerRadius::same(item_radius as u8);
+
+        let bg_color = if self.disabled {
+            Color32::TRANSPARENT
+        } else if pressed || hovered {
+            theme.muted()
+        } else {
+            Color32::TRANSPARENT
+        };
+
+        painter.rect_filled(rect, corner_radius, bg_color);
+
+        if self.variant == ToggleVariant::Outline {
+            let border_color = if self.disabled {
+                theme.border().linear_multiply(0.5)
+            } else {
+                theme.input()
+            };
+            painter.rect_stroke(
+                rect,
+                corner_radius,
+                Stroke::new(1.0, border_color),
+                egui::StrokeKind::Inside,
+            );
+        }
+
+        // Focus ring
+        if response.has_focus() && !self.disabled {
+            painter.rect_stroke(
+                rect.expand(2.0),
+                corner_radius,
+                Stroke::new(2.0, theme.ring()),
+                egui::StrokeKind::Outside,
+            );
+        }
+
+        // Return text color
+        if self.disabled {
+            theme.muted_foreground().linear_multiply(0.5)
+        } else if pressed {
+            theme.foreground()
+        } else {
+            theme.muted_foreground()
+        }
+    }
+
+    /// Show the toggle button
+    ///
+    /// `pressed` tracks whether the toggle is in the on/off state.
+    pub fn show(self, ui: &mut Ui, pressed: &mut bool) -> ToggleResponse {
+        let theme = ui.ctx().armas_theme();
+
+        self.load_state(ui, pressed);
         let old_pressed = *pressed;
 
         let height = self.size.height();
-        let font_size = self.size.font_size();
+        let font_size = self.size.font_size(&theme.typography);
         let padding_x = self.size.padding_x();
-        let item_radius = self.size.corner_radius();
 
         // Measure text to determine width
         let text_galley = ui.painter().layout_no_wrap(
@@ -175,71 +274,93 @@ impl Toggle {
         }
 
         if ui.is_rect_visible(rect) {
-            let painter = ui.painter();
-            let hovered = response.hovered() && !self.disabled;
-            let corner_radius = CornerRadius::same(item_radius as u8);
+            let text_color = self.draw_frame(ui, rect, &response, *pressed, &theme);
 
-            // Background color
-            let bg_color = if self.disabled {
-                Color32::TRANSPARENT
-            } else if *pressed || hovered {
-                theme.muted()
-            } else {
-                Color32::TRANSPARENT
-            };
-
-            painter.rect_filled(rect, corner_radius, bg_color);
-
-            // Border for outline variant
-            if self.variant == ToggleVariant::Outline {
-                let border_color = if self.disabled {
-                    theme.border().linear_multiply(0.5)
-                } else {
-                    theme.input()
-                };
-                painter.rect_stroke(
-                    rect,
-                    corner_radius,
-                    Stroke::new(1.0, border_color),
-                    egui::StrokeKind::Inside,
-                );
-            }
-
-            // Text
-            let text_color = if self.disabled {
-                theme.muted_foreground().linear_multiply(0.5)
-            } else if *pressed {
-                theme.foreground()
-            } else {
-                theme.muted_foreground()
-            };
-
-            let text_galley = painter.layout_no_wrap(
+            let text_galley = ui.painter().layout_no_wrap(
                 self.label.clone(),
                 egui::FontId::proportional(font_size),
                 text_color,
             );
             let text_pos = rect.center() - text_galley.size() / 2.0;
-            painter.galley(pos2(text_pos.x, text_pos.y), text_galley, text_color);
-
-            // Focus ring
-            if response.has_focus() && !self.disabled {
-                painter.rect_stroke(
-                    rect.expand(2.0),
-                    corner_radius,
-                    Stroke::new(2.0, theme.ring()),
-                    egui::StrokeKind::Outside,
-                );
-            }
+            ui.painter()
+                .galley(pos2(text_pos.x, text_pos.y), text_galley, text_color);
         }
 
         let changed = old_pressed != *pressed;
+        self.save_state(ui, *pressed);
 
-        // Save state to memory if ID is set
-        if let Some(id) = self.id {
-            let state_id = id.with("toggle_state");
-            ui.ctx().data_mut(|d| d.insert_temp(state_id, *pressed));
+        ToggleResponse { response, changed }
+    }
+
+    /// Show the toggle with custom content instead of a text label.
+    ///
+    /// The closure receives a `&mut Ui` (with override text color set) and a
+    /// [`ContentContext`] with the state-dependent color and font size.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let mut pressed = false;
+    /// Toggle::content()
+    ///     .variant(ToggleVariant::Outline)
+    ///     .show_content(ui, &mut pressed, |ui, ctx| {
+    ///         // Render an icon using ctx.color
+    ///     });
+    /// ```
+    pub fn show_content(
+        self,
+        ui: &mut Ui,
+        pressed: &mut bool,
+        content: impl FnOnce(&mut Ui, &ContentContext),
+    ) -> ToggleResponse {
+        let theme = ui.ctx().armas_theme();
+
+        self.load_state(ui, pressed);
+        let old_pressed = *pressed;
+
+        let height = self.size.height();
+        let padding_x = self.size.padding_x();
+
+        // Width: use content_width if set, otherwise square
+        let inner_width = self
+            .custom_content_width
+            .unwrap_or(height - padding_x * 2.0);
+        let item_width = inner_width + padding_x * 2.0;
+
+        let (rect, response) = ui.allocate_exact_size(
+            Vec2::new(item_width, height),
+            if self.disabled {
+                Sense::hover()
+            } else {
+                Sense::click()
+            },
+        );
+
+        if response.clicked() && !self.disabled {
+            *pressed = !*pressed;
         }
+
+        if ui.is_rect_visible(rect) {
+            let text_color = self.draw_frame(ui, rect, &response, *pressed, &theme);
+
+            let content_rect = rect.shrink2(Vec2::new(padding_x, 0.0));
+            let mut child_ui = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(content_rect)
+                    .layout(egui::Layout::left_to_right(egui::Align::Center)),
+            );
+            child_ui.style_mut().visuals.override_text_color = Some(text_color);
+
+            let ctx = ContentContext {
+                color: text_color,
+                font_size: self.size.font_size(&theme.typography),
+                is_active: *pressed,
+            };
+            content(&mut child_ui, &ctx);
+        }
+
+        let changed = old_pressed != *pressed;
+        self.save_state(ui, *pressed);
 
         ToggleResponse { response, changed }
     }
@@ -289,10 +410,10 @@ impl ToggleGroupSize {
         }
     }
 
-    const fn font_size(self) -> f32 {
+    const fn font_size(self, typo: &crate::theme::Typography) -> f32 {
         match self {
-            Self::Sm => 12.8,
-            Self::Default | Self::Lg => 14.0,
+            Self::Sm => typo.sm,
+            Self::Default | Self::Lg => typo.base,
         }
     }
 
@@ -347,6 +468,7 @@ pub struct ToggleGroup {
     padding: Option<f32>,
     vertical: bool,
     disabled: bool,
+    item_width: Option<f32>,
 }
 
 impl ToggleGroup {
@@ -362,6 +484,7 @@ impl ToggleGroup {
             padding: None,
             vertical: false,
             disabled: false,
+            item_width: None,
         }
     }
 
@@ -415,6 +538,179 @@ impl ToggleGroup {
         self
     }
 
+    /// Set explicit uniform item width.
+    ///
+    /// Required when using [`show_content`](Self::show_content) for proper layout.
+    /// For text-based [`show`](Self::show), items auto-size to the widest label.
+    #[must_use]
+    pub const fn item_width(mut self, width: f32) -> Self {
+        self.item_width = Some(width);
+        self
+    }
+
+    /// Load state from memory if ID is set.
+    fn load_state(&self, ui: &Ui, selected: &mut Vec<bool>) {
+        if let Some(id) = self.id {
+            let state_id = id.with("toggle_group_state");
+            let stored: Vec<bool> = ui
+                .ctx()
+                .data_mut(|d| d.get_temp(state_id).unwrap_or_else(|| selected.clone()));
+            if stored.len() == selected.len() {
+                *selected = stored;
+            }
+        }
+    }
+
+    /// Save state to memory if ID is set.
+    fn save_state(&self, ui: &Ui, selected: &[bool]) {
+        if let Some(id) = self.id {
+            let state_id = id.with("toggle_group_state");
+            ui.ctx()
+                .data_mut(|d| d.insert_temp(state_id, selected.to_vec()));
+        }
+    }
+
+    /// Handle selection logic when an item is clicked.
+    fn handle_click(&self, selected: &mut [bool], index: usize) {
+        match self.group_type {
+            ToggleGroupType::Single => {
+                if selected[index] {
+                    selected[index] = false;
+                } else {
+                    for s in selected.iter_mut() {
+                        *s = false;
+                    }
+                    selected[index] = true;
+                }
+            }
+            ToggleGroupType::Multiple => {
+                selected[index] = !selected[index];
+            }
+        }
+    }
+
+    /// Draw the frame (background, border, focus ring) for a single item.
+    /// Returns the text color.
+    fn draw_item_frame(
+        &self,
+        ui: &Ui,
+        rect: egui::Rect,
+        response: &Response,
+        is_selected: bool,
+        index: usize,
+        total: usize,
+        theme: &crate::Theme,
+    ) -> Color32 {
+        let painter = ui.painter();
+        let hovered = response.hovered() && !self.disabled;
+        let item_radius = self.size.corner_radius();
+
+        // Calculate corner rounding based on spacing and position
+        let corner_radius = if self.spacing > 0.0 {
+            CornerRadius::same(item_radius as u8)
+        } else {
+            let is_first = index == 0;
+            let is_last = index == total - 1;
+
+            if self.vertical {
+                CornerRadius {
+                    nw: if is_first { item_radius as u8 } else { 0 },
+                    ne: if is_first { item_radius as u8 } else { 0 },
+                    sw: if is_last { item_radius as u8 } else { 0 },
+                    se: if is_last { item_radius as u8 } else { 0 },
+                }
+            } else {
+                CornerRadius {
+                    nw: if is_first { item_radius as u8 } else { 0 },
+                    sw: if is_first { item_radius as u8 } else { 0 },
+                    ne: if is_last { item_radius as u8 } else { 0 },
+                    se: if is_last { item_radius as u8 } else { 0 },
+                }
+            }
+        };
+
+        // Background
+        let bg_color = if self.disabled {
+            Color32::TRANSPARENT
+        } else if is_selected || hovered {
+            theme.muted()
+        } else {
+            Color32::TRANSPARENT
+        };
+        painter.rect_filled(rect, corner_radius, bg_color);
+
+        // Border for outline variant
+        if self.variant == ToggleGroupVariant::Outline {
+            let border_color = if self.disabled {
+                theme.border().linear_multiply(0.5)
+            } else {
+                theme.input()
+            };
+            painter.rect_stroke(
+                rect,
+                corner_radius,
+                Stroke::new(1.0, border_color),
+                egui::StrokeKind::Inside,
+            );
+            if self.spacing == 0.0 && index > 0 {
+                let divider_stroke = Stroke::new(1.0, border_color);
+                if self.vertical {
+                    painter.line_segment([rect.left_top(), rect.right_top()], divider_stroke);
+                } else {
+                    painter.line_segment([rect.left_top(), rect.left_bottom()], divider_stroke);
+                }
+            }
+        }
+
+        // Focus ring
+        if response.has_focus() && !self.disabled {
+            painter.rect_stroke(
+                rect.expand(2.0),
+                corner_radius,
+                Stroke::new(2.0, theme.ring()),
+                egui::StrokeKind::Outside,
+            );
+        }
+
+        // Return text color
+        if self.disabled {
+            theme.muted_foreground().linear_multiply(0.5)
+        } else if is_selected {
+            theme.foreground()
+        } else {
+            theme.muted_foreground()
+        }
+    }
+
+    /// Set up the group layout, run the inner closure, restore spacing.
+    fn with_group_layout<R>(&self, ui: &mut Ui, inner: impl FnOnce(&mut Ui) -> R) -> (Response, R) {
+        let layout = if self.vertical {
+            egui::Layout::top_down(egui::Align::LEFT)
+        } else {
+            egui::Layout::left_to_right(egui::Align::Center)
+        };
+
+        let prev_spacing = ui.spacing().item_spacing;
+        ui.spacing_mut().item_spacing = Vec2::ZERO;
+
+        let result = ui.with_layout(layout, |ui| {
+            if self.spacing > 0.0 {
+                ui.spacing_mut().item_spacing = if self.vertical {
+                    vec2(0.0, self.spacing)
+                } else {
+                    vec2(self.spacing, 0.0)
+                };
+            } else {
+                ui.spacing_mut().item_spacing = Vec2::ZERO;
+            }
+            inner(ui)
+        });
+
+        ui.spacing_mut().item_spacing = prev_spacing;
+
+        (result.response, result.inner)
+    }
+
     /// Show the toggle group
     ///
     /// `selected` is a bool per item. Will be resized to match `items.len()`.
@@ -430,44 +726,15 @@ impl ToggleGroup {
         let mut changed = false;
 
         selected.resize(items.len(), false);
+        self.load_state(ui, selected);
 
-        // Load state from memory if ID is set
-        if let Some(id) = self.id {
-            let state_id = id.with("toggle_group_state");
-            let stored: Vec<bool> = ui
-                .ctx()
-                .data_mut(|d| d.get_temp(state_id).unwrap_or_else(|| selected.clone()));
-            if stored.len() == selected.len() {
-                *selected = stored;
-            }
-        }
+        let (response, ()) = self.with_group_layout(ui, |ui| {
+            let font_size = self.size.font_size(&theme.typography);
+            let padding_x = self.padding.unwrap_or_else(|| self.size.padding_x());
+            let height = self.size.height();
 
-        let layout = if self.vertical {
-            egui::Layout::top_down(egui::Align::LEFT)
-        } else {
-            egui::Layout::left_to_right(egui::Align::Center)
-        };
-
-        // Zero out parent item_spacing so with_layout doesn't add
-        // outer padding around the group.
-        let prev_spacing = ui.spacing().item_spacing;
-        ui.spacing_mut().item_spacing = Vec2::ZERO;
-
-        let response = ui
-            .with_layout(layout, |ui| {
-                if self.spacing > 0.0 {
-                    ui.spacing_mut().item_spacing = if self.vertical {
-                        vec2(0.0, self.spacing)
-                    } else {
-                        vec2(self.spacing, 0.0)
-                    };
-                } else {
-                    ui.spacing_mut().item_spacing = Vec2::ZERO;
-                }
-
-                // Pre-measure all items to find uniform width
-                let font_size = self.size.font_size();
-                let padding_x = self.padding.unwrap_or_else(|| self.size.padding_x());
+            // Pre-measure all items to find uniform width
+            let uniform_width = self.item_width.unwrap_or_else(|| {
                 let max_text_width = items
                     .iter()
                     .map(|label| {
@@ -481,178 +748,137 @@ impl ToggleGroup {
                             .x
                     })
                     .fold(0.0_f32, f32::max);
-                let uniform_width = max_text_width + padding_x * 2.0;
+                max_text_width + padding_x * 2.0
+            });
 
-                for (i, label) in items.iter().enumerate() {
-                    let is_selected = selected[i];
-                    let item_response = self.draw_item(
+            for (i, label) in items.iter().enumerate() {
+                let is_selected = selected[i];
+
+                let (rect, item_response) = ui.allocate_exact_size(
+                    Vec2::new(uniform_width, height),
+                    if self.disabled {
+                        Sense::hover()
+                    } else {
+                        Sense::click()
+                    },
+                );
+
+                if ui.is_rect_visible(rect) {
+                    let text_color = self.draw_item_frame(
                         ui,
-                        label,
+                        rect,
+                        &item_response,
                         is_selected,
                         i,
                         items.len(),
-                        uniform_width,
                         &theme,
                     );
 
-                    if item_response.clicked() && !self.disabled {
-                        match self.group_type {
-                            ToggleGroupType::Single => {
-                                if selected[i] {
-                                    // Deselect current
-                                    selected[i] = false;
-                                } else {
-                                    // Deselect all, then select clicked
-                                    for s in selected.iter_mut() {
-                                        *s = false;
-                                    }
-                                    selected[i] = true;
-                                }
-                            }
-                            ToggleGroupType::Multiple => {
-                                selected[i] = !selected[i];
-                            }
-                        }
-                        changed = true;
-                    }
+                    let text_galley = ui.painter().layout_no_wrap(
+                        label.to_string(),
+                        egui::FontId::proportional(font_size),
+                        text_color,
+                    );
+                    let text_pos = rect.center() - text_galley.size() / 2.0;
+                    ui.painter()
+                        .galley(pos2(text_pos.x, text_pos.y), text_galley, text_color);
                 }
-            })
-            .response;
 
-        // Restore parent spacing
-        ui.spacing_mut().item_spacing = prev_spacing;
+                if item_response.clicked() && !self.disabled {
+                    self.handle_click(selected, i);
+                    changed = true;
+                }
+            }
+        });
 
-        // Save state to memory if ID is set
-        if let Some(id) = self.id {
-            let state_id = id.with("toggle_group_state");
-            ui.ctx()
-                .data_mut(|d| d.insert_temp(state_id, selected.clone()));
-        }
+        self.save_state(ui, selected);
 
         ToggleGroupResponse { response, changed }
     }
 
-    /// Draw a single toggle group item
-    fn draw_item(
-        &self,
+    /// Show the toggle group with custom content for each item.
+    ///
+    /// The closure receives the item index, a `&mut Ui`, and a [`ContentContext`].
+    /// Use [`item_width`](Self::item_width) to set uniform item width.
+    /// If not set, items default to square (height x height).
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let mut selected = vec![false, false, false];
+    /// ToggleGroup::new(ToggleGroupType::Single)
+    ///     .item_width(40.0)
+    ///     .show_content(ui, 3, &mut selected, |index, ui, ctx| {
+    ///         // Render icon for item `index` using ctx.color
+    ///     });
+    /// ```
+    pub fn show_content(
+        self,
         ui: &mut Ui,
-        label: &str,
-        is_selected: bool,
-        index: usize,
-        total: usize,
-        item_width: f32,
-        theme: &crate::Theme,
-    ) -> Response {
+        count: usize,
+        selected: &mut Vec<bool>,
+        render_item: impl Fn(usize, &mut Ui, &ContentContext),
+    ) -> ToggleGroupResponse {
+        let theme = ui.ctx().armas_theme();
+        let mut changed = false;
+
+        selected.resize(count, false);
+        self.load_state(ui, selected);
+
         let height = self.size.height();
-        let font_size = self.size.font_size();
-        let item_radius = self.size.corner_radius();
+        let padding_x = self.padding.unwrap_or_else(|| self.size.padding_x());
+        let uniform_width = self.item_width.unwrap_or(height);
 
-        let (rect, response) = ui.allocate_exact_size(
-            Vec2::new(item_width, height),
-            if self.disabled {
-                Sense::hover()
-            } else {
-                Sense::click()
-            },
-        );
+        let (response, ()) = self.with_group_layout(ui, |ui| {
+            for i in 0..count {
+                let is_selected = selected[i];
 
-        if ui.is_rect_visible(rect) {
-            let painter = ui.painter();
-            let hovered = response.hovered() && !self.disabled;
-
-            // Calculate corner rounding based on spacing and position
-            let corner_radius = if self.spacing > 0.0 {
-                // Separated: all items get full rounding
-                CornerRadius::same(item_radius as u8)
-            } else {
-                // Joined: only first/last get rounding on their outer edges
-                let is_first = index == 0;
-                let is_last = index == total - 1;
-
-                if self.vertical {
-                    CornerRadius {
-                        nw: if is_first { item_radius as u8 } else { 0 },
-                        ne: if is_first { item_radius as u8 } else { 0 },
-                        sw: if is_last { item_radius as u8 } else { 0 },
-                        se: if is_last { item_radius as u8 } else { 0 },
-                    }
-                } else {
-                    CornerRadius {
-                        nw: if is_first { item_radius as u8 } else { 0 },
-                        sw: if is_first { item_radius as u8 } else { 0 },
-                        ne: if is_last { item_radius as u8 } else { 0 },
-                        se: if is_last { item_radius as u8 } else { 0 },
-                    }
-                }
-            };
-
-            // Background color
-            let bg_color = if self.disabled {
-                Color32::TRANSPARENT
-            } else if is_selected || hovered {
-                theme.muted()
-            } else {
-                Color32::TRANSPARENT
-            };
-
-            // Draw background
-            painter.rect_filled(rect, corner_radius, bg_color);
-
-            // Border for outline variant
-            if self.variant == ToggleGroupVariant::Outline {
-                let border_color = if self.disabled {
-                    theme.border().linear_multiply(0.5)
-                } else {
-                    theme.input()
-                };
-
-                painter.rect_stroke(
-                    rect,
-                    corner_radius,
-                    Stroke::new(1.0, border_color),
-                    egui::StrokeKind::Inside,
-                );
-
-                // Joined: draw inner divider to cover double border between items
-                if self.spacing == 0.0 && index > 0 {
-                    let divider_stroke = Stroke::new(1.0, border_color);
-                    if self.vertical {
-                        painter.line_segment([rect.left_top(), rect.right_top()], divider_stroke);
+                let (rect, item_response) = ui.allocate_exact_size(
+                    Vec2::new(uniform_width, height),
+                    if self.disabled {
+                        Sense::hover()
                     } else {
-                        painter.line_segment([rect.left_top(), rect.left_bottom()], divider_stroke);
-                    }
+                        Sense::click()
+                    },
+                );
+
+                if ui.is_rect_visible(rect) {
+                    let text_color = self.draw_item_frame(
+                        ui,
+                        rect,
+                        &item_response,
+                        is_selected,
+                        i,
+                        count,
+                        &theme,
+                    );
+
+                    let content_rect = rect.shrink2(Vec2::new(padding_x, 0.0));
+                    let mut child_ui = ui.new_child(
+                        egui::UiBuilder::new()
+                            .max_rect(content_rect)
+                            .layout(egui::Layout::left_to_right(egui::Align::Center)),
+                    );
+                    child_ui.style_mut().visuals.override_text_color = Some(text_color);
+
+                    let ctx = ContentContext {
+                        color: text_color,
+                        font_size: self.size.font_size(&theme.typography),
+                        is_active: is_selected,
+                    };
+                    render_item(i, &mut child_ui, &ctx);
+                }
+
+                if item_response.clicked() && !self.disabled {
+                    self.handle_click(selected, i);
+                    changed = true;
                 }
             }
+        });
 
-            // Text
-            let text_color = if self.disabled {
-                theme.muted_foreground().linear_multiply(0.5)
-            } else if is_selected {
-                theme.foreground()
-            } else {
-                theme.muted_foreground()
-            };
+        self.save_state(ui, selected);
 
-            let text_galley = painter.layout_no_wrap(
-                label.to_string(),
-                egui::FontId::proportional(font_size),
-                text_color,
-            );
-            let text_pos = rect.center() - text_galley.size() / 2.0;
-            painter.galley(pos2(text_pos.x, text_pos.y), text_galley, text_color);
-
-            // Focus ring
-            if response.has_focus() && !self.disabled {
-                painter.rect_stroke(
-                    rect.expand(2.0),
-                    corner_radius,
-                    Stroke::new(2.0, theme.ring()),
-                    egui::StrokeKind::Outside,
-                );
-            }
-        }
-
-        response
+        ToggleGroupResponse { response, changed }
     }
 }
 
@@ -689,6 +915,19 @@ mod tests {
     }
 
     #[test]
+    fn test_toggle_content_constructor() {
+        let toggle = Toggle::content();
+        assert_eq!(toggle.label, "");
+        assert!(toggle.custom_content_width.is_none());
+    }
+
+    #[test]
+    fn test_toggle_content_width() {
+        let toggle = Toggle::content().content_width(80.0);
+        assert_eq!(toggle.custom_content_width, Some(80.0));
+    }
+
+    #[test]
     fn test_toggle_group_creation() {
         let group = ToggleGroup::new(ToggleGroupType::Single)
             .variant(ToggleGroupVariant::Outline)
@@ -721,5 +960,12 @@ mod tests {
         assert_eq!(group.spacing, 0.0);
         assert!(!group.vertical);
         assert!(!group.disabled);
+        assert!(group.item_width.is_none());
+    }
+
+    #[test]
+    fn test_toggle_group_item_width() {
+        let group = ToggleGroup::new(ToggleGroupType::Single).item_width(60.0);
+        assert_eq!(group.item_width, Some(60.0));
     }
 }

@@ -16,7 +16,7 @@ use egui::{pos2, vec2, Color32, CornerRadius, Response, Sense, Stroke, Ui, Vec2}
 const HEIGHT: f32 = 36.0;
 const BUTTON_WIDTH: f32 = 36.0;
 const CORNER_RADIUS: f32 = 6.0;
-const FONT_SIZE: f32 = 14.0;
+// Font size resolved from theme.typography.base at show-time
 
 /// Response from the number field
 pub struct NumberFieldResponse {
@@ -161,7 +161,7 @@ impl NumberField {
             if let Some(label) = &self.label {
                 ui.label(
                     egui::RichText::new(label)
-                        .size(14.0)
+                        .size(theme.typography.base)
                         .color(if self.disabled {
                             theme.muted_foreground()
                         } else {
@@ -177,7 +177,7 @@ impl NumberField {
             if let Some(desc) = &self.description {
                 ui.label(
                     egui::RichText::new(desc)
-                        .size(12.0)
+                        .size(theme.typography.sm)
                         .color(theme.muted_foreground()),
                 );
             }
@@ -369,7 +369,7 @@ impl NumberField {
             let text_edit = egui::TextEdit::singleline(&mut text_buf)
                 .desired_width(text_rect.width())
                 .frame(false)
-                .font(egui::FontId::proportional(FONT_SIZE))
+                .font(egui::FontId::proportional(theme.typography.base))
                 .horizontal_align(egui::Align::Center)
                 .vertical_align(egui::Align::Center)
                 .id(text_id.with("edit"));
@@ -422,7 +422,7 @@ impl NumberField {
             let value_text = format_value(*value);
             let value_galley = painter.layout_no_wrap(
                 value_text.clone(),
-                egui::FontId::proportional(FONT_SIZE),
+                egui::FontId::proportional(theme.typography.base),
                 text_color,
             );
             let value_pos = input_rect.center() - value_galley.size() / 2.0;
