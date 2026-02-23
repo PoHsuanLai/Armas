@@ -10,6 +10,7 @@
 - **Removed `AlertDialog`** — Use `Dialog` with `DialogSize::Small` instead.
 - **Removed `ThreeValueSlider`** — Niche component not in shadcn/ui.
 - **Removed `Collapsible`**, **`DataTable`**, **`NavigationMenu`**, **`ScrollArea`**, **`AspectRatio`** — Removed for maintainability; functionality covered by egui primitives.
+- **Removed DAW-specific audio components** — `Timeline`, `TimelineMarker`, `TimelineRegion`, `AutomationEditor`, `StepSequencer`, `MidiController`, and their internal utilities (`Playhead`, `SnapGrid`, `TimeRuler`, `TimelineTrack`, `TrackHeader`). These are application-level components better suited to individual projects. The library now focuses on reusable audio building blocks: knobs, faders, meters, keyboards, pads, XY pad, mod wheel, piano roll, drum sequencer, and mixer strip.
 
 ### Added
 
@@ -24,6 +25,8 @@
 - **Checkbox** — Dedicated checkbox component (previously part of Toggle).
 - **`armas_audio` prelude** — Added `armas_audio::prelude` module for convenient imports.
 - **Comprehensive `armas_basic` prelude** — All public components and types are now exported from the prelude.
+- **Closure-based content API** — `Button`, `Toggle`, `ToggleGroup`, `Tabs`, `Badge`, and `Menubar` now support custom content via closures. Use `show_content(ui, |ui, ctx| { ... })` to render icons, icon+text combos, or any custom widget inside these components. A shared `ContentContext` struct provides state-dependent color, font size, and active state so custom content matches the component's visual state automatically.
+- **`Typography` type scale** — New `Theme.typography` field with a modular font size scale (`xxs` through `xxl`). All component font sizes now reference the theme instead of using hardcoded constants, making the entire library respond to custom type scales.
 
 ### Changed
 
@@ -35,6 +38,7 @@
 - **Piano/pad input** — Fixed to use `Sense::drag()` for proper press/release behavior.
 - **Input box state persistence** — Fixed state persistence across frames.
 - **AudioData for waveform regions** — `RegionType::Audio` now carries peak data for waveform rendering.
+- **Font sizes use theme typography** — All ~25 component files migrated from hardcoded `const FONT_SIZE` values to `theme.typography.*` fields. Components affected: Accordion, Badge, Button, Calendar, Checkbox, Command, DatePicker, Dialog, Drawer, DropdownMenu, Input, InputGroup, Kbd, Menubar, NumberField, Pagination, Radio, Select, Switch, Tabs, Textarea, Toggle, Tooltip.
 
 ### Removed
 

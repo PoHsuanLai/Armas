@@ -352,11 +352,7 @@ impl Button {
     ///     });
     /// # }
     /// ```
-    pub fn show_ui(
-        self,
-        ui: &mut Ui,
-        content: impl FnOnce(&mut Ui, &ContentContext),
-    ) -> Response {
+    pub fn show_ui(self, ui: &mut Ui, content: impl FnOnce(&mut Ui, &ContentContext)) -> Response {
         let theme = ui.ctx().armas_theme();
         let sense = if self.enabled {
             Sense::click()
