@@ -45,7 +45,10 @@ fn get_file_order() -> FileOrder {
         "introduction",
         vec!["introduction", "api_guide", "attributions"],
     );
-    file_order.insert("installation", vec!["quick_start", "installation", "themes"]);
+    file_order.insert(
+        "installation",
+        vec!["quick_start", "installation", "themes"],
+    );
     file_order
 }
 
