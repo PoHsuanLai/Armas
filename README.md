@@ -10,63 +10,52 @@
 [![CI](https://github.com/PoHsuanLai/Armas/actions/workflows/ci.yml/badge.svg)](https://github.com/PoHsuanLai/Armas/actions/workflows/ci.yml)
 [![Deploy](https://github.com/PoHsuanLai/Armas/actions/workflows/deploy.yml/badge.svg)](https://pohsuanlai.github.io/Armas/)
 
-Live Demo: [https://pohsuanlai.github.io/armas/](https://pohsuanlai.github.io/Armas/)
+Live Demo: [https://pohsuanlai.github.io/Armas/](https://pohsuanlai.github.io/Armas/)
 
-Armas is a modern, theme-aware, component library for [egui](https://github.com/emilk/egui).
+A theme-aware component library for [egui](https://github.com/emilk/egui), inspired by [shadcn/ui](https://ui.shadcn.com).
 
-Armas brings the polished aesthetics of modern web development (inspired by Shadcn, HeroUI, and Aceternity) to the Rust native ecosystem.
-
-## Motivation
-
-Egui is a fantastic library, but the default styling is often too utilitarian. Trying to build a modern UI using egui’s raw styling API often feels like fighting the tool rather than using it.
-
-**Armas** provides a suite of pre-styled components, a UI kit for egui. We handle the drawing commands and style configurations so you can just drop in a button that looks professional immediately.
+Armas provides styled, ready-to-use components so you can build polished egui interfaces without manually configuring drawing commands and style APIs.
 
 ## Usage
-
-Armas components are designed to be drop-in replacements or enhancements for standard egui widgets.
 
 ```rust
 use armas::prelude::*;
 
-// 1. Initialize the theme (usually in your app creation)
-let theme = Theme::dark();
-cc.egui_ctx.set_armas_theme(theme);
+// Initialize the theme
+ctx.set_armas_theme(Theme::dark());
 
-// 2. Use components in your update loop
-ui.vertical(|ui| {
-    Button::new("Deploy Project")
-        .variant(ButtonVariant::Primary)
-        .show(ui);
-        
-    // Standard egui widgets still work, but Armas provides styled wrappers
-    // for common patterns.
-});
+// Use components in your update loop
+Button::new("Deploy Project")
+    .variant(ButtonVariant::Default)
+    .show(ui);
 ```
 
 ## Running the Showcase
 
-The workspace includes a comprehensive showcase application demonstrating all available components and themes.
-
-**Run Native:**
 ```bash
+# Native
 cargo run -p armas-web
+
+# Web (WASM) — requires trunk (cargo install trunk)
+cd crates/armas-web && trunk serve
 ```
 
-**Run Web (WASM):**
-Ensure you have `trunk` installed (`cargo install trunk`).
-```bash
-cd crates/armas-web
-trunk serve
-```
+## Crates
 
-## Attributions & Inspiration
+| Crate | Description |
+|-------|-------------|
+| [`armas`](https://crates.io/crates/armas) | Umbrella crate with feature-gated re-exports |
+| [`armas-basic`](https://crates.io/crates/armas-basic) | Core components and theme system |
+| [`armas-audio`](https://crates.io/crates/armas-audio) | Audio/DAW-specific components |
+| [`armas-icon`](https://crates.io/crates/armas-icon) | SVG icon system |
 
-Armas stands on the shoulders of giants. The visual design and component API structure are heavily inspired by the best-in-class web UI libraries:
+## Acknowledgements
 
-*   **[Shadcn/ui](https://ui.shadcn.com/)**
-*   **[HeroUI](https://www.heroui.com/)**
-*   **[Aceternity UI](https://ui.aceternity.com/)**
+Visual design and API patterns inspired by:
+
+- [shadcn/ui](https://ui.shadcn.com/)
+- [HeroUI](https://www.heroui.com/)
+- [Aceternity UI](https://ui.aceternity.com/)
 
 ## License
 
