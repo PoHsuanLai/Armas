@@ -112,13 +112,7 @@ fn generate_code_area(code: &str, lang: &str) -> proc_macro2::TokenStream {
             .inner_margin(16.0)
             .show(ui, |ui| {
                 ui.set_width(ui.available_width());
-                egui::ScrollArea::vertical()
-                    .id_salt(demo_id.with("code_scroll"))
-                    .max_height(300.0)
-                    .show(ui, |ui| {
-                        ui.set_width(ui.available_width());
-                        crate::syntax::highlight_code(ui, #code, #lang, &theme);
-                    });
+                crate::syntax::highlight_code(ui, #code, #lang, &theme);
             });
     }
 }

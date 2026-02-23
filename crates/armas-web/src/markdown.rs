@@ -319,28 +319,16 @@ fn render_code_block(
 
         // Code content with syntax highlighting
         ui.push_id((base_id, id), |ui| {
-            // Calculate height based on number of lines
-            let line_count = code.trim().lines().count();
-            let line_height = 20.0; // Approximate height per line
-            let padding = 24.0; // Top and bottom padding
-            let content_height = line_count as f32 * line_height + padding;
-
-            egui::ScrollArea::both()
-                .max_height(content_height)
-                .auto_shrink([false, true])
+            egui::Frame::NONE
+                .fill(bg_color)
+                .inner_margin(12.0)
                 .show(ui, |ui| {
-                    egui::Frame::NONE
-                        .fill(bg_color)
-                        .inner_margin(12.0)
-                        .show(ui, |ui| {
-                            // Use syntax highlighting with detected language
-                            let lang = if language.is_empty() {
-                                "rust"
-                            } else {
-                                language
-                            };
-                            crate::syntax::highlight_code(ui, code.trim(), lang, theme);
-                        });
+                    let lang = if language.is_empty() {
+                        "rust"
+                    } else {
+                        language
+                    };
+                    crate::syntax::highlight_code(ui, code.trim(), lang, theme);
                 });
         });
 

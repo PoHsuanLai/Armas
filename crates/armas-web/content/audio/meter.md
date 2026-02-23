@@ -13,7 +13,6 @@ AudioMeter::new(level).height(200.0).show(ui, &theme);
 
 ```demo
 use std::f32::consts::PI;
-let theme = ui.ctx().armas_theme();
 let time = ui.input(|i| i.time) as f32;
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 12.0;
@@ -44,7 +43,6 @@ ui.horizontal(|ui| {
 
 ```demo
 use std::f32::consts::PI;
-let theme = ui.ctx().armas_theme();
 let time = ui.input(|i| i.time) as f32;
 ui.horizontal(|ui| {
     for i in 0..4 {

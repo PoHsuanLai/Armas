@@ -1,9 +1,9 @@
-//! # Armas
+//! # Armas Basic
 //!
-//! UI component library for egui following shadcn/ui design patterns.
+//! Core component library for egui, inspired by [shadcn/ui](https://ui.shadcn.com).
 //!
-//! Includes 50+ reusable components with a theme system supporting serializable
-//! color palettes and spacing configurations.
+//! Provides 40+ styled components with a serializable theme system.
+//! Components get the theme internally — no `&Theme` parameter needed.
 //!
 //! ## Example
 //!

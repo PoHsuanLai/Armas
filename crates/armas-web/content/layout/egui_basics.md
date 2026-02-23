@@ -16,9 +16,9 @@ ui.vertical(|ui| {
 ```demo
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 12.0;
-    Button::new("Save").variant(ButtonVariant::Filled).show(ui);
-    Button::new("Cancel").variant(ButtonVariant::Outlined).show(ui);
-    Button::new("Delete").variant(ButtonVariant::Text).show(ui);
+    Button::new("Save").variant(ButtonVariant::Default).show(ui);
+    Button::new("Cancel").variant(ButtonVariant::Outline).show(ui);
+    Button::new("Delete").variant(ButtonVariant::Ghost).show(ui);
 });
 ```
 

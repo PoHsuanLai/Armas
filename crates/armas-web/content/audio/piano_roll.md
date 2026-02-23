@@ -5,7 +5,6 @@ Complete DAW-style piano roll editor with vertical piano keyboard, grid, and int
 ## Basic Usage
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut notes = vec![];
 
 let response = PianoRoll::new()
@@ -22,7 +21,6 @@ if response.modified {
 ## With Initial Notes
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut notes = vec![
     Note::new(60, 0.0, 1.0),   // C4 at beat 0
     Note::new(64, 1.0, 1.0),   // E4 at beat 1
@@ -40,7 +38,6 @@ notes = response.notes;
 ## Custom Range
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut notes = vec![];
 
 let response = PianoRoll::new()
@@ -55,7 +52,6 @@ notes = response.notes;
 ## More Measures
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut notes = vec![];
 
 let response = PianoRoll::new()
@@ -71,7 +67,6 @@ notes = response.notes;
 ### Eighth Notes
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut notes = vec![];
 
 let response = PianoRoll::new()
@@ -86,7 +81,6 @@ notes = response.notes;
 ### Sixteenth Notes
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut notes = vec![];
 
 let response = PianoRoll::new()
@@ -101,7 +95,6 @@ notes = response.notes;
 ## Custom Dimensions
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut notes = vec![];
 
 let response = PianoRoll::new()
@@ -117,7 +110,6 @@ notes = response.notes;
 ## Note with Velocity
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut notes = vec![
     Note::with_velocity(60, 0.0, 1.0, 38),   // Soft
     Note::with_velocity(64, 1.0, 1.0, 76),   // Medium
@@ -134,7 +126,6 @@ notes = response.notes;
 ## Detecting Changes
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut notes = vec![];
 
 let response = PianoRoll::new()
@@ -155,7 +146,6 @@ if !response.removed_notes.is_empty() {
 ## Read-Only Mode
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let notes = vec![
     Note::new(60, 0.0, 1.0),
     Note::new(64, 1.0, 1.0),
@@ -171,7 +161,6 @@ PianoRoll::new()
 ## Without Piano
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut notes = vec![];
 
 let response = PianoRoll::new()
@@ -285,7 +274,6 @@ Note::with_velocity(note: u8, start_beat: f32, duration: f32, velocity: f32) -> 
 ### DAW Sequencer
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut notes = vec![
     Note::new(60, 0.0, 0.5),
     Note::new(64, 0.5, 0.5),
@@ -311,7 +299,6 @@ if response.modified {
 ### Music Education Tool
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let notes = vec![
     Note::new(60, 0.0, 1.0),  // C
     Note::new(64, 1.0, 1.0),  // E
@@ -330,7 +317,6 @@ PianoRoll::new()
 ### Step Sequencer
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut notes = vec![];
 
 let response = PianoRoll::new()

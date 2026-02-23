@@ -1,9 +1,13 @@
-//! Audio UI components for egui
+//! # Armas Audio
 //!
-//! Specialized widgets for audio production interfaces including:
+//! Audio/DAW UI components for [egui](https://github.com/emilk/egui).
+//!
+//! Provides specialized widgets for audio production interfaces:
 //! - Timeline and track editors
 //! - MIDI controllers and piano roll
 //! - Meters, faders, and knobs
+//!
+//! Audio components take `&Theme` as the last parameter to `show()`.
 
 #![warn(missing_docs)]
 

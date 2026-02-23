@@ -1,35 +1,27 @@
 # Introduction
 
-Armas is a modern, theme-aware, component library for [egui](https://github.com/emilk/egui).
+Armas is a theme-aware component library for [egui](https://github.com/emilk/egui), inspired by [shadcn/ui](https://ui.shadcn.com).
 
-Armas brings the polished aesthetics of modern web development (inspired by Shadcn, HeroUI, and Aceternity) to the Rust native ecosystem.
-
-## Motivation
-
-Egui is a fantastic library, but the default styling is often too utilitarian. Trying to build a modern UI using egui’s raw styling API often feels like fighting the tool rather than using it.
-
-**Armas** provides a suite of pre-styled components, a UI kit for egui. We handle the drawing commands and style configurations so you can just drop in a button that looks professional immediately.
+It provides styled, ready-to-use components so you can build polished interfaces without manually configuring egui's drawing commands and style API.
 
 ## Usage
 
-Armas components are designed to be drop-in replacements or enhancements for standard egui widgets.
-
-## Example
+Add Armas to your project and use components with the builder pattern:
 
 ```demo
 ui.vertical(|ui| {
     ui.spacing_mut().item_spacing.y = 12.0;
 
     Button::new("Primary Action")
-        .variant(ButtonVariant::Filled)
+        .variant(ButtonVariant::Default)
         .show(ui);
 
     Button::new("Secondary Action")
-        .variant(ButtonVariant::Outlined)
+        .variant(ButtonVariant::Outline)
         .show(ui);
 
     Badge::new("New")
-        .variant(BadgeVariant::Filled)
+        .variant(BadgeVariant::Default)
         .show(ui);
 });
 ```

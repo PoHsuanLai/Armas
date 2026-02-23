@@ -89,7 +89,7 @@ impl<'a> SiteHero<'a> {
                 // Title
                 let title_size = if is_mobile { 32.0 } else { 48.0 };
                 ui.label(
-                    egui::RichText::new("Build your component library")
+                    egui::RichText::new("Components for egui")
                         .size(title_size)
                         .family(egui::FontFamily::Name("InterBold".into()))
                         .color(self.theme.foreground()),
@@ -101,8 +101,8 @@ impl<'a> SiteHero<'a> {
                 let subtitle_size = if is_mobile { 16.0 } else { 18.0 };
                 ui.label(
                     egui::RichText::new(
-                        "Beautiful, accessible components for egui. \
-                         Copy and paste into your apps. Open source.",
+                        "A theme-aware component library for egui, \
+                         inspired by shadcn/ui. Open source.",
                     )
                     .size(subtitle_size)
                     .color(self.theme.muted_foreground()),

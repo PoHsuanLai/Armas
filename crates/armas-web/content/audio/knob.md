@@ -3,7 +3,6 @@
 Rotary knob control with glazed ceramic appearance.
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut value = 0.5;
 Knob::new(value).show(ui, &mut value, &theme);
 ```
@@ -11,7 +10,6 @@ Knob::new(value).show(ui, &mut value, &theme);
 ## With Label
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut gain = 0.75;
 Knob::new(gain).label("Gain").show(ui, &mut gain, &theme);
 ```
@@ -19,7 +17,6 @@ Knob::new(gain).label("Gain").show(ui, &mut gain, &theme);
 ## Sizes
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut vol = 0.6;
 ui.horizontal(|ui| {
     ui.spacing_mut().item_spacing.x = 12.0;
@@ -32,7 +29,6 @@ ui.horizontal(|ui| {
 ## Custom Colors
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut bass = 0.4;
 let mut mid = 0.5;
 let mut treble = 0.6;

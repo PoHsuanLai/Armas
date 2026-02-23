@@ -3,7 +3,6 @@
 DAW-style horizontal time ruler with playhead, regions, markers, and snap grid.
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut tracks = vec![
     Track::new("Drums", egui::Color32::from_rgb(255, 100, 100)).region(Region::new("Kick", 0.0, 4.0)),
     Track::new("Bass", egui::Color32::from_rgb(100, 255, 100)).region(Region::new("Bassline", 0.0, 4.0)),
@@ -15,7 +14,6 @@ Timeline::new().id(ui.id().with("timeline")).track_header_width(150.0).track_hei
 ## With Markers
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut tracks = vec![
     Track::new("Vocals", egui::Color32::from_rgb(255, 100, 100))
         .region(Region::new("Verse", 0.0, 2.0))
@@ -35,7 +33,6 @@ Timeline::new().id(ui.id().with("markers")).markers(&mut markers).loop_region(&m
 ## All Marker Types
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut tracks = vec![Track::new("Track 1", egui::Color32::from_rgb(100, 180, 255)).region(Region::new("Clip", 0.0, 8.0))];
 let mut playhead_pos = 0.0;
 let mut markers = vec![
@@ -54,7 +51,6 @@ Timeline::new().id(ui.id().with("all_markers")).markers(&mut markers).loop_regio
 ## Snap Grid
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut tracks = vec![Track::new("Track 1", egui::Color32::from_rgb(255, 150, 100)).region(Region::new("Clip", 0.0, 4.0))];
 let mut playhead_pos = 0.0;
 Timeline::new().id(ui.id().with("snap_grid")).show_snap_grid(true).snap_grid_subdivision(4).beat_width(60.0).measures(4).show(ui, &mut tracks, &mut playhead_pos, &theme);
@@ -63,7 +59,6 @@ Timeline::new().id(ui.id().with("snap_grid")).show_snap_grid(true).snap_grid_sub
 ## Folder Tracks
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut tracks = vec![
     Track::new_folder("Vocals", egui::Color32::from_rgb(255, 100, 100))
         .child(Track::new("Lead", egui::Color32::from_rgb(255, 120, 120)).region(Region::new("Verse 1", 0.0, 4.0)))
@@ -77,7 +72,6 @@ Timeline::new().id(ui.id().with("folders")).track_header_width(160.0).beat_width
 ## Scrolling
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut tracks = vec![
     Track::new("Track 1", egui::Color32::from_rgb(255, 100, 100))
         .region(Region::new("Clip A", 0.0, 2.0))
@@ -96,7 +90,6 @@ ui.ctx().data_mut(|d| d.insert_persisted(egui::Id::new("playhead"), playhead_pos
 ## Interactions
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut tracks = vec![
     Track::new("Track 1", egui::Color32::from_rgb(255, 150, 100)).region(Region::new("Clip A", 0.0, 2.0)),
     Track::new("Track 2", egui::Color32::from_rgb(100, 200, 255)).region(Region::new("Clip B", 1.0, 3.0)),
@@ -129,7 +122,6 @@ if !last_interaction.is_empty() {
 ## Clip Editing
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let s_curve = FadeSettings::new(0.4, 0.4).fade_in_curve(FadeCurve::SCurve).fade_out_curve(FadeCurve::SCurve);
 let mut tracks = vec![
     Track::new("Audio", egui::Color32::from_rgb(100, 180, 255))
@@ -147,7 +139,6 @@ Timeline::new().id(ui.id().with("clip_editing")).track_height(80.0).beat_width(6
 ## Complete Example
 
 ```demo
-let theme = ui.ctx().armas_theme();
 let mut tracks = vec![
     Track::new("Lead Vocals", egui::Color32::from_rgb(255, 100, 100))
         .regions(vec![

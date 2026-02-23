@@ -43,15 +43,9 @@ fn get_file_order() -> FileOrder {
     let mut file_order = BTreeMap::new();
     file_order.insert(
         "introduction",
-        vec![
-            "introduction",
-            "api_guide",
-            "why_egui",
-            "philosophy",
-            "attributions",
-        ],
+        vec!["introduction", "api_guide", "attributions"],
     );
-    file_order.insert("installation", vec!["quick_start", "cargo_setup", "wasm"]);
+    file_order.insert("installation", vec!["quick_start", "installation", "themes"]);
     file_order
 }
 

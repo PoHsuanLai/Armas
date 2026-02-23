@@ -9,7 +9,7 @@
 
 ```toml
 [dependencies]
-armas = "0.1.0"
+armas = "0.2"
 egui = "0.33"
 eframe = "0.33"
 ```
@@ -26,7 +26,7 @@ trunk serve
 
 ```toml
 [dependencies]
-armas = "0.1.0"
+armas = "0.2"
 bevy = "0.12"
 bevy_egui = "0.23"
 ```
@@ -35,25 +35,26 @@ bevy_egui = "0.23"
 
 ```rust
 use armas::prelude::*;
-use eframe::egui;
 
 fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Armas Test",
         eframe::NativeOptions::default(),
-        Box::new(|_| Ok(Box::new(TestApp::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_armas_theme(Theme::dark());
+            Ok(Box::new(TestApp))
+        }),
     )
 }
 
-#[derive(Default)]
 struct TestApp;
 
 impl eframe::App for TestApp {
     fn update(&mut self, ctx: &egui::Context, _: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             Button::new("Test Button")
-                .variant(ButtonVariant::Filled)
-                .show(ui, &theme);
+                .variant(ButtonVariant::Default)
+                .show(ui);
         });
     }
 }

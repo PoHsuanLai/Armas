@@ -94,8 +94,8 @@ table(ui, |rows| {
         });
         cell_ui(cells, |ui| {
             ui.horizontal(|ui| {
-                Button::new("Edit").variant(ButtonVariant::Text).show(ui);
-                Button::new("Delete").variant(ButtonVariant::Text).show(ui);
+                Button::new("Edit").variant(ButtonVariant::Ghost).show(ui);
+                Button::new("Delete").variant(ButtonVariant::Ghost).show(ui);
             });
         });
     });
@@ -108,8 +108,8 @@ table(ui, |rows| {
         });
         cell_ui(cells, |ui| {
             ui.horizontal(|ui| {
-                Button::new("Edit").variant(ButtonVariant::Text).show(ui);
-                Button::new("Delete").variant(ButtonVariant::Text).show(ui);
+                Button::new("Edit").variant(ButtonVariant::Ghost).show(ui);
+                Button::new("Delete").variant(ButtonVariant::Ghost).show(ui);
             });
         });
     });
