@@ -38,21 +38,3 @@ ui.horizontal(|ui| {
     AudioMeter::new(level2).height(200.0).width(35.0).scale_left().show(ui, &theme);
 });
 ```
-
-## Mixer Strip
-
-```demo
-use std::f32::consts::PI;
-let time = ui.input(|i| i.time) as f32;
-ui.horizontal(|ui| {
-    for i in 0..4 {
-        ui.vertical(|ui| {
-            let phase = i as f32 * 0.5;
-            let level = ((time * 2.0 + phase).sin() * 0.5 + 0.5) * 0.85;
-            AudioMeter::new(level).height(180.0).width(25.0).vu_colors(&theme).show(ui, &theme);
-            ui.label(format!("Ch {}", i + 1));
-        });
-        ui.add_space(4.0);
-    }
-});
-```

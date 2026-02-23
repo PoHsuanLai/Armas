@@ -2,8 +2,6 @@
 
 DAW-style mixer channel strip with sends, routing, inserts, pan, mute/solo, meter, and fader.
 
-## Basic Usage
-
 ```demo
 use egui::Color32;
 
@@ -66,8 +64,6 @@ ui.horizontal(|ui| {
 
 ## Display Modes
 
-Progressively hides sections as height decreases. Set explicitly or use `Auto` (default) to adapt to available space.
-
 ```demo
 use egui::Color32;
 
@@ -96,25 +92,3 @@ ui.horizontal(|ui| {
     }
 });
 ```
-
-| Mode | Scroll Rows | Pan Label | R/I | Gain |
-|------|-------------|-----------|-----|------|
-| Full | 4 | yes | yes | yes |
-| Standard | 3 | yes | yes | yes |
-| Compact | 2 | no | no | yes |
-| Minimal | 1 | no | no | no |
-
-## API Reference
-
-| Method | Type | Default | Description |
-|--------|------|---------|-------------|
-| `::new(name)` | `impl Into<String>` | - | Create mixer strip |
-| `.width(w)` | `f32` | `70.0` | Strip width |
-| `.mode(mode)` | `MixerStripMode` | `Auto` | Display mode |
-| `.scale(s)` | `f32` | `1.0` | Zoom factor (0.5-2.0) |
-| `.fader_level(l)` | `f32` | `0.75` | Fader level (0.0-1.0) |
-| `.pan(p)` | `f32` | `0.0` | Pan (-1.0 to 1.0) |
-| `.meter_level(l)` | `f32` | `0.0` | Meter level (0.0-1.0) |
-| `.card_color(c)` | `Color32` | dark | Card background |
-| `.knob_color(c)` | `Color32` | primary | Pan knob glow |
-| `.meter_color(c)` | `Color32` | primary | Meter color |
