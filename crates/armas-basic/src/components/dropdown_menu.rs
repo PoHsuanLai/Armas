@@ -590,6 +590,23 @@ impl DropdownMenu {
 // Rendering Functions (free functions to avoid borrow issues)
 // ============================================================================
 
+/// Recursively count selectable (non-separator, non-disabled) items for flat indexing.
+fn count_selectable_flat(items: &[MenuItemData]) -> usize {
+    let mut count = 0;
+    for item in items {
+        match &item.kind {
+            MenuItemKind::Separator => {}
+            MenuItemKind::Submenu { items: sub_items } => {
+                count += count_selectable_flat(sub_items);
+            }
+            _ => {
+                count += 1;
+            }
+        }
+    }
+    count
+}
+
 fn render_items(
     ctx: &mut MenuRenderContext,
     items: &[MenuItemData],
@@ -597,31 +614,48 @@ fn render_items(
     submenu_state: &mut SubmenuState,
     response: &mut MenuResponseInner,
 ) {
+    let mut flat_offset: usize = 0;
+    render_items_inner(ctx, items, selected_index, submenu_state, response, &mut flat_offset);
+}
+
+fn render_items_inner(
+    ctx: &mut MenuRenderContext,
+    items: &[MenuItemData],
+    selected_index: &mut Option<usize>,
+    submenu_state: &mut SubmenuState,
+    response: &mut MenuResponseInner,
+    flat_offset: &mut usize,
+) {
     for (idx, item) in items.iter().enumerate() {
         match &item.kind {
             MenuItemKind::Separator => {
                 render_separator(ctx.ui, ctx.theme);
             }
             MenuItemKind::Item { destructive } => {
+                let fi = *flat_offset;
                 let (result, _) = render_item_with_hover(
                     ctx.ui,
                     ctx.theme,
                     idx,
+                    fi,
                     item,
                     *destructive,
                     selected_index,
                     ItemVariant::Normal,
                     ctx.item_height,
                 );
-                if let Some(r) = result {
-                    response.selected = Some(r);
+                if result.is_some() {
+                    response.selected = Some(fi);
                 }
+                *flat_offset += 1;
             }
             MenuItemKind::Checkbox { checked } => {
+                let fi = *flat_offset;
                 let (result, _) = render_item_with_hover(
                     ctx.ui,
                     ctx.theme,
                     idx,
+                    fi,
                     item,
                     false,
                     selected_index,
@@ -629,19 +663,22 @@ fn render_items(
                     ctx.item_height,
                 );
                 if result.is_some() {
-                    response.selected = Some(idx);
-                    response.checkbox_toggled = Some((idx, !checked));
+                    response.selected = Some(fi);
+                    response.checkbox_toggled = Some((fi, !checked));
                 }
+                *flat_offset += 1;
             }
             MenuItemKind::Radio {
                 group,
                 value,
                 selected,
             } => {
+                let fi = *flat_offset;
                 let (result, _) = render_item_with_hover(
                     ctx.ui,
                     ctx.theme,
                     idx,
+                    fi,
                     item,
                     false,
                     selected_index,
@@ -649,15 +686,19 @@ fn render_items(
                     ctx.item_height,
                 );
                 if result.is_some() {
-                    response.selected = Some(idx);
+                    response.selected = Some(fi);
                     response.radio_selected = Some((group.clone(), value.clone()));
                 }
+                *flat_offset += 1;
             }
             MenuItemKind::Submenu { items: sub_items } => {
+                let sub_base = *flat_offset;
+                *flat_offset += count_selectable_flat(sub_items);
                 let submenu_params = SubmenuParams {
                     idx,
                     item,
                     sub_items,
+                    flat_base: sub_base,
                 };
                 let render_params = RenderSubmenuParams {
                     menu_id: ctx.menu_id,
@@ -686,11 +727,16 @@ fn render_separator(ui: &mut Ui, theme: &crate::Theme) {
     ui.add_space(SEPARATOR_MARGIN_Y);
 }
 
-/// Renders a menu item and returns (`clicked_index`, `is_hovered`)
+/// Renders a menu item and returns (`clicked_flat_index`, `is_hovered`).
+///
+/// `idx` is the local index within this menu level (for keyboard nav highlighting).
+/// `flat_idx` is the global flat index across all items including submenu children
+/// (for the selection response returned to callers).
 fn render_item_with_hover(
     ui: &mut Ui,
     theme: &crate::Theme,
     idx: usize,
+    flat_idx: usize,
     item: &MenuItemData,
     destructive: bool,
     selected_index: &mut Option<usize>,
@@ -711,7 +757,7 @@ fn render_item_with_hover(
 
     let is_hovered = item_response.hovered() && !item.disabled;
 
-    // Update hover state
+    // Update hover state (local index for keyboard nav)
     if is_hovered {
         *selected_index = Some(idx);
     }
@@ -738,7 +784,7 @@ fn render_item_with_hover(
     render_item_content(ui, theme, &params);
 
     let clicked = if item_response.clicked() && !item.disabled {
-        Some(idx)
+        Some(flat_idx)
     } else {
         None
     };
@@ -868,6 +914,8 @@ struct SubmenuParams<'a> {
     idx: usize,
     item: &'a MenuItemData,
     sub_items: &'a [MenuItemData],
+    /// Flat index base — submenu item selections are offset by this value.
+    flat_base: usize,
 }
 
 /// Parameters for `render_submenu` function
@@ -975,12 +1023,13 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
         }
     });
 
-    // Propagate submenu responses
-    if sub_response.selected.is_some() {
-        params.response.selected = sub_response.selected;
+    // Propagate submenu responses with flat index offset
+    let flat_base = params.submenu_params.flat_base;
+    if let Some(sel) = sub_response.selected {
+        params.response.selected = Some(flat_base + sel);
     }
-    if sub_response.checkbox_toggled.is_some() {
-        params.response.checkbox_toggled = sub_response.checkbox_toggled;
+    if let Some((idx, new_checked)) = sub_response.checkbox_toggled {
+        params.response.checkbox_toggled = Some((flat_base + idx, new_checked));
     }
     if sub_response.radio_selected.is_some() {
         params.response.radio_selected = sub_response.radio_selected;
