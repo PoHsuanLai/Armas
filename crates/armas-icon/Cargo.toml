@@ -7,6 +7,7 @@ license.workspace = true
 repository.workspace = true
 documentation.workspace = true
 description = "SVG-based icon system for egui with runtime tessellation"
+readme = "../../README.md"
 keywords = ["egui", "icons", "svg", "ui"]
 categories = ["gui"]
 
