@@ -129,10 +129,12 @@ use crate::midi_pad::MidiPad;
 use crate::mod_wheel::ModWheel;
 use crate::mpe_keyboard::MPEKeyboard;
 use crate::piano_roll::PianoRoll;
+use crate::time_ruler::TimeRuler;
 use crate::xy_pad::XYPad;
 
 // AudioTiming
 impl_audio_timing!(PianoRoll);
+impl_audio_timing!(TimeRuler);
 
 // VelocityControl
 impl_velocity_control!(Fader);

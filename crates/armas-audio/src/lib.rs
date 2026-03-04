@@ -21,6 +21,7 @@ pub mod mod_wheel;
 pub mod mpe_keyboard;
 pub mod piano;
 pub mod piano_roll;
+pub mod time_ruler;
 pub mod xy_pad;
 
 pub(crate) mod slot;
@@ -39,6 +40,7 @@ pub use mod_wheel::{ModWheel, WheelSize, WheelType};
 pub use mpe_keyboard::{MPEKey, MPEKeyboard, MPEKeyboardResponse, MPENote, MPEOrientation};
 pub use piano::{Piano, PianoKey, PianoOrientation, PianoResponse};
 pub use piano_roll::{GridDivision, Note, PianoRoll, PianoRollResponse};
+pub use time_ruler::TimeRuler;
 pub use xy_pad::{XYPad, XYPadVariant};
 
 mod traits;

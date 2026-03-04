@@ -15,5 +15,6 @@ pub use crate::mod_wheel::{ModWheel, WheelSize, WheelType};
 pub use crate::mpe_keyboard::{MPEKey, MPEKeyboard, MPEKeyboardResponse, MPENote, MPEOrientation};
 pub use crate::piano::{Piano, PianoKey, PianoOrientation, PianoResponse};
 pub use crate::piano_roll::{GridDivision, Note, PianoRoll, PianoRollResponse};
+pub use crate::time_ruler::TimeRuler;
 pub use crate::traits::{AudioTiming, GlowEffect, MomentumScroll, VelocityControl};
 pub use crate::xy_pad::{XYPad, XYPadVariant};
