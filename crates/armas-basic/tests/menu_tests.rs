@@ -4,53 +4,37 @@ use armas_basic::prelude::*;
 use armas_basic::DropdownMenu;
 use egui_kittest::Harness;
 
-/// Test that Menu renders when open
+/// Test that Menu renders when trigger is clicked
 #[test]
 fn test_menu_renders_open() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("test_menu").open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            menu.item("Option 1");
-            menu.item("Option 2");
-            menu.item("Option 3");
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("test_menu").show_ui(
+            ui,
+            |ui| ui.button("Open"),
+            |menu| {
+                menu.item("Option 1");
+                menu.item("Option 2");
+                menu.item("Option 3");
+            },
+        );
     });
 
     harness.step();
 }
 
-/// Test Menu does not render when closed
-#[test]
-fn test_menu_closed() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("test_menu").open(false);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            menu.item("Option 1");
-        });
-    });
-
-    harness.run();
-}
-
 /// Test Menu with icons
 #[test]
 fn test_menu_with_icons() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("icon_menu").open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            let _ = menu.item("Copy").icon("📋");
-            let _ = menu.item("Paste").icon("📄");
-            let _ = menu.item("Cut").icon("✂️");
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("icon_menu").show_ui(
+            ui,
+            |ui| ui.button("Icons"),
+            |menu| {
+                let _ = menu.item("Copy").icon("📋");
+                let _ = menu.item("Paste").icon("📄");
+                let _ = menu.item("Cut").icon("✂️");
+            },
+        );
     });
 
     harness.step();
@@ -59,17 +43,17 @@ fn test_menu_with_icons() {
 /// Test Menu with shortcuts
 #[test]
 fn test_menu_with_shortcuts() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("shortcut_menu").open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            let _ = menu.item("Copy").shortcut("⌘C");
-            let _ = menu.item("Paste").shortcut("⌘V");
-            let _ = menu.item("Cut").shortcut("⌘X");
-            let _ = menu.item("Undo").shortcut("⌘Z");
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("shortcut_menu").show_ui(
+            ui,
+            |ui| ui.button("Shortcuts"),
+            |menu| {
+                let _ = menu.item("Copy").shortcut("⌘C");
+                let _ = menu.item("Paste").shortcut("⌘V");
+                let _ = menu.item("Cut").shortcut("⌘X");
+                let _ = menu.item("Undo").shortcut("⌘Z");
+            },
+        );
     });
 
     harness.step();
@@ -78,16 +62,16 @@ fn test_menu_with_shortcuts() {
 /// Test Menu with icons and shortcuts
 #[test]
 fn test_menu_icons_and_shortcuts() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("full_menu").open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            let _ = menu.item("Copy").icon("📋").shortcut("⌘C");
-            let _ = menu.item("Paste").icon("📄").shortcut("⌘V");
-            let _ = menu.item("Cut").icon("✂️").shortcut("⌘X");
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("full_menu").show_ui(
+            ui,
+            |ui| ui.button("Full"),
+            |menu| {
+                let _ = menu.item("Copy").icon("📋").shortcut("⌘C");
+                let _ = menu.item("Paste").icon("📄").shortcut("⌘V");
+                let _ = menu.item("Cut").icon("✂️").shortcut("⌘X");
+            },
+        );
     });
 
     harness.step();
@@ -96,20 +80,20 @@ fn test_menu_icons_and_shortcuts() {
 /// Test Menu with separators
 #[test]
 fn test_menu_with_separators() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("sep_menu").open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            menu.item("New File");
-            menu.item("Open File");
-            menu.separator();
-            menu.item("Save");
-            menu.item("Save As");
-            menu.separator();
-            menu.item("Exit");
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("sep_menu").show_ui(
+            ui,
+            |ui| ui.button("Separators"),
+            |menu| {
+                menu.item("New File");
+                menu.item("Open File");
+                menu.separator();
+                menu.item("Save");
+                menu.item("Save As");
+                menu.separator();
+                menu.item("Exit");
+            },
+        );
     });
 
     harness.step();
@@ -118,18 +102,18 @@ fn test_menu_with_separators() {
 /// Test Menu with grouped items
 #[test]
 fn test_menu_with_groups() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("group_menu").open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            menu.item("New");
-            menu.item("Open");
-            menu.separator();
-            menu.item("Undo");
-            menu.item("Redo");
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("group_menu").show_ui(
+            ui,
+            |ui| ui.button("Groups"),
+            |menu| {
+                menu.item("New");
+                menu.item("Open");
+                menu.separator();
+                menu.item("Undo");
+                menu.item("Redo");
+            },
+        );
     });
 
     harness.step();
@@ -138,17 +122,17 @@ fn test_menu_with_groups() {
 /// Test Menu with destructive item
 #[test]
 fn test_menu_destructive_item() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("destructive_menu").open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            menu.item("Edit");
-            menu.item("Duplicate");
-            menu.separator();
-            let _ = menu.item("Delete").destructive().shortcut("⌫");
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("destructive_menu").show_ui(
+            ui,
+            |ui| ui.button("Destructive"),
+            |menu| {
+                menu.item("Edit");
+                menu.item("Duplicate");
+                menu.separator();
+                let _ = menu.item("Delete").destructive().shortcut("⌫");
+            },
+        );
     });
 
     harness.step();
@@ -157,16 +141,16 @@ fn test_menu_destructive_item() {
 /// Test Menu with disabled items
 #[test]
 fn test_menu_disabled_items() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("disabled_menu").open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            menu.item("Available");
-            let _ = menu.item("Not Available").disabled(true);
-            let _ = menu.item("Also Disabled").disabled(true);
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("disabled_menu").show_ui(
+            ui,
+            |ui| ui.button("Disabled"),
+            |menu| {
+                menu.item("Available");
+                let _ = menu.item("Not Available").disabled(true);
+                let _ = menu.item("Also Disabled").disabled(true);
+            },
+        );
     });
 
     harness.step();
@@ -175,16 +159,16 @@ fn test_menu_disabled_items() {
 /// Test Menu with checkbox items
 #[test]
 fn test_menu_checkbox_items() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("checkbox_menu").open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            menu.checkbox("Show Toolbar", true);
-            menu.checkbox("Show Sidebar", false);
-            menu.checkbox("Show Status Bar", true);
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("checkbox_menu").show_ui(
+            ui,
+            |ui| ui.button("Checkboxes"),
+            |menu| {
+                menu.checkbox("Show Toolbar", true);
+                menu.checkbox("Show Sidebar", false);
+                menu.checkbox("Show Status Bar", true);
+            },
+        );
     });
 
     harness.step();
@@ -193,16 +177,16 @@ fn test_menu_checkbox_items() {
 /// Test Menu with radio items
 #[test]
 fn test_menu_radio_items() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("radio_menu").open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            menu.radio("Light", "theme", "light", false);
-            menu.radio("Dark", "theme", "dark", true);
-            menu.radio("System", "theme", "system", false);
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("radio_menu").show_ui(
+            ui,
+            |ui| ui.button("Radio"),
+            |menu| {
+                menu.radio("Light", "theme", "light", false);
+                menu.radio("Dark", "theme", "dark", true);
+                menu.radio("System", "theme", "system", false);
+            },
+        );
     });
 
     harness.step();
@@ -211,15 +195,15 @@ fn test_menu_radio_items() {
 /// Test Menu with custom width
 #[test]
 fn test_menu_custom_width() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("wide_menu").width(300.0).open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            menu.item("This is a very long menu item text");
-            menu.item("Another long item");
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("wide_menu").width(300.0).show_ui(
+            ui,
+            |ui| ui.button("Wide"),
+            |menu| {
+                menu.item("This is a very long menu item text");
+                menu.item("Another long item");
+            },
+        );
     });
 
     harness.step();
@@ -228,17 +212,17 @@ fn test_menu_custom_width() {
 /// Test Menu with different positions
 #[test]
 fn test_menu_position_bottom() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("bottom_menu")
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("bottom_menu")
             .position(PopoverPosition::Bottom)
-            .open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            menu.item("Option 1");
-            menu.item("Option 2");
-        });
+            .show_ui(
+                ui,
+                |ui| ui.button("Bottom"),
+                |menu| {
+                    menu.item("Option 1");
+                    menu.item("Option 2");
+                },
+            );
     });
 
     harness.step();
@@ -247,16 +231,16 @@ fn test_menu_position_bottom() {
 /// Test Menu with inset items
 #[test]
 fn test_menu_inset_items() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("inset_menu").open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            let _ = menu.item("With Icon").icon("📄");
-            let _ = menu.item("No Icon (inset)").inset();
-            let _ = menu.item("Another Icon").icon("📁");
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("inset_menu").show_ui(
+            ui,
+            |ui| ui.button("Inset"),
+            |menu| {
+                let _ = menu.item("With Icon").icon("📄");
+                let _ = menu.item("No Icon (inset)").inset();
+                let _ = menu.item("Another Icon").icon("📁");
+            },
+        );
     });
 
     harness.step();
@@ -265,25 +249,25 @@ fn test_menu_inset_items() {
 /// Test comprehensive context menu
 #[test]
 fn test_context_menu_comprehensive() {
-    let anchor_rect = egui::Rect::from_min_size(egui::pos2(100.0, 100.0), egui::vec2(100.0, 32.0));
-
-    let mut harness = Harness::new(|ctx| {
-        let mut menu = DropdownMenu::new("context_menu").open(true);
-
-        menu.show(ctx, anchor_rect, |menu| {
-            let _ = menu.item("Open").icon("📂").shortcut("⌘O");
-            let _ = menu.item("Edit").icon("✏️").shortcut("⌘E");
-            let _ = menu.item("Duplicate").icon("📋").shortcut("⌘D");
-            menu.separator();
-            menu.checkbox("Show Preview", true);
-            menu.checkbox("Show Details", false);
-            menu.separator();
-            menu.radio("Name", "sort", "name", true);
-            menu.radio("Date", "sort", "date", false);
-            menu.radio("Size", "sort", "size", false);
-            menu.separator();
-            let _ = menu.item("Delete").destructive().shortcut("⌫");
-        });
+    let mut harness = Harness::new_ui(|ui| {
+        DropdownMenu::new("context_menu").show_ui(
+            ui,
+            |ui| ui.button("Context"),
+            |menu| {
+                let _ = menu.item("Open").icon("📂").shortcut("⌘O");
+                let _ = menu.item("Edit").icon("✏️").shortcut("⌘E");
+                let _ = menu.item("Duplicate").icon("📋").shortcut("⌘D");
+                menu.separator();
+                menu.checkbox("Show Preview", true);
+                menu.checkbox("Show Details", false);
+                menu.separator();
+                menu.radio("Name", "sort", "name", true);
+                menu.radio("Date", "sort", "date", false);
+                menu.radio("Size", "sort", "size", false);
+                menu.separator();
+                let _ = menu.item("Delete").destructive().shortcut("⌫");
+            },
+        );
     });
 
     harness.step();

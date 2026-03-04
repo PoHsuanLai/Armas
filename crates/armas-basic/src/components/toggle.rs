@@ -666,32 +666,65 @@ impl ToggleGroup {
     }
 
     /// Set up the group layout, run the inner closure, restore spacing.
-    fn with_group_layout<R>(&self, ui: &mut Ui, inner: impl FnOnce(&mut Ui) -> R) -> (Response, R) {
+    /// Set up the group layout, run the inner closure, restore spacing.
+    ///
+    /// `item_width` is the per-item width used to pre-allocate the group rect
+    /// so the response height matches the item height (avoids egui expanding
+    /// to fill the parent cross-axis when switching layout direction).
+    fn with_group_layout<R>(
+        &self,
+        ui: &mut Ui,
+        count: usize,
+        item_width: f32,
+        inner: impl FnOnce(&mut Ui) -> R,
+    ) -> (Response, R) {
+        let prev_spacing = ui.spacing().item_spacing;
+        ui.spacing_mut().item_spacing = Vec2::ZERO;
+
+        let height = self.size.height();
+
         let layout = if self.vertical {
             egui::Layout::top_down(egui::Align::LEFT)
         } else {
             egui::Layout::left_to_right(egui::Align::Center)
         };
 
-        let prev_spacing = ui.spacing().item_spacing;
-        ui.spacing_mut().item_spacing = Vec2::ZERO;
+        // Calculate total size so the response rect is tight
+        let total_spacing = if self.spacing > 0.0 {
+            self.spacing * (count.saturating_sub(1) as f32)
+        } else {
+            0.0
+        };
+        let total_size = if self.vertical {
+            vec2(item_width, height * count as f32 + total_spacing)
+        } else {
+            vec2(item_width * count as f32 + total_spacing, height)
+        };
 
-        let result = ui.with_layout(layout, |ui| {
-            if self.spacing > 0.0 {
-                ui.spacing_mut().item_spacing = if self.vertical {
-                    vec2(0.0, self.spacing)
-                } else {
-                    vec2(self.spacing, 0.0)
-                };
+        let (group_rect, response) =
+            ui.allocate_exact_size(total_size, Sense::hover());
+
+        let mut child_ui = ui.new_child(
+            egui::UiBuilder::new()
+                .max_rect(group_rect)
+                .layout(layout),
+        );
+
+        if self.spacing > 0.0 {
+            child_ui.spacing_mut().item_spacing = if self.vertical {
+                vec2(0.0, self.spacing)
             } else {
-                ui.spacing_mut().item_spacing = Vec2::ZERO;
-            }
-            inner(ui)
-        });
+                vec2(self.spacing, 0.0)
+            };
+        } else {
+            child_ui.spacing_mut().item_spacing = Vec2::ZERO;
+        }
+
+        let result = inner(&mut child_ui);
 
         ui.spacing_mut().item_spacing = prev_spacing;
 
-        (result.response, result.inner)
+        (response, result)
     }
 
     /// Show the toggle group
@@ -711,29 +744,29 @@ impl ToggleGroup {
         selected.resize(items.len(), false);
         self.load_state(ui, selected);
 
-        let (response, ()) = self.with_group_layout(ui, |ui| {
-            let font_size = self.size.font_size(&theme.typography);
-            let padding_x = self.padding.unwrap_or_else(|| self.size.padding_x());
-            let height = self.size.height();
+        let font_size = self.size.font_size(&theme.typography);
+        let padding_x = self.padding.unwrap_or_else(|| self.size.padding_x());
+        let height = self.size.height();
 
-            // Pre-measure all items to find uniform width
-            let uniform_width = self.item_width.unwrap_or_else(|| {
-                let max_text_width = items
-                    .iter()
-                    .map(|label| {
-                        ui.painter()
-                            .layout_no_wrap(
-                                label.to_string(),
-                                egui::FontId::proportional(font_size),
-                                theme.foreground(),
-                            )
-                            .size()
-                            .x
-                    })
-                    .fold(0.0_f32, f32::max);
-                max_text_width + padding_x * 2.0
-            });
+        // Pre-measure all items to find uniform width
+        let uniform_width = self.item_width.unwrap_or_else(|| {
+            let max_text_width = items
+                .iter()
+                .map(|label| {
+                    ui.painter()
+                        .layout_no_wrap(
+                            label.to_string(),
+                            egui::FontId::proportional(font_size),
+                            theme.foreground(),
+                        )
+                        .size()
+                        .x
+                })
+                .fold(0.0_f32, f32::max);
+            max_text_width + padding_x * 2.0
+        });
 
+        let (response, ()) = self.with_group_layout(ui, items.len(), uniform_width, |ui| {
             for (i, label) in items.iter().enumerate() {
                 let is_selected = selected[i];
 
@@ -812,7 +845,7 @@ impl ToggleGroup {
         let padding_x = self.padding.unwrap_or_else(|| self.size.padding_x());
         let uniform_width = self.item_width.unwrap_or(height);
 
-        let (response, ()) = self.with_group_layout(ui, |ui| {
+        let (response, ()) = self.with_group_layout(ui, count, uniform_width, |ui| {
             for i in 0..count {
                 let is_selected = selected[i];
 

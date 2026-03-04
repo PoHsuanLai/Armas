@@ -18,6 +18,7 @@
 //! # }
 //! ```
 
+use super::content::ContentContext;
 use crate::animation::SpringAnimation;
 use crate::ext::ArmasContextExt;
 use crate::Theme;
@@ -186,6 +187,196 @@ impl Accordion {
             clicked,
             open: open_indices,
         }
+    }
+
+    /// Show the accordion with custom trigger content for each section.
+    ///
+    /// The trigger closure receives the section index, a `&mut Ui`, and a
+    /// [`ContentContext`] with state-dependent color, font size, and active state.
+    /// The content closure receives `&mut Ui` and the section index.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// Accordion::new("my_accordion", Vec::<String>::new())
+    ///     .allow_multiple(true)
+    ///     .show_ui(ui, 2, |idx, ui, ctx| {
+    ///         let titles = ["Section 1", "Section 2"];
+    ///         ui.label(titles[idx]);
+    ///     }, |ui, idx| {
+    ///         ui.label(format!("Content for section {}", idx));
+    ///     });
+    /// ```
+    pub fn show_ui(
+        self,
+        ui: &mut Ui,
+        count: usize,
+        mut render_trigger: impl FnMut(usize, &mut Ui, &ContentContext),
+        mut content_fn: impl FnMut(&mut Ui, usize),
+    ) -> AccordionResponse {
+        let theme = ui.ctx().armas_theme();
+        let dt = ui.input(|i| i.stable_dt);
+
+        let state_id = self.id.with("accordion_state");
+        let mut open_indices: Vec<usize> = ui
+            .ctx()
+            .data_mut(|d| d.get_temp(state_id).unwrap_or_default());
+
+        let mut springs: Vec<SpringAnimation> = ui.ctx().data_mut(|d| {
+            d.get_temp(self.id.with("accordion_springs"))
+                .unwrap_or_else(|| {
+                    (0..count)
+                        .map(|_| SpringAnimation::new(0.0, 0.0).params(180.0, 22.0))
+                        .collect()
+                })
+        });
+
+        while springs.len() < count {
+            springs.push(SpringAnimation::new(0.0, 0.0).params(180.0, 22.0));
+        }
+
+        let mut clicked = None;
+        let mut needs_repaint = false;
+
+        for idx in 0..count {
+            let is_open = open_indices.contains(&idx);
+
+            let trigger_clicked =
+                self.show_trigger_ui(ui, idx, is_open, springs[idx].value, &theme, &mut render_trigger);
+
+            if trigger_clicked {
+                clicked = Some(idx);
+                if is_open {
+                    open_indices.retain(|&i| i != idx);
+                } else {
+                    if !self.allow_multiple {
+                        open_indices.clear();
+                    }
+                    open_indices.push(idx);
+                }
+            }
+
+            let target = if open_indices.contains(&idx) {
+                1.0
+            } else {
+                0.0
+            };
+            springs[idx].set_target(target);
+            springs[idx].update(dt);
+
+            let is_animating = !springs[idx].is_settled(0.005, 0.1);
+            if is_animating {
+                needs_repaint = true;
+            }
+
+            let anim_value = springs[idx].value.clamp(0.0, 1.0);
+            let should_show = anim_value > 0.001 || is_animating;
+            if should_show && anim_value > 0.0 {
+                let content_id = self.id.with(("content_height", idx));
+                let stored_height: f32 = ui
+                    .ctx()
+                    .data_mut(|d| d.get_temp(content_id).unwrap_or(50.0));
+
+                let animated_height = (stored_height + CONTENT_PADDING_BOTTOM) * anim_value;
+
+                let response = egui::Frame::new().show(ui, |ui| {
+                    ui.set_max_height(animated_height);
+                    ui.set_clip_rect(ui.max_rect());
+
+                    content_fn(ui, idx);
+                    ui.add_space(CONTENT_PADDING_BOTTOM);
+
+                    ui.min_rect().height()
+                });
+
+                let actual_height = response.inner / anim_value.max(0.01);
+                ui.ctx()
+                    .data_mut(|d| d.insert_temp(content_id, actual_height));
+            }
+
+            let rect = ui.available_rect_before_wrap();
+            ui.painter().hline(
+                rect.x_range(),
+                rect.top(),
+                egui::Stroke::new(1.0, theme.border()),
+            );
+            ui.allocate_space(Vec2::new(0.0, 1.0));
+        }
+
+        if needs_repaint {
+            ui.ctx().request_repaint();
+        }
+
+        ui.ctx().data_mut(|d| {
+            d.insert_temp(state_id, open_indices.clone());
+            d.insert_temp(self.id.with("accordion_springs"), springs);
+        });
+
+        let response = ui.interact(
+            ui.min_rect(),
+            self.id.with("response_ui"),
+            egui::Sense::hover(),
+        );
+
+        AccordionResponse {
+            response,
+            clicked,
+            open: open_indices,
+        }
+    }
+
+    fn show_trigger_ui(
+        &self,
+        ui: &mut Ui,
+        idx: usize,
+        is_open: bool,
+        anim_value: f32,
+        theme: &Theme,
+        render_trigger: &mut impl FnMut(usize, &mut Ui, &ContentContext),
+    ) -> bool {
+        let available_width = ui.available_width();
+        let font_size = theme.typography.base;
+        let text_height = font_size * 1.3;
+        let trigger_height = text_height + TRIGGER_PADDING_Y * 2.0;
+
+        let (rect, response) = ui.allocate_exact_size(
+            Vec2::new(available_width, trigger_height),
+            egui::Sense::click(),
+        );
+
+        if ui.is_rect_visible(rect) {
+            let color = theme.foreground();
+            let ctx = ContentContext {
+                color,
+                font_size,
+                is_active: is_open,
+            };
+
+            // Content area (leave space for chevron)
+            let content_rect = egui::Rect::from_min_max(
+                Pos2::new(rect.left(), rect.min.y + TRIGGER_PADDING_Y),
+                Pos2::new(rect.right() - CHEVRON_SIZE - 4.0, rect.max.y - TRIGGER_PADDING_Y),
+            );
+
+            let mut child_ui = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(content_rect)
+                    .layout(egui::Layout::left_to_right(egui::Align::Center)),
+            );
+            child_ui.style_mut().visuals.override_text_color = Some(color);
+
+            render_trigger(idx, &mut child_ui, &ctx);
+
+            // Chevron
+            self.draw_chevron(
+                ui,
+                Pos2::new(rect.right() - CHEVRON_SIZE / 2.0, rect.center().y),
+                anim_value,
+                theme,
+            );
+        }
+
+        response.clicked()
     }
 
     fn show_trigger(&self, ui: &mut Ui, title: &str, anim_value: f32, theme: &Theme) -> bool {

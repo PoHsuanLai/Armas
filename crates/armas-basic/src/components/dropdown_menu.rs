@@ -359,18 +359,21 @@ struct MenuResponseInner {
 /// # Example
 ///
 /// ```rust,no_run
-/// # use egui::{Ui, Rect};
-/// # fn example(ctx: &egui::Context, anchor: Rect) {
+/// # use egui::Ui;
+/// # fn example(ui: &mut Ui) {
 /// use armas_basic::components::DropdownMenu;
 ///
-/// let mut menu = DropdownMenu::new("actions").open(true);
-/// menu.show(ctx, anchor, |builder| {
-///     builder.item("Cut");
-///     builder.item("Copy");
-///     builder.item("Paste");
-///     builder.separator();
-///     builder.item("Delete");
-/// });
+/// let resp = DropdownMenu::new("actions")
+///     .show_ui(ui, |ui| ui.button("Actions"), |builder| {
+///         builder.item("Cut");
+///         builder.item("Copy");
+///         builder.item("Paste");
+///         builder.separator();
+///         builder.item("Delete");
+///     });
+/// if let Some(idx) = resp.selected {
+///     // Handle selection
+/// }
 /// # }
 /// ```
 #[derive(Clone)]
@@ -398,9 +401,9 @@ impl DropdownMenu {
         }
     }
 
-    /// Set the menu to be open (for external control)
+    /// Set the menu to be open (used internally for submenus).
     #[must_use]
-    pub const fn open(mut self, is_open: bool) -> Self {
+    pub(crate) const fn open(mut self, is_open: bool) -> Self {
         self.is_open = Some(is_open);
         self
     }
@@ -426,8 +429,59 @@ impl DropdownMenu {
         self
     }
 
-    /// Show the menu anchored to a rect
-    pub fn show(
+    /// Show with inline trigger widget. Open/close state managed automatically.
+    ///
+    /// The `trigger` closure renders the trigger widget (e.g. a button).
+    /// Clicking it toggles the menu open/closed. The menu auto-closes on
+    /// selection or click-outside.
+    pub fn show_ui(
+        self,
+        ui: &mut egui::Ui,
+        trigger: impl FnOnce(&mut egui::Ui) -> egui::Response,
+        content: impl FnOnce(&mut MenuBuilder),
+    ) -> DropdownMenuResponse {
+        // Load open state
+        let state_id = self.id.with("menu_state");
+        let is_open: bool = ui.ctx().data(|d| d.get_temp(state_id).unwrap_or(false));
+
+        // Render trigger
+        let trigger_resp = trigger(ui);
+
+        // Toggle on click
+        if trigger_resp.clicked() {
+            ui.ctx()
+                .data_mut(|d| d.insert_temp(state_id, !is_open));
+        }
+
+        // Show menu using internal method
+        let mut menu = self.open(is_open);
+        let resp = menu.show(ui.ctx(), trigger_resp.rect, content);
+
+        // Auto-close on selection or click-outside
+        if resp.selected.is_some() || resp.clicked_outside {
+            ui.ctx().data_mut(|d| d.insert_temp(state_id, false));
+        }
+
+        resp
+    }
+
+    /// Show the menu at a specific anchor rect with explicit open state.
+    ///
+    /// Use this for context menus where there is no trigger widget — the caller
+    /// controls when the menu is open (e.g. on right-click).
+    pub fn show_at(
+        mut self,
+        ctx: &egui::Context,
+        anchor_rect: Rect,
+        is_open: bool,
+        content: impl FnOnce(&mut MenuBuilder),
+    ) -> DropdownMenuResponse {
+        self.is_open = Some(is_open);
+        self.show(ctx, anchor_rect, content)
+    }
+
+    /// Show the menu anchored to a rect (internal, used by submenus and show_ui).
+    pub(crate) fn show(
         &mut self,
         ctx: &egui::Context,
         anchor_rect: Rect,
