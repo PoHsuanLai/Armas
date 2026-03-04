@@ -41,10 +41,24 @@ impl Kbd {
         if parts.len() > 1 {
             // Multiple keys - render as group
             let response = ui.horizontal(|ui| {
-                ui.spacing_mut().item_spacing.x = 2.0;
+                ui.spacing_mut().item_spacing.x = 0.0;
                 for (i, part) in parts.iter().enumerate() {
                     if i > 0 {
-                        ui.label("+");
+                        let gap = 3.0;
+                        let key_height = theme.typography.sm + 4.0 * 2.0;
+                        let font_id = egui::FontId::proportional(theme.typography.xs);
+                        let galley = ui.painter().layout_no_wrap(
+                            "+".into(),
+                            font_id,
+                            theme.muted_foreground(),
+                        );
+                        let size = Vec2::new(galley.size().x + gap * 2.0, key_height);
+                        let (rect, _) = ui.allocate_exact_size(size, egui::Sense::hover());
+                        ui.painter().galley(
+                            rect.center() - galley.size() / 2.0,
+                            galley,
+                            theme.muted_foreground(),
+                        );
                     }
                     render_key(ui, part, &theme);
                 }
