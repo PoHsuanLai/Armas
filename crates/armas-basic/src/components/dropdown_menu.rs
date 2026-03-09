@@ -403,7 +403,7 @@ impl DropdownMenu {
 
     /// Set the menu to be open (used internally for submenus).
     #[must_use]
-    pub(crate) const fn open(mut self, is_open: bool) -> Self {
+    pub const fn open(mut self, is_open: bool) -> Self {
         self.is_open = Some(is_open);
         self
     }
@@ -481,7 +481,7 @@ impl DropdownMenu {
     }
 
     /// Show the menu anchored to a rect (internal, used by submenus and show_ui).
-    pub(crate) fn show(
+    pub fn show(
         &mut self,
         ctx: &egui::Context,
         anchor_rect: Rect,
@@ -998,7 +998,8 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
     );
 
     // Open submenu when hovering the trigger
-    if item_response.hovered() && !params.submenu_params.item.disabled {
+    let trigger_hovered = item_response.hovered() && !params.submenu_params.item.disabled;
+    if trigger_hovered {
         *params.selected_index = Some(params.submenu_params.idx);
         params.submenu_state.open_submenu(params.submenu_params.idx);
     }
@@ -1076,6 +1077,18 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
             add_item_to_builder(builder, sub_item);
         }
     });
+
+    // Auto-close submenu when pointer leaves both trigger and submenu content
+    if is_submenu_open
+        && !trigger_hovered
+        && !sub_response.response.hovered()
+        && !sub_response.response.contains_pointer()
+    {
+        params
+            .submenu_state
+            .open
+            .remove(&params.submenu_params.idx);
+    }
 
     // Propagate submenu responses with flat index offset
     let flat_base = params.submenu_params.flat_base;
