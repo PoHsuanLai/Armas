@@ -9,30 +9,10 @@ use egui::{Color32, Response, Sense, Ui, Vec2};
 
 /// Icon Button component
 ///
-/// A button specifically designed for icons.
-///
-/// # Example
-///
-/// ```rust,no_run
-/// # use egui::Ui;
-/// # use armas_basic::icon::IconData;
-/// # static MY_ICON: IconData = IconData {
-/// #     name: "test", vertices: &[], indices: &[],
-/// #     viewbox_width: 24.0, viewbox_height: 24.0,
-/// # };
-/// # fn example(ui: &mut Ui) {
-/// use armas_basic::components::{IconButton, ButtonVariant};
-///
-/// if IconButton::new(&MY_ICON)
-///     .variant(ButtonVariant::Filled)
-///     .size(24.0)
-///     .show(ui)
-///     .clicked()
-/// {
-///     // Handle button click
-/// }
-/// # }
-/// ```
+/// `size` controls the **total widget size** (allocation), not the icon drawing area.
+/// The icon is drawn inside after subtracting padding.
+/// For Ghost/Link variants, padding defaults to 0 so `size` ≈ icon size.
+/// For other variants, padding defaults to `ui.spacing().button_padding`.
 pub struct IconButton<'a> {
     vertices: &'a [(f32, f32)],
     indices: &'a [u32],
@@ -88,14 +68,14 @@ impl<'a> IconButton<'a> {
         self
     }
 
-    /// Set the icon size
+    /// Set the total widget size (icon + padding). Default 16.
     #[must_use]
     pub const fn size(mut self, size: f32) -> Self {
         self.size = size;
         self
     }
 
-    /// Set explicit padding around the icon. When not set, uses `ui.spacing().button_padding`.
+    /// Set padding between widget edge and icon. Default: 0 for Ghost/Link, button_padding for others.
     #[must_use]
     pub const fn padding(mut self, padding: f32) -> Self {
         self.padding = Some(padding);
@@ -126,11 +106,21 @@ impl<'a> IconButton<'a> {
     /// Show the icon button
     pub fn show(self, ui: &mut Ui) -> Response {
         let theme = ui.ctx().armas_theme();
-        let padding = self.padding.unwrap_or_else(|| {
-            let bp = ui.spacing().button_padding;
-            bp.x.max(bp.y)
+
+        // Ghost/Link: no background, so default padding = 0 (size ≈ icon).
+        // Others: use egui's button_padding so icon has breathing room inside bg.
+        let padding = self.padding.unwrap_or_else(|| match self.variant {
+            ButtonVariant::Ghost | ButtonVariant::Link => 0.0,
+            _ => {
+                let bp = ui.spacing().button_padding;
+                bp.x.max(bp.y)
+            }
         });
-        let total_size = Vec2::splat(self.size + padding * 2.0);
+
+        // `size` is the total widget allocation.
+        let total_size = Vec2::splat(self.size);
+        // Icon draws in the inner rect after subtracting padding.
+        let icon_draw_size = (self.size - padding * 2.0).max(1.0);
 
         let sense = if self.enabled {
             Sense::click()
@@ -141,7 +131,6 @@ impl<'a> IconButton<'a> {
         let (rect, response) = ui.allocate_exact_size(total_size, sense);
 
         if ui.is_rect_visible(rect) {
-            // Determine colors based on variant and state
             let (bg_color, mut icon_color) = match self.variant {
                 ButtonVariant::Default => {
                     let bg = if response.is_pointer_button_down_on() {
@@ -163,7 +152,7 @@ impl<'a> IconButton<'a> {
                     };
                     (Some(bg), theme.secondary_foreground())
                 }
-                ButtonVariant::Outline | ButtonVariant::Ghost | ButtonVariant::Link => {
+                ButtonVariant::Outline => {
                     let bg = if response.hovered() {
                         Some(theme.accent())
                     } else {
@@ -176,9 +165,21 @@ impl<'a> IconButton<'a> {
                     };
                     (bg, icon)
                 }
+                ButtonVariant::Ghost | ButtonVariant::Link => {
+                    let bg = if response.hovered() {
+                        Some(theme.muted())
+                    } else {
+                        None
+                    };
+                    let icon = if response.hovered() {
+                        theme.foreground()
+                    } else {
+                        theme.muted_foreground()
+                    };
+                    (bg, icon)
+                }
             };
 
-            // Apply custom colors if provided
             if response.hovered() {
                 if let Some(custom_hover_color) = self.hover_icon_color {
                     icon_color = custom_hover_color;
@@ -187,16 +188,15 @@ impl<'a> IconButton<'a> {
                 icon_color = custom_color;
             }
 
-            // Apply disabled state
             if !self.enabled {
                 icon_color = icon_color.linear_multiply(0.5);
             }
 
-            // Draw background if needed
             if let Some(bg) = bg_color {
                 let rounding = match self.variant {
-                    ButtonVariant::Default | ButtonVariant::Secondary => total_size.x / 2.0, // Circular
-                    _ => 6.0, // rounded-md
+                    ButtonVariant::Default | ButtonVariant::Secondary => total_size.x / 2.0,
+                    ButtonVariant::Ghost | ButtonVariant::Link => 2.0,
+                    _ => 6.0,
                 };
                 let final_bg = if self.enabled {
                     bg
@@ -206,15 +206,14 @@ impl<'a> IconButton<'a> {
                 ui.painter().rect_filled(rect, rounding, final_bg);
             }
 
-            // Draw outline for outline variant
             if self.variant == ButtonVariant::Outline {
                 let stroke = egui::Stroke::new(1.0, theme.border());
                 ui.painter()
                     .rect_stroke(rect, 6.0, stroke, egui::epaint::StrokeKind::Inside);
             }
 
-            // Draw icon
-            let icon_rect = egui::Rect::from_center_size(rect.center(), Vec2::splat(self.size));
+            let icon_rect =
+                egui::Rect::from_center_size(rect.center(), Vec2::splat(icon_draw_size));
             render_icon_data(
                 ui.painter(),
                 icon_rect,

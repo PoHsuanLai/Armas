@@ -74,6 +74,7 @@ pub struct Dialog {
     title: Option<String>,
     description: Option<String>,
     size: DialogSize,
+    fixed_height: Option<f32>,
     closable: bool,
     fade_animation: Animation<f32>,
     is_open: Option<bool>,
@@ -87,6 +88,7 @@ impl Dialog {
             title: None,
             description: None,
             size: DialogSize::Medium,
+            fixed_height: None,
             closable: true,
             fade_animation: Animation::new(0.0, 1.0, 0.15).easing(EasingFunction::CubicOut),
             is_open: None,
@@ -114,10 +116,17 @@ impl Dialog {
         self
     }
 
-    /// Set the dialog size
+    /// Set the dialog size (controls width)
     #[must_use]
     pub const fn size(mut self, size: DialogSize) -> Self {
         self.size = size;
+        self
+    }
+
+    /// Fix the dialog height. When set, content will scroll rather than expanding the dialog.
+    #[must_use]
+    pub const fn height(mut self, height: f32) -> Self {
+        self.fixed_height = Some(height);
         self
     }
 
@@ -198,98 +207,69 @@ impl Dialog {
                 }
             });
 
-        // Draw dialog content
-        let content_id = self.id.with("dialog_content");
-        let area_response = egui::Area::new(content_id)
-            .order(egui::Order::Foreground)
-            .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
-            .show(ctx, |ui| {
-                let frame = egui::Frame::NONE
-                    .fill(theme.background())
-                    .stroke(Stroke::new(1.0, theme.border()))
-                    .corner_radius(CORNER_RADIUS)
-                    .shadow(egui::epaint::Shadow {
-                        offset: [0, 4],
-                        blur: 16,
-                        spread: 0,
-                        color: Color32::from_black_alpha(60),
-                    })
-                    .inner_margin(PADDING);
+        // Draw dialog content — use Window when fixed_height is set for true size enforcement,
+        // otherwise fall back to Area (auto-sized).
+        let frame = egui::Frame::NONE
+            .fill(theme.background())
+            .stroke(Stroke::new(1.0, theme.border()))
+            .corner_radius(CORNER_RADIUS)
+            .shadow(egui::epaint::Shadow {
+                offset: [0, 4],
+                blur: 16,
+                spread: 0,
+                color: Color32::from_black_alpha(60),
+            })
+            .inner_margin(PADDING);
 
-                frame.show(ui, |ui| {
-                    ui.set_width(dialog_width);
+        let mut win_closed = false;
+        let area_response = if let Some(h) = self.fixed_height {
+            let mut win_open = true;
+            let resp = egui::Window::new("")
+                .id(self.id.with("dialog_content"))
+                .open(&mut win_open)
+                .order(egui::Order::Foreground)
+                .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+                .fixed_size(vec2(dialog_width, h))
+                .title_bar(false)
+                .resizable(false)
+                .collapsible(false)
+                .frame(frame)
+                .show(ctx, |ui| {
                     ui.spacing_mut().item_spacing.y = GAP;
-
-                    // Header section
-                    let has_header = self.title.is_some() || self.description.is_some();
-                    if has_header || self.closable {
-                        ui.horizontal(|ui| {
-                            ui.vertical(|ui| {
-                                ui.spacing_mut().item_spacing.y = HEADER_GAP;
-
-                                if let Some(title) = &self.title {
-                                    ui.label(
-                                        egui::RichText::new(title)
-                                            .size(theme.typography.xl)
-                                            .strong()
-                                            .color(theme.foreground()),
-                                    );
-                                }
-
-                                if let Some(desc) = &self.description {
-                                    ui.label(
-                                        egui::RichText::new(desc)
-                                            .size(theme.typography.base)
-                                            .color(theme.muted_foreground()),
-                                    );
-                                }
-                            });
-
-                            ui.allocate_space(
-                                ui.available_size() - vec2(CLOSE_BUTTON_SIZE + 4.0, 0.0),
-                            );
-
-                            if self.closable {
-                                let (close_rect, close_response) = ui.allocate_exact_size(
-                                    vec2(CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE),
-                                    Sense::click(),
-                                );
-
-                                let close_color = if close_response.hovered() {
-                                    theme.foreground()
-                                } else {
-                                    theme.muted_foreground()
-                                };
-
-                                let center = close_rect.center();
-                                let half = CLOSE_BUTTON_SIZE * 0.35;
-                                ui.painter().line_segment(
-                                    [
-                                        Pos2::new(center.x - half, center.y - half),
-                                        Pos2::new(center.x + half, center.y + half),
-                                    ],
-                                    Stroke::new(1.5, close_color),
-                                );
-                                ui.painter().line_segment(
-                                    [
-                                        Pos2::new(center.x + half, center.y - half),
-                                        Pos2::new(center.x - half, center.y + half),
-                                    ],
-                                    Stroke::new(1.5, close_color),
-                                );
-
-                                if close_response.clicked() {
-                                    is_open = false;
-                                    closed = true;
-                                    self.fade_animation.reset();
-                                }
-                            }
-                        });
-                    }
-
+                    render_header(ui, theme, &self.title, &self.description, self.closable, &mut closed, &mut self.fade_animation);
                     content(ui);
                 });
-            });
+            if !win_open {
+                win_closed = true;
+            }
+            resp.map(|r| r.response).unwrap_or_else(|| {
+                ctx.data_mut(|_| {});
+                egui::Area::new(self.id.with("dialog_empty2"))
+                    .order(egui::Order::Background)
+                    .fixed_pos(egui::Pos2::ZERO)
+                    .show(ctx, |_| {})
+                    .response
+            })
+        } else {
+            let content_id = self.id.with("dialog_content");
+            egui::Area::new(content_id)
+                .order(egui::Order::Foreground)
+                .anchor(Align2::CENTER_CENTER, vec2(0.0, 0.0))
+                .show(ctx, |ui| {
+                    frame.show(ui, |ui| {
+                        ui.set_width(dialog_width);
+                        ui.spacing_mut().item_spacing.y = GAP;
+                        render_header(ui, theme, &self.title, &self.description, self.closable, &mut closed, &mut self.fade_animation);
+                        content(ui);
+                    });
+                })
+                .response
+        };
+
+        if win_closed {
+            closed = true;
+            self.fade_animation.reset();
+        }
 
         if self.closable && ctx.input(|i| i.key_pressed(Key::Escape)) {
             is_open = false;
@@ -312,7 +292,7 @@ impl Dialog {
         }
 
         DialogResponse {
-            response: area_response.response,
+            response: area_response,
             closed,
             backdrop_clicked,
         }
@@ -338,6 +318,65 @@ pub struct DialogResponse {
 // ============================================================================
 // Helper functions for building dialog content
 // ============================================================================
+
+fn render_header(
+    ui: &mut Ui,
+    theme: &Theme,
+    title: &Option<String>,
+    description: &Option<String>,
+    closable: bool,
+    closed: &mut bool,
+    fade_animation: &mut crate::animation::Animation<f32>,
+) {
+    let has_header = title.is_some() || description.is_some();
+    if !has_header && !closable {
+        return;
+    }
+    ui.horizontal(|ui| {
+        ui.vertical(|ui| {
+            ui.spacing_mut().item_spacing.y = HEADER_GAP;
+            if let Some(t) = title {
+                ui.label(
+                    egui::RichText::new(t)
+                        .size(theme.typography.xl)
+                        .strong()
+                        .color(theme.foreground()),
+                );
+            }
+            if let Some(d) = description {
+                ui.label(
+                    egui::RichText::new(d)
+                        .size(theme.typography.base)
+                        .color(theme.muted_foreground()),
+                );
+            }
+        });
+        ui.allocate_space(ui.available_size() - vec2(CLOSE_BUTTON_SIZE + 4.0, 0.0));
+        if closable {
+            let (close_rect, close_response) =
+                ui.allocate_exact_size(vec2(CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE), Sense::click());
+            let close_color = if close_response.hovered() {
+                theme.foreground()
+            } else {
+                theme.muted_foreground()
+            };
+            let center = close_rect.center();
+            let half = CLOSE_BUTTON_SIZE * 0.35;
+            ui.painter().line_segment(
+                [Pos2::new(center.x - half, center.y - half), Pos2::new(center.x + half, center.y + half)],
+                Stroke::new(1.5, close_color),
+            );
+            ui.painter().line_segment(
+                [Pos2::new(center.x + half, center.y - half), Pos2::new(center.x - half, center.y + half)],
+                Stroke::new(1.5, close_color),
+            );
+            if close_response.clicked() {
+                *closed = true;
+                fade_animation.reset();
+            }
+        }
+    });
+}
 
 /// Helper to render a dialog footer (right-aligned buttons)
 pub fn dialog_footer(ui: &mut Ui, content: impl FnOnce(&mut Ui)) {
