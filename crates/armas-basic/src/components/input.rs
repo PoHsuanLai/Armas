@@ -347,15 +347,14 @@ impl Input {
                 egui::StrokeKind::Inside,
             );
 
-            // Scale font and padding to fit custom height
+            // Scale font to fit custom height, use full rect height for vertical centering
             let base_font = theme.typography.base;
             let font_size = if height < base_font + PADDING_Y * 2.0 {
                 (height * 0.6).max(8.0)
             } else {
                 base_font
             };
-            let padding_y = ((height - font_size) / 2.0).max(0.0);
-            let content_rect = rect.shrink2(Vec2::new(PADDING_X, padding_y));
+            let content_rect = rect.shrink2(Vec2::new(PADDING_X, 0.0));
 
             // Layout: [left_icon] [text_input] [right_icon]
             let mut x_offset = content_rect.left();
@@ -400,8 +399,12 @@ impl Input {
                 painter.galley(icon_pos, icon_galley, placeholder_color);
             }
 
-            // Render text edit in the allocated space
-            let mut child_ui = ui.new_child(egui::UiBuilder::new().max_rect(text_rect));
+            // Render text edit in the allocated space, vertically centered
+            let mut child_ui = ui.new_child(
+                egui::UiBuilder::new()
+                    .max_rect(text_rect)
+                    .layout(egui::Layout::left_to_right(egui::Align::Center)),
+            );
 
             // Style the text edit
             child_ui.style_mut().visuals.widgets.inactive.bg_fill = Color32::TRANSPARENT;

@@ -5,7 +5,7 @@
 
 use crate::animation::{Animation, EasingFunction};
 use crate::Theme;
-use egui::{vec2, Align, Align2, Color32, Key, Layout, Pos2, Sense, Stroke, Ui};
+use egui::{vec2, Align, Align2, Color32, Key, Layout, Sense, Stroke, Ui};
 
 // shadcn/ui Dialog constants
 const CORNER_RADIUS: f32 = 8.0; // rounded-lg
@@ -360,16 +360,7 @@ fn render_header(
             } else {
                 theme.muted_foreground()
             };
-            let center = close_rect.center();
-            let half = CLOSE_BUTTON_SIZE * 0.35;
-            ui.painter().line_segment(
-                [Pos2::new(center.x - half, center.y - half), Pos2::new(center.x + half, center.y + half)],
-                Stroke::new(1.5, close_color),
-            );
-            ui.painter().line_segment(
-                [Pos2::new(center.x + half, center.y - half), Pos2::new(center.x - half, center.y + half)],
-                Stroke::new(1.5, close_color),
-            );
+            crate::icon::draw_close(ui.painter(), close_rect, close_color);
             if close_response.clicked() {
                 *closed = true;
                 fade_animation.reset();
