@@ -134,7 +134,12 @@ impl Switch {
 
         let old_checked = *checked;
 
-        // Update spring animation
+        // Without an ID, the spring resets to 0.0 every frame (no stored state).
+        // Snap it to match `checked` so it only animates on actual toggles.
+        if self.id.is_none() {
+            self.toggle_spring.value = if *checked { 1.0 } else { 0.0 };
+        }
+
         let target = if *checked { 1.0 } else { 0.0 };
         self.toggle_spring.set_target(target);
         let dt = ui.input(|i| i.stable_dt);

@@ -345,7 +345,13 @@ impl Select {
     }
 
     fn show_trigger(&self, ui: &mut Ui, theme: &Theme, width: f32) -> (Rect, Response) {
-        let height = self.custom_height.unwrap_or(TRIGGER_HEIGHT);
+        let avail_h = ui.available_height();
+        let default_h = if avail_h.is_finite() && avail_h > 0.0 && avail_h < TRIGGER_HEIGHT {
+            avail_h
+        } else {
+            TRIGGER_HEIGHT
+        };
+        let height = self.custom_height.unwrap_or(default_h);
         let (rect, response) = ui.allocate_exact_size(vec2(width, height), Sense::click());
 
         if ui.is_rect_visible(rect) {
