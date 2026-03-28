@@ -95,6 +95,12 @@ impl Checkbox {
 
         let old_checked = *checked;
 
+        // Without an ID, the spring resets to 0.0 every frame.
+        // Snap it to match `checked` so it only animates on actual toggles.
+        if self.id.is_none() {
+            self.check_spring.value = if *checked { 1.0 } else { 0.0 };
+        }
+
         // Update spring animation
         let target = if *checked { 1.0 } else { 0.0 };
         self.check_spring.set_target(target);
