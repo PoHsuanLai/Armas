@@ -11,7 +11,7 @@ use egui::{vec2, Align2, Color32, Key, Modifiers, Pos2, Rect, Sense, Ui};
 // Constants matching shadcn styling
 const DEFAULT_PANEL_WIDTH: f32 = 512.0;
 const DEFAULT_PANEL_MAX_HEIGHT: f32 = 384.0;
-const CORNER_RADIUS: f32 = 6.0;
+const CORNER_RADIUS: f32 = 8.0;
 const INPUT_HEIGHT: f32 = 44.0;
 const INPUT_PADDING_X: f32 = 12.0;
 const INPUT_GAP: f32 = 8.0;
@@ -430,9 +430,16 @@ impl Command {
                 let panel_rect =
                     Rect::from_min_size(ui.cursor().min, vec2(self.width, self.max_height));
 
-                // Panel background
+                // Panel background — match Dialog styling
+                let shadow = egui::epaint::Shadow {
+                    offset: [0, 4],
+                    blur: 16,
+                    spread: 0,
+                    color: Color32::from_black_alpha(60),
+                };
+                ui.painter().add(shadow.as_shape(panel_rect, CORNER_RADIUS));
                 ui.painter()
-                    .rect_filled(panel_rect, CORNER_RADIUS, theme.popover());
+                    .rect_filled(panel_rect, CORNER_RADIUS, theme.background());
                 ui.painter().rect_stroke(
                     panel_rect,
                     CORNER_RADIUS,

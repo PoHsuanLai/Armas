@@ -164,6 +164,8 @@ pub struct DrumSequencer<'a> {
     pub(crate) momentum_damping: f64,
     /// Whether the sequencer is disabled (non-interactive)
     disabled: bool,
+    /// Override corner radius for steps and row labels (None = use theme default)
+    corner_radius: Option<f32>,
 }
 
 impl<'a> DrumSequencer<'a> {
@@ -189,6 +191,7 @@ impl<'a> DrumSequencer<'a> {
             momentum_scrolling: true,
             momentum_damping: 5.0,
             disabled: false,
+            corner_radius: None,
         }
     }
 
@@ -267,6 +270,13 @@ impl<'a> DrumSequencer<'a> {
     #[must_use]
     pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
+        self
+    }
+
+    /// Override the corner radius for steps and row labels (0.0 = sharp corners)
+    #[must_use]
+    pub const fn corner_radius(mut self, radius: f32) -> Self {
+        self.corner_radius = Some(radius);
         self
     }
 
@@ -360,6 +370,7 @@ impl<'a> DrumSequencer<'a> {
         step_toggled: &mut HashMap<(usize, usize), bool>,
         row_idx: usize,
         disabled: bool,
+        corner_radius: f32,
     ) -> bool {
         let mut changed = false;
 
@@ -413,6 +424,7 @@ impl<'a> DrumSequencer<'a> {
                 glow_intensity,
                 variant,
                 show_velocity,
+                corner_radius,
             );
         }
 
@@ -429,13 +441,14 @@ impl<'a> DrumSequencer<'a> {
         row_label_width: f32,
         row_height: f32,
         row: &DrumRow,
+        corner_radius: f32,
     ) {
         let label_rect = Rect::from_min_size(
             Pos2::new(rect_min_x + scroll_offset.x, row_y),
             Vec2::new(row_label_width, row_height),
         );
 
-        Self::draw_row_label_static(painter, theme, label_rect, row);
+        Self::draw_row_label_static(painter, theme, label_rect, row, corner_radius);
     }
 
     /// Handle step interaction (clicks and drags)
@@ -476,8 +489,9 @@ impl<'a> DrumSequencer<'a> {
             false
         };
 
-        // Handle drag - light up steps being dragged over
-        if is_dragging {
+        // Handle drag - light up steps being dragged over.
+        // Skip if this step was just clicked (click already handled the toggle).
+        if is_dragging && !step_response.clicked() {
             if let Some(mouse) = mouse_pos {
                 if step_rect.contains(mouse) {
                     // Turn on the step if dragging over it
@@ -654,6 +668,8 @@ impl<'a> DrumSequencer<'a> {
                 ui.painter().clone()
             };
 
+            let corner_radius = self.corner_radius
+                .unwrap_or_else(|| f32::from(theme.spacing.corner_radius_small));
             let mut row_y = rect.min.y + scroll_offset.y;
 
             for (row_idx, row) in self.rows.iter_mut().enumerate() {
@@ -677,6 +693,7 @@ impl<'a> DrumSequencer<'a> {
                     row_label_width,
                     row_height,
                     row,
+                    corner_radius,
                 );
 
                 // Draw step grid for this row
@@ -702,6 +719,7 @@ impl<'a> DrumSequencer<'a> {
                     &mut step_toggled,
                     row_idx,
                     disabled,
+                    corner_radius,
                 );
 
                 if row_changed {
@@ -729,8 +747,8 @@ impl<'a> DrumSequencer<'a> {
         }
     }
 
-    fn draw_row_label_static(painter: &egui::Painter, theme: &Theme, rect: Rect, row: &DrumRow) {
-        let corner_radius = f32::from(theme.spacing.corner_radius_small);
+    fn draw_row_label_static(painter: &egui::Painter, theme: &Theme, rect: Rect, row: &DrumRow, corner_radius: f32) {
+        let _ = theme;
 
         // Background - use row color with brightness adjustment
         let bg_color = if row.muted {
@@ -778,8 +796,8 @@ impl<'a> DrumSequencer<'a> {
         glow_intensity: f32,
         variant: DrumSequencerVariant,
         show_velocity: bool,
+        corner_radius: f32,
     ) {
-        let corner_radius = f32::from(theme.spacing.corner_radius_small);
 
         // Draw based on variant
         match variant {
