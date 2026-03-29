@@ -729,7 +729,7 @@ impl PianoRoll {
         let dim = if self.disabled { 0.5 } else { 1.0 };
         for note in &self.notes {
             if let Some(note_rect) = self.get_note_rect_in_content(note, content_rect) {
-                let primary = theme.primary().gamma_multiply(dim);
+                let primary = Color32::WHITE.gamma_multiply(dim);
                 let velocity_f = f32::from(note.velocity) / 127.0;
                 let intensity = (velocity_f * 255.0) as u8;
                 let note_color = Color32::from_rgba_unmultiplied(
@@ -806,13 +806,15 @@ impl PianoRoll {
             )
         };
 
-        // Handle click to remove notes
+        // Handle click: remove existing note, or add new one on empty space
         if response.clicked() {
             if let Some(pos) = response.interact_pointer_pos() {
                 let content_pos = to_content_pos(pos);
                 if let Some(clicked_idx) = self.find_note_at_content_pos(content_pos, content_rect)
                 {
                     interactions.removed_indices.push(clicked_idx);
+                } else if let Some(new_note) = self.content_pos_to_note(content_pos, content_rect) {
+                    interactions.added_note = Some(new_note);
                 }
             }
         }

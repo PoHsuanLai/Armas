@@ -748,40 +748,48 @@ impl<'a> DrumSequencer<'a> {
     }
 
     fn draw_row_label_static(painter: &egui::Painter, theme: &Theme, rect: Rect, row: &DrumRow, corner_radius: f32) {
-        let _ = theme;
-
-        // Background - use row color with brightness adjustment
-        let bg_color = if row.muted {
-            row.color.gamma_multiply(0.4)
+        // Background — subtle row color fill matching piano roll aesthetic
+        let alpha = if row.muted {
+            100
         } else if row.soloed {
-            row.color.gamma_multiply(0.7)
+            180
         } else {
-            row.color.gamma_multiply(0.6)
+            140
         };
+        let bg_color = Color32::from_rgba_unmultiplied(
+            row.color.r(),
+            row.color.g(),
+            row.color.b(),
+            alpha,
+        );
 
         painter.rect_filled(rect, corner_radius, bg_color);
 
-        // Subtle glow effect around header (2 layers like steps)
-        for i in 0..2 {
-            let offset = (i + 1) as f32 * 1.5;
-            let alpha = ((1.0 - i as f32 / 2.0) * 15.0) as u8;
-            let glow_color =
-                Color32::from_rgba_unmultiplied(row.color.r(), row.color.g(), row.color.b(), alpha);
-            painter.rect_stroke(
-                rect.expand(offset),
-                corner_radius,
-                egui::Stroke::new(1.0, glow_color),
-                egui::StrokeKind::Outside,
-            );
-        }
+        // Thin border matching the step border style
+        painter.rect_stroke(
+            rect,
+            corner_radius,
+            egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(
+                row.color.r(),
+                row.color.g(),
+                row.color.b(),
+                ((alpha as f32 * 1.3).min(255.0)) as u8,
+            )),
+            egui::StrokeKind::Outside,
+        );
 
-        // Row name text - white for contrast
+        // Row name text
+        let text_color = if row.muted {
+            theme.muted_foreground()
+        } else {
+            theme.foreground()
+        };
         painter.text(
             rect.center(),
             egui::Align2::CENTER_CENTER,
             &row.name,
             egui::FontId::proportional(12.0),
-            Color32::WHITE,
+            text_color,
         );
     }
 
@@ -903,10 +911,15 @@ impl<'a> DrumSequencer<'a> {
         is_hovered: bool,
         velocity: f32,
         show_velocity: bool,
-        glow_intensity: f32,
+        _glow_intensity: f32,
     ) {
-        let bg_color = if is_active && show_velocity {
-            let alpha = velocity.mul_add(191.0, 64.0) as u8;
+        // Match piano roll note style: velocity-based alpha fill, thin border, highlight strip
+        let bg_color = if is_active {
+            let alpha = if show_velocity {
+                (velocity * 255.0) as u8
+            } else {
+                255
+            };
             Color32::from_rgba_unmultiplied(row_color.r(), row_color.g(), row_color.b(), alpha)
         } else if is_hovered {
             theme.muted()
@@ -916,18 +929,36 @@ impl<'a> DrumSequencer<'a> {
 
         painter.rect_filled(rect, corner_radius, bg_color);
 
-        let border_color = if is_active { row_color } else { theme.border() };
-        let border_width = if is_active { 2.0 } else { 1.5 };
+        // Border: same 1.0px as piano roll notes
+        let border_color = if is_active {
+            let intensity = if show_velocity { velocity } else { 1.0 };
+            let alpha = ((intensity * 255.0 * 1.3).min(255.0)) as u8;
+            Color32::from_rgba_unmultiplied(row_color.r(), row_color.g(), row_color.b(), alpha)
+        } else {
+            theme.border()
+        };
 
         painter.rect_stroke(
             rect,
             corner_radius,
-            egui::Stroke::new(border_width, border_color),
+            egui::Stroke::new(1.0, border_color),
             egui::StrokeKind::Outside,
         );
 
+        // Top highlight strip (matching piano roll)
         if is_active {
-            Self::draw_glow_effect(painter, rect, corner_radius, row_color, glow_intensity);
+            let highlight_rect = Rect::from_min_size(
+                rect.min,
+                Vec2::new(rect.width(), rect.height() * 0.3),
+            );
+            let highlight_color = Color32::from_rgba_unmultiplied(255, 255, 255, 20);
+            let highlight_rounding = egui::CornerRadius {
+                nw: corner_radius as u8,
+                ne: corner_radius as u8,
+                sw: 0,
+                se: 0,
+            };
+            painter.rect_filled(highlight_rect, highlight_rounding, highlight_color);
         }
     }
 
