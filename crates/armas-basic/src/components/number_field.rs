@@ -49,6 +49,7 @@ pub struct NumberField {
     description: Option<String>,
     width: Option<f32>,
     disabled: bool,
+    bg_color: Option<Color32>,
 }
 
 impl NumberField {
@@ -65,6 +66,7 @@ impl NumberField {
             description: None,
             width: None,
             disabled: false,
+            bg_color: None,
         }
     }
 
@@ -128,6 +130,13 @@ impl NumberField {
     #[must_use]
     pub const fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
+        self
+    }
+
+    /// Override the background color (default: theme.background())
+    #[must_use]
+    pub const fn bg_color(mut self, color: Color32) -> Self {
+        self.bg_color = Some(color);
         self
     }
 
@@ -221,7 +230,7 @@ impl NumberField {
         let bg_color = if self.disabled {
             theme.muted()
         } else {
-            theme.background()
+            self.bg_color.unwrap_or_else(|| theme.background())
         };
         let border_color = theme.input().linear_multiply(disabled_alpha);
 
