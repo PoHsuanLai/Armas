@@ -39,27 +39,10 @@ impl Kbd {
         let parts: Vec<&str> = self.text.split('+').map(str::trim).collect();
 
         if parts.len() > 1 {
-            // Multiple keys - render as group
+            // Multiple keys - render as group with a small gap, no '+' separator.
             let response = ui.horizontal(|ui| {
-                ui.spacing_mut().item_spacing.x = 0.0;
-                for (i, part) in parts.iter().enumerate() {
-                    if i > 0 {
-                        let gap = 3.0;
-                        let key_height = theme.typography.sm + 4.0 * 2.0;
-                        let font_id = egui::FontId::proportional(theme.typography.xs);
-                        let galley = ui.painter().layout_no_wrap(
-                            "+".into(),
-                            font_id,
-                            theme.muted_foreground(),
-                        );
-                        let size = Vec2::new(galley.size().x + gap * 2.0, key_height);
-                        let (rect, _) = ui.allocate_exact_size(size, egui::Sense::hover());
-                        ui.painter().galley(
-                            rect.center() - galley.size() / 2.0,
-                            galley,
-                            theme.muted_foreground(),
-                        );
-                    }
+                ui.spacing_mut().item_spacing.x = 2.0;
+                for part in &parts {
                     render_key(ui, part, &theme);
                 }
             });
@@ -71,7 +54,35 @@ impl Kbd {
     }
 }
 
+/// Map common key names to compact glyphs (Mac-style modifier symbols, arrow
+/// glyphs, etc.). Keeps single-char and unknown labels as-is.
+fn key_glyph(text: &str) -> &str {
+    match text {
+        "Cmd" | "Command" | "Meta" | "Super" | "Win" => "⌘",
+        "Shift" => "⇧",
+        "Alt" | "Option" | "Opt" => "⌥",
+        "Ctrl" | "Control" => "⌃",
+        "Enter" | "Return" => "⏎",
+        "Backspace" => "⌫",
+        "Delete" | "Del" => "⌦",
+        "Escape" | "Esc" => "⎋",
+        "Tab" => "⇥",
+        "CapsLock" => "⇪",
+        "Up" | "ArrowUp" => "↑",
+        "Down" | "ArrowDown" => "↓",
+        "Left" | "ArrowLeft" => "←",
+        "Right" | "ArrowRight" => "→",
+        "PageUp" => "⇞",
+        "PageDown" => "⇟",
+        "Home" => "↖",
+        "End" => "↘",
+        "Space" => "␣",
+        other => other,
+    }
+}
+
 fn render_key(ui: &mut Ui, text: &str, theme: &Theme) -> Response {
+    let display = key_glyph(text);
     let font_size = theme.typography.sm;
     let font_id = egui::FontId::proportional(font_size);
     let text_color = theme.muted_foreground();
@@ -80,12 +91,12 @@ fn render_key(ui: &mut Ui, text: &str, theme: &Theme) -> Response {
     // Calculate text size
     let galley = ui
         .painter()
-        .layout_no_wrap(text.to_string(), font_id, text_color);
+        .layout_no_wrap(display.to_string(), font_id, text_color);
 
     let text_size = galley.size();
-    let padding_x = 8.0;
-    let padding_y = 4.0;
-    let min_width = 24.0;
+    let padding_x = 6.0;
+    let padding_y = 3.0;
+    let min_width = 20.0;
     let height = font_size + padding_y * 2.0;
 
     let size = Vec2::new((text_size.x + padding_x * 2.0).max(min_width), height);
