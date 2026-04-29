@@ -46,7 +46,7 @@ impl Checkbox {
             label: None,
             description: None,
             disabled: false,
-            check_spring: SpringAnimation::new(0.0, 0.0).params(800.0, 30.0),
+            check_spring: SpringAnimation::new(0.0, 0.0).params(2000.0, 55.0),
         }
     }
 
@@ -218,8 +218,9 @@ impl Checkbox {
             );
         }
 
-        // Checkmark
-        if t > 0.0 {
+        // Checkmark — skip when the spring is near-zero, otherwise the
+        // 1.5-px stroke between collapsed vertices leaves a visible dot.
+        if t > 0.05 {
             let center = rect.center();
             let size = rect.height() * 0.5 * t;
 
