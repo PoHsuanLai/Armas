@@ -104,19 +104,18 @@ impl TimeRuler {
     ///
     /// Allocates a horizontal scroll area with the ruler's computed width and height.
     pub fn show(self, ui: &mut Ui, theme: &Theme) -> Response {
-        let total_width =
-            self.measures as f32 * self.beats_per_measure as f32 * self.beat_width;
+        let total_width = self.measures as f32 * self.beats_per_measure as f32 * self.beat_width;
         let height = self.height;
 
-        let scroll_id = self.id.unwrap_or_else(|| ui.auto_id_with("time_ruler_scroll"));
+        let scroll_id = self
+            .id
+            .unwrap_or_else(|| ui.auto_id_with("time_ruler_scroll"));
         let mut response: Option<Response> = None;
         egui::ScrollArea::horizontal()
             .id_salt(scroll_id)
             .show(ui, |ui| {
-                let (rect, r) = ui.allocate_exact_size(
-                    egui::Vec2::new(total_width, height),
-                    Sense::hover(),
-                );
+                let (rect, r) =
+                    ui.allocate_exact_size(egui::Vec2::new(total_width, height), Sense::hover());
                 if ui.is_rect_visible(rect) {
                     let painter = ui.painter();
                     painter.rect_filled(

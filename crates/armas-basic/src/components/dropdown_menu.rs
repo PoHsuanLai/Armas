@@ -73,12 +73,12 @@ struct MenuRenderContext<'a> {
 // Content: min-w-[8rem] = 128px
 const CONTENT_MIN_WIDTH: f32 = 128.0;
 
-// Item: px-2 = 8px, py-1.5 = 6px, text-sm = 14px, gap-2 = 8px, rounded-sm = 2px
+// Item: px-2 = 8px, py-1 = 5px, text size from theme.typography.sm, gap-2 = 8px, rounded-sm = 2px
 const ITEM_PADDING_X: f32 = 8.0;
-const DEFAULT_ITEM_HEIGHT: f32 = 26.0; // py-1.5 (6px) + text-sm (14px) + py-1.5 (6px) = 26px
+const DEFAULT_ITEM_HEIGHT: f32 = 22.0; // py-1 (5px) + text-sm (12px) + py-1 (5px) = 22px
 const ITEM_GAP: f32 = 8.0;
 const ITEM_RADIUS: f32 = 2.0;
-// Item text size resolved from theme.typography.base at render-time
+// Item text size resolved from theme.typography.sm at render-time
 const ITEM_ICON_SIZE: f32 = 16.0; // size-4 = 16px
 
 // Inset: pl-8 = 32px
@@ -449,8 +449,7 @@ impl DropdownMenu {
 
         // Toggle on click
         if trigger_resp.clicked() {
-            ui.ctx()
-                .data_mut(|d| d.insert_temp(state_id, !is_open));
+            ui.ctx().data_mut(|d| d.insert_temp(state_id, !is_open));
         }
 
         // Show menu using internal method
@@ -669,7 +668,14 @@ fn render_items(
     response: &mut MenuResponseInner,
 ) {
     let mut flat_offset: usize = 0;
-    render_items_inner(ctx, items, selected_index, submenu_state, response, &mut flat_offset);
+    render_items_inner(
+        ctx,
+        items,
+        selected_index,
+        submenu_state,
+        response,
+        &mut flat_offset,
+    );
 }
 
 fn render_items_inner(
@@ -926,7 +932,7 @@ fn render_item_content(ui: &mut Ui, theme: &crate::Theme, params: &ItemContentPa
         egui::pos2(x, params.rect.center().y),
         egui::Align2::LEFT_CENTER,
         &params.item.label,
-        egui::FontId::proportional(theme.typography.base),
+        egui::FontId::proportional(theme.typography.sm),
         text_color,
     );
 
@@ -1042,7 +1048,7 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
         egui::pos2(x, rect.center().y),
         egui::Align2::LEFT_CENTER,
         &params.submenu_params.item.label,
-        egui::FontId::proportional(theme.typography.base),
+        egui::FontId::proportional(theme.typography.sm),
         text_color,
     );
 
@@ -1084,10 +1090,7 @@ fn render_submenu(ui: &mut Ui, theme: &crate::Theme, params: RenderSubmenuParams
         && !sub_response.response.hovered()
         && !sub_response.response.contains_pointer()
     {
-        params
-            .submenu_state
-            .open
-            .remove(&params.submenu_params.idx);
+        params.submenu_state.open.remove(&params.submenu_params.idx);
     }
 
     // Propagate submenu responses with flat index offset

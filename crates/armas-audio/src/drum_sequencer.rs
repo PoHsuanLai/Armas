@@ -668,7 +668,8 @@ impl<'a> DrumSequencer<'a> {
                 ui.painter().clone()
             };
 
-            let corner_radius = self.corner_radius
+            let corner_radius = self
+                .corner_radius
                 .unwrap_or_else(|| f32::from(theme.spacing.corner_radius_small));
             let mut row_y = rect.min.y + scroll_offset.y;
 
@@ -747,7 +748,13 @@ impl<'a> DrumSequencer<'a> {
         }
     }
 
-    fn draw_row_label_static(painter: &egui::Painter, theme: &Theme, rect: Rect, row: &DrumRow, corner_radius: f32) {
+    fn draw_row_label_static(
+        painter: &egui::Painter,
+        theme: &Theme,
+        rect: Rect,
+        row: &DrumRow,
+        corner_radius: f32,
+    ) {
         // Background — subtle row color fill matching piano roll aesthetic
         let alpha = if row.muted {
             100
@@ -756,12 +763,8 @@ impl<'a> DrumSequencer<'a> {
         } else {
             140
         };
-        let bg_color = Color32::from_rgba_unmultiplied(
-            row.color.r(),
-            row.color.g(),
-            row.color.b(),
-            alpha,
-        );
+        let bg_color =
+            Color32::from_rgba_unmultiplied(row.color.r(), row.color.g(), row.color.b(), alpha);
 
         painter.rect_filled(rect, corner_radius, bg_color);
 
@@ -769,12 +772,15 @@ impl<'a> DrumSequencer<'a> {
         painter.rect_stroke(
             rect,
             corner_radius,
-            egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(
-                row.color.r(),
-                row.color.g(),
-                row.color.b(),
-                ((alpha as f32 * 1.3).min(255.0)) as u8,
-            )),
+            egui::Stroke::new(
+                1.0,
+                Color32::from_rgba_unmultiplied(
+                    row.color.r(),
+                    row.color.g(),
+                    row.color.b(),
+                    ((alpha as f32 * 1.3).min(255.0)) as u8,
+                ),
+            ),
             egui::StrokeKind::Outside,
         );
 
@@ -806,7 +812,6 @@ impl<'a> DrumSequencer<'a> {
         show_velocity: bool,
         corner_radius: f32,
     ) {
-
         // Draw based on variant
         match variant {
             DrumSequencerVariant::Filled => {
@@ -947,10 +952,8 @@ impl<'a> DrumSequencer<'a> {
 
         // Top highlight strip (matching piano roll)
         if is_active {
-            let highlight_rect = Rect::from_min_size(
-                rect.min,
-                Vec2::new(rect.width(), rect.height() * 0.3),
-            );
+            let highlight_rect =
+                Rect::from_min_size(rect.min, Vec2::new(rect.width(), rect.height() * 0.3));
             let highlight_color = Color32::from_rgba_unmultiplied(255, 255, 255, 20);
             let highlight_rounding = egui::CornerRadius {
                 nw: corner_radius as u8,

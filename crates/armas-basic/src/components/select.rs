@@ -252,7 +252,9 @@ impl Select {
     pub fn show(&mut self, ui: &mut Ui) -> SelectResponse {
         let theme = ui.ctx().armas_theme();
         let avail = ui.available_width();
-        let width = self.width.unwrap_or_else(|| if avail.is_finite() { avail } else { 200.0 });
+        let width = self
+            .width
+            .unwrap_or_else(|| if avail.is_finite() { avail } else { 200.0 });
         let mut changed = false;
         let mut new_value = None;
 

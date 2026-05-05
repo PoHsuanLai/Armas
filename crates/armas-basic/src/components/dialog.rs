@@ -236,7 +236,15 @@ impl Dialog {
                 .frame(frame)
                 .show(ctx, |ui| {
                     ui.spacing_mut().item_spacing.y = GAP;
-                    render_header(ui, theme, &self.title, &self.description, self.closable, &mut closed, &mut self.fade_animation);
+                    render_header(
+                        ui,
+                        theme,
+                        &self.title,
+                        &self.description,
+                        self.closable,
+                        &mut closed,
+                        &mut self.fade_animation,
+                    );
                     content(ui);
                 });
             if !win_open {
@@ -259,7 +267,15 @@ impl Dialog {
                     frame.show(ui, |ui| {
                         ui.set_width(dialog_width);
                         ui.spacing_mut().item_spacing.y = GAP;
-                        render_header(ui, theme, &self.title, &self.description, self.closable, &mut closed, &mut self.fade_animation);
+                        render_header(
+                            ui,
+                            theme,
+                            &self.title,
+                            &self.description,
+                            self.closable,
+                            &mut closed,
+                            &mut self.fade_animation,
+                        );
                         content(ui);
                     });
                 })

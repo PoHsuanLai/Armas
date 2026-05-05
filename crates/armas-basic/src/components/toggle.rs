@@ -701,14 +701,9 @@ impl ToggleGroup {
             vec2(item_width * count as f32 + total_spacing, height)
         };
 
-        let (group_rect, response) =
-            ui.allocate_exact_size(total_size, Sense::hover());
+        let (group_rect, response) = ui.allocate_exact_size(total_size, Sense::hover());
 
-        let mut child_ui = ui.new_child(
-            egui::UiBuilder::new()
-                .max_rect(group_rect)
-                .layout(layout),
-        );
+        let mut child_ui = ui.new_child(egui::UiBuilder::new().max_rect(group_rect).layout(layout));
 
         if self.spacing > 0.0 {
             child_ui.spacing_mut().item_spacing = if self.vertical {

@@ -241,8 +241,14 @@ impl Accordion {
         for idx in 0..count {
             let is_open = open_indices.contains(&idx);
 
-            let trigger_clicked =
-                self.show_trigger_ui(ui, idx, is_open, springs[idx].value, &theme, &mut render_trigger);
+            let trigger_clicked = self.show_trigger_ui(
+                ui,
+                idx,
+                is_open,
+                springs[idx].value,
+                &theme,
+                &mut render_trigger,
+            );
 
             if trigger_clicked {
                 clicked = Some(idx);
@@ -355,7 +361,10 @@ impl Accordion {
             // Content area (leave space for chevron)
             let content_rect = egui::Rect::from_min_max(
                 Pos2::new(rect.left(), rect.min.y + TRIGGER_PADDING_Y),
-                Pos2::new(rect.right() - CHEVRON_SIZE - 4.0, rect.max.y - TRIGGER_PADDING_Y),
+                Pos2::new(
+                    rect.right() - CHEVRON_SIZE - 4.0,
+                    rect.max.y - TRIGGER_PADDING_Y,
+                ),
             );
 
             let mut child_ui = ui.new_child(
