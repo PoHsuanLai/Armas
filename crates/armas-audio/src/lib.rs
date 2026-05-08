@@ -36,7 +36,7 @@ pub use knob::Knob;
 pub use meter::{AudioMeter, MeterStyle, ScalePosition};
 pub use midi_pad::{MidiPad, MidiPadResponse, PadColorScheme, PadConfig, PadState, PadVariant};
 pub use mixer_strip::{Insert, MixerStrip, MixerStripMode, MixerStripResponse, Route, Send};
-pub use mod_wheel::{ModWheel, WheelSize, WheelType};
+pub use mod_wheel::{ModWheel, ModWheelResponse, WheelSize, WheelType};
 pub use mpe_keyboard::{MPEKey, MPEKeyboard, MPEKeyboardResponse, MPENote, MPEOrientation};
 pub use piano::{Piano, PianoKey, PianoOrientation, PianoResponse};
 pub use piano_roll::{GridDivision, Note, PianoRoll, PianoRollResponse};

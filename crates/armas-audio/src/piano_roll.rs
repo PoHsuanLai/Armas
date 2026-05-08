@@ -722,7 +722,7 @@ impl PianoRoll {
     fn draw_notes_clipped(
         &self,
         painter: &egui::Painter,
-        theme: &Theme,
+        _theme: &Theme,
         content_rect: Rect,
         _viewport_rect: Rect,
     ) {

@@ -8,6 +8,16 @@ use armas_basic::animation::{VelocityDrag, VelocityDragConfig};
 use armas_basic::theme::Theme;
 use egui::{Color32, Pos2, Rect, Response, Sense, Ui, Vec2};
 
+/// Response from a mod wheel interaction
+pub struct ModWheelResponse {
+    /// The underlying egui response
+    pub response: Response,
+    /// Current value after interaction
+    pub value: f32,
+    /// Whether the value changed this frame
+    pub changed: bool,
+}
+
 /// Type of wheel controller
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WheelType {
@@ -76,7 +86,7 @@ struct ModWheelDragState {
 ///     .label("Mod")
 ///     .show(ui, theme);
 ///
-/// if response.changed() {
+/// if response.changed {
 ///     println!("Modulation: {:.2}", value);
 /// }
 /// # }
@@ -171,7 +181,7 @@ impl<'a> ModWheel<'a> {
     }
 
     /// Show the mod wheel
-    pub fn show(self, ui: &mut Ui, theme: &armas_basic::Theme) -> Response {
+    pub fn show(self, ui: &mut Ui, theme: &armas_basic::Theme) -> ModWheelResponse {
         // Load previous state if ID is set
         if let Some(id) = self.id {
             let state_id = id.with("mod_wheel_state");
@@ -346,7 +356,12 @@ impl<'a> ModWheel<'a> {
             });
         }
 
-        response
+        let changed = response.changed();
+        ModWheelResponse {
+            response,
+            value: *self.value,
+            changed,
+        }
     }
 
     /// Draw the cylinder surface visible through the slot.
