@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.2.1
+
+### Added
+
+- **`ModWheelResponse`** — `ModWheel` now returns a proper `ModWheelResponse` struct with `response` and `changed` fields.
+- **`TimeRuler` component** — Restored as a standalone audio component with its own `show()` method, accessible via the `armas_audio` prelude.
+- **`NumberField::bg_color()`** — New builder method to override the background color of a number field.
+- **`Accordion::show_ui()` / `DropdownMenu::show_ui()`** — Closure-based content API extended to Accordion and DropdownMenu, enabling custom widget content inside these components.
+
+### Changed
+
+- **`Kbd` appearance** — Modifier keys now render as Unicode symbols (⌘ ⌥ ⇧ ⌃), the `+` separator is removed, and chips are smaller.
+- **`DropdownMenu` item typography** — Menu items now use `sm` typography, matching the rest of the UI.
+- **`Dialog`** — Added a `fixed_size` window path; cleaned up height handling.
+- **`Select`** — Fills available width; trigger height and available-width calculation fixed.
+- **`Slider`** — Fills available width by default.
+- **`Switch`** — Snaps correctly without an explicit `.id()`.
+- **`Input`** — Fixed vertical centering of text content.
+- **`Checkbox`** — Fixed residual dot artifact on uncheck; spring animation is snappier and no longer requires an `.id()` to avoid a tiny ghost checkmark.
+- **`DropdownMenu` submenus** — Submenus now close immediately when the pointer leaves both the trigger item and the submenu popover. Also fixed flat index collision between submenu items and parent menu items.
+- **`Switch` thumb color** — Corrected thumb color rendering.
+- **`IconButton` defaults** — Correct default size and padding applied.
+- **`ToggleGroup` layout** — Fixed sizing so the group fills its container correctly.
+- **Drum sequencer** — Visual style aligned with piano roll; grid cells are now click-to-place.
+- **`show_content` renamed to `show_ui`** — Breaking rename for consistency; affects Button, Toggle, ToggleGroup, Tabs, Badge, Menubar, Accordion, DropdownMenu.
+- **Content directory restructured** — `content/components/` renamed to `content/basic/` in the web showcase; URL routing updated accordingly.
+- **`build.rs` cache invalidation** — The web build now correctly re-runs when any file in the content directory changes.
+
+### Removed
+
+- **Bundled transport SVG icons** — Removed from `armas-audio`; use `armas-icon` instead.
+- **Audio components removed from `armas-audio`** — `AutomationEditor`, `MidiController`, `Playhead`, `SnapGrid`, `StepSequencer` removed (they were already removed from the public API in 0.2.0; source files are now deleted).
+- **`armas-audio` and `armas-basic` duplicate license files** — Redundant per-crate `LICENSE-MIT` / `LICENSE-APACHE` files removed; workspace-level licenses apply.
+
 ## 0.2.0
 
 ### Breaking Changes
