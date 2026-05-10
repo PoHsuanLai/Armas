@@ -30,6 +30,8 @@ jobs:
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          cache-targets: false
 
       - name: Install Trunk
         uses: jetli/trunk-action@v0.5.0
