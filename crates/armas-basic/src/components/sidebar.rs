@@ -351,10 +351,6 @@ pub struct Sidebar<'a> {
 struct SidebarLayout {
     /// The animated content width
     content_width: f32,
-    /// Width when collapsed
-    collapsed_width: f32,
-    /// Width when expanded
-    expanded_width: f32,
     /// Expansion ratio 0.0 (collapsed) to 1.0 (expanded)
     expansion_ratio: f32,
     /// Base x-coordinate for icon placement (animated between centered and left-aligned)
@@ -388,8 +384,6 @@ impl SidebarLayout {
 
         Self {
             content_width,
-            collapsed_width,
-            expanded_width,
             expansion_ratio,
             icon_x_base,
             content_rect,
@@ -531,52 +525,72 @@ impl<'a> Sidebar<'a> {
             0.0
         };
 
-        let total_height = calculate_content_height(&items, self.collapsible);
-
-        // Add padding to outer rect for floating variants
         let outer_width = current_width + floating_padding * 2.0;
-        let outer_height = total_height + floating_padding * 2.0;
-
-        let rect = Rect::from_min_size(ui.cursor().min, Vec2::new(outer_width, outer_height));
-        ui.advance_cursor_after_rect(rect);
 
         let mut clicked_id: Option<String> = None;
         let mut hovered_index: Option<usize> = None;
 
+        // Use allocate_ui so items are laid out via egui's cursor — this makes
+        // the sidebar composable inside ScrollAreas (interaction rects follow scroll offset).
+        let outer_response = ui.allocate_ui_with_layout(
+            Vec2::new(outer_width, ui.available_height()),
+            egui::Layout::top_down(egui::Align::Min),
+            |ui| {
+                ui.set_width(outer_width);
+
+                let content_width = current_width;
+
+                // Compute layout (needed for icon positions and expansion ratio)
+                let placeholder_rect = Rect::from_min_size(
+                    ui.cursor().min,
+                    Vec2::new(content_width, 0.0),
+                );
+                let layout = SidebarLayout::compute(
+                    content_width,
+                    collapsed_width,
+                    expanded_width,
+                    placeholder_rect,
+                );
+
+                // Top padding
+                ui.add_space(GROUP_PADDING + floating_padding);
+
+                // Draw toggle button if collapsible
+                if self.collapsible != CollapsibleMode::None {
+                    render_toggle_button_inline(ui, &theme, &layout, state, floating_padding);
+                }
+
+                // Draw all items via per-item allocation
+                (clicked_id, hovered_index) = render_items(
+                    ui,
+                    &theme,
+                    self.show_icons,
+                    &layout,
+                    state,
+                    &items,
+                    floating_padding,
+                );
+
+                ui.add_space(GROUP_PADDING + floating_padding);
+            },
+        );
+
+        let rect = outer_response.response.rect;
+
+        // Draw sidebar background behind all items
         if ui.is_rect_visible(rect) {
-            // Content rect is where items are drawn
             let content_rect = if floating_padding > 0.0 {
                 rect.shrink(floating_padding)
             } else {
                 rect
             };
-
             let layout = SidebarLayout::compute(
                 current_width,
                 collapsed_width,
                 expanded_width,
                 content_rect,
             );
-
-            // Draw sidebar background
             render_background(ui, &theme, self.variant, rect, &layout);
-
-            // Draw toggle button if collapsible
-            let mut current_y = content_rect.top() + GROUP_PADDING;
-            if self.collapsible != CollapsibleMode::None {
-                current_y = render_toggle_button(ui, &theme, &layout, state, current_y);
-            }
-
-            // Draw all items
-            (clicked_id, hovered_index) = render_items(
-                ui,
-                &theme,
-                self.show_icons,
-                &layout,
-                state,
-                &items,
-                current_y,
-            );
         }
 
         // Request repaint if animating
@@ -593,7 +607,7 @@ impl<'a> Sidebar<'a> {
             });
         }
 
-        let response = ui.interact(rect, ui.id().with("sidebar"), Sense::hover());
+        let response = outer_response.response;
 
         SidebarResponse {
             response,
@@ -613,28 +627,6 @@ impl Default for Sidebar<'_> {
 // ============================================================================
 // STANDALONE DRAWING & LAYOUT FUNCTIONS
 // ============================================================================
-
-/// Calculate total content height for the sidebar based on its items.
-fn calculate_content_height(items: &[InternalSidebarItem], collapsible: CollapsibleMode) -> f32 {
-    let mut total_height = GROUP_PADDING;
-
-    if collapsible != CollapsibleMode::None {
-        total_height += ITEM_HEIGHT + ITEM_GAP;
-    }
-
-    for item in items {
-        if item.is_group_label {
-            total_height += ITEM_HEIGHT + ITEM_GAP;
-        } else if item.depth > 0 {
-            total_height += ITEM_HEIGHT_SM + ITEM_GAP;
-        } else {
-            total_height += ITEM_HEIGHT + ITEM_GAP;
-        }
-    }
-
-    total_height += GROUP_PADDING;
-    total_height
-}
 
 /// Paint the sidebar background, border, and optional shadow.
 fn render_background(
@@ -673,52 +665,46 @@ fn render_background(
     }
 }
 
-/// Render the collapse/expand toggle button. Returns the new `current_y`
-/// after drawing the button (advanced by one item height + gap).
-fn render_toggle_button(
+/// Render the collapse/expand toggle button using egui's cursor-based layout.
+fn render_toggle_button_inline(
     ui: &mut Ui,
     theme: &crate::Theme,
     layout: &SidebarLayout,
     state: &mut SidebarState,
-    current_y: f32,
-) -> f32 {
-    let toggle_rect = Rect::from_min_size(
-        Pos2::new(layout.content_rect.left() + ITEM_PADDING, current_y),
+    h_pad: f32,
+) {
+    let (rect, response) = ui.allocate_exact_size(
         Vec2::new(layout.content_width - ITEM_PADDING * 2.0, ITEM_HEIGHT),
-    );
-
-    let toggle_response = ui.interact(
-        toggle_rect,
-        ui.id().with("toggle"),
         Sense::click().union(Sense::hover()),
     );
+    ui.add_space(ITEM_GAP);
 
-    if toggle_response.clicked() {
+    if response.clicked() {
         state.toggle();
     }
 
-    let painter = ui.painter();
-
-    if toggle_response.hovered() {
-        painter.rect_filled(toggle_rect, CORNER_RADIUS, theme.sidebar_accent());
+    if ui.is_rect_visible(rect) {
+        // Offset icon_x_base to account for the h_pad that shifts cursor
+        let icon_x = layout.icon_x_base + h_pad;
+        let painter = ui.painter();
+        if response.hovered() {
+            painter.rect_filled(rect, CORNER_RADIUS, theme.sidebar_accent());
+        }
+        painter.text(
+            Pos2::new(icon_x, rect.center().y),
+            egui::Align2::CENTER_CENTER,
+            "☰",
+            egui::FontId::proportional(ICON_SIZE),
+            if response.hovered() {
+                theme.sidebar_accent_foreground()
+            } else {
+                theme.sidebar_foreground()
+            },
+        );
     }
-
-    painter.text(
-        Pos2::new(layout.icon_x_base, toggle_rect.center().y),
-        egui::Align2::CENTER_CENTER,
-        "☰",
-        egui::FontId::proportional(ICON_SIZE),
-        if toggle_response.hovered() {
-            theme.sidebar_accent_foreground()
-        } else {
-            theme.sidebar_foreground()
-        },
-    );
-
-    current_y + ITEM_HEIGHT + ITEM_GAP
 }
 
-/// Render all sidebar items. Returns `(clicked_id, hovered_index)`.
+/// Render all sidebar items using per-item allocation so scroll areas work correctly.
 fn render_items(
     ui: &mut Ui,
     theme: &crate::Theme,
@@ -726,86 +712,60 @@ fn render_items(
     layout: &SidebarLayout,
     state: &mut SidebarState,
     items: &[InternalSidebarItem],
-    mut current_y: f32,
+    h_pad: f32,
 ) -> (Option<String>, Option<usize>) {
     let mut clicked_id: Option<String> = None;
     let mut hovered_index: Option<usize> = None;
 
     for (index, item) in items.iter().enumerate() {
-        let item_height = if item.is_group_label {
+        let item_height = if item.is_group_label || item.depth == 0 {
             ITEM_HEIGHT
-        } else if item.depth > 0 {
-            ITEM_HEIGHT_SM
         } else {
-            ITEM_HEIGHT
+            ITEM_HEIGHT_SM
         };
 
-        // Group labels
+        // Group labels — non-interactive
         if item.is_group_label {
-            let widths = AnimationWidths {
-                current: layout.content_width,
-                collapsed: layout.collapsed_width,
-                expanded: layout.expanded_width,
-            };
-            draw_group_label(
-                ui.painter(),
-                theme,
-                &layout.content_rect,
-                current_y,
-                &widths,
-                &item.label,
+            let (rect, _) = ui.allocate_exact_size(
+                Vec2::new(layout.content_width, item_height),
+                Sense::hover(),
             );
-            current_y += item_height + ITEM_GAP;
+            ui.add_space(ITEM_GAP);
+
+            if ui.is_rect_visible(rect) && layout.expansion_ratio > 0.5 {
+                let opacity = ((layout.expansion_ratio - 0.5) / 0.5).clamp(0.0, 1.0);
+                let color = theme.sidebar_foreground().gamma_multiply(0.7 * opacity);
+                ui.painter().text(
+                    Pos2::new(rect.left() + ITEM_PADDING, rect.center().y),
+                    egui::Align2::LEFT_CENTER,
+                    &item.label,
+                    egui::FontId::proportional(12.0),
+                    color,
+                );
+            }
             continue;
         }
 
-        // Calculate indent for sub-items
         let indent = if item.depth > 0 {
             14.0 + (item.depth - 1) as f32 * 12.0
         } else {
             0.0
         };
+        let item_width = layout.content_width - ITEM_PADDING * 2.0 - indent;
 
-        let item_rect = Rect::from_min_size(
-            Pos2::new(
-                layout.content_rect.left() + ITEM_PADDING + indent,
-                current_y,
-            ),
-            Vec2::new(
-                layout.content_width - ITEM_PADDING * 2.0 - indent,
-                item_height,
-            ),
-        );
-
-        // Draw left border for sub-items
-        if item.depth > 0 {
-            let border_x = layout.content_rect.left() + ITEM_PADDING + 14.0;
-            ui.painter().line_segment(
-                [
-                    Pos2::new(border_x, current_y),
-                    Pos2::new(border_x, current_y + item_height),
-                ],
-                Stroke::new(1.0, theme.sidebar_border()),
-            );
-        }
-
-        let item_response = ui.interact(
-            item_rect,
-            ui.id().with(&item.id),
+        let (rect, response) = ui.allocate_exact_size(
+            Vec2::new(item_width, item_height),
             Sense::click().union(Sense::hover()),
         );
+        ui.add_space(ITEM_GAP);
 
-        if item_response.hovered() {
+        if response.hovered() {
             hovered_index = Some(index);
         }
 
-        if item_response.clicked() {
+        if response.clicked() {
             if item.is_group_header {
-                let was_expanded = state
-                    .expanded_groups
-                    .get(&item.id)
-                    .copied()
-                    .unwrap_or(false);
+                let was_expanded = state.expanded_groups.get(&item.id).copied().unwrap_or(false);
                 state.expanded_groups.insert(item.id.clone(), !was_expanded);
             } else {
                 clicked_id = Some(item.id.clone());
@@ -813,13 +773,25 @@ fn render_items(
             }
         }
 
-        let is_active = item.active || state.active_index == Some(index);
-        let is_hovered = item_response.hovered();
+        if !ui.is_rect_visible(rect) {
+            continue;
+        }
 
+        let is_active = item.active || state.active_index == Some(index);
+        let is_hovered = response.hovered();
         let painter = ui.painter();
 
+        // Left border for sub-items
+        if item.depth > 0 {
+            let border_x = rect.left() - indent + 14.0;
+            painter.line_segment(
+                [Pos2::new(border_x, rect.top()), Pos2::new(border_x, rect.bottom())],
+                Stroke::new(1.0, theme.sidebar_border()),
+            );
+        }
+
         if is_active || is_hovered {
-            painter.rect_filled(item_rect, CORNER_RADIUS, theme.sidebar_accent());
+            painter.rect_filled(rect, CORNER_RADIUS, theme.sidebar_accent());
         }
 
         let text_color = if is_active || is_hovered {
@@ -828,25 +800,21 @@ fn render_items(
             theme.sidebar_foreground()
         };
 
-        // Draw icon using the same position as toggle for consistency
-        // Adjust for indent if this is a sub-item
+        // Icon (offset icon_x_base by h_pad since cursor is already indented)
         let icon_center = if show_icons && !item.icon.is_empty() {
-            // For sub-items, offset from base position
             let item_icon_x = if item.depth > 0 {
-                // Sub-items: always left-aligned with indent
-                item_rect.left() + ITEM_PADDING + ICON_SIZE / 2.0
+                rect.left() + ITEM_PADDING + ICON_SIZE / 2.0
             } else {
-                // Top-level items: use same animated position as toggle
-                layout.icon_x_base
+                layout.icon_x_base + h_pad
             };
             painter.text(
-                Pos2::new(item_icon_x, item_rect.center().y),
+                Pos2::new(item_icon_x, rect.center().y),
                 egui::Align2::CENTER_CENTER,
                 &item.icon,
                 egui::FontId::proportional(ICON_SIZE),
                 text_color,
             );
-            Some(Pos2::new(item_icon_x, item_rect.center().y))
+            Some(Pos2::new(item_icon_x, rect.center().y))
         } else {
             None
         };
@@ -861,36 +829,25 @@ fn render_items(
             );
 
             let label_x = if show_icons && !item.icon.is_empty() {
-                item_rect.left() + ITEM_PADDING + ICON_SIZE + 8.0
+                rect.left() + ITEM_PADDING + ICON_SIZE + 8.0
             } else {
-                item_rect.left() + ITEM_PADDING
-            };
-
-            let font = if is_active {
-                egui::FontId::new(14.0, egui::FontFamily::Proportional)
-            } else {
-                egui::FontId::proportional(14.0)
+                rect.left() + ITEM_PADDING
             };
 
             painter.text(
-                Pos2::new(label_x, item_rect.center().y),
+                Pos2::new(label_x, rect.center().y),
                 egui::Align2::LEFT_CENTER,
                 &item.label,
-                font,
+                egui::FontId::proportional(14.0),
                 label_color,
             );
 
             if item.is_group_header {
-                let is_group_expanded = state
-                    .expanded_groups
-                    .get(&item.id)
-                    .copied()
-                    .unwrap_or(false);
-                let chevron = if is_group_expanded { "▼" } else { "▶" };
+                let is_expanded = state.expanded_groups.get(&item.id).copied().unwrap_or(false);
                 painter.text(
-                    Pos2::new(item_rect.right() - ITEM_PADDING - 8.0, item_rect.center().y),
+                    Pos2::new(rect.right() - ITEM_PADDING - 8.0, rect.center().y),
                     egui::Align2::CENTER_CENTER,
-                    chevron,
+                    if is_expanded { "▼" } else { "▶" },
                     egui::FontId::proportional(10.0),
                     label_color.gamma_multiply(0.7),
                 );
@@ -898,55 +855,19 @@ fn render_items(
 
             if let Some(badge) = &item.badge {
                 if !item.is_group_header {
-                    draw_badge(painter, theme, &item_rect, badge, label_opacity);
+                    draw_badge(painter, theme, &rect, badge, label_opacity);
                 }
             }
         } else if let Some(badge) = &item.badge {
-            // When collapsed, show badge indicator on icon
             if !item.is_group_header {
                 if let Some(icon_pos) = icon_center {
                     draw_collapsed_badge(painter, theme, icon_pos, badge);
                 }
             }
         }
-
-        current_y += item_height + ITEM_GAP;
     }
 
     (clicked_id, hovered_index)
-}
-
-/// Width parameters for sidebar animation
-struct AnimationWidths {
-    current: f32,
-    collapsed: f32,
-    expanded: f32,
-}
-
-fn draw_group_label(
-    painter: &egui::Painter,
-    theme: &crate::Theme,
-    content_rect: &Rect,
-    y: f32,
-    widths: &AnimationWidths,
-    label: &str,
-) {
-    let expansion_ratio = ((widths.current - widths.collapsed)
-        / (widths.expanded - widths.collapsed))
-        .clamp(0.0, 1.0);
-
-    if expansion_ratio > 0.5 {
-        let opacity = ((expansion_ratio - 0.5) / 0.5).clamp(0.0, 1.0);
-        let color = theme.sidebar_foreground().gamma_multiply(0.7 * opacity);
-
-        painter.text(
-            Pos2::new(content_rect.left() + ITEM_PADDING, y + ITEM_HEIGHT / 2.0),
-            egui::Align2::LEFT_CENTER,
-            label,
-            egui::FontId::proportional(12.0),
-            color,
-        );
-    }
 }
 
 /// Draw badge when collapsed (small indicator on icon)

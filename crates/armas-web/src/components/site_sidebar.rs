@@ -1,13 +1,12 @@
 //! Site sidebar component for documentation navigation
 
 use armas::*;
-use eframe::egui;
+use eframe::egui::{self, Color32, FontId, Sense, Vec2};
 use fuzzy_matcher::skim::SkimMatcherV2;
 use fuzzy_matcher::FuzzyMatcher;
 
 use crate::showcase_gen;
 
-/// A page entry with name and render function
 type PageEntry = (&'static str, fn(&mut egui::Ui));
 
 pub struct SiteSidebar<'a> {
@@ -22,26 +21,19 @@ pub struct SiteSidebarResponse {
 
 impl<'a> SiteSidebar<'a> {
     pub fn new(theme: &'a Theme, search_text: &'a mut String, pages: &'a [PageEntry]) -> Self {
-        Self {
-            theme,
-            search_text,
-            pages,
-        }
+        Self { theme, search_text, pages }
     }
 
     pub fn show(self, ui: &mut egui::Ui) -> SiteSidebarResponse {
-        let mut response = SiteSidebarResponse {
-            selected_page: None,
-        };
-        let mut clicked_name: Option<String> = None;
+        let mut selected_page = None;
 
         let sections = showcase_gen::get_nested_sections();
         let search = self.search_text.trim().to_lowercase();
-        let matcher = if !search.is_empty() {
-            Some(SkimMatcherV2::default())
-        } else {
-            None
-        };
+        let matcher = if !search.is_empty() { Some(SkimMatcherV2::default()) } else { None };
+
+        // Load active page index from egui state
+        let active_id = ui.id().with("sidebar_active");
+        let active_idx: Option<usize> = ui.ctx().data(|d| d.get_temp(active_id));
 
         egui::Frame::new()
             .fill(self.theme.background())
@@ -49,7 +41,6 @@ impl<'a> SiteSidebar<'a> {
             .show(ui, |ui| {
                 ui.add_space(4.0);
 
-                // Search
                 Input::new("Search...")
                     .width(ui.available_width() - 8.0)
                     .variant(InputVariant::Outlined)
@@ -58,93 +49,89 @@ impl<'a> SiteSidebar<'a> {
                 ui.add_space(12.0);
 
                 egui::ScrollArea::vertical()
-                    .id_salt("sidebar")
+                    .id_salt("sidebar_scroll")
                     .show(ui, |ui| {
-                        let sidebar_response = armas::Sidebar::new()
-                            .collapsible(armas::CollapsibleMode::None)
-                            .show_icons(false)
-                            .show(ui, |sidebar| {
-                                for (parent, subsections) in sections.iter() {
-                                    let has_matches = subsections.iter().any(|(_, pages)| {
-                                        if let Some(ref m) = matcher {
-                                            pages
-                                                .iter()
-                                                .any(|(n, _)| m.fuzzy_match(n, &search).is_some())
-                                        } else {
-                                            !pages.is_empty()
-                                        }
-                                    });
+                        ui.spacing_mut().item_spacing.y = 0.0;
 
-                                    if !has_matches {
-                                        continue;
+                        for (parent, subsections) in sections.iter() {
+                            // Collect matching pages across all subsections
+                            let all_pages: Vec<&(&'static str, fn(&mut egui::Ui))> = subsections
+                                .iter()
+                                .flat_map(|(_, pages)| pages.iter())
+                                .filter(|(name, _)| {
+                                    if let Some(ref m) = matcher {
+                                        m.fuzzy_match(name, &search).is_some()
+                                    } else {
+                                        true
+                                    }
+                                })
+                                .collect();
+
+                            if all_pages.is_empty() {
+                                continue;
+                            }
+
+                            // Section header
+                            ui.add_space(8.0);
+                            ui.label(
+                                egui::RichText::new(parent.to_uppercase())
+                                    .font(FontId::proportional(11.0))
+                                    .color(self.theme.muted_foreground()),
+                            );
+                            ui.add_space(4.0);
+
+                            // Items
+                            for (name, _) in &all_pages {
+                                let page_idx = self.pages.iter().position(|(n, _)| n == name);
+                                let is_active = page_idx.is_some() && page_idx == active_idx;
+
+                                let (rect, response) = ui.allocate_exact_size(
+                                    Vec2::new(ui.available_width(), 28.0),
+                                    Sense::click(),
+                                );
+
+                                // Background on hover or active
+                                if ui.is_rect_visible(rect) {
+                                    let bg = if is_active {
+                                        self.theme.accent()
+                                    } else if response.hovered() {
+                                        self.theme.accent().gamma_multiply(0.6)
+                                    } else {
+                                        Color32::TRANSPARENT
+                                    };
+
+                                    if bg != Color32::TRANSPARENT {
+                                        ui.painter().rect_filled(rect, 4.0, bg);
                                     }
 
-                                    let is_flat =
-                                        subsections.len() == 1 && !subsections[0].1.is_empty();
-
-                                    if is_flat {
-                                        sidebar.group("", parent, |group| {
-                                            let pages = &subsections[0].1;
-                                            let filtered: Vec<_> = if let Some(ref m) = matcher {
-                                                pages
-                                                    .iter()
-                                                    .filter(|(n, _)| {
-                                                        m.fuzzy_match(n, &search).is_some()
-                                                    })
-                                                    .collect()
-                                            } else {
-                                                pages.iter().collect()
-                                            };
-
-                                            for (name, _) in filtered {
-                                                group.item("", name);
-                                            }
-                                        });
+                                    let text_color = if is_active {
+                                        self.theme.accent_foreground()
                                     } else {
-                                        sidebar.group("", parent, |parent_group| {
-                                            for (section, pages) in subsections.iter() {
-                                                let filtered: Vec<_> = if let Some(ref m) = matcher
-                                                {
-                                                    pages
-                                                        .iter()
-                                                        .filter(|(n, _)| {
-                                                            m.fuzzy_match(n, &search).is_some()
-                                                        })
-                                                        .collect()
-                                                } else {
-                                                    pages.iter().collect()
-                                                };
+                                        self.theme.foreground()
+                                    };
 
-                                                if !filtered.is_empty() {
-                                                    parent_group.group("", section, |subgroup| {
-                                                        for (name, _) in filtered {
-                                                            subgroup.item("", name);
-                                                        }
-                                                    });
-                                                }
-                                            }
-                                        });
+                                    ui.painter().text(
+                                        egui::pos2(rect.min.x + 8.0, rect.center().y),
+                                        egui::Align2::LEFT_CENTER,
+                                        name,
+                                        FontId::proportional(13.0),
+                                        text_color,
+                                    );
+                                }
+
+                                if response.clicked() {
+                                    if let Some(idx) = page_idx {
+                                        ui.ctx().data_mut(|d| d.insert_temp(active_id, idx));
+                                        selected_page = Some(idx);
                                     }
                                 }
-                            });
-
-                        if let Some(id) = sidebar_response.clicked {
-                            if let Some(pos) = id.rfind('_') {
-                                clicked_name = Some(id[pos + 1..].to_string());
                             }
                         }
+
+                        ui.add_space(16.0);
                     });
             });
 
-        if let Some(name) = clicked_name {
-            for (i, (page_name, _)) in self.pages.iter().enumerate() {
-                if *page_name == name {
-                    response.selected_page = Some(i);
-                    break;
-                }
-            }
-        }
-
-        response
+        SiteSidebarResponse { selected_page }
     }
 }
