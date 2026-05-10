@@ -310,6 +310,11 @@ fn main() {
 
     let sections = scan_content_directory(content_dir);
 
+    // Debug: print what sections were found
+    for (section, files) in &sections {
+        println!("cargo:warning=section '{}': {} files", section, files.len());
+    }
+
     // Generate showcase module file
     let out_dir = std::env::var("OUT_DIR").unwrap();
     let dest_path = Path::new(&out_dir).join("showcase_generated.rs");
