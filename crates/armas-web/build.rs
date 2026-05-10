@@ -300,6 +300,7 @@ fn generate_nested_sections(sections: &Sections) -> String {
 fn main() {
     // Tell cargo to rerun if content directory changes
     println!("cargo:rerun-if-changed=content");
+    println!("cargo:rerun-if-changed=build.rs");
 
     // Read all markdown files from content directory
     let content_dir = Path::new("content");
