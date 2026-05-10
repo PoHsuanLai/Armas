@@ -27,6 +27,7 @@
 - **`show_content` renamed to `show_ui`** — Breaking rename for consistency; affects Button, Toggle, ToggleGroup, Tabs, Badge, Menubar, Accordion, DropdownMenu.
 - **Content directory restructured** — `content/components/` renamed to `content/basic/` in the web showcase; URL routing updated accordingly.
 - **`build.rs` cache invalidation** — The web build now correctly re-runs when any file in the content directory changes.
+- **`Sidebar` scroll compatibility** — `armas::Sidebar` now uses per-item allocation instead of a single pre-allocated rect, making it composable inside `ScrollArea` without interaction rects breaking at scroll offset.
 
 ### Removed
 
