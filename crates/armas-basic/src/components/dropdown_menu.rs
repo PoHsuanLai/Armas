@@ -1218,7 +1218,7 @@ impl ItemVariant {
 // ============================================================================
 
 fn navigate_down(selected_index: &mut Option<usize>, items: &[MenuItemData]) {
-    let start_idx = selected_index.map(|i| i + 1).unwrap_or(0);
+    let start_idx = selected_index.map_or(0, |i| i + 1);
 
     for (i, item) in items.iter().enumerate().skip(start_idx) {
         if item.is_selectable() {

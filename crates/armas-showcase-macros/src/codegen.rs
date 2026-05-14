@@ -200,7 +200,7 @@ fn generate_copy_button(code: &str) -> proc_macro2::TokenStream {
             let copy_id = demo_id.with("copy_state");
             let copied_at: Option<f64> = ui.ctx().data(|d| d.get_temp(copy_id));
             let current_time = ui.input(|i| i.time);
-            let show_check = copied_at.map(|t| current_time - t < 2.0).unwrap_or(false);
+            let show_check = copied_at.is_some_and(|t| current_time - t < 2.0);
 
             if show_check {
                 ui.ctx().request_repaint_after(std::time::Duration::from_millis(100));

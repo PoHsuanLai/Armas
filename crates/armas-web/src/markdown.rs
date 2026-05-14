@@ -105,23 +105,19 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
                     code_block_lang.clear();
                     in_code_block = false;
                 }
-                TagEnd::Paragraph => {
-                    if !current_text.is_empty() && !in_list && !in_table {
-                        render_paragraph(ui, &current_text, theme, base_id, element_counter);
-                        element_counter += 1;
-                        current_text.clear();
-                    }
+                TagEnd::Paragraph if !current_text.is_empty() && !in_list && !in_table => {
+                    render_paragraph(ui, &current_text, theme, base_id, element_counter);
+                    element_counter += 1;
+                    current_text.clear();
                 }
                 TagEnd::List(_) => {
                     in_list = false;
                     ui.add_space(8.0);
                 }
-                TagEnd::Item => {
-                    if !list_item_text.is_empty() {
-                        render_list_item(ui, &list_item_text, theme, base_id, element_counter);
-                        element_counter += 1;
-                        list_item_text.clear();
-                    }
+                TagEnd::Item if !list_item_text.is_empty() => {
+                    render_list_item(ui, &list_item_text, theme, base_id, element_counter);
+                    element_counter += 1;
+                    list_item_text.clear();
                 }
                 TagEnd::Emphasis => {
                     // Emphasis tracking not currently used
@@ -132,32 +128,26 @@ pub fn render_markdown(ui: &mut egui::Ui, markdown: &str, theme: &Theme) {
                 TagEnd::Strikethrough => {
                     // Strikethrough tracking not currently used
                 }
-                TagEnd::Table => {
-                    if in_table {
-                        render_table(
-                            ui,
-                            &table_headers,
-                            &table_rows,
-                            theme,
-                            base_id,
-                            element_counter,
-                        );
-                        element_counter += 1;
-                        in_table = false;
-                    }
+                TagEnd::Table if in_table => {
+                    render_table(
+                        ui,
+                        &table_headers,
+                        &table_rows,
+                        theme,
+                        base_id,
+                        element_counter,
+                    );
+                    element_counter += 1;
+                    in_table = false;
                 }
-                TagEnd::TableHead => {
-                    if in_table_head {
-                        table_headers = current_row.clone();
-                        current_row.clear();
-                        in_table_head = false;
-                    }
+                TagEnd::TableHead if in_table_head => {
+                    table_headers = current_row.clone();
+                    current_row.clear();
+                    in_table_head = false;
                 }
-                TagEnd::TableRow => {
-                    if in_table && !in_table_head {
-                        table_rows.push(current_row.clone());
-                        current_row.clear();
-                    }
+                TagEnd::TableRow if in_table && !in_table_head => {
+                    table_rows.push(current_row.clone());
+                    current_row.clear();
                 }
                 TagEnd::TableCell => {
                     current_row.push(current_cell.clone());
