@@ -371,6 +371,7 @@ impl<'a> DrumSequencer<'a> {
         row_idx: usize,
         disabled: bool,
         corner_radius: f32,
+        base_id: egui::Id,
     ) -> bool {
         let mut changed = false;
 
@@ -397,6 +398,8 @@ impl<'a> DrumSequencer<'a> {
                 is_dragging,
                 mouse_pos,
                 disabled,
+                base_id,
+                row_idx,
             );
 
             if step_changed {
@@ -452,6 +455,7 @@ impl<'a> DrumSequencer<'a> {
     }
 
     /// Handle step interaction (clicks and drags)
+    #[allow(clippy::too_many_arguments)]
     fn handle_step_interaction(
         ui: &mut Ui,
         step_rect: Rect,
@@ -461,17 +465,34 @@ impl<'a> DrumSequencer<'a> {
         is_dragging: bool,
         mouse_pos: Option<Pos2>,
         disabled: bool,
+        base_id: egui::Id,
+        row_idx: usize,
     ) -> (Response, bool) {
-        // Only allocate for interaction if step is visible
+        // Only register interaction if step is visible. Use `ui.interact` (not
+        // `allocate_rect`) so the per-step hit area sits on top of the outer
+        // sequencer rect without fighting it for clicks, and so the per-step
+        // call doesn't yank the layout cursor backwards.
+        //
+        // Step ids are scoped to `base_id` (the sequencer's own id, or its
+        // outer response id when no .id() was set) so multiple sequencers on
+        // the same page with same-named rows don't collide.
         let step_response = if step_rect.intersects(viewport_rect) {
             let sense = if disabled {
                 Sense::hover()
             } else {
                 Sense::click()
             };
-            ui.allocate_rect(step_rect.intersect(viewport_rect), sense)
+            let step_id = base_id.with(("drum_step", row_idx, step_idx));
+            ui.interact(step_rect.intersect(viewport_rect), step_id, sense)
         } else {
-            return (ui.allocate_rect(Rect::NOTHING, Sense::hover()), false);
+            return (
+                ui.interact(
+                    Rect::NOTHING,
+                    base_id.with(("drum_step_empty", row_idx, step_idx)),
+                    Sense::hover(),
+                ),
+                false,
+            );
         };
 
         if disabled {
@@ -656,9 +677,14 @@ impl<'a> DrumSequencer<'a> {
             actual_height,
         );
 
-        // Track drag state - check if primary button is pressed and we're over the sequencer
-        let is_dragging = ui.ctx().input(|i| i.pointer.primary_down()) && response.hovered();
+        // Track drag state. We only treat the pointer as "dragging to paint"
+        // once egui has decided the gesture is a drag (pointer moved while
+        // held). A simple click-down without movement is NOT a drag — otherwise
+        // a click would both toggle ON via drag-fill and then toggle OFF on the
+        // click event, leaving the step in its original state.
+        let is_dragging = response.dragged();
         let mouse_pos = ui.ctx().input(|i| i.pointer.latest_pos());
+        let base_id = id.unwrap_or(response.id);
 
         if ui.is_rect_visible(rect) {
             // Use clipped painter for scrolling
@@ -721,6 +747,7 @@ impl<'a> DrumSequencer<'a> {
                     row_idx,
                     disabled,
                     corner_radius,
+                    base_id,
                 );
 
                 if row_changed {
@@ -778,7 +805,7 @@ impl<'a> DrumSequencer<'a> {
                     row.color.r(),
                     row.color.g(),
                     row.color.b(),
-                    ((alpha as f32 * 1.3).min(255.0)) as u8,
+                    (f32::from(alpha) * 1.3).min(255.0) as u8,
                 ),
             ),
             egui::StrokeKind::Outside,

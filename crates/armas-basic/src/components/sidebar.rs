@@ -541,10 +541,8 @@ impl<'a> Sidebar<'a> {
                 let content_width = current_width;
 
                 // Compute layout (needed for icon positions and expansion ratio)
-                let placeholder_rect = Rect::from_min_size(
-                    ui.cursor().min,
-                    Vec2::new(content_width, 0.0),
-                );
+                let placeholder_rect =
+                    Rect::from_min_size(ui.cursor().min, Vec2::new(content_width, 0.0));
                 let layout = SidebarLayout::compute(
                     content_width,
                     collapsed_width,
@@ -726,10 +724,8 @@ fn render_items(
 
         // Group labels — non-interactive
         if item.is_group_label {
-            let (rect, _) = ui.allocate_exact_size(
-                Vec2::new(layout.content_width, item_height),
-                Sense::hover(),
-            );
+            let (rect, _) = ui
+                .allocate_exact_size(Vec2::new(layout.content_width, item_height), Sense::hover());
             ui.add_space(ITEM_GAP);
 
             if ui.is_rect_visible(rect) && layout.expansion_ratio > 0.5 {
@@ -765,7 +761,11 @@ fn render_items(
 
         if response.clicked() {
             if item.is_group_header {
-                let was_expanded = state.expanded_groups.get(&item.id).copied().unwrap_or(false);
+                let was_expanded = state
+                    .expanded_groups
+                    .get(&item.id)
+                    .copied()
+                    .unwrap_or(false);
                 state.expanded_groups.insert(item.id.clone(), !was_expanded);
             } else {
                 clicked_id = Some(item.id.clone());
@@ -785,7 +785,10 @@ fn render_items(
         if item.depth > 0 {
             let border_x = rect.left() - indent + 14.0;
             painter.line_segment(
-                [Pos2::new(border_x, rect.top()), Pos2::new(border_x, rect.bottom())],
+                [
+                    Pos2::new(border_x, rect.top()),
+                    Pos2::new(border_x, rect.bottom()),
+                ],
                 Stroke::new(1.0, theme.sidebar_border()),
             );
         }
@@ -843,7 +846,11 @@ fn render_items(
             );
 
             if item.is_group_header {
-                let is_expanded = state.expanded_groups.get(&item.id).copied().unwrap_or(false);
+                let is_expanded = state
+                    .expanded_groups
+                    .get(&item.id)
+                    .copied()
+                    .unwrap_or(false);
                 painter.text(
                     Pos2::new(rect.right() - ITEM_PADDING - 8.0, rect.center().y),
                     egui::Align2::CENTER_CENTER,

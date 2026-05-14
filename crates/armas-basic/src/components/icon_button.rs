@@ -75,7 +75,7 @@ impl<'a> IconButton<'a> {
         self
     }
 
-    /// Set padding between widget edge and icon. Default: 0 for Ghost/Link, button_padding for others.
+    /// Set padding between widget edge and icon. Default: 0 for Ghost/Link, `button_padding` for others.
     #[must_use]
     pub const fn padding(mut self, padding: f32) -> Self {
         self.padding = Some(padding);
@@ -196,7 +196,7 @@ impl<'a> IconButton<'a> {
                 let rounding = match self.variant {
                     ButtonVariant::Default | ButtonVariant::Secondary => total_size.x / 2.0,
                     ButtonVariant::Ghost | ButtonVariant::Link => 2.0,
-                    _ => 6.0,
+                    ButtonVariant::Outline => 6.0,
                 };
                 let final_bg = if self.enabled {
                     bg

@@ -103,6 +103,11 @@ impl TimeRuler {
     /// Show the time ruler as a standalone widget.
     ///
     /// Allocates a horizontal scroll area with the ruler's computed width and height.
+    ///
+    /// # Panics
+    ///
+    /// Panics if egui fails to provide a response from the inner `ScrollArea`,
+    /// which would indicate a contract violation in egui itself.
     pub fn show(self, ui: &mut Ui, theme: &Theme) -> Response {
         let total_width = self.measures as f32 * self.beats_per_measure as f32 * self.beat_width;
         let height = self.height;

@@ -239,8 +239,8 @@ impl Dialog {
                     render_header(
                         ui,
                         theme,
-                        &self.title,
-                        &self.description,
+                        self.title.as_ref(),
+                        self.description.as_ref(),
                         self.closable,
                         &mut closed,
                         &mut self.fade_animation,
@@ -250,14 +250,17 @@ impl Dialog {
             if !win_open {
                 win_closed = true;
             }
-            resp.map(|r| r.response).unwrap_or_else(|| {
-                ctx.data_mut(|_| {});
-                egui::Area::new(self.id.with("dialog_empty2"))
-                    .order(egui::Order::Background)
-                    .fixed_pos(egui::Pos2::ZERO)
-                    .show(ctx, |_| {})
-                    .response
-            })
+            resp.map_or_else(
+                || {
+                    ctx.data_mut(|_| {});
+                    egui::Area::new(self.id.with("dialog_empty2"))
+                        .order(egui::Order::Background)
+                        .fixed_pos(egui::Pos2::ZERO)
+                        .show(ctx, |_| {})
+                        .response
+                },
+                |r| r.response,
+            )
         } else {
             let content_id = self.id.with("dialog_content");
             egui::Area::new(content_id)
@@ -270,8 +273,8 @@ impl Dialog {
                         render_header(
                             ui,
                             theme,
-                            &self.title,
-                            &self.description,
+                            self.title.as_ref(),
+                            self.description.as_ref(),
                             self.closable,
                             &mut closed,
                             &mut self.fade_animation,
@@ -338,8 +341,8 @@ pub struct DialogResponse {
 fn render_header(
     ui: &mut Ui,
     theme: &Theme,
-    title: &Option<String>,
-    description: &Option<String>,
+    title: Option<&String>,
+    description: Option<&String>,
     closable: bool,
     closed: &mut bool,
     fade_animation: &mut crate::animation::Animation<f32>,

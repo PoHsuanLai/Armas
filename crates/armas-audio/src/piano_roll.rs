@@ -372,26 +372,17 @@ impl PianoRoll {
         let mut removed_notes = Vec::new();
 
         let outer_response = ui.horizontal(|ui| {
-            // Vertical piano on the left
+            // Vertical piano on the left — audition-only, matching DAW convention.
+            // Clicks play a pitch preview (surfaced via Piano's clicked_keys), they
+            // do not place notes. Notes are placed by clicking on the grid.
             if self.show_piano {
-                let piano_response = Piano::new()
+                let _piano_response = Piano::new()
                     .start_note(self.start_note)
                     .octaves(self.octaves)
                     .white_key_width(self.white_key_width)
                     .white_key_height(self.white_key_height)
                     .orientation(PianoOrientation::Vertical)
                     .show(ui, theme);
-
-                // Auto-add notes when piano keys are clicked
-                if self.editable && !self.disabled {
-                    for key in piano_response.clicked_keys {
-                        // Place note at the start of the first measure
-                        let new_note = Note::new(key, 0.0_f64, self.default_note_duration);
-                        self.notes.push(new_note);
-                        added_notes.push(new_note);
-                        modified = true;
-                    }
-                }
             }
 
             // Grid and notes area
@@ -437,12 +428,7 @@ impl PianoRoll {
         theme: &Theme,
     ) -> (Response, Option<NoteInteractions>) {
         // Calculate content dimensions
-        let total_notes = self.octaves as usize * 12;
-        let white_key_count = (0..total_notes)
-            .filter(|i| !Self::is_black_key((self.start_note + *i as u8) % 12))
-            .count();
-
-        let content_height = white_key_count as f32 * self.white_key_width;
+        let content_height = self.white_key_count() as f32 * self.white_key_width;
         let measures = self.measures as f32;
         let beats_per_measure = self.beats_per_measure as f32;
         let total_beats = measures * beats_per_measure;
@@ -926,7 +912,15 @@ impl PianoRoll {
         ))
     }
 
-    /// Convert MIDI note to row index
+    /// Total number of white-key rows in the grid
+    fn white_key_count(&self) -> usize {
+        let total_notes = self.octaves as usize * 12;
+        (0..total_notes)
+            .filter(|i| !Self::is_black_key((self.start_note + *i as u8) % 12))
+            .count()
+    }
+
+    /// Convert MIDI note to row index (row 0 = top = highest note, matching the piano keyboard)
     fn note_to_row(&self, note: u8) -> Option<usize> {
         if note < self.start_note {
             return None;
@@ -939,30 +933,38 @@ impl PianoRoll {
             return None;
         }
 
-        // Count white keys up to this note
-        let mut white_key_count = 0;
-        for i in 0..=note_offset {
+        // Count white keys from start_note up to (but not including) this note,
+        // then invert so high notes sit at the top — matching the vertical piano.
+        let mut index_from_bottom = 0;
+        let mut found = None;
+        for i in 0..total_notes {
             let current_note = self.start_note + i as u8;
             if !Self::is_black_key(current_note % 12) {
                 if i == note_offset {
-                    return Some(white_key_count);
+                    found = Some(index_from_bottom);
                 }
-                white_key_count += 1;
+                index_from_bottom += 1;
             }
         }
 
-        None
+        let total_rows = index_from_bottom;
+        found.map(|idx| total_rows - 1 - idx)
     }
 
-    /// Convert row index to MIDI note
+    /// Convert row index (0 = top = highest note) to MIDI note
     fn row_to_note(&self, row: usize) -> Option<u8> {
+        let total_rows = self.white_key_count();
+        if row >= total_rows {
+            return None;
+        }
+        let target_from_bottom = total_rows - 1 - row;
+
         let total_notes = self.octaves as usize * 12;
         let mut white_key_count = 0;
-
         for i in 0..total_notes {
             let note = self.start_note + i as u8;
             if !Self::is_black_key(note % 12) {
-                if white_key_count == row {
+                if white_key_count == target_from_bottom {
                     return Some(note);
                 }
                 white_key_count += 1;

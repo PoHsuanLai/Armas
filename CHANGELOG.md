@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.2
+
+### Fixed
+
+- **`PianoRoll` row alignment** — Grid rows are now indexed top-down with the highest note at the top, matching the vertical piano keyboard. Previously row 0 sat at the top of the grid but row 0 of the piano sat at the bottom, so notes were drawn on rows that did not line up with their key.
+- **`Piano` overlapping following widget** — Per-key `ui.allocate_rect` calls pulled the layout cursor back to the last black-key extent (smaller than the strip), causing the next horizontal widget to start inside the piano. Switched to `ui.interact`, which registers hit-testing without disturbing the cursor. In `PianoRoll`, this manifested as the grid's first beat column rendering behind the piano.
+- **`PianoRoll` piano-click auto-insert** — Clicking a piano key no longer inserts a note at beat 0. The vertical piano is now audition-only, matching DAW convention; note placement is grid-clicks only.
+- **`DrumSequencer` single-click toggle** — A simple click on a step previously did `0 → 1 → 0` because the press-and-hold path activated drag-fill (turning the step ON) and the release path then toggled it back OFF. Drag-fill now uses `Response::dragged()`, which only fires once the gesture has actually moved.
+- **`DrumSequencer` step id collisions** — Step interaction ids were keyed off `(step_idx, row.name)`, so two sequencers on the same page with shared row names (`Kick`, `Snare`) produced duplicate ids. Step ids are now scoped to each sequencer's `base_id`.
+
+### Internal
+
+- Added `egui_kittest`-driven regression tests for piano-roll layout, piano-click no-op, and drum-sequencer click persistence.
+
 ## 0.2.1
 
 ### Added

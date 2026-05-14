@@ -132,7 +132,11 @@ impl ShowcaseApp {
         #[cfg(target_arch = "wasm32")]
         {
             if let Some(hash) = url_utils::url::get_hash() {
-                if hash == "components" || hash == "/components" || hash == "basic" || hash == "/basic" {
+                if hash == "components"
+                    || hash == "/components"
+                    || hash == "basic"
+                    || hash == "/basic"
+                {
                     return PageState::ComponentsList;
                 }
                 if let Some((section, component)) = url_utils::url::parse_route(&hash) {

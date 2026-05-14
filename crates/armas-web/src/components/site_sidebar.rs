@@ -21,7 +21,11 @@ pub struct SiteSidebarResponse {
 
 impl<'a> SiteSidebar<'a> {
     pub fn new(theme: &'a Theme, search_text: &'a mut String, pages: &'a [PageEntry]) -> Self {
-        Self { theme, search_text, pages }
+        Self {
+            theme,
+            search_text,
+            pages,
+        }
     }
 
     pub fn show(self, ui: &mut egui::Ui) -> SiteSidebarResponse {
@@ -29,7 +33,11 @@ impl<'a> SiteSidebar<'a> {
 
         let sections = showcase_gen::get_nested_sections();
         let search = self.search_text.trim().to_lowercase();
-        let matcher = if !search.is_empty() { Some(SkimMatcherV2::default()) } else { None };
+        let matcher = if !search.is_empty() {
+            Some(SkimMatcherV2::default())
+        } else {
+            None
+        };
 
         // Load active page index from egui state
         let active_id = ui.id().with("sidebar_active");
@@ -55,7 +63,7 @@ impl<'a> SiteSidebar<'a> {
 
                         for (parent, subsections) in sections.iter() {
                             // Collect matching pages across all subsections
-                            let all_pages: Vec<&(&'static str, fn(&mut egui::Ui))> = subsections
+                            let all_pages: Vec<&PageEntry> = subsections
                                 .iter()
                                 .flat_map(|(_, pages)| pages.iter())
                                 .filter(|(name, _)| {

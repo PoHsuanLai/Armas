@@ -343,7 +343,8 @@ impl Piano {
             } else {
                 Sense::drag()
             };
-            let response = ui.allocate_rect(key_rect, sense);
+            let key_id = ui.id().with(("piano_white", note));
+            let response = ui.interact(key_rect, key_id, sense);
             let is_pressed =
                 self.pressed_keys.contains(&note) || response.is_pointer_button_down_on();
 
@@ -418,7 +419,8 @@ impl Piano {
             } else {
                 Sense::drag()
             };
-            let response = ui.allocate_rect(key_rect, sense);
+            let key_id = ui.id().with(("piano_black", note));
+            let response = ui.interact(key_rect, key_id, sense);
             let is_pressed =
                 self.pressed_keys.contains(&note) || response.is_pointer_button_down_on();
 

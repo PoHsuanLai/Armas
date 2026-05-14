@@ -479,7 +479,7 @@ impl DropdownMenu {
         self.show(ctx, anchor_rect, content)
     }
 
-    /// Show the menu anchored to a rect (internal, used by submenus and show_ui).
+    /// Show the menu anchored to a rect (internal, used by submenus and `show_ui`).
     pub fn show(
         &mut self,
         ctx: &egui::Context,

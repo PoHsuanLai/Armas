@@ -133,7 +133,7 @@ impl NumberField {
         self
     }
 
-    /// Override the background color (default: theme.background())
+    /// Override the background color (default: `theme.background()`)
     #[must_use]
     pub const fn bg_color(mut self, color: Color32) -> Self {
         self.bg_color = Some(color);

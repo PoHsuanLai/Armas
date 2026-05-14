@@ -9,10 +9,7 @@ let mut rows = vec![
     DrumRow::new("HiHat", 16).with_color(egui::Color32::from_rgb(255, 200, 100)),
     DrumRow::new("Tom", 16).with_color(egui::Color32::from_rgb(200, 100, 255)),
 ];
-let response = DrumSequencer::new(&mut rows).steps(16).id("main_drum_sequencer").show(ui, &theme);
-if response.changed {
-    ui.label("Pattern changed!");
-}
+DrumSequencer::new(&mut rows).steps(16).id("main_drum_sequencer").show(ui, &theme);
 ```
 
 ## Variants

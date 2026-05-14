@@ -238,6 +238,7 @@ impl Accordion {
         let mut clicked = None;
         let mut needs_repaint = false;
 
+        #[allow(clippy::needless_range_loop)]
         for idx in 0..count {
             let is_open = open_indices.contains(&idx);
 
